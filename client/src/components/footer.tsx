@@ -49,7 +49,7 @@ export default function Footer() {
           </div>
 
           {/* Company */}
-          <div>
+          <div id="about-us">
             <h4 className="font-semibold mb-6">Company</h4>
             <ul className="space-y-3 text-gray-400">
               <li><Link href="/about-us"><span className="hover:text-white transition-colors cursor-pointer">About Us</span></Link></li>
