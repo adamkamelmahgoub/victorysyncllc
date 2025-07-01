@@ -23,6 +23,15 @@ import Register from "@/pages/register";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
+// Footer Pages
+import AboutUs from "@/pages/about-us";
+import Careers from "@/pages/careers";
+import Blog from "@/pages/blog";
+import HelpCenter from "@/pages/help-center";
+import Documentation from "@/pages/docs";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms";
+
 // Import Google Fonts
 import "@fontsource/inter/300.css";
 import "@fontsource/inter/400.css";
@@ -54,6 +63,16 @@ function Router() {
           <Route path="/register" component={Register} />
           <Route path="/signup" component={Register} />
           <Route path="/login" component={Login} />
+          
+          {/* Footer Pages */}
+          <Route path="/about-us" component={AboutUs} />
+          <Route path="/careers" component={Careers} />
+          <Route path="/blog" component={Blog} />
+          <Route path="/help-center" component={HelpCenter} />
+          <Route path="/docs" component={Documentation} />
+          <Route path="/privacy-policy" component={PrivacyPolicy} />
+          <Route path="/terms" component={TermsOfService} />
+          
           <Route component={NotFound} />
         </Switch>
       </main>

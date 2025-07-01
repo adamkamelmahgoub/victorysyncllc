@@ -52,9 +52,9 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-6">Company</h4>
             <ul className="space-y-3 text-gray-400">
-              <li><Link href="/about"><span className="hover:text-white transition-colors cursor-pointer">About Us</span></Link></li>
-              <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+              <li><Link href="/about-us"><span className="hover:text-white transition-colors cursor-pointer">About Us</span></Link></li>
+              <li><Link href="/careers"><span className="hover:text-white transition-colors cursor-pointer">Careers</span></Link></li>
+              <li><Link href="/blog"><span className="hover:text-white transition-colors cursor-pointer">Blog</span></Link></li>
               <li><Link href="/contact"><span className="hover:text-white transition-colors cursor-pointer">Contact</span></Link></li>
             </ul>
           </div>
@@ -63,10 +63,10 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-6">Support</h4>
             <ul className="space-y-3 text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+              <li><Link href="/help-center"><span className="hover:text-white transition-colors cursor-pointer">Help Center</span></Link></li>
+              <li><Link href="/docs"><span className="hover:text-white transition-colors cursor-pointer">Documentation</span></Link></li>
+              <li><Link href="/privacy-policy"><span className="hover:text-white transition-colors cursor-pointer">Privacy Policy</span></Link></li>
+              <li><Link href="/terms"><span className="hover:text-white transition-colors cursor-pointer">Terms of Service</span></Link></li>
             </ul>
           </div>
         </div>
