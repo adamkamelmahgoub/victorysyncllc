@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(210, 40%, 98%);
+  --foreground: hsl(222.2, 84%, 4.9%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222.2, 84%, 4.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222.2, 84%, 4.9%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --primary: hsl(262.1, 83.3%, 57.8%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(222.2, 84%, 4.9%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(262.1, 83.3%, 57.8%);
+  --radius: 0.5rem;
+  --chart-1: hsl(12, 76%, 61%);
+  --chart-2: hsl(173, 58%, 39%);
+  --chart-3: hsl(197, 37%, 24%);
+  --chart-4: hsl(43, 74%, 66%);
+  --chart-5: hsl(27, 87%, 67%);
+  
+  /* Victory Sync Brand Colors */
+  --victory-purple: hsl(262.1, 83.3%, 57.8%);
+  --victory-blue: hsl(217.2, 91.2%, 59.8%);
+  --victory-light-purple: hsl(270, 95.2%, 75.3%);
+  --victory-dark: hsl(222.2, 47.4%, 11.2%);
+  --victory-gray: hsl(215, 13.8%, 34.1%);
+}
+
+.dark {
+  --background: hsl(222.2, 84%, 4.9%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217.2, 32.6%, 17.5%);
+  --muted-foreground: hsl(215, 20.2%, 65.1%);
+  --popover: hsl(222.2, 84%, 4.9%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222.2, 84%, 4.9%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217.2, 32.6%, 17.5%);
+  --input: hsl(217.2, 32.6%, 17.5%);
+  --primary: hsl(262.1, 83.3%, 57.8%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(217.2, 32.6%, 17.5%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(217.2, 32.6%, 17.5%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(262.1, 83.3%, 57.8%);
+  --chart-1: hsl(220, 70%, 50%);
+  --chart-2: hsl(160, 60%, 45%);
+  --chart-3: hsl(30, 80%, 55%);
+  --chart-4: hsl(280, 65%, 60%);
+  --chart-5: hsl(340, 75%, 55%);
+  
+  /* Victory Sync Brand Colors - Dark Mode */
+  --victory-purple: hsl(262.1, 83.3%, 57.8%);
+  --victory-blue: hsl(217.2, 91.2%, 59.8%);
+  --victory-light-purple: hsl(270, 95.2%, 75.3%);
+  --victory-dark: hsl(210, 40%, 98%);
+  --victory-gray: hsl(215, 20.2%, 65.1%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  .brand-font {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .victory-purple {
+    color: var(--victory-purple);
+  }
+  
+  .victory-blue {
+    color: var(--victory-blue);
+  }
+  
+  .victory-light-purple {
+    color: var(--victory-light-purple);
+  }
+  
+  .victory-dark {
+    color: var(--victory-dark);
+  }
+  
+  .victory-gray {
+    color: var(--victory-gray);
+  }
+  
+  .bg-victory-purple {
+    background-color: var(--victory-purple);
+  }
+  
+  .bg-victory-blue {
+    background-color: var(--victory-blue);
+  }
+  
+  .bg-victory-light-purple {
+    background-color: var(--victory-light-purple);
+  }
+  
+  .bg-victory-dark {
+    background-color: var(--victory-dark);
+  }
+  
+  .bg-victory-gray {
+    background-color: var(--victory-gray);
+  }
+  
+  .border-victory-purple {
+    border-color: var(--victory-purple);
+  }
+  
+  .hover\:bg-victory-purple:hover {
+    background-color: var(--victory-purple);
+  }
+  
+  .hover\:text-victory-purple:hover {
+    color: var(--victory-purple);
+  }
+  
+  .gradient-victory {
+    background: linear-gradient(135deg, var(--victory-purple) 0%, var(--victory-blue) 100%);
+  }
+}
