@@ -217,7 +217,7 @@ export default function Contact() {
                   <p className="mb-4 text-purple-100">
                     Join our next webinar to learn how other businesses are cutting costs while improving service.
                   </p>
-                  <Button className="text-victory-purple hover:bg-gray-100 bg-[#6f49ef]">
+                  <Button className="text-victory-purple hover:bg-gray-100 bg-[#7146ef]">
                     Register for Webinar
                   </Button>
                 </CardContent>
