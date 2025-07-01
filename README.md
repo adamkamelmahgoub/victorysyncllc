@@ -8,7 +8,7 @@ A comprehensive call center and AI automation platform built with React and Expr
 - 🤖 **AI Automation Suite** - Intelligent chatbots and workflow automation  
 - 📊 **Customer Dashboard** - Order tracking and service management
 - 🛒 **E-commerce Integration** - Service packages with shopping cart
-- 🔐 **Complete Authentication** - Email/password and OAuth social login
+- 🔐 **Secure Authentication** - Email/password authentication with JWT tokens
 - 💳 **Payment Processing** - Stripe integration for secure transactions
 
 ## Quick Start
@@ -67,45 +67,7 @@ PORT=5000
 NODE_ENV=production
 ```
 
-### OAuth Configuration (Optional)
 
-To enable social login, configure these providers:
-
-#### Google OAuth
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create/select a project
-3. Enable Google+ API
-4. Create OAuth 2.0 credentials
-5. Add redirect URI: `https://yourdomain.com/api/auth/google/callback`
-
-```env
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-```
-
-#### Facebook OAuth
-1. Go to [Facebook Developers](https://developers.facebook.com/)
-2. Create an app
-3. Add Facebook Login product
-4. Add redirect URI: `https://yourdomain.com/api/auth/facebook/callback`
-
-```env
-FACEBOOK_APP_ID="your-facebook-app-id"
-FACEBOOK_APP_SECRET="your-facebook-app-secret"
-```
-
-#### Apple OAuth
-1. Go to [Apple Developer Portal](https://developer.apple.com/)
-2. Create an App ID and Service ID
-3. Generate a private key
-4. Add redirect URI: `https://yourdomain.com/api/auth/apple/callback`
-
-```env
-APPLE_CLIENT_ID="your-apple-client-id"
-APPLE_TEAM_ID="your-apple-team-id"
-APPLE_KEY_ID="your-apple-key-id"
-APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour-private-key\n-----END PRIVATE KEY-----"
-```
 
 ### Stripe Configuration (Optional)
 
@@ -145,9 +107,6 @@ VictorySync includes a complete authentication system with:
 - `POST /api/auth/login` - User login
 - `GET /api/auth/me` - Get current user (protected)
 - `POST /api/auth/logout` - User logout
-- `GET /api/auth/google` - Google OAuth
-- `GET /api/auth/facebook` - Facebook OAuth
-- `GET /api/auth/apple` - Apple OAuth
 
 ### Business
 - `GET /api/packages` - Service packages
@@ -171,7 +130,7 @@ This tests:
 - Frontend route accessibility
 - Email/password registration and login
 - JWT token validation
-- OAuth route availability
+- Verification that OAuth routes are removed
 - API functionality
 
 ## Deployment

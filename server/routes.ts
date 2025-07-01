@@ -3,8 +3,6 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { registerUser, loginUser, getCurrentUser, authenticateJWT, type AuthenticatedRequest } from "./publicAuth";
-import passport from "./auth/passport";
-import { createJWT } from "./auth/passport";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
@@ -47,8 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Initialize passport for OAuth
-  app.use(passport.initialize());
+
 
   // Initialize default packages
   await initializePackages();
@@ -63,80 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: 'Logged out successfully' });
   });
 
-  // OAuth routes with environment variable checks
-  
-  // Google OAuth
-  app.get('/api/auth/google', (req, res, next) => {
-    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-      return res.status(400).json({ error: "Google OAuth not configured. Missing environment variables." });
-    }
-    passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
-  });
-  app.get('/api/auth/google/callback', 
-    passport.authenticate('google', { session: false, failureRedirect: '/login?error=google_auth_failed' }),
-    (req: any, res) => {
-      const token = createJWT(req.user);
-      res.redirect(`/customer-dashboard?token=${token}`);
-    }
-  );
 
-  // Facebook OAuth  
-  app.get('/api/auth/facebook', (req, res, next) => {
-    if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
-      return res.status(400).json({ error: "Facebook OAuth not configured. Missing environment variables." });
-    }
-    passport.authenticate('facebook', { scope: ['email'] })(req, res, next);
-  });
-  app.get('/api/auth/facebook/callback',
-    passport.authenticate('facebook', { session: false, failureRedirect: '/login?error=facebook_auth_failed' }),
-    (req: any, res) => {
-      const token = createJWT(req.user);
-      res.redirect(`/customer-dashboard?token=${token}`);
-    }
-  );
-
-  // Apple OAuth
-  app.get('/api/auth/apple', (req, res, next) => {
-    if (!process.env.APPLE_CLIENT_ID || !process.env.APPLE_TEAM_ID || !process.env.APPLE_KEY_ID || !process.env.APPLE_PRIVATE_KEY) {
-      return res.status(400).json({ error: "Apple OAuth not configured. Missing environment variables." });
-    }
-    passport.authenticate('apple')(req, res, next);
-  });
-  app.get('/api/auth/apple/callback',
-    passport.authenticate('apple', { session: false, failureRedirect: '/login?error=apple_auth_failed' }),
-    (req: any, res) => {
-      const token = createJWT(req.user);
-      res.redirect(`/customer-dashboard?token=${token}`);
-    }
-  );
-
-  // SPA-friendly token endpoints
-  app.post('/api/auth/google/token', 
-    passport.authenticate('google', { session: false }),
-    (req: any, res) => {
-      const token = createJWT(req.user);
-      const { passwordHash: _, ...userWithoutPassword } = req.user;
-      res.json({ token, user: userWithoutPassword });
-    }
-  );
-
-  app.post('/api/auth/facebook/token',
-    passport.authenticate('facebook', { session: false }),
-    (req: any, res) => {
-      const token = createJWT(req.user);
-      const { passwordHash: _, ...userWithoutPassword } = req.user;
-      res.json({ token, user: userWithoutPassword });
-    }
-  );
-
-  app.post('/api/auth/apple/token',
-    passport.authenticate('apple', { session: false }),
-    (req: any, res) => {
-      const token = createJWT(req.user);
-      const { passwordHash: _, ...userWithoutPassword } = req.user;
-      res.json({ token, user: userWithoutPassword });
-    }
-  );
 
 
 
@@ -279,6 +203,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error fetching order:", error);
       res.status(500).json({ message: "Failed to fetch order" });
     }
+  });
+
+  // Add 404 handler for API routes that don't exist
+  app.use('/api/*', (req, res) => {
+    res.status(404).json({ error: 'API endpoint not found' });
   });
 
   const httpServer = createServer(app);

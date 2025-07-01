@@ -161,31 +161,20 @@ async function testEmailPasswordAuth() {
   return true;
 }
 
-async function testOAuthRoutes() {
-  console.log('🔗 Testing OAuth route availability...');
+async function testEmailPasswordOnly() {
+  console.log('🔐 Testing email/password-only authentication...');
   
-  const oauthProviders = [
-    { name: 'Google', path: '/api/auth/google' },
-    { name: 'Facebook', path: '/api/auth/facebook' },
-    { name: 'Apple', path: '/api/auth/apple' }
-  ];
+  // Test that OAuth routes no longer exist
+  const oauthPaths = ['/api/auth/google', '/api/auth/facebook', '/api/auth/apple'];
   
-  for (const provider of oauthProviders) {
-    const response = await testJsonRequest(provider.path);
+  for (const path of oauthPaths) {
+    const response = await testRequest(path);
     
-    // Should return either OAuth redirect or configuration error (not 404)
-    if (response.status === 404) {
-      throw new Error(`${provider.name} OAuth route not found: ${provider.path}`);
+    if (response.status !== 404) {
+      throw new Error(`OAuth route ${path} should return 404 but got ${response.status}`);
     }
     
-    // If not configured, should return proper error message
-    if (response.status === 400 && response.data.error?.includes('not configured')) {
-      console.log(`✅ ${provider.name} OAuth route accessible (not configured)`);
-    } else if (response.status === 302 || response.status === 200) {
-      console.log(`✅ ${provider.name} OAuth route accessible (configured)`);
-    } else {
-      throw new Error(`${provider.name} OAuth unexpected response: ${response.status}`);
-    }
+    console.log(`✅ OAuth route ${path} properly removed (404)`);
   }
   
   return true;
@@ -214,7 +203,7 @@ async function runTests() {
     { name: 'Health Check', fn: testHealthCheck },
     { name: 'Frontend Routes', fn: testFrontendRoutes },
     { name: 'Email/Password Auth', fn: testEmailPasswordAuth },
-    { name: 'OAuth Routes', fn: testOAuthRoutes },
+    { name: 'Email/Password Only', fn: testEmailPasswordOnly },
     { name: 'Packages API', fn: testPackagesAPI }
   ];
   

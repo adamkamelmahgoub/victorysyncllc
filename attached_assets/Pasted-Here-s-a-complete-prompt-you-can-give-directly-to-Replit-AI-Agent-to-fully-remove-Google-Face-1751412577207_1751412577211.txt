@@ -1,0 +1,84 @@
+Here’s a complete prompt you can give directly to **Replit AI Agent** to fully remove **Google, Facebook, and Apple social logins** from both the frontend and backend of your Victory Sync project:
+
+---
+
+### Prompt for Replit AI Agent
+
+**Task:**
+Remove all social login logic (Google, Facebook, Apple) from the codebase.
+The system should only use email + password with JWT authentication going forward.
+
+---
+
+### ✅ Backend: clean up server
+
+1. **Remove all passport strategies** for:
+
+   * `passport-google-oauth20`
+   * `passport-facebook`
+   * `passport-apple`
+
+2. In `passport.ts` or wherever strategies are defined:
+
+   * Delete all `passport.use("google"...)`, `passport.use("facebook"...)`, `passport.use("apple"...)` lines
+   * Remove any `import` statements for those strategies
+
+3. In routes (e.g. `authRoutes.ts`, `index.ts`):
+
+   * Delete or comment out routes like:
+
+     ```
+     GET /api/auth/google
+     GET /api/auth/google/callback
+     GET /api/auth/facebook
+     ...
+     ```
+   * Make sure only local login remains (`/api/auth/register`, `/api/auth/login`)
+
+4. Remove any middleware or fallback logic for missing OAuth credentials
+
+5. Clean `.env.example`:
+
+   * Delete all the following:
+
+     ```
+     GOOGLE_CLIENT_ID
+     GOOGLE_CLIENT_SECRET
+     FACEBOOK_APP_ID
+     FACEBOOK_APP_SECRET
+     APPLE_CLIENT_ID
+     APPLE_TEAM_ID
+     APPLE_KEY_ID
+     APPLE_PRIVATE_KEY
+     ```
+
+---
+
+### ✅ Frontend: remove buttons & handlers
+
+1. Remove all “Continue with Google / Facebook / Apple” buttons from:
+
+   * `Login.tsx`, `Signup.tsx`, or shared `AuthForm` component
+   * Header, footer, modal, or any other location
+
+2. Delete or disable any `onClick={() => window.location.href = "/api/auth/<provider>"}` logic
+
+3. Remove OAuth-specific error handling (e.g., `OAuth not configured` fallback)
+
+4. Ensure only the email + password fields remain on all auth screens
+
+---
+
+### ✅ Final cleanup
+
+* Remove any unused OAuth-related imports
+* Remove unused ENV vars from Replit deployment panel if previously set
+* Test login and signup with just email/password
+* Confirm all pages still load and build passes
+
+---
+
+**Goal:**
+Fully remove Google, Facebook, and Apple auth from both the server and UI. Only local email+password sign-in should remain.
+
+Start now. Clean, launch-ready result expected.
