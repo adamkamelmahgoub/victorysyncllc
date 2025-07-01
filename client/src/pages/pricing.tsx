@@ -104,10 +104,10 @@ export default function Pricing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
-              Cost Comparison: Egypt vs. United States
+              Cost Comparison: VictorySync vs. Traditional Solutions
             </h2>
             <p className="text-xl victory-gray">
-              See how much you can save with our Cairo-based team
+              See how much you can save with our New Jersey-based team
             </p>
           </div>
 

@@ -48,7 +48,7 @@ export default function About() {
                 Based in Millstone, New Jersey, we're your trusted partner for customer engagement and back-office support. We leverage our strategic East Coast location to deliver exceptional service at competitive rates.
               </p>
               <Link href="/contact">
-                <Button size="lg" className="bg-white text-victory-purple hover:bg-gray-100">
+                <Button size="lg" className="bg-victory-purple text-white hover:bg-purple-700">
                   Get in Touch
                 </Button>
               </Link>
@@ -259,7 +259,7 @@ export default function About() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button size="lg" className="bg-white text-victory-purple hover:bg-gray-100">
+              <Button size="lg" className="bg-victory-purple text-white hover:bg-purple-700">
                 Schedule a Consultation
               </Button>
             </Link>

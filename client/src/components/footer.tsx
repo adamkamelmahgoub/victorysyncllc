@@ -16,7 +16,7 @@ export default function Footer() {
               <span className="text-xl brand-font">VictorySync</span>
             </div>
             <p className="text-gray-400 mb-6">
-              Professional call center and AI automation services from Cairo, Egypt. Helping US businesses reduce costs and improve customer satisfaction.
+              Professional call center and AI automation services from Millstone, New Jersey. Helping US businesses reduce costs and improve customer satisfaction.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-victory-purple transition-colors">
