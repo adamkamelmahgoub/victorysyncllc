@@ -205,8 +205,8 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-semibold victory-dark">Our Location</h4>
-                      <p className="victory-gray">Cairo, Egypt</p>
-                      <p className="text-sm victory-gray">GMT+2 Time Zone</p>
+                      <p className="victory-gray">Millstone, New Jersey</p>
+                      <p className="text-sm victory-gray">EST Time Zone</p>
                     </div>
                   </div>
                 </CardContent>

@@ -45,7 +45,7 @@ export default function About() {
                 About VictorySync
               </h1>
               <p className="text-xl text-purple-100 mb-8">
-                Based in Cairo, Egypt, we're your trusted partner for customer engagement and back-office support. We leverage Egypt's position as a top offshore destination to deliver exceptional service at unbeatable rates.
+                Based in Millstone, New Jersey, we're your trusted partner for customer engagement and back-office support. We leverage our strategic East Coast location to deliver exceptional service at competitive rates.
               </p>
               <Link href="/contact">
                 <Button size="lg" className="bg-white text-victory-purple hover:bg-gray-100">
@@ -85,7 +85,7 @@ export default function About() {
             <div>
               <h2 className="text-3xl font-bold victory-dark mb-6">Our Mission</h2>
               <p className="text-lg victory-gray mb-6">
-                To empower small and medium-sized businesses across the United States by providing world-class customer engagement services at a fraction of traditional costs, while creating meaningful employment opportunities in Egypt.
+                To empower small and medium-sized businesses across the United States by providing world-class customer engagement services at competitive rates, while creating meaningful employment opportunities in New Jersey.
               </p>
               <p className="victory-gray">
                 We believe that exceptional customer service shouldn't be a luxury reserved for large corporations. Every business deserves access to professional, reliable, and cost-effective customer support solutions.
@@ -94,7 +94,7 @@ export default function About() {
             <div>
               <h2 className="text-3xl font-bold victory-dark mb-6">Our Vision</h2>
               <p className="text-lg victory-gray mb-6">
-                To become the leading bridge between Egyptian talent and American businesses, setting new standards for offshore customer engagement while contributing to economic growth in both regions.
+                To become the leading provider of customer engagement solutions on the East Coast, setting new standards for professional customer service while contributing to economic growth in the region.
               </p>
               <p className="victory-gray">
                 We envision a future where geographical boundaries don't limit business potential, and where technology enables seamless collaboration across continents.
@@ -109,10 +109,10 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
-              Why Egypt is the Perfect Choice
+              Why New Jersey is the Perfect Choice
             </h2>
             <p className="text-xl victory-gray max-w-3xl mx-auto">
-              Egypt offers the ideal combination of skilled talent, competitive costs, and strategic advantages
+              New Jersey offers the ideal combination of skilled talent, competitive costs, and strategic advantages
             </p>
           </div>
 
@@ -124,7 +124,7 @@ export default function About() {
                 </div>
                 <h3 className="text-xl font-bold victory-dark mb-4">Strategic Location</h3>
                 <p className="victory-gray">
-                  Cairo's time zone allows for extended coverage and overlap with US business hours, ensuring seamless communication.
+                  Millstone's East Coast location ensures perfect alignment with US business hours and seamless communication.
                 </p>
               </CardContent>
             </Card>
@@ -136,7 +136,7 @@ export default function About() {
                 </div>
                 <h3 className="text-xl font-bold victory-dark mb-4">Skilled Workforce</h3>
                 <p className="victory-gray">
-                  Egypt has a large pool of educated, English-speaking professionals with strong communication skills and cultural awareness.
+                  New Jersey has a large pool of educated, English-speaking professionals with strong communication skills and cultural awareness.
                 </p>
               </CardContent>
             </Card>
@@ -146,9 +146,9 @@ export default function About() {
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Shield className="text-green-600 w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold victory-dark mb-4">Government Support</h3>
+                <h3 className="text-xl font-bold victory-dark mb-4">Business Environment</h3>
                 <p className="victory-gray">
-                  Egypt's government actively supports the IT and outsourcing sector, contributing to $6.2B in digital exports annually.
+                  New Jersey's business-friendly environment and proximity to major markets makes it an ideal location for professional services.
                 </p>
               </CardContent>
             </Card>
