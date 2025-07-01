@@ -31,6 +31,7 @@ export interface IStorage {
   createPublicUser(user: InsertPublicUser): Promise<PublicUser>;
   getPublicUserByEmail(email: string): Promise<PublicUser | undefined>;
   getPublicUserById(id: number): Promise<PublicUser | undefined>;
+  updatePublicUserSocialAccounts(id: number, socialAccounts: any[]): Promise<PublicUser>;
   
   // Package operations
   getPackages(): Promise<Package[]>;
@@ -100,6 +101,15 @@ export class DatabaseStorage implements IStorage {
 
   async getPublicUserById(id: number): Promise<PublicUser | undefined> {
     const [user] = await db.select().from(publicUsers).where(eq(publicUsers.id, id));
+    return user;
+  }
+
+  async updatePublicUserSocialAccounts(id: number, socialAccounts: any[]): Promise<PublicUser> {
+    const [user] = await db
+      .update(publicUsers)
+      .set({ socialAccounts })
+      .where(eq(publicUsers.id, id))
+      .returning();
     return user;
   }
 

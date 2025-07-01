@@ -43,7 +43,10 @@ export const publicUsers = pgTable("public_users", {
   id: serial("id").primaryKey(),
   name: varchar("name").notNull(),
   email: varchar("email").unique().notNull(),
-  passwordHash: varchar("password_hash").notNull(),
+  passwordHash: varchar("password_hash"),
+  provider: varchar("provider").default("local"), // local, google, facebook, apple
+  providerId: varchar("provider_id"),
+  socialAccounts: jsonb("social_accounts").default([]), // Array of connected providers
   createdAt: timestamp("created_at").defaultNow(),
 });
 

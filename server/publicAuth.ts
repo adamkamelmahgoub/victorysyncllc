@@ -71,6 +71,7 @@ export const registerUser = async (req: Request, res: Response) => {
       name: validatedData.name,
       email: validatedData.email,
       passwordHash,
+      provider: "local",
     });
 
     // Generate JWT
@@ -102,7 +103,11 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Verify password
+    // Verify password (only for local auth users)
+    if (!user.passwordHash) {
+      return res.status(401).json({ error: "Please use social login for this account" });
+    }
+    
     const isValidPassword = await comparePassword(validatedData.password, user.passwordHash);
     if (!isValidPassword) {
       return res.status(401).json({ error: "Invalid email or password" });

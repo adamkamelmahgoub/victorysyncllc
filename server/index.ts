@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
+import passport from "./auth/passport";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -19,6 +20,9 @@ function validateEnvironment() {
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Initialize Passport
+app.use(passport.initialize());
 
 app.use((req, res, next) => {
   const start = Date.now();

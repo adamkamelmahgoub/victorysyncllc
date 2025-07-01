@@ -4,6 +4,8 @@ import Stripe from "stripe";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { registerUser, loginUser, getCurrentUser, authenticateJWT, type AuthenticatedRequest } from "./publicAuth";
+import passport from "./auth/passport";
+import { createJWT } from "./auth/passport";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
@@ -56,6 +58,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/register', registerUser);
   app.post('/api/auth/login', loginUser);
   app.get('/api/auth/me', authenticateJWT as any, getCurrentUser);
+
+  // OAuth routes
+  
+  // Google OAuth
+  app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+  app.get('/api/auth/google/callback', 
+    passport.authenticate('google', { session: false, failureRedirect: '/login?error=google_auth_failed' }),
+    (req: any, res) => {
+      const token = createJWT(req.user);
+      res.redirect(`/customer-dashboard?token=${token}`);
+    }
+  );
+
+  // Facebook OAuth  
+  app.get('/api/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+  app.get('/api/auth/facebook/callback',
+    passport.authenticate('facebook', { session: false, failureRedirect: '/login?error=facebook_auth_failed' }),
+    (req: any, res) => {
+      const token = createJWT(req.user);
+      res.redirect(`/customer-dashboard?token=${token}`);
+    }
+  );
+
+  // Apple OAuth
+  app.get('/api/auth/apple', passport.authenticate('apple'));
+  app.get('/api/auth/apple/callback',
+    passport.authenticate('apple', { session: false, failureRedirect: '/login?error=apple_auth_failed' }),
+    (req: any, res) => {
+      const token = createJWT(req.user);
+      res.redirect(`/customer-dashboard?token=${token}`);
+    }
+  );
+
+  // SPA-friendly token endpoints
+  app.post('/api/auth/google/token', 
+    passport.authenticate('google', { session: false }),
+    (req: any, res) => {
+      const token = createJWT(req.user);
+      const { passwordHash: _, ...userWithoutPassword } = req.user;
+      res.json({ token, user: userWithoutPassword });
+    }
+  );
+
+  app.post('/api/auth/facebook/token',
+    passport.authenticate('facebook', { session: false }),
+    (req: any, res) => {
+      const token = createJWT(req.user);
+      const { passwordHash: _, ...userWithoutPassword } = req.user;
+      res.json({ token, user: userWithoutPassword });
+    }
+  );
+
+  app.post('/api/auth/apple/token',
+    passport.authenticate('apple', { session: false }),
+    (req: any, res) => {
+      const token = createJWT(req.user);
+      const { passwordHash: _, ...userWithoutPassword } = req.user;
+      res.json({ token, user: userWithoutPassword });
+    }
+  );
 
   // Replit auth routes (existing system)
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
