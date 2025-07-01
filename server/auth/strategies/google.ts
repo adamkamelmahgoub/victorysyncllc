@@ -1,4 +1,4 @@
-import passport from "passport";
+import passport from "../passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { storage } from "../../storage";
 
@@ -7,6 +7,7 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 
 if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
   passport.use(
+    "google",
     new GoogleStrategy(
       {
         clientID: GOOGLE_CLIENT_ID,

@@ -1,4 +1,4 @@
-import passport from "passport";
+import passport from "../passport";
 import { Strategy as FacebookStrategy } from "passport-facebook";
 import { storage } from "../../storage";
 
@@ -7,6 +7,7 @@ const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 
 if (FACEBOOK_APP_ID && FACEBOOK_APP_SECRET) {
   passport.use(
+    "facebook",
     new FacebookStrategy(
       {
         clientID: FACEBOOK_APP_ID,

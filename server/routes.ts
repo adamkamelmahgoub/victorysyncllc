@@ -58,10 +58,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/login', loginUser);
   app.get('/api/auth/me', authenticateJWT as any, getCurrentUser);
 
-  // OAuth routes
+  // OAuth routes with environment variable checks
   
   // Google OAuth
-  app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+  app.get('/api/auth/google', (req, res, next) => {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+      return res.status(400).json({ error: "Google OAuth not configured. Missing environment variables." });
+    }
+    passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+  });
   app.get('/api/auth/google/callback', 
     passport.authenticate('google', { session: false, failureRedirect: '/login?error=google_auth_failed' }),
     (req: any, res) => {
@@ -71,7 +76,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // Facebook OAuth  
-  app.get('/api/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+  app.get('/api/auth/facebook', (req, res, next) => {
+    if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
+      return res.status(400).json({ error: "Facebook OAuth not configured. Missing environment variables." });
+    }
+    passport.authenticate('facebook', { scope: ['email'] })(req, res, next);
+  });
   app.get('/api/auth/facebook/callback',
     passport.authenticate('facebook', { session: false, failureRedirect: '/login?error=facebook_auth_failed' }),
     (req: any, res) => {
@@ -81,7 +91,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // Apple OAuth
-  app.get('/api/auth/apple', passport.authenticate('apple'));
+  app.get('/api/auth/apple', (req, res, next) => {
+    if (!process.env.APPLE_CLIENT_ID || !process.env.APPLE_TEAM_ID || !process.env.APPLE_KEY_ID || !process.env.APPLE_PRIVATE_KEY) {
+      return res.status(400).json({ error: "Apple OAuth not configured. Missing environment variables." });
+    }
+    passport.authenticate('apple')(req, res, next);
+  });
   app.get('/api/auth/apple/callback',
     passport.authenticate('apple', { session: false, failureRedirect: '/login?error=apple_auth_failed' }),
     (req: any, res) => {

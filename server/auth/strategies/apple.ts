@@ -1,4 +1,4 @@
-import passport from "passport";
+import passport from "../passport";
 import { Strategy as AppleStrategy } from "passport-apple";
 import { storage } from "../../storage";
 
@@ -9,6 +9,7 @@ const APPLE_PRIVATE_KEY = process.env.APPLE_PRIVATE_KEY;
 
 if (APPLE_CLIENT_ID && APPLE_TEAM_ID && APPLE_KEY_ID && APPLE_PRIVATE_KEY) {
   passport.use(
+    "apple",
     new AppleStrategy(
       {
         clientID: APPLE_CLIENT_ID,

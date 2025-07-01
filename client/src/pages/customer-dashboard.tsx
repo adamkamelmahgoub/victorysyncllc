@@ -92,7 +92,7 @@ export default function CustomerDashboard() {
             <div>
               <h1 className="text-3xl font-bold victory-dark">Welcome back!</h1>
               <p className="victory-gray">
-                Hello {user?.firstName || 'there'}, manage your VictorySync services here.
+                Hello {user?.name || 'there'}, manage your VictorySync services here.
               </p>
             </div>
             <Button 
@@ -271,20 +271,12 @@ export default function CustomerDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  {user?.profileImageUrl ? (
-                    <img 
-                      src={user.profileImageUrl} 
-                      alt="Profile" 
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                      <User className="victory-purple w-6 h-6" />
-                    </div>
-                  )}
+                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                    <User className="victory-purple w-6 h-6" />
+                  </div>
                   <div>
                     <p className="font-semibold victory-dark">
-                      {user?.firstName || ''} {user?.lastName || ''}
+                      {user?.name || 'User'}
                     </p>
                     <p className="text-sm victory-gray flex items-center">
                       <Mail className="w-3 h-3 mr-1" />
