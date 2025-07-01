@@ -2,7 +2,6 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 import { registerUser, loginUser, getCurrentUser, authenticateJWT, type AuthenticatedRequest } from "./publicAuth";
 import passport from "./auth/passport";
 import { createJWT } from "./auth/passport";
@@ -48,8 +47,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth middleware
-  await setupAuth(app);
+  // Initialize passport for OAuth
+  app.use(passport.initialize());
 
   // Initialize default packages
   await initializePackages();
@@ -119,17 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
-  // Replit auth routes (existing system)
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+
 
   // Package routes
   app.get('/api/packages', async (req, res) => {
@@ -172,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stripe payment route for one-time payments
-  app.post("/api/create-payment-intent", isAuthenticated, async (req: any, res) => {
+  app.post("/api/create-payment-intent", authenticateJWT as any, async (req: AuthenticatedRequest, res) => {
     try {
       if (!stripe) {
         return res.status(503).json({ 
@@ -200,7 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount: Math.round(total * 100), // Convert to cents
         currency: "usd",
         metadata: {
-          userId: req.user.claims.sub,
+          userId: req.user!.id.toString(),
           items: JSON.stringify(items),
         },
       });
@@ -213,9 +202,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Order routes
-  app.post('/api/orders', isAuthenticated, async (req: any, res) => {
+  app.post('/api/orders', authenticateJWT as any, async (req: AuthenticatedRequest, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user!.id.toString();
       const { items, total, stripePaymentIntentId } = req.body;
       
       // Create order
@@ -243,9 +232,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/orders', isAuthenticated, async (req: any, res) => {
+  app.get('/api/orders', authenticateJWT as any, async (req: AuthenticatedRequest, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user!.id.toString();
       const orders = await storage.getUserOrders(userId);
       res.json(orders);
     } catch (error) {
@@ -254,10 +243,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/orders/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/orders/:id', authenticateJWT as any, async (req: AuthenticatedRequest, res) => {
     try {
       const orderId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user!.id.toString();
       
       const order = await storage.getOrder(orderId);
       if (!order || order.userId !== userId) {

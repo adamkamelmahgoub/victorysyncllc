@@ -14,7 +14,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
-// Session storage table for Replit Auth
+// Session storage table (keeping for potential future use)
 export const sessions = pgTable(
   "sessions",
   {
@@ -24,19 +24,6 @@ export const sessions = pgTable(
   },
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
-
-// User storage table for Replit Auth
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
-  stripeCustomerId: varchar("stripe_customer_id"),
-  stripeSubscriptionId: varchar("stripe_subscription_id"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
 
 // Public users table for the new authentication system
 export const publicUsers = pgTable("public_users", {
@@ -64,7 +51,7 @@ export const packages = pgTable("packages", {
 // Orders
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").references(() => users.id),
+  userId: varchar("user_id"),
   status: varchar("status").default("pending"), // pending, processing, completed, cancelled
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
   stripePaymentIntentId: varchar("stripe_payment_intent_id"),
@@ -95,15 +82,7 @@ export const contactSubmissions = pgTable("contact_submissions", {
 });
 
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
-  orders: many(orders),
-}));
-
-export const ordersRelations = relations(orders, ({ one, many }) => ({
-  user: one(users, {
-    fields: [orders.userId],
-    references: [users.id],
-  }),
+export const ordersRelations = relations(orders, ({ many }) => ({
   items: many(orderItems),
 }));
 
@@ -123,9 +102,6 @@ export const packagesRelations = relations(packages, ({ many }) => ({
 }));
 
 // Types
-export type UpsertUser = typeof users.$inferInsert;
-export type User = typeof users.$inferSelect;
-
 export type InsertPublicUser = typeof publicUsers.$inferInsert;
 export type PublicUser = typeof publicUsers.$inferSelect;
 
