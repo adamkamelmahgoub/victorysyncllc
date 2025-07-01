@@ -189,7 +189,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-semibold victory-dark">Call Us</h4>
-                      <p className="victory-gray">+1 (555) 123-4567</p>
+                      <p className="victory-gray">+1 (718)-813-2106</p>
                       <p className="text-sm victory-gray">Available 24/7</p>
                     </div>
                   </div>
