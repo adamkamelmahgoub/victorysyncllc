@@ -217,7 +217,7 @@ export default function Contact() {
                   <p className="mb-4 text-purple-100">
                     Join our next webinar to learn how other businesses are cutting costs while improving service.
                   </p>
-                  <Button className="text-victory-purple hover:bg-gray-100 bg-[#4e6df3]">
+                  <Button className="text-victory-purple hover:bg-gray-100 bg-[#6f49ef]">
                     Register for Webinar
                   </Button>
                 </CardContent>
@@ -299,7 +299,7 @@ export default function Contact() {
             <Button size="lg" className="bg-white text-victory-purple hover:bg-gray-100">
               Schedule Free Consultation
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple">
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6f49ef]">
               Download Case Studies
             </Button>
           </div>
