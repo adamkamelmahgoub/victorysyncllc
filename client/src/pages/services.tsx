@@ -91,7 +91,7 @@ export default function Services() {
             From customer support to sales growth, we provide end-to-end services that help your business thrive while reducing costs by up to 60%.
           </p>
           <Link href="/pricing">
-            <Button size="lg" className="bg-white text-victory-purple hover:bg-gray-100">
+            <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6750f0]">
               View Our Packages
             </Button>
           </Link>
