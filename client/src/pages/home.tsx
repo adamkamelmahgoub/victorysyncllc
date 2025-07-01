@@ -253,7 +253,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button size="lg" className="bg-white text-victory-purple hover:bg-gray-100">
+              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6950f0]">
                 Schedule Demo
               </Button>
             </Link>
