@@ -1,0 +1,116 @@
+Below is a **drop-in prompt** you can paste straight into the **Replit AI Agent** chat.
+It spells out every bug you’re seeing and walks the agent through the fixes so **email+password and all three social log-ins (Google, Facebook, Apple) work end-to-end in production**—no 404s, no “OAuth not configured” errors, no missing pages.
+
+---
+
+### Prompt for Replit AI Agent
+
+**Current state / errors (prod build):**
+
+1. Visiting **`/login`** or **`/signup`** returns **“404 Page Not Found”**.
+2. Calling **`/api/auth/google`**, **`/facebook`**, **`/apple`** returns
+
+   ```json
+   {"error":"<Provider> OAuth not configured. Missing environment variables."}
+   ```
+3. Front-end nav link points to **`/api/login`** (wrong route).
+
+**Goal:** Deliver a **launch-ready** auth system:
+
+* Local JWT sign-up / sign-in (name, email, password).
+* Social OAuth with Google, Facebook, Apple.
+* Front-end pages at `/login` and `/signup` render correctly.
+* All flows work in both `npm run dev` and production (`npm run build && npm start`).
+
+---
+
+#### Detailed Fix List
+
+1. **Front-end routing**
+
+   * Add **`src/app/login/page.tsx`** and `src/app/signup/page.tsx` (or Next.js `/pages/login.tsx` & `/pages/signup.tsx` if you’re on Pages Router) that import the existing AuthForm component.
+   * Replace any nav link that points to `/api/login` with `/login`.
+
+2. **API route / handler**
+
+   * Ensure **POST `/api/auth/login`** and **POST `/api/auth/register`** exist and are exported in production build.
+   * If using Next.js API routes, verify the files land in `build/` (TypeScript compiled).
+
+3. **Passport strategy bootstrap**
+
+   * In `server/auth/passport.ts` (or equivalent) **import and `passport.use()` the three providers *before* route definitions**:
+
+     ```ts
+     passport.use('google', new GoogleStrategy({...}));
+     passport.use('facebook', new FacebookStrategy({...}));
+     passport.use('apple', new AppleStrategy({...}));
+     ```
+   * Export `initializePassport()` and call it in `server/index.ts` **before** `app.use(routes)`.
+
+4. **Environment variables & runtime checks**
+
+   * Update **`.env.example`** with:
+
+     ```
+     JWT_SECRET=
+     GOOGLE_CLIENT_ID=
+     GOOGLE_CLIENT_SECRET=
+     FACEBOOK_APP_ID=
+     FACEBOOK_APP_SECRET=
+     APPLE_CLIENT_ID=
+     APPLE_TEAM_ID=
+     APPLE_KEY_ID=
+     APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+     ```
+   * Modify each provider strategy so if any required ENV var is missing it throws at **server start** (clear stack-trace) instead of returning “not configured” at request time.
+
+5. **Callback routes**
+
+   * Ensure routes match strategy names exactly:
+
+     ```
+     GET /api/auth/google
+     GET /api/auth/google/callback
+     ...
+     ```
+   * After successful passport auth, generate JWT with `createJwt(user)` and redirect to `/dashboard?token=<jwt>`.
+
+6. **Build / run scripts**
+
+   * `package.json` should have
+
+     ```json
+     "build": "tsc -p tsconfig.json",
+     "start": "node build/index.js"
+     ```
+
+     (or `tsup`/`esbuild` if preferred).
+   * Remove `tsx` from the production `start` script.
+
+7. **Automated smoke tests**
+
+   * Inside `scripts/testAuth.mjs` add a tiny fetch test that:
+
+     * Registers a temp user → expects 201
+     * Logs in → expects 200 + token
+     * Calls `/api/auth/me` with token → expects 200
+   * Run this script in `npm run build && npm run testAuth` to verify prod build before deploy.
+
+8. **README note**: Add “## Configure OAuth” with links to Dev console setup and required redirect URIs (`https://<domain>/api/auth/<provider>/callback`).
+
+---
+
+#### Deliverables
+
+* Updated **front-end pages** and nav links.
+* Patched **passport setup** and **auth routes**.
+* Clean **`.env.example`** reflecting all required keys.
+* **package.json** build/start scripts fixed.
+* A brief summary of changed files.
+* All tests pass (`npm run dev` + production build).
+
+**Begin now — auth must pass the smoke tests and render the /login page without 404s.**
+
+---
+
+*(Copy everything above into the Agent and let it work. When it says done, redeploy and retest.)*

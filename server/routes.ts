@@ -57,6 +57,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/register', registerUser);
   app.post('/api/auth/login', loginUser);
   app.get('/api/auth/me', authenticateJWT as any, getCurrentUser);
+  app.post('/api/auth/logout', (req, res) => {
+    // Since we're using JWT tokens, logout is handled client-side
+    // by removing the token from storage
+    res.json({ message: 'Logged out successfully' });
+  });
 
   // OAuth routes with environment variable checks
   

@@ -83,7 +83,10 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => window.location.href = '/api/logout'}
+                  onClick={() => {
+                    localStorage.removeItem('token');
+                    window.location.href = '/';
+                  }}
                 >
                   Sign Out
                 </Button>
