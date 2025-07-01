@@ -180,9 +180,9 @@ export default function TermsOfService() {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-600">
                   <strong>VictorySync</strong><br />
-                  Email: legal@victorysync.com<br />
-                  Phone: 1-800-VICTORY<br />
-                  Address: Millstone, New Jersey, United States
+                  Email: info@victorysync.com<br />
+                  Phone: + (718)-813-2106<br />
+                  Address: 11 Brookside Rd, Millstone, New Jersey, 08510, United States
                 </p>
               </div>
             </section>
