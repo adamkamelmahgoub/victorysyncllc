@@ -15,11 +15,11 @@ export default function Home() {
                 Reduce Customer Service Costs by <span className="text-yellow-300">60%</span>
               </h1>
               <p className="text-xl mb-8 text-purple-100">
-                Professional call center services, AI automation, and marketing solutions from Cairo, Egypt. 24/7 support at a fraction of US costs.
+                Professional call center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/pricing">
-                  <Button size="lg" className="bg-white text-victory-purple hover:bg-gray-100">
+                  <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#5d5df2]">
                     View Pricing
                   </Button>
                 </Link>
@@ -69,8 +69,8 @@ export default function Home() {
               <div className="victory-gray">Client Satisfaction</div>
             </div>
             <div>
-              <div className="text-3xl font-bold victory-purple mb-2">$6.2B</div>
-              <div className="victory-gray">Egypt Digital Exports</div>
+              <div className="text-3xl font-bold victory-purple mb-2">500+</div>
+              <div className="victory-gray">Projects Completed</div>
             </div>
           </div>
         </div>
