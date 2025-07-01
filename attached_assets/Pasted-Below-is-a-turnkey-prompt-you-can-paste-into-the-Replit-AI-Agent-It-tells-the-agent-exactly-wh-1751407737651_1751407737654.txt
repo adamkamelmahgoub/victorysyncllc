@@ -11,7 +11,7 @@ We recently added local JWT auth plus social log-in (Google, Facebook, Apple).
 
 **Current bugs (seen in prod)**
 
-1. Navigating to **`/api/login` or the front-end `/login` page returns a 404**.
+1. Navigating to **`/api/login` or the front-end `/api/login` page returns a 404**.
 2. Hitting **`/api/auth/google|facebook|apple` returns `{ "message": "Unknown authentication strategy \"<provider>\"" }`** — Passport strategies are not wired up in the running build.
 
 ---

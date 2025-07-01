@@ -1,9 +1,9 @@
-import { Link, useLocation } from 'wouter';
-import { ShoppingCart, User, Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useCart } from '@/hooks/useCart';
-import { useAuth } from '@/hooks/useAuth';
-import { useState } from 'react';
+import { Link, useLocation } from "wouter";
+import { ShoppingCart, User, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 
 interface NavigationProps {
   onCartClick: () => void;
@@ -12,17 +12,17 @@ interface NavigationProps {
 export default function Navigation({ onCartClick }: NavigationProps) {
   const [location] = useLocation();
   const { getItemCount } = useCart();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   const cartItemCount = getItemCount();
 
   const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/services', label: 'Services' },
-    { href: '/pricing', label: 'Pricing' },
-    { href: '/about', label: 'About' },
-    { href: '/contact', label: 'Contact' },
+    { href: "/", label: "Home" },
+    { href: "/services", label: "Services" },
+    { href: "/pricing", label: "Pricing" },
+    { href: "/about", label: "About" },
+    { href: "/contact", label: "Contact" },
   ];
 
   return (
@@ -32,15 +32,17 @@ export default function Navigation({ onCartClick }: NavigationProps) {
           {/* Logo */}
           <Link href="/">
             <div className="flex items-center space-x-3 cursor-pointer">
-              <img 
-                src="/vs_favicon_32.png" 
-                alt="VictorySync Logo" 
+              <img
+                src="/vs_favicon_32.png"
+                alt="VictorySync Logo"
                 className="w-8 h-8 rounded-lg"
               />
-              <span className="text-xl brand-font victory-dark">VictorySync</span>
+              <span className="text-xl brand-font victory-dark">
+                VictorySync
+              </span>
             </div>
           </Link>
-          
+
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
@@ -48,8 +50,8 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                 <span
                   className={`font-medium transition-colors cursor-pointer ${
                     location === link.href
-                      ? 'victory-purple'
-                      : 'victory-gray hover:victory-purple'
+                      ? "victory-purple"
+                      : "victory-gray hover:victory-purple"
                   }`}
                 >
                   {link.label}
@@ -57,7 +59,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
               </Link>
             ))}
           </div>
-          
+
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <button
@@ -71,7 +73,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                 </span>
               )}
             </button>
-            
+
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
                 <Link href="/dashboard">
@@ -83,10 +85,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    localStorage.removeItem('token');
-                    window.location.href = '/';
-                  }}
+                  onClick={logout}
                 >
                   Sign Out
                 </Button>
@@ -127,7 +126,11 @@ export default function Navigation({ onCartClick }: NavigationProps) {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 victory-gray hover:victory-purple transition-colors"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
           </div>
         </div>
@@ -141,8 +144,8 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                   <span
                     className={`font-medium transition-colors cursor-pointer block py-2 ${
                       location === link.href
-                        ? 'victory-purple'
-                        : 'victory-gray hover:victory-purple'
+                        ? "victory-purple"
+                        : "victory-gray hover:victory-purple"
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -150,12 +153,16 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                   </span>
                 </Link>
               ))}
-              
+
               <div className="pt-4 border-t border-slate-200">
                 {isAuthenticated ? (
                   <div className="flex flex-col space-y-2">
                     <Link href="/dashboard">
-                      <Button variant="ghost" size="sm" className="w-full justify-start">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start"
+                      >
                         <User className="w-4 h-4 mr-2" />
                         Dashboard
                       </Button>
@@ -164,7 +171,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                       variant="ghost"
                       size="sm"
                       className="w-full justify-start"
-                      onClick={() => window.location.href = '/api/logout'}
+                      onClick={logout}
                     >
                       Sign Out
                     </Button>
@@ -175,14 +182,14 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                       variant="ghost"
                       size="sm"
                       className="w-full justify-start"
-                      onClick={() => window.location.href = '/api/login'}
+                      onClick={() => (window.location.href = "/login")}
                     >
                       Sign In
                     </Button>
                     <Button
                       size="sm"
                       className="bg-victory-purple hover:bg-purple-700 text-white w-full"
-                      onClick={() => window.location.href = '/api/login'}
+                      onClick={() => (window.location.href = "/api/login")}
                     >
                       Get Started
                     </Button>

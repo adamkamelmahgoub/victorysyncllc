@@ -13,7 +13,7 @@ It spells out every bug you’re seeing and walks the agent through the fixes so
    ```json
    {"error":"<Provider> OAuth not configured. Missing environment variables."}
    ```
-3. Front-end nav link points to **`/api/login`** (wrong route).
+3. Front-end nav link points to **`/login`** (wrong route).
 
 **Goal:** Deliver a **launch-ready** auth system:
 

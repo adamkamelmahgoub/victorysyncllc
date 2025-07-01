@@ -6,18 +6,18 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  User, 
-  Package, 
-  Clock, 
-  DollarSign, 
-  Phone, 
-  Mail, 
+import {
+  User,
+  Package,
+  Clock,
+  DollarSign,
+  Phone,
+  Mail,
   Settings,
   BarChart3,
   Calendar,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -34,14 +34,14 @@ export default function CustomerDashboard() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/login";
       }, 500);
       return;
     }
   }, [isAuthenticated, isLoading, toast]);
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
-    queryKey: ['/api/orders'],
+    queryKey: ["/api/orders"],
     enabled: isAuthenticated,
   });
 
@@ -59,24 +59,24 @@ export default function CustomerDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'processing':
-        return 'bg-blue-100 text-blue-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "processing":
+        return "bg-blue-100 text-blue-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case "completed":
         return <CheckCircle className="w-4 h-4" />;
-      case 'processing':
+      case "processing":
         return <Clock className="w-4 h-4" />;
-      case 'pending':
+      case "pending":
         return <AlertCircle className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
@@ -92,12 +92,13 @@ export default function CustomerDashboard() {
             <div>
               <h1 className="text-3xl font-bold victory-dark">Welcome back!</h1>
               <p className="victory-gray">
-                Hello {user?.name || 'there'}, manage your VictorySync services here.
+                Hello {user?.name || "there"}, manage your VictorySync services
+                here.
               </p>
             </div>
-            <Button 
+            <Button
               variant="outline"
-              onClick={() => window.location.href = '/api/logout'}
+              onClick={() => (window.location.href = "/api/logout")}
             >
               Sign Out
             </Button>
@@ -116,7 +117,9 @@ export default function CustomerDashboard() {
                 <div>
                   <p className="text-sm victory-gray">Active Services</p>
                   <p className="text-2xl font-bold victory-dark">
-                    {orders?.filter((order: any) => order.status === 'completed').length || 0}
+                    {orders?.filter(
+                      (order: any) => order.status === "completed",
+                    ).length || 0}
                   </p>
                 </div>
               </div>
@@ -133,9 +136,16 @@ export default function CustomerDashboard() {
                 <div>
                   <p className="text-sm victory-gray">Monthly Spend</p>
                   <p className="text-2xl font-bold victory-dark">
-                    ${orders?.reduce((sum: number, order: any) => 
-                      order.status === 'completed' ? sum + parseFloat(order.total) : sum, 0
-                    )?.toLocaleString() || '0'}
+                    $
+                    {orders
+                      ?.reduce(
+                        (sum: number, order: any) =>
+                          order.status === "completed"
+                            ? sum + parseFloat(order.total)
+                            : sum,
+                        0,
+                      )
+                      ?.toLocaleString() || "0"}
                   </p>
                 </div>
               </div>
@@ -191,11 +201,16 @@ export default function CustomerDashboard() {
                 ) : orders && orders.length > 0 ? (
                   <div className="space-y-4">
                     {orders.slice(0, 5).map((order: any) => (
-                      <div key={order.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                      <div
+                        key={order.id}
+                        className="flex items-center justify-between p-4 border border-slate-200 rounded-lg"
+                      >
                         <div className="flex items-center space-x-3">
                           {getStatusIcon(order.status)}
                           <div>
-                            <p className="font-semibold victory-dark">Order #{order.id}</p>
+                            <p className="font-semibold victory-dark">
+                              Order #{order.id}
+                            </p>
                             <p className="text-sm victory-gray">
                               {new Date(order.createdAt).toLocaleDateString()}
                             </p>
@@ -276,20 +291,22 @@ export default function CustomerDashboard() {
                   </div>
                   <div>
                     <p className="font-semibold victory-dark">
-                      {user?.name || 'User'}
+                      {user?.name || "User"}
                     </p>
                     <p className="text-sm victory-gray flex items-center">
                       <Mail className="w-3 h-3 mr-1" />
-                      {user?.email || 'No email provided'}
+                      {user?.email || "No email provided"}
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="pt-4 border-t border-slate-200">
                   <div className="flex items-center justify-between text-sm">
                     <span className="victory-gray">Member since:</span>
                     <span className="font-medium">
-                      {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                      {user?.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString()
+                        : "N/A"}
                     </span>
                   </div>
                 </div>
@@ -301,7 +318,8 @@ export default function CustomerDashboard() {
               <CardContent className="p-6">
                 <h3 className="font-semibold mb-2">Need Help?</h3>
                 <p className="text-purple-100 text-sm mb-4">
-                  Our support team is available 24/7 to assist you with any questions.
+                  Our support team is available 24/7 to assist you with any
+                  questions.
                 </p>
                 <Link href="/contact">
                   <Button className="bg-white text-victory-purple hover:bg-gray-100 w-full">
