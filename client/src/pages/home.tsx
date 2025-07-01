@@ -24,7 +24,7 @@ export default function Home() {
                   </Button>
                 </Link>
                 <Link href="/contact">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#506bf4]">
                     Schedule Demo
                   </Button>
                 </Link>
