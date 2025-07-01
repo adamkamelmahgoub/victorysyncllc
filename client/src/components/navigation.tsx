@@ -90,20 +90,19 @@ export default function Navigation({ onCartClick }: NavigationProps) {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => window.location.href = '/api/login'}
-                >
-                  Sign In
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-victory-purple hover:bg-purple-700 text-white"
-                  onClick={() => window.location.href = '/api/login'}
-                >
-                  Get Started
-                </Button>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button
+                    size="sm"
+                    className="bg-[#6950f0] hover:bg-[#5d4cdb] text-white"
+                  >
+                    Get Started
+                  </Button>
+                </Link>
               </div>
             )}
           </div>

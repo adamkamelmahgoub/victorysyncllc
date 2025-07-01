@@ -1,11 +1,14 @@
 import {
   users,
+  publicUsers,
   packages,
   orders,
   orderItems,
   contactSubmissions,
   type User,
   type UpsertUser,
+  type PublicUser,
+  type InsertPublicUser,
   type Package,
   type InsertPackage,
   type Order,
@@ -23,6 +26,11 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserStripeInfo(userId: string, customerId: string, subscriptionId?: string): Promise<User>;
+  
+  // Public user operations (for new auth system)
+  createPublicUser(user: InsertPublicUser): Promise<PublicUser>;
+  getPublicUserByEmail(email: string): Promise<PublicUser | undefined>;
+  getPublicUserById(id: number): Promise<PublicUser | undefined>;
   
   // Package operations
   getPackages(): Promise<Package[]>;
@@ -76,6 +84,22 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
+    return user;
+  }
+
+  // Public user operations
+  async createPublicUser(user: InsertPublicUser): Promise<PublicUser> {
+    const [newUser] = await db.insert(publicUsers).values(user).returning();
+    return newUser;
+  }
+
+  async getPublicUserByEmail(email: string): Promise<PublicUser | undefined> {
+    const [user] = await db.select().from(publicUsers).where(eq(publicUsers.email, email));
+    return user;
+  }
+
+  async getPublicUserById(id: number): Promise<PublicUser | undefined> {
+    const [user] = await db.select().from(publicUsers).where(eq(publicUsers.id, id));
     return user;
   }
 

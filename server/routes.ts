@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { registerUser, loginUser, getCurrentUser, authenticateJWT, type AuthenticatedRequest } from "./publicAuth";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
@@ -51,7 +52,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize default packages
   await initializePackages();
 
-  // Auth routes
+  // Public authentication routes (new system)
+  app.post('/api/auth/register', registerUser);
+  app.post('/api/auth/login', loginUser);
+  app.get('/api/auth/me', authenticateJWT as any, getCurrentUser);
+
+  // Replit auth routes (existing system)
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

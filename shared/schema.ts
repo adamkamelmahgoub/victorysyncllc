@@ -38,6 +38,15 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Public users table for the new authentication system
+export const publicUsers = pgTable("public_users", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  email: varchar("email").unique().notNull(),
+  passwordHash: varchar("password_hash").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Service packages
 export const packages = pgTable("packages", {
   id: serial("id").primaryKey(),
@@ -114,6 +123,9 @@ export const packagesRelations = relations(packages, ({ many }) => ({
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
+export type InsertPublicUser = typeof publicUsers.$inferInsert;
+export type PublicUser = typeof publicUsers.$inferSelect;
+
 export type InsertPackage = typeof packages.$inferInsert;
 export type Package = typeof packages.$inferSelect;
 
@@ -142,4 +154,15 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
 export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
   id: true,
   createdAt: true,
+});
+
+export const registerUserSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters").regex(/\d/, "Password must contain at least one number"),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
 });

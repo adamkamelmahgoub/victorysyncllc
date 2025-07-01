@@ -1,0 +1,52 @@
+Below is a copy-and-paste prompt you can drop straight into the **Replit AI Agent** (the chat pane on the left).
+It tells the agent exactly what to build and what constraints to follow.
+
+---
+
+### Prompt for Replit AI Agent
+
+**Context**
+This project is an Express + TypeScript API with whatever front-end you’ve already scaffolded. I now need a public sign-up / sign-in flow that asks for nothing more than:
+
+```
+Full Name
+Email Address
+Password  (8+ chars, at least one number)
+```
+
+**Goals**
+
+1. **Registration page** (`/register` or `/signup`) with the 3 fields above, client-side validation, and a “Create account” button.
+2. **Login page** (`/login`) with email + password.
+3. **Backend routes**
+
+   * `POST /api/auth/register` → body `{name, email, password}`
+
+     * Validate, hash password with bcrypt (10 rounds), store user.
+     * Respond 201 with `{token, user}` (JWT, 30-day expiry).
+   * `POST /api/auth/login` → body `{email, password}`
+
+     * Verify credentials, return same token payload.
+4. **User model / table** should contain `_id`, `name`, `email` (unique), `passwordHash`, `createdAt`.
+
+   * If we’re not using a DB yet, create a simple JSON/lowdb fallback so the flow works locally; wrap it so we can swap in a real DB later.
+5. **Middleware** for protected routes: `authenticateJWT`.
+6. No phone, no username, no CAPTCHA, no OAuth right now—keep it friction-free.
+7. Update `package.json` scripts if you add build steps; keep `npm start` unchanged.
+
+**Implementation preferences**
+
+* Use **TypeScript** everywhere.
+* Hash with **bcrypt**, JWT with **jsonwebtoken**.
+* Error responses: JSON `{error: "message"}` with proper HTTP codes.
+* Front-end: if React exists, build a simple component; otherwise plain HTML form is fine.
+* Keep styling minimal; focus on working auth flow.
+
+**Deliverables**
+
+* Updated backend code in `server/` (routes, models, middleware).
+* Front-end pages/components in `src/` or `public/` as appropriate.
+* Any new env variables (`JWT_SECRET`) documented in `.env.example`.
+* A short note summarising what files were added or changed.
+
+**Begin now.**

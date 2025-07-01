@@ -19,6 +19,8 @@ import About from "@/pages/about";
 import Contact from "@/pages/contact";
 import Checkout from "@/pages/checkout";
 import CustomerDashboard from "@/pages/customer-dashboard";
+import Register from "@/pages/register";
+import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
 // Import Google Fonts
@@ -48,6 +50,10 @@ function Router() {
           <Route path="/contact" component={Contact} />
           <Route path="/checkout" component={Checkout} />
           <Route path="/dashboard" component={CustomerDashboard} />
+          <Route path="/customer-dashboard" component={CustomerDashboard} />
+          <Route path="/register" component={Register} />
+          <Route path="/signup" component={Register} />
+          <Route path="/login" component={Login} />
           <Route component={NotFound} />
         </Switch>
       </main>

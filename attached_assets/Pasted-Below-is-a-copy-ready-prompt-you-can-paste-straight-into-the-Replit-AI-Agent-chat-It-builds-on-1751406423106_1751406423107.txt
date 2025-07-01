@@ -1,0 +1,88 @@
+Below is a copy-ready prompt you can paste straight into the **Replit AI Agent** chat.
+It builds on the email + password flow we just added and layers in OAuth with Google, Facebook, and Apple.
+
+---
+
+### Prompt for Replit AI Agent
+
+**Context**
+Project = Express + TypeScript API that already supports JWT-based sign-up / sign-in.
+I now need social auth with **Google, Facebook, and Apple** so users can click a button and log in without creating a password.
+
+---
+
+#### Goals
+
+1. **Add OAuth providers**
+
+   | Provider | NPM package                                        | Redirect path                 |
+   | -------- | -------------------------------------------------- | ----------------------------- |
+   | Google   | `passport-google-oauth20`                          | `/api/auth/google/callback`   |
+   | Facebook | `passport-facebook`                                | `/api/auth/facebook/callback` |
+   | Apple    | `passport-apple` (or `@intuit/oauth` if preferred) | `/api/auth/apple/callback`    |
+
+2. **Routes & flow**
+
+   * `GET /api/auth/<provider>` → kicks off OAuth flow.
+   * `GET /api/auth/<provider>/callback` → passport callback; issue our **JWT** (same 30-day expiry) and redirect to `/dashboard?token=…`
+   * Optional: `POST /api/auth/<provider>/token` that returns `{token, user}` for SPA use.
+
+3. **User linking logic**
+
+   * If OAuth email already exists in our `users` table, link the new provider to that user.
+   * New email → create user with fields:
+     `{ _id, name, email, provider: "<provider>", providerId, createdAt }`
+   * Skip passwordHash when provider is social.
+
+4. **Middleware & utils**
+
+   * Add `passport.initialize()` to main server.
+   * Factor common `createJwt(user)` helper so local & social login share code.
+   * Store provider IDs in array `socialAccounts` under each user for future unlinking.
+
+5. **Front-end additions**
+
+   * On `/signup` & `/login` pages add three buttons:
+     “Continue with Google / Facebook / Apple”.
+   * Each button hits `/api/auth/<provider>` in a new tab or popup.
+   * After redirect, grab `token` query param and save to `localStorage`, then close popup / redirect to dashboard.
+
+6. **Environment variables** (`.env.example`)
+
+   ```
+   GOOGLE_CLIENT_ID=
+   GOOGLE_CLIENT_SECRET=
+   FACEBOOK_APP_ID=
+   FACEBOOK_APP_SECRET=
+   APPLE_CLIENT_ID=
+   APPLE_TEAM_ID=
+   APPLE_KEY_ID=
+   APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+   JWT_SECRET=
+   ```
+
+7. **Edge cases / errors**
+
+   * Handle “Account already exists with different credential” by returning `{error}` JSON.
+   * Validate Apple identity token’s `aud` and `iss`.
+
+8. **Keep everything in TypeScript.**
+
+   * Put strategies under `server/auth/strategies/`.
+   * Update app entry (`server/index.ts`) to import and register each strategy.
+
+---
+
+#### Deliverables
+
+* Updated `package.json` with Passport & strategies.
+* New files:
+
+  * `server/auth/passport.ts` (aggregates strategies)
+  * `server/auth/strategies/google.ts`, `facebook.ts`, `apple.ts`
+* Modified route file `server/routes/auth.ts`.
+* Front-end button components or simple HTML in `src/pages/auth/`.
+* Updated `.env.example`.
+* One-paragraph summary of what changed.
+
+**Begin now.**
