@@ -21,7 +21,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
     { href: "/", label: "Home" },
     { href: "/services", label: "Services" },
     { href: "/pricing", label: "Pricing" },
-    { href: "#about-us", label: "About", isAnchor: true },
+    { href: "/about-us", label: "About" },
     { href: "/contact", label: "Contact" },
   ];
 
@@ -45,32 +45,19 @@ export default function Navigation({ onCartClick }: NavigationProps) {
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => {
-              if (link.isAnchor) {
-                return (
-                  <a key={link.href} href={link.href}>
-                    <span
-                      className={`font-medium transition-colors cursor-pointer victory-gray hover:victory-purple`}
-                    >
-                      {link.label}
-                    </span>
-                  </a>
-                );
-              }
-              return (
-                <Link key={link.href} href={link.href}>
-                  <span
-                    className={`font-medium transition-colors cursor-pointer ${
-                      location === link.href
-                        ? "victory-purple"
-                        : "victory-gray hover:victory-purple"
-                    }`}
-                  >
-                    {link.label}
-                  </span>
-                </Link>
-              );
-            })}
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href}>
+                <span
+                  className={`font-medium transition-colors cursor-pointer ${
+                    location === link.href
+                      ? "victory-purple"
+                      : "victory-gray hover:victory-purple"
+                  }`}
+                >
+                  {link.label}
+                </span>
+              </Link>
+            ))}
           </div>
 
           {/* Desktop CTA Buttons */}
@@ -152,34 +139,20 @@ export default function Navigation({ onCartClick }: NavigationProps) {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-slate-200">
             <div className="flex flex-col space-y-4">
-              {navLinks.map((link) => {
-                if (link.isAnchor) {
-                  return (
-                    <a key={link.href} href={link.href}>
-                      <span
-                        className={`font-medium transition-colors cursor-pointer block py-2 victory-gray hover:victory-purple`}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {link.label}
-                      </span>
-                    </a>
-                  );
-                }
-                return (
-                  <Link key={link.href} href={link.href}>
-                    <span
-                      className={`font-medium transition-colors cursor-pointer block py-2 ${
-                        location === link.href
-                          ? "victory-purple"
-                          : "victory-gray hover:victory-purple"
-                      }`}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {link.label}
-                    </span>
-                  </Link>
-                );
-              })}
+              {navLinks.map((link) => (
+                <Link key={link.href} href={link.href}>
+                  <span
+                    className={`font-medium transition-colors cursor-pointer block py-2 ${
+                      location === link.href
+                        ? "victory-purple"
+                        : "victory-gray hover:victory-purple"
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </span>
+                </Link>
+              ))}
 
               <div className="pt-4 border-t border-slate-200">
                 {isAuthenticated ? (
