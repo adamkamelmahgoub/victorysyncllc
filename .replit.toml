@@ -1,0 +1,10 @@
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "./start.sh"]
+deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 5000
+externalPort = 80

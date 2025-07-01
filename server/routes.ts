@@ -5,16 +5,46 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
+import { testDatabaseConnection } from "./db";
 
 let stripe: Stripe | null = null;
 
 if (process.env.STRIPE_SECRET_KEY) {
   stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2024-06-20",
+    apiVersion: "2025-05-28.basil",
   });
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint - must be first to avoid being caught by other routes
+  app.get('/health', async (_req, res) => {
+    try {
+      // Test database connection
+      const dbConnected = await testDatabaseConnection();
+      
+      const healthStatus = {
+        status: dbConnected ? 'healthy' : 'unhealthy',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+        port: Number(process.env.PORT || 5000),
+        database: dbConnected ? 'connected' : 'disconnected',
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        version: process.version
+      };
+      
+      const statusCode = dbConnected ? 200 : 503;
+      res.status(statusCode).json(healthStatus);
+    } catch (error) {
+      res.status(503).json({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        error: 'Health check failed',
+        environment: process.env.NODE_ENV || 'development'
+      });
+    }
+  });
+
   // Auth middleware
   await setupAuth(app);
 
@@ -180,8 +210,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 async function initializePackages() {
   try {
+    console.log('📦 Initializing default packages...');
     const existingPackages = await storage.getPackages();
+    console.log(`Found ${existingPackages.length} existing packages`);
+    
     if (existingPackages.length === 0) {
+      console.log('Creating default packages...');
       // Create default packages
       await storage.createPackage({
         name: "Starter",
@@ -223,8 +257,12 @@ async function initializePackages() {
           "Real-time Analytics"
         ],
       });
+      console.log('✅ Default packages created successfully');
+    } else {
+      console.log('✅ Packages already exist, skipping initialization');
     }
   } catch (error) {
-    console.error("Error initializing packages:", error);
+    console.error("❌ Error initializing packages:", error);
+    throw error; // Re-throw to prevent server from starting with invalid state
   }
 }
