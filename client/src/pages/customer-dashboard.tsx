@@ -98,7 +98,11 @@ export default function CustomerDashboard() {
             </div>
             <Button
               variant="outline"
-              onClick={() => (window.location.href = "/api/logout")}
+              onClick={() => {
+                localStorage.removeItem("token");
+                window.location.href = "/login";
+              }}
+
             >
               Sign Out
             </Button>
