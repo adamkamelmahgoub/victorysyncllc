@@ -102,7 +102,16 @@ export default function CustomerDashboard() {
               </p>
             </div>
             <div className="flex justify-end">
-              
+              <Button 
+                onClick={handleLogout}
+                variant="outline"
+                className="border-victory-purple text-victory-purple hover:bg-victory-purple hover:text-white"
+              >
+                Logout
+              </Button>
+            </div>
+          </div>
+        </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
