@@ -243,7 +243,7 @@ export default function Pricing() {
             Join hundreds of businesses that trust VictorySync for their customer engagement needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-victory-purple hover:bg-gray-100">
+            <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6a4def]">
               Schedule Free Demo
             </Button>
             <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple">
