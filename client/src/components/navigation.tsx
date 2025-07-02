@@ -189,7 +189,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     <Button
                       size="sm"
                       className="bg-victory-purple hover:bg-purple-700 text-white w-full"
-                      onClick={() => (window.location.href = "/login")}
+                      onClick={() => (window.location.href = /login")}
                     >
                       Get Started
                     </Button>

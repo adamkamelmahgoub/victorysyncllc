@@ -20,6 +20,13 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Link } from "wouter";
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  window.location.href = "/";
+  window.location.reload(); // Ensures navbar resets login state
+};
+
+
 
 export default function CustomerDashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -96,22 +103,16 @@ export default function CustomerDashboard() {
                 here.
               </p>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => {
-                localStorage.removeItem("token");
-                window.location.href = "/login";
-              }}
-
-            >
-              Sign Out
-            </Button>
+           
           </div>
         </div>
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Active Services */}
+          <Button variant="outline" onClick={handleLogout}>
+            Sign Out
+          </Button>
+{/* Active Services */}
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
