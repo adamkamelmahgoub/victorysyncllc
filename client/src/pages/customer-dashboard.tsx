@@ -98,17 +98,11 @@ export default function CustomerDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold victory-dark">Welcome back!</h1>
-            </div>
-            <div className="flex justify-end">
-              <Button variant="outline" onClick={handleLogout}>
-                Sign Out
-              </Button>
-            </div>
+          <div className="flex justify-end mb-4">
+            <Button variant="outline" onClick={handleLogout}>
+              Sign Out
+            </Button>
           </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
 
 
