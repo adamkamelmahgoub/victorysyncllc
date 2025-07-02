@@ -112,7 +112,9 @@ export default function CustomerDashboard() {
           <Button variant="outline" onClick={handleLogout}>
             Sign Out
           </Button>
-{/* Active Services */}
+
+
+          {/* Active Services */}
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
