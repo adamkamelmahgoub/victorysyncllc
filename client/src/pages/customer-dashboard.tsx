@@ -101,15 +101,7 @@ export default function CustomerDashboard() {
                 Manage your services and track your progress
               </p>
             </div>
-            <div className="flex justify-end">
-              <Button 
-                onClick={handleLogout}
-                variant="outline"
-                className="border-victory-purple text-victory-purple hover:bg-victory-purple hover:text-white"
-              >
-                Logout
-              </Button>
-            </div>
+            
           </div>
         </div>
 
