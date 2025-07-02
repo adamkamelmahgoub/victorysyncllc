@@ -246,7 +246,7 @@ export default function Pricing() {
             <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6a4def]">
               Schedule Free Demo
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple">
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
               Contact Sales
             </Button>
           </div>
