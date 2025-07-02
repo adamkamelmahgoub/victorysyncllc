@@ -158,8 +158,6 @@ export default function Contact() {
                     <div>
                       <h4 className="font-semibold victory-dark">Schedule a Demo</h4>
                       <p className="victory-gray">See our platform in action, just submit a request using this contact form</p>
-                      
-                      </Button>
                     </div>
                   </div>
                 </CardContent>
