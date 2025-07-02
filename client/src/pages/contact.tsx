@@ -295,12 +295,9 @@ export default function Contact() {
           <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
             Ready to reduce costs and improve customer satisfaction? We're here to help make it happen.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex justify-center">
             <Button size="lg" className="bg-white text-victory-purple hover:bg-gray-100">
               Schedule Free Consultation
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6f49ef]">
-              Download Case Studies
             </Button>
           </div>
         </div>
