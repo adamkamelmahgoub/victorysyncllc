@@ -40,10 +40,10 @@ export default function CustomerDashboard() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: orders, isLoading: ordersLoading } = useQuery({
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ["/api/orders"],
     enabled: isAuthenticated,
-  });
+  }) as { data: any[], isLoading: boolean };
 
   if (isLoading) {
     return (
@@ -117,9 +117,9 @@ export default function CustomerDashboard() {
                 <div>
                   <p className="text-sm victory-gray">Active Services</p>
                   <p className="text-2xl font-bold victory-dark">
-                    {orders?.filter(
+                    {Array.isArray(orders) ? orders.filter(
                       (order: any) => order.status === "completed",
-                    ).length || 0}
+                    ).length : 0}
                   </p>
                 </div>
               </div>
@@ -137,15 +137,15 @@ export default function CustomerDashboard() {
                   <p className="text-sm victory-gray">Monthly Spend</p>
                   <p className="text-2xl font-bold victory-dark">
                     $
-                    {orders
-                      ?.reduce(
+                    {Array.isArray(orders) ? orders
+                      .reduce(
                         (sum: number, order: any) =>
                           order.status === "completed"
                             ? sum + parseFloat(order.total)
                             : sum,
                         0,
                       )
-                      ?.toLocaleString() || "0"}
+                      .toLocaleString() : "0"}
                   </p>
                 </div>
               </div>
@@ -198,7 +198,7 @@ export default function CustomerDashboard() {
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
                   </div>
-                ) : orders && orders.length > 0 ? (
+                ) : Array.isArray(orders) && orders.length > 0 ? (
                   <div className="space-y-4">
                     {orders.slice(0, 5).map((order: any) => (
                       <div

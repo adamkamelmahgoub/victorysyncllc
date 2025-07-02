@@ -98,7 +98,7 @@ export default function HelpCenter() {
         faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : faqData[activeCategory] || [];
+    : (faqData as any)[activeCategory] || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -188,7 +188,7 @@ export default function HelpCenter() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {filteredFAQs.map((faq, index) => (
+                  {filteredFAQs.map((faq: any, index: number) => (
                     <div key={index} className="border-b border-gray-200 pb-6 last:border-b-0">
                       <h3 className="text-lg font-semibold text-gray-900 mb-3">{faq.question}</h3>
                       <p className="text-gray-600 leading-relaxed">{faq.answer}</p>

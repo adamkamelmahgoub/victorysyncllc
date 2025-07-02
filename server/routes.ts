@@ -54,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public authentication routes (new system)
   app.post('/api/auth/register', registerUser);
   app.post('/api/auth/login', loginUser);
-  app.get('/api/auth/me', authenticateJWT as any, getCurrentUser);
+  app.get('/api/auth/me', authenticateJWT as any, getCurrentUser as any);
   app.post('/api/auth/logout', (req, res) => {
     // Since we're using JWT tokens, logout is handled client-side
     // by removing the token from storage
@@ -113,7 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stripe payment route for one-time payments
-  app.post("/api/create-payment-intent", authenticateJWT as any, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/create-payment-intent", authenticateJWT as any, async (req: any, res: any) => {
     try {
       if (!stripe) {
         return res.status(503).json({ 
@@ -154,7 +154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Order routes
-  app.post('/api/orders', authenticateJWT as any, async (req: AuthenticatedRequest, res) => {
+  app.post('/api/orders', authenticateJWT as any, async (req: any, res: any) => {
     try {
       const userId = req.user!.id.toString();
       const { items, total, stripePaymentIntentId } = req.body;
@@ -184,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/orders', authenticateJWT as any, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/orders', authenticateJWT as any, async (req: any, res: any) => {
     try {
       const userId = req.user!.id.toString();
       const orders = await storage.getUserOrders(userId);
@@ -195,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/orders/:id', authenticateJWT as any, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/orders/:id', authenticateJWT as any, async (req: any, res: any) => {
     try {
       const orderId = parseInt(req.params.id);
       const userId = req.user!.id.toString();

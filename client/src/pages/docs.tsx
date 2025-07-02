@@ -425,9 +425,9 @@ $ticket = $api->createTicket([
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-lg p-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                {content[activeSection]?.title}
+                {(content as any)[activeSection]?.title}
               </h2>
-              {content[activeSection]?.content}
+              {(content as any)[activeSection]?.content}
             </div>
           </div>
         </div>
