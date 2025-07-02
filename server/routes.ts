@@ -6,6 +6,7 @@ import { registerUser, loginUser, getCurrentUser, authenticateJWT, type Authenti
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
+import { sendEmail } from "./utils/sendEmail";
 
 let stripe: Stripe | null = null;
 
@@ -94,6 +95,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertContactSubmissionSchema.parse(req.body);
       const submission = await storage.createContactSubmission(validatedData);
+      
+      // Send email notification for new contact form submission
+      await sendEmail({
+        subject: "New Contact Form Submission",
+        text: `Name: ${validatedData.firstName} ${validatedData.lastName}\nEmail: ${validatedData.email}\nMessage:\n${validatedData.message}`
+      });
+      
       res.json(submission);
     } catch (error) {
       if (error instanceof z.ZodError) {

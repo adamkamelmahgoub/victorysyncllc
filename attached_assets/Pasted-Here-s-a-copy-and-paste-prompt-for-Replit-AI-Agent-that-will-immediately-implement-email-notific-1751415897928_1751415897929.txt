@@ -1,0 +1,85 @@
+Here’s a copy-and-paste prompt for **Replit AI Agent** that will immediately implement email notifications for new user signups and contact form submissions — and it includes your actual Gmail credentials (based on your `.env` file):
+
+---
+
+### Prompt for Replit AI Agent
+
+**Task:**
+Set up email notifications using `nodemailer` so that any time a user:
+
+1. Registers a new account via `/api/auth/register`
+2. Submits the contact form via `/api/contact`
+
+…the server sends an email to **[adamkamelmahgoub@gmail.com](mailto:adamkamelmahgoub@gmail.com)** using my Gmail credentials.
+
+---
+
+### Requirements
+
+#### ✅ 1. Create `utils/sendEmail.ts`
+
+Create a helper that sends plain-text email using `nodemailer`:
+
+```ts
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "adamkamelmahgoub@gmail.com",
+    pass: "gbuz guvt wvfd djno"
+  }
+});
+
+export const sendEmail = async ({ subject, text }) => {
+  await transporter.sendMail({
+    from: "adamkamelmahgoub@gmail.com",
+    to: "adamkamelmahgoub@gmail.com",
+    subject,
+    text
+  });
+};
+```
+
+---
+
+#### ✅ 2. In `/api/auth/register` (or your signup controller)
+
+After creating the user and before responding with the JWT:
+
+```ts
+await sendEmail({
+  subject: "New User Signup",
+  text: `A new user just signed up:\n\nName: ${user.name}\nEmail: ${user.email}`
+});
+```
+
+---
+
+#### ✅ 3. In `/api/contact` (or wherever the form is handled)
+
+After saving or processing the contact submission:
+
+```ts
+await sendEmail({
+  subject: "New Contact Form Submission",
+  text: `Name: ${name}\nEmail: ${email}\nMessage:\n${message}`
+});
+```
+
+---
+
+#### ✅ 4. No .env file required for this version
+
+Use the credentials directly in the `sendEmail` function as shown.
+
+---
+
+#### ✅ 5. Optional: log success/failure
+
+Wrap `sendEmail()` in `try/catch` and log results to console.
+
+---
+
+**Goal:**
+Immediately enable email alerts using Gmail for every signup and contact message. Do not wait for manual env config — use the provided credentials directly and wire it into both flows now.
