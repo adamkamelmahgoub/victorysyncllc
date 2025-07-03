@@ -29,19 +29,9 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-      build: {
-        outDir: path.resolve(import.meta.dirname, "dist/public"),
-        emptyOutDir: true,
-      },
-
-      // ✅ Replit preview hosts allowed
-      server: {
-        host: true,          // listen on 0.0.0.0
-        port: 5173,          // Vite default
-        allowedHosts: [
-          ".repl.co",        // legacy URLs
-          ".replit.dev"      // new URLs
-        ]
-      },
-      });
-
+    fs: {
+      strict: true,
+      deny: ["**/.*"],
+    },
+  },
+});

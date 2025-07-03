@@ -1,12 +1,3 @@
-// ES Module polyfill for __dirname (needed for vite.config.ts compatibility)
-import { fileURLToPath } from "url";
-import { dirname } from "path";
-
-// Set global __dirname before any imports that might load vite.config.ts
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-globalThis.__dirname = dirname(fileURLToPath(import.meta.url));
-
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -15,16 +6,14 @@ import passport from "./auth/passport";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
-  const requiredEnvVars = ["DATABASE_URL"];
-  const missing = requiredEnvVars.filter((envVar) => !process.env[envVar]);
-
+  const requiredEnvVars = ['DATABASE_URL'];
+  const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
+  
   if (missing.length > 0) {
-    console.error(
-      `❌ Missing required environment variables: ${missing.join(", ")}`,
-    );
+    console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
     process.exit(1);
   }
-
+  
   console.log(`✅ All required environment variables are set`);
 }
 
@@ -68,24 +57,24 @@ app.use((req, res, next) => {
 (async () => {
   try {
     console.log(`🚀 Starting VictorySync application...`);
-    console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    
     // Validate environment variables
     validateEnvironment();
-
+    
     // Test database connection
     const dbConnected = await testDatabaseConnection();
     if (!dbConnected) {
-      throw new Error("Database connection failed - cannot start server");
+      throw new Error('Database connection failed - cannot start server');
     }
-
+    
     const server = await registerRoutes(app);
     console.log(`✅ Routes registered successfully`);
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
-
+      
       console.error(`❌ Application error: ${message}`, err);
       res.status(status).json({ message });
     });
@@ -103,46 +92,44 @@ app.use((req, res, next) => {
       } catch (error) {
         console.error(`❌ Failed to setup static file serving:`, error);
         console.log(`This might happen if the build files are missing.`);
-        console.log(
-          `In production, ensure you run 'npm run build' before starting the server.`,
-        );
+        console.log(`In production, ensure you run 'npm run build' before starting the server.`);
         throw error;
       }
     }
+
+
 
     // ALWAYS serve the app on port 5000
     // this serves both the API and the client.
     // It is the only port that is not firewalled.
     const port = process.env.PORT || 5000;
-    server.listen(
-      {
-        port: Number(port),
-        host: "0.0.0.0",
-        reusePort: true,
-      },
-      () => {
-        console.log(`🎉 VictorySync server is running successfully!`);
-        log(`serving on port ${port}`);
-        console.log(`Health check available at: http://0.0.0.0:5000/health`);
-      },
-    );
+    server.listen({
+      port: Number(port),
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      console.log(`🎉 VictorySync server is running successfully!`);
+      log(`serving on port ${port}`);
+      console.log(`Health check available at: http://0.0.0.0:${port}/health`);
+    });
 
     // Handle graceful shutdown
-    process.on("SIGTERM", () => {
-      console.log("SIGTERM received, shutting down gracefully");
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received, shutting down gracefully');
       server.close(() => {
-        console.log("Server closed");
+        console.log('Server closed');
         process.exit(0);
       });
     });
 
-    process.on("SIGINT", () => {
-      console.log("SIGINT received, shutting down gracefully");
+    process.on('SIGINT', () => {
+      console.log('SIGINT received, shutting down gracefully');
       server.close(() => {
-        console.log("Server closed");
+        console.log('Server closed');
         process.exit(0);
       });
     });
+    
   } catch (error) {
     console.error(`❌ Failed to start server:`, error);
     process.exit(1);
