@@ -123,7 +123,7 @@ app.use((req, res, next) => {
       () => {
         console.log(`🎉 VictorySync server is running successfully!`);
         log(`serving on port ${port}`);
-        console.log(`Health check available at: http://0.0.0.0:${port}/health`);
+        console.log(`Health check available at: http://0.0.0.0:5000/health`);
       },
     );
 

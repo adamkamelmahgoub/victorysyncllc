@@ -1,14 +1,23 @@
 {
   "name": "victorysync",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev:server": "ts-node-dev --respawn --transpile-only --esm server/index.ts",
-    "dev:client": "vite",
-    "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
-    "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    {
+      "scripts": {
+        // one command to start both
+        "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+
+        // Vite front-end
+        "dev:client": "vite",
+
+        // 🔥 backend (adjust path if different!)
+        "dev:server": "ts-node-dev --respawn --transpile-only --esm server/index.ts",
+
+        // production build + start (optional)
+        "build": "vite build && tsc -p tsconfig.json",
+        "start": "node dist/server/index.js"
+      }
+    }
+
     "preview": "vite preview"
   },
   "dependencies": {
