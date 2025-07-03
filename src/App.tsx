@@ -49,7 +49,7 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation onCartClick={openCartModal} />
-      
+
       <main className="flex-1">
         <Switch>
           <Route path="/" component={Home} />
@@ -63,7 +63,7 @@ function Router() {
           <Route path="/register" component={Register} />
           <Route path="/signup" component={Register} />
           <Route path="/login" component={Login} />
-          
+
           {/* Footer Pages */}
           <Route path="/about-us" component={AboutUs} />
           <Route path="/careers" component={Careers} />
@@ -72,17 +72,14 @@ function Router() {
           <Route path="/docs" component={Documentation} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route path="/terms" component={TermsOfService} />
-          
+
           <Route component={NotFound} />
         </Switch>
       </main>
 
       <Footer />
-      
-      <CartModal 
-        isOpen={cartModalOpen} 
-        onClose={closeCartModal} 
-      />
+
+      <CartModal isOpen={cartModalOpen} onClose={closeCartModal} />
     </div>
   );
 }
