@@ -1,11 +1,9 @@
-
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useRouter } from "next/router"; // Use Next.js router
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { registerUserSchema } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,11 +12,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
+import Link from "next/link"; // Use Next.js Link for consistency
 
 type RegisterFormData = z.infer<typeof registerUserSchema>;
 
 export default function Register() {
-  const [, setLocation] = useLocation();
+  const router = useRouter(); // Use Next.js router for navigation
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -31,33 +30,47 @@ export default function Register() {
     },
   });
 
+  // --- THIS IS THE MAIN PART WE ARE CHANGING ---
   const registerMutation = useMutation({
+    // The mutation function now performs two steps
     mutationFn: async (data: RegisterFormData) => {
-      const response = await fetch('/api/auth/register', {
+      // Step 1: Call the user registration API endpoint
+      const registerResponse = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Registration failed');
+
+      if (!registerResponse.ok) {
+        const error = await registerResponse.json();
+        throw new Error(error.message || 'Registration failed');
       }
-      
-      return response.json();
-    },
-    onSuccess: (data) => {
-      // Store the JWT token
-      localStorage.setItem('auth_token', data.token);
-      
-      toast({
-        title: "Account created successfully!",
-        description: "Welcome to VictorySync. You can now access all features.",
+
+      // Step 2: If registration is successful, call the send OTP API endpoint
+      const otpResponse = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: data.email }),
       });
-      
-      // Redirect to dashboard or home
-      setLocation('/customer-dashboard');
+
+      if (!otpResponse.ok) {
+        throw new Error('Registration succeeded, but failed to send verification email.');
+      }
+
+      // Return the user's email to use in the onSuccess callback
+      return { email: data.email };
     },
+    // The onSuccess callback now redirects to the OTP page
+    onSuccess: (data) => {
+      toast({
+        title: "Account created!",
+        description: "We've sent a verification code to your email.",
+      });
+
+      // Redirect to the OTP verification page, passing the email in the URL
+      router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
+    },
+    // The onError callback remains the same
     onError: (error: any) => {
       console.error('Registration error:', error);
       toast({
@@ -83,8 +96,9 @@ export default function Register() {
             Join VictorySync and start saving on customer service costs
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
+          {/* Your form JSX remains exactly the same */}
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
@@ -135,9 +149,9 @@ export default function Register() {
               {form.formState.errors.password && (
                 <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
               )}
-              <p className="text-xs text-gray-500">
-                Password must be at least 8 characters and contain at least one number
-              </p>
+               <p className="text-xs text-gray-500">
+                 Password must be at least 8 characters and contain at least one number
+               </p>
             </div>
 
             {registerMutation.error && (
@@ -157,8 +171,6 @@ export default function Register() {
               {registerMutation.isPending ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
-
-
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
