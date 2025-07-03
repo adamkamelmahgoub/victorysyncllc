@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRouter } from "next/router"; // Use Next.js router
+import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -12,12 +12,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
-import Link from "next/link"; // Use Next.js Link for consistency
+import { Link } from "wouter";
 
 type RegisterFormData = z.infer<typeof registerUserSchema>;
 
 export default function Register() {
-  const router = useRouter(); // Use Next.js router for navigation
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -68,7 +68,7 @@ export default function Register() {
       });
 
       // Redirect to the OTP verification page, passing the email in the URL
-      router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
+      setLocation(`/verify-otp?email=${encodeURIComponent(data.email)}`);
     },
     // The onError callback remains the same
     onError: (error: any) => {

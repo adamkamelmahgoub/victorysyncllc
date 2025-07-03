@@ -1,39 +1,26 @@
 #!/usr/bin/env node
-// Development server wrapper that handles __dirname polyfill for vite.config.ts
+
+// Development server runner that uses tsx to run the TypeScript server
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
 
-// Set up environment
-process.env.NODE_ENV = 'development';
-
-// Create __dirname polyfill
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-globalThis.__dirname = __dirname;
 
-// Start the server with proper Node.js flags
-const serverProcess = spawn('node', [
-  '--import', './dirname-polyfill.mjs',
-  '--import', 'tsx/esm',
-  'server/index.ts'
-], {
+const serverPath = join(__dirname, 'server', 'index.ts');
+
+console.log('Starting development server...');
+
+const serverProcess = spawn('npx', ['tsx', 'watch', serverPath], {
   stdio: 'inherit',
-  env: {
-    ...process.env,
-    NODE_ENV: 'development'
-  }
-});
-
-// Handle graceful shutdown
-process.on('SIGTERM', () => {
-  serverProcess.kill('SIGTERM');
-});
-
-process.on('SIGINT', () => {
-  serverProcess.kill('SIGINT');
+  shell: true
 });
 
 serverProcess.on('close', (code) => {
-  process.exit(code);
+  console.log(`Server process exited with code ${code}`);
+});
+
+serverProcess.on('error', (err) => {
+  console.error('Failed to start server:', err);
 });
