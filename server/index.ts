@@ -1,3 +1,13 @@
+
+// ES Module polyfill for __dirname (needed for vite.config.ts compatibility)
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Set global __dirname before any imports that might load vite.config.ts
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+globalThis.__dirname = dirname(fileURLToPath(import.meta.url));
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
