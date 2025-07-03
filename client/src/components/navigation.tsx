@@ -97,14 +97,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/register">
-                  <Button
-                    size="sm"
-                    className="bg-[#6950f0] hover:bg-[#5d4cdb] text-white"
-                  >
-                    Get Started
-                  </Button>
-                </Link>
+                
               </div>
             )}
           </div>
@@ -186,13 +179,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     >
                       Sign In
                     </Button>
-                    <Button
-                      size="sm"
-                      className="bg-victory-purple hover:bg-purple-700 text-white w-full"
-                      onClick={() => (window.location.href = "/api/login")}
-                    >
-                      Get Started
-                    </Button>
+                    
                   </div>
                 )}
               </div>
