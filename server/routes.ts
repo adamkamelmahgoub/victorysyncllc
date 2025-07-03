@@ -59,18 +59,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public authentication routes (new system)
   app.post('/api/auth/register', registerUser);
   app.post('/api/auth/login', loginUser);
-  import { sendVerificationCode } from "./utils/sendEmail";
-  import crypto from "crypto";
-
-  // inside your registerUser or loginUser handler:
-  const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
-
-  // Save `code` somewhere — e.g., in database along with user, or in a session token
-  await saveUserVerificationCode(user.id, code);
-
-  // Send the code via email:
-  await sendVerificationCode(user.email, code);
- 
   app.get('/api/auth/me', authenticateJWT as any, getCurrentUser as any);
   app.post('/api/auth/logout', (req, res) => {
     // Since we're using JWT tokens, logout is handled client-side
