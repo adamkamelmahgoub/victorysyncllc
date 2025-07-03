@@ -19,10 +19,6 @@ if (process.env.STRIPE_SECRET_KEY) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint - must be first to avoid being caught by other routes
-  app.post("/api/login", passport.authenticate("local", {
-    successRedirect: "/customer-dashboard",
-    failureRedirect: "/login?error=true"
-  }));
   app.get('/health', async (_req, res) => {
     try {
       // Test database connection
@@ -219,8 +215,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add 404 handler for API routes that don't exist
-  app.use('/api/*', (req, res) => {
-    res.status(404).json({ error: 'API endpoint not found' });
+  app.use('/api', (req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      res.status(404).json({ error: 'API endpoint not found' });
+    } else {
+      next();
+    }
   });
 
   const httpServer = createServer(app);
