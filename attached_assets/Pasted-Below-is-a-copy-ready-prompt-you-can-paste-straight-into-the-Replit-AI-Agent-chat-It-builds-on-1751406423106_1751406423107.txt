@@ -84,10 +84,5 @@ I now need social auth with **Google, Facebook, and Apple** so users can click a
 * Front-end button components or simple HTML in `src/pages/auth/`.
 * Updated `.env.example`.
 * One-paragraph summary of what changed.
-import { authenticateJWT } from "../middleware/auth"; // already likely imported
-
-router.get("/auth/me", authenticateJWT, (req, res) => {
-  res.json({ user: req.user });
-});
 
 **Begin now.**

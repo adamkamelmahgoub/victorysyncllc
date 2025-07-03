@@ -1,4 +1,3 @@
-import passport from "./auth/passport";
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
@@ -19,10 +18,6 @@ if (process.env.STRIPE_SECRET_KEY) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint - must be first to avoid being caught by other routes
-  app.post("/api/login", passport.authenticate("local", {
-    successRedirect: "/customer-dashboard",
-    failureRedirect: "/login?error=true"
-  }));
   app.get('/health', async (_req, res) => {
     try {
       // Test database connection

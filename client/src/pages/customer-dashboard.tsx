@@ -21,12 +21,6 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 
-const handleLogout = () => {
-  localStorage.removeItem("token");
-  window.location.href = "/";
-  window.location.reload(); // Ensures navbar resets login state
-};
-
 export default function CustomerDashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
@@ -97,15 +91,21 @@ export default function CustomerDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold victory-dark">Welcome back!</h1>
-              <p className="victory-gray mt-2">
-                Manage your services and track your progress
+              <p className="victory-gray">
+                Hello {user?.name || "there"}, manage your VictorySync services
+                here.
               </p>
             </div>
-            
+            <Button
+              variant="outline"
+              onClick={() => (window.location.href = "/api/logout")}
+            >
+              Sign Out
+            </Button>
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Active Services */}
           <Card>

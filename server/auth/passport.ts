@@ -1,15 +1,9 @@
-import passport from 'passport';
-import { localStrategy } from './strategies/local';
+import passport from "passport";
+import { generateJWT } from "../publicAuth";
 
-passport.use(localStrategy);
-
-// serialize user into session
-passport.serializeUser((user: any, done) => done(null, user.id));
-
-// deserialize user from session
-passport.deserializeUser(async (id, done) => {
-  const user = await findUserById(id);
-  done(null, user);
-});
+// Helper function to create JWT for users
+export const createJWT = (user: any) => {
+  return generateJWT(user);
+};
 
 export default passport;

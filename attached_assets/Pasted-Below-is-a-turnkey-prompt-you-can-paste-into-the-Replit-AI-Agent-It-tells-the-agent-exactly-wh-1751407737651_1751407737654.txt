@@ -81,7 +81,7 @@ We recently added local JWT auth plus social log-in (Google, Facebook, Apple).
 
    * Buttons should open `/api/auth/<provider>` in a popup or redirect.
    * After callback, read the `token` query param and store in `localStorage`.
-   * Fix the `Sign In` nav link to point to `/login`.
+   * Fix the `Sign In` nav link to point to `/login` (not `/api/login`).
 
 7. **Test matrix (make these pass in dev & prod)**
 
