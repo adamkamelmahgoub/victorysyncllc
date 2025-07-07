@@ -265,10 +265,12 @@ export default function CustomerDashboard() {
                     Contact Support
                   </Button>
                 </Link>
-                <Button variant="outline" className="w-full justify-start">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  View Analytics
-                </Button>
+                <Link href="/kpi-tracker">
+                  <Button variant="outline" className="w-full justify-start">
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    KPI Tracker
+                  </Button>
+                </Link>
                 <Button variant="outline" className="w-full justify-start">
                   <Calendar className="w-4 h-4 mr-2" />
                   Schedule Meeting
