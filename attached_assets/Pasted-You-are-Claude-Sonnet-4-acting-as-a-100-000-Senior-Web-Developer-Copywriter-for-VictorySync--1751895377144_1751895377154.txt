@@ -1,0 +1,99 @@
+You are Claude Sonnet 4, acting as a “100 000× Senior Web-Developer & Copywriter” for VictorySync.
+
+\####################################
+
+## TASK
+
+\####################################
+Replace the existing service blurbs in
+`src/pages/services.mdx` (or .tsx) with the expanded copy below.
+Only the text inside each service section changes—headings, components, Tailwind classes, tables remain intact.
+
+\####################################
+
+## NEW COPY (insert verbatim)
+
+#### Inbound Call Center
+
+**24/7 professional support in English and Arabic—your brand’s human voice around the clock**
+
+| Key FeatureWhat it means for you                      |                                                                                                       |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **24/7/365 bilingual agents**                         | Instant, native-level help for English- and Arabic-speaking customers—day, night, weekends, holidays. |
+| **Tier-1 & Tier-2 technical help desk**               | Password resets, troubleshooting, product-use coaching—80 % of tickets resolved before engineering.   |
+| **Secure order processing & billing**                 | PCI-compliant payment capture integrated with Shopify, Stripe, NetSuite.                              |
+| **Omnichannel live chat & email hub**                 | One dashboard for phone, chat, email, WhatsApp—responses < 60 s.                                      |
+| **Intelligent complaint triage & root-cause tagging** | Turns detractors into promoters; feeds QA and product with data-rich reports.                         |
+
+**Benefits**
+
+* 80 % faster response times
+* 25-point CSAT lift
+* Effortless handling of launch- and holiday-spikes
+
+---
+
+#### Outbound Sales & Marketing
+
+**Data-driven outreach that fills your pipeline and books meetings for your reps**
+
+| Key FeatureOutcome                              |                                                          |
+| ----------------------------------------------- | -------------------------------------------------------- |
+| **ICP-targeted lead generation**                | 150 % more qualified leads in 90 days.                   |
+| **Appointment setting & calendar sync**         | AEs start each day with meetings—no chasing.             |
+| **AI-guided cold-call campaigns**               | 32 % connect-to-meeting rate with emotion-aware scripts. |
+| **Sequenced follow-ups (email, LinkedIn, SMS)** | Prospects nurtured until sales-ready.                    |
+| **Market research & NPS surveys**               | Real-world feedback shapes GTM and product roadmap.      |
+
+**Benefits**
+
+* Predictable MRR growth
+* Higher win-rates and larger deal sizes
+* Rapid market-share expansion
+
+---
+
+#### AI Automation
+
+**Smart workflows that cut costs and scale service—no code required**
+
+| Key FeatureImpact                          |                                                                  |
+| ------------------------------------------ | ---------------------------------------------------------------- |
+| **AI chatbots (English & Arabic)**         | Deflect up to 60 % of inquiries; 24/7 instant answers.           |
+| **Robotic process automation (RPA)**       | Automate data entry, invoice reconciliation—40 % OPEX reduction. |
+| **Auto call-summary & sentiment analysis** | Reps leave each call with notes; managers spot churn risk early. |
+| **Predictive analytics dashboards**        | Forecast revenue, staffing, churn with 95 % accuracy.            |
+| **Voice recognition & IVR routing**        | Customers self-serve; agents receive fully contextualized calls. |
+
+**Benefits**
+
+* Handle 60 % more tickets with the same staff
+* Lower error rates—data accuracy up 98 %
+* Payback period < 6 months
+
+---
+
+#### Digital Marketing
+
+**End-to-end growth engine: strategy, creative, execution, analytics**
+
+| Key FeatureResult                                     |                                                                  |
+| ----------------------------------------------------- | ---------------------------------------------------------------- |
+| **Social media management & paid amplification**      | 3× engagement; cost-efficient audience growth.                   |
+| **SEO content clusters & technical fixes**            | Page-one rankings for high-intent keywords.                      |
+| **Automated email nurtures & drip campaigns**         | 38 % open rate; 12 % click-throughs.                             |
+| **PPC & paid social with real-time bid optimization** | Higher ROAS, lower CAC across Google, Meta, LinkedIn.            |
+| **GA4 / Looker Studio dashboards**                    | Clear ROI attribution; marketing spend tied directly to revenue. |
+
+**Benefits**
+
+* Larger qualified-lead pipeline
+* Brand visibility in new markets
+* Marketing dollars tracked to every sale
+
+## DELIVERABLE
+
+\####################################
+Return ONE file-patch diff for the Services page.
+
+### Output format (strict):
