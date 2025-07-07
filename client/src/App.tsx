@@ -10,6 +10,7 @@ import { useState, lazy } from "react";
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 import CartModal from "@/components/cart-modal";
+import ScrollToTop from "@/components/ScrollToTop";
 
 // Pages
 import Home from "@/pages/home";
@@ -48,6 +49,7 @@ function Router() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
       <Navigation onCartClick={openCartModal} />
 
       <main className="flex-1">
