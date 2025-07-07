@@ -1,7 +1,3 @@
-The service descriptions and outbound sales service content in the Services component have been updated with more detailed and professional copy.
-```
-
-```replit_final_file
 import { Phone, Megaphone, Bot, BarChart3, Check, ArrowRight, Users, Zap, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
