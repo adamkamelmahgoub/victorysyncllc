@@ -203,8 +203,7 @@ export default function CustomerDashboard() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Recent Orders */}
-            <div className="lg:col-span-2"></div>
-        )}
+            <div className="lg:col-span-2">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -352,6 +351,7 @@ export default function CustomerDashboard() {
               </CardContent>
             </Card>
           </div>
+            </div>
         )}
       </div>
     </div>

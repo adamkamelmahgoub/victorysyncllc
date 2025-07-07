@@ -88,7 +88,7 @@ export default function KPITracker() {
     return growth >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />;
   };
 
-  const { data: businesses = [], isLoading, error } = useQuery({
+  const { data: businesses = [], isLoading: businessesLoading, error } = useQuery({
     queryKey: ["/api/businesses"],
     enabled: isAuthenticated,
     queryFn: async () => {
