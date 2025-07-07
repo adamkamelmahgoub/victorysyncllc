@@ -9,8 +9,8 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center space-x-3 mb-6">
               <img 
-                src="/logo.png" 
-                alt="VictorySync Logo" 
+                src="/logo.png?v=3" 
+                alt="VictorySync logo" 
                 className="h-8 w-auto"
               />
               <span className="text-xl brand-font">VictorySync</span>

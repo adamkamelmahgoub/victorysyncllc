@@ -31,7 +31,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3">
-            <img src="/logo.png" alt="VictorySync" className="h-8 w-auto" />
+            <img src="/logo.png?v=3" alt="VictorySync logo" className="h-8 w-auto" />
             <span className="text-xl brand-font">VictorySync</span>
           </Link>
 
