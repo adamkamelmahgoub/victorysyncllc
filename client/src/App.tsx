@@ -43,34 +43,7 @@ import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "@fontsource/inter/800.css";
 
-// Error Boundary Component
-function ErrorBoundary({ children }) {
-  const [hasError, setHasError] = useState(false);
-
-  useEffect(() => {
-    const errorHandler = (error, errorInfo) => {
-      console.error("Caught an error: ", error, errorInfo);
-      setHasError(true);
-    };
-
-    window.addEventListener('error', errorHandler);
-
-    return () => {
-      window.removeEventListener('error', errorHandler);
-    };
-  }, []);
-
-
-  if (hasError) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <h1 className="text-red-500 text-2xl">Oops! Something went wrong.</h1>
-      </div>
-    );
-  }
-
-  return children;
-}
+// Simplified app wrapper without error boundary overhead
 
 
 const Router = memo(function Router() {
@@ -139,16 +112,14 @@ function App() {
   }, []);
 
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <CartProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </CartProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <CartProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </CartProvider>
+    </QueryClientProvider>
   );
 }
 

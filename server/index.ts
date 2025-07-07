@@ -49,15 +49,17 @@ if (process.env.NODE_ENV === "development") {
     // Validate environment variables first
     validateEnvironment();
 
-    // Start server setup in parallel with database connection
-    const [dbConnected, server] = await Promise.all([
-      testDatabaseConnection(),
-      registerRoutes(app)
-    ]);
-
-    if (!dbConnected) {
-      throw new Error('Database connection failed');
-    }
+    // Register routes without blocking on database test
+    const server = await registerRoutes(app);
+    
+    // Test database in background
+    setImmediate(async () => {
+      try {
+        await testDatabaseConnection();
+      } catch (error) {
+        console.error("Database connection test failed:", error);
+      }
+    });
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;

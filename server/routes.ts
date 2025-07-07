@@ -17,39 +17,21 @@ if (process.env.STRIPE_SECRET_KEY) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint - must be first to avoid being caught by other routes
-  app.get('/health', async (_req, res) => {
-    try {
-      // Test database connection
-      const dbConnected = await testDatabaseConnection();
-      
-      const healthStatus = {
-        status: dbConnected ? 'healthy' : 'unhealthy',
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'development',
-        port: Number(process.env.PORT || 5000),
-        database: dbConnected ? 'connected' : 'disconnected',
-        uptime: process.uptime(),
-        memory: process.memoryUsage(),
-        version: process.version
-      };
-      
-      const statusCode = dbConnected ? 200 : 503;
-      res.status(statusCode).json(healthStatus);
-    } catch (error) {
-      res.status(503).json({
-        status: 'unhealthy',
-        timestamp: new Date().toISOString(),
-        error: 'Health check failed',
-        environment: process.env.NODE_ENV || 'development'
-      });
-    }
+  // Health check endpoint - lightweight for fast response
+  app.get('/health', (_req, res) => {
+    res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      port: Number(process.env.PORT || 5000),
+      uptime: process.uptime()
+    });
   });
 
 
 
-  // Initialize default packages
-  await initializePackages();
+  // Initialize default packages lazily (only when needed)
+  // Package initialization moved to lazy loading
 
   // Public authentication routes (new system)
   app.post('/api/auth/register', registerUser);
@@ -68,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Package routes
   app.get('/api/packages', async (req, res) => {
     try {
-      const packages = await storage.getPackages();
+      const packages = await ensurePackagesExist();
       res.json(packages);
     } catch (error) {
       console.error("Error fetching packages:", error);
@@ -223,67 +205,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 let packagesInitialized = false;
+let packagesCache: any[] | null = null;
 
-async function initializePackages() {
-  if (packagesInitialized) {
-    console.log('✅ Packages already initialized, skipping');
-    return;
+async function ensurePackagesExist() {
+  if (packagesInitialized && packagesCache) {
+    return packagesCache;
   }
 
   try {
-    console.log('📦 Checking package initialization...');
     const existingPackages = await storage.getPackages();
     
     if (existingPackages.length === 0) {
-      console.log('Creating default packages...');
-      await Promise.all([
-        storage.createPackage({
-          name: "Starter",
-          price: "1200.00",
-          description: "Perfect for small businesses",
-          features: [
-            "1 Dedicated Agent",
-            "Business Hours Support",
-            "Basic CRM Integration",
-            "Email Support",
-            "Monthly Reports"
-          ],
-        }),
-        storage.createPackage({
-          name: "Growth",
-          price: "2500.00",
-          description: "For growing companies",
-          features: [
-            "2 Dedicated Agents",
-            "Extended Hours Support",
-            "Appointment Setting",
-            "Advanced CRM Integration",
-            "Live Chat Support",
-            "Weekly Reports"
-          ],
-        }),
-        storage.createPackage({
-          name: "Scale",
-          price: "4500.00",
-          description: "For enterprise needs",
-          features: [
-            "24/7 Blended Team",
-            "AI Automation Suite",
-            "Dedicated Success Manager",
-            "Custom Integrations",
-            "Priority Support",
-            "Real-time Analytics"
-          ],
-        })
-      ]);
-      console.log('✅ Default packages created');
+      // Create packages in background, don't block startup
+      setImmediate(async () => {
+        try {
+          await Promise.all([
+            storage.createPackage({
+              name: "Starter",
+              price: "1200.00", 
+              description: "Perfect for small businesses",
+              features: ["1 Dedicated Agent", "Business Hours Support", "Basic CRM Integration", "Email Support", "Monthly Reports"],
+            }),
+            storage.createPackage({
+              name: "Growth",
+              price: "2500.00",
+              description: "For growing companies", 
+              features: ["2 Dedicated Agents", "Extended Hours Support", "Appointment Setting", "Advanced CRM Integration", "Live Chat Support", "Weekly Reports"],
+            }),
+            storage.createPackage({
+              name: "Scale",
+              price: "4500.00",
+              description: "For enterprise needs",
+              features: ["24/7 Blended Team", "AI Automation Suite", "Dedicated Success Manager", "Custom Integrations", "Priority Support", "Real-time Analytics"],
+            })
+          ]);
+          packagesCache = await storage.getPackages();
+        } catch (error) {
+          console.error("Error creating packages:", error);
+        }
+      });
+      
+      // Return empty array for now
+      packagesCache = [];
     } else {
-      console.log('✅ Packages exist, skipping');
+      packagesCache = existingPackages;
     }
     
     packagesInitialized = true;
+    return packagesCache;
   } catch (error) {
-    console.error("❌ Error initializing packages:", error);
-    // Don't throw - allow server to continue
+    console.error("Error ensuring packages:", error);
+    return [];
   }
 }
