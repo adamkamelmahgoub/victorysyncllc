@@ -1,10 +1,10 @@
+import { Link } from "wouter";
 import { Check, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/hooks/useCart';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
-
 export default function Pricing() {
   const { addItem } = useCart();
 
@@ -29,7 +29,7 @@ export default function Pricing() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div></div> className="min-h-screen">
       {/* Hero Section */}
       <section className="gradient-victory py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -243,15 +243,16 @@ export default function Pricing() {
             Join hundreds of businesses that trust VictorySync for their customer engagement needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6a4def]">
-              Schedule Free Demo
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
-              Contact Sales
-            </Button>
+            <Link href="/contact">
+              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#f6a4df]">
+                Schedule Free Demo
+              </Button>
+            </Link>
+            <Link href="/contact">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
+                Contact Sales
+              </Button>
+            </Link>
           </div>
         </div>
-      </section>
-    </div>
-  );
-}
+
