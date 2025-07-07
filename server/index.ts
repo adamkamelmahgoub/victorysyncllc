@@ -26,93 +26,67 @@ app.use(express.urlencoded({ extended: false }));
 // Initialize Passport
 app.use(passport.initialize());
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
+// Simplified request logging for development
+if (process.env.NODE_ENV === "development") {
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api")) {
+      const start = Date.now();
+      res.on("finish", () => {
+        const duration = Date.now() - start;
+        if (duration > 100) { // Only log slow requests
+          console.log(`${req.method} ${req.path} ${res.statusCode} ${duration}ms`);
+        }
+      });
     }
+    next();
   });
-
-  next();
-});
+}
 
 (async () => {
   try {
-    console.log(`🚀 Starting VictorySync application...`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🚀 Starting VictorySync...`);
 
-    // Validate environment variables
+    // Validate environment variables first
     validateEnvironment();
 
-    // Test database connection
-    const dbConnected = await testDatabaseConnection();
-    if (!dbConnected) {
-      throw new Error('Database connection failed - cannot start server');
-    }
+    // Start server setup in parallel with database connection
+    const [dbConnected, server] = await Promise.all([
+      testDatabaseConnection(),
+      registerRoutes(app)
+    ]);
 
-    const server = await registerRoutes(app);
-    console.log(`✅ Routes registered successfully`);
+    if (!dbConnected) {
+      throw new Error('Database connection failed');
+    }
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
-
-      console.error(`❌ Application error: ${message}`, err);
+      console.error(`❌ ${message}`);
       res.status(status).json({ message });
     });
 
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
+    // Setup vite/static serving
     if (app.get("env") === "development") {
       await setupVite(app, server);
-      console.log(`✅ Vite development server setup complete`);
     } else {
       try {
         serveStatic(app);
-        console.log(`✅ Static file serving setup complete`);
       } catch (error) {
-        console.error(`❌ Failed to setup static file serving:`, error);
-        console.log(`This might happen if the build files are missing.`);
-        console.log(`In production, ensure you run 'npm run build' before starting the server.`);
+        console.error(`❌ Static files missing - run 'npm run build'`);
         throw error;
       }
     }
 
 
 
-    // ALWAYS serve the app on port 5000
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
     const port = process.env.PORT || 5000;
     server.listen({
       port: Number(port),
       host: "0.0.0.0",
       reusePort: true,
     }, () => {
-      console.log(`🎉 VictorySync server is running successfully!`);
-      log(`serving on port ${port}`);
-      console.log(`Health check available at: http://0.0.0.0:${port}/health`);
+      console.log(`🎉 VictorySync ready on port ${port}`);
     });
 
     // Handle graceful shutdown

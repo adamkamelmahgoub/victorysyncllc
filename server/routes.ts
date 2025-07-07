@@ -222,61 +222,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
+let packagesInitialized = false;
+
 async function initializePackages() {
+  if (packagesInitialized) {
+    console.log('✅ Packages already initialized, skipping');
+    return;
+  }
+
   try {
-    console.log('📦 Initializing default packages...');
+    console.log('📦 Checking package initialization...');
     const existingPackages = await storage.getPackages();
-    console.log(`Found ${existingPackages.length} existing packages`);
     
     if (existingPackages.length === 0) {
       console.log('Creating default packages...');
-      // Create default packages
-      await storage.createPackage({
-        name: "Starter",
-        price: "1200.00",
-        description: "Perfect for small businesses",
-        features: [
-          "1 Dedicated Agent",
-          "Business Hours Support",
-          "Basic CRM Integration",
-          "Email Support",
-          "Monthly Reports"
-        ],
-      });
-
-      await storage.createPackage({
-        name: "Growth",
-        price: "2500.00",
-        description: "For growing companies",
-        features: [
-          "2 Dedicated Agents",
-          "Extended Hours Support",
-          "Appointment Setting",
-          "Advanced CRM Integration",
-          "Live Chat Support",
-          "Weekly Reports"
-        ],
-      });
-
-      await storage.createPackage({
-        name: "Scale",
-        price: "4500.00",
-        description: "For enterprise needs",
-        features: [
-          "24/7 Blended Team",
-          "AI Automation Suite",
-          "Dedicated Success Manager",
-          "Custom Integrations",
-          "Priority Support",
-          "Real-time Analytics"
-        ],
-      });
-      console.log('✅ Default packages created successfully');
+      await Promise.all([
+        storage.createPackage({
+          name: "Starter",
+          price: "1200.00",
+          description: "Perfect for small businesses",
+          features: [
+            "1 Dedicated Agent",
+            "Business Hours Support",
+            "Basic CRM Integration",
+            "Email Support",
+            "Monthly Reports"
+          ],
+        }),
+        storage.createPackage({
+          name: "Growth",
+          price: "2500.00",
+          description: "For growing companies",
+          features: [
+            "2 Dedicated Agents",
+            "Extended Hours Support",
+            "Appointment Setting",
+            "Advanced CRM Integration",
+            "Live Chat Support",
+            "Weekly Reports"
+          ],
+        }),
+        storage.createPackage({
+          name: "Scale",
+          price: "4500.00",
+          description: "For enterprise needs",
+          features: [
+            "24/7 Blended Team",
+            "AI Automation Suite",
+            "Dedicated Success Manager",
+            "Custom Integrations",
+            "Priority Support",
+            "Real-time Analytics"
+          ],
+        })
+      ]);
+      console.log('✅ Default packages created');
     } else {
-      console.log('✅ Packages already exist, skipping initialization');
+      console.log('✅ Packages exist, skipping');
     }
+    
+    packagesInitialized = true;
   } catch (error) {
     console.error("❌ Error initializing packages:", error);
-    throw error; // Re-throw to prevent server from starting with invalid state
+    // Don't throw - allow server to continue
   }
 }
