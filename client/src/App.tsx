@@ -58,6 +58,7 @@ function Router() {
           <Route path="/about" component={About} />
           <Route path="/contact" component={Contact} />
           <Route path="/checkout" component={Checkout} />
+          <Route path="/dashboard" component={CustomerDashboard} />
           <Route path="/customer-dashboard" component={CustomerDashboard} />
           <Route path="/register" component={Register} />
           <Route path="/signup" component={Register} />

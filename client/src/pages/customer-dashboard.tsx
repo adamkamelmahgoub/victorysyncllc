@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import KpiTracker from "./kpi-tracker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,7 @@ import { Link } from "wouter";
 export default function CustomerDashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -90,10 +92,23 @@ export default function CustomerDashboard() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold victory-dark">Welcome back!</h1>
+              {activeTab === 'kpi-tracker' && (
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setActiveTab('overview')}
+                  className="mb-2"
+                >
+                  ← Back to Dashboard
+                </Button>
+              )}
+              <h1 className="text-3xl font-bold victory-dark">
+                {activeTab === 'kpi-tracker' ? 'KPI Tracker' : 'Welcome back!'}
+              </h1>
               <p className="victory-gray">
-                Hello {user?.name || "there"}, manage your VictorySync services
-                here.
+                {activeTab === 'kpi-tracker' 
+                  ? 'Monitor your business metrics and performance indicators'
+                  : `Hello ${user?.name || "there"}, manage your VictorySync services here.`
+                }
               </p>
             </div>
             <Button
@@ -183,9 +198,13 @@ export default function CustomerDashboard() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Orders */}
-          <div className="lg:col-span-2">
+        {activeTab === 'kpi-tracker' ? (
+          <KpiTracker />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Recent Orders */}
+            <div className="lg:col-span-2"></div>
+        )}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -265,12 +284,14 @@ export default function CustomerDashboard() {
                     Contact Support
                   </Button>
                 </Link>
-                <Link href="/kpi-tracker">
-                  <Button variant="outline" className="w-full justify-start">
-                    <BarChart3 className="w-4 h-4 mr-2" />
-                    KPI Tracker
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => setActiveTab('kpi-tracker')}
+                >
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  KPI Tracker
+                </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <Calendar className="w-4 h-4 mr-2" />
                   Schedule Meeting
@@ -331,7 +352,7 @@ export default function CustomerDashboard() {
               </CardContent>
             </Card>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
