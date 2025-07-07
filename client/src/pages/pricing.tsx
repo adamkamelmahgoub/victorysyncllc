@@ -29,7 +29,7 @@ export default function Pricing() {
   };
 
   return (
-    <div></div> className="min-h-screen">
+    <div className="min-h-screen">
       {/* Hero Section */}
       <section className="gradient-victory py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -255,4 +255,8 @@ export default function Pricing() {
             </Link>
           </div>
         </div>
+      </section>
+    </div>
+  );
+}
 
