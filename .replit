@@ -11,7 +11,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Preview"
+runButton = "Start application"
 
 [[workflows.workflow]]
 name = "Project"
@@ -43,15 +43,6 @@ args = "npm run dev:server"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev:client"
-
-[[workflows.workflow]]
-name = "Preview"
-author = 44496704
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run preview"
 
 [[ports]]
 localPort = 5000
