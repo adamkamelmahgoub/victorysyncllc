@@ -19,12 +19,12 @@ export default function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/pricing">
-                  <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#5d5df2]">
+                  <Button size="lg">
                     View Pricing
                   </Button>
                 </Link>
                 <Link href="/contact">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#506bf4]">
+                  <Button size="lg" variant="outline" className="text-white hover:bg-white hover:text-victory-purple">
                     Schedule Demo
                   </Button>
                 </Link>
@@ -253,12 +253,12 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6950f0]">
+              <Button size="lg">
                 Schedule Demo
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
+              <Button size="lg" variant="outline" className="text-white hover:bg-white hover:text-victory-purple">
                 View Pricing
               </Button>
             </Link>
