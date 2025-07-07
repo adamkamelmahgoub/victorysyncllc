@@ -10,8 +10,8 @@ export default function Footer() {
             <div className="flex items-center space-x-3 mb-6">
               <img 
                 src="/logo.png" 
-                alt="VictorySync logo" 
-                className="h-6 w-auto"
+                alt="VictorySync Logo" 
+                className="w-8 h-8 rounded-lg bg-white p-1"
               />
               <span className="text-xl brand-font">VictorySync</span>
             </div>

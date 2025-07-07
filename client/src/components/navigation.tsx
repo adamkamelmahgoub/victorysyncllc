@@ -34,8 +34,8 @@ export default function Navigation({ onCartClick }: NavigationProps) {
             <div className="flex items-center space-x-3 cursor-pointer">
               <img
                 src="/logo.png"
-                alt="VictorySync logo"
-                className="h-8 w-auto"
+                alt="VictorySync Logo"
+                className="w-8 h-8 rounded-lg"
               />
               <span className="text-xl brand-font victory-dark">
                 VictorySync
