@@ -30,17 +30,9 @@ export default function Navigation({ onCartClick }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/">
-            <div className="flex items-center space-x-3 cursor-pointer">
-              <img
-                src="/logo.png"
-                alt="VictorySync Logo"
-                className="h-8 w-auto"
-              />
-              <span className="text-xl brand-font victory-dark">
-                VictorySync
-              </span>
-            </div>
+          <Link href="/" className="flex items-center space-x-3">
+            <img src="/logo.png" alt="VictorySync" className="h-8 w-auto" />
+            <span className="text-xl brand-font">VictorySync</span>
           </Link>
 
           {/* Desktop Navigation Links */}

@@ -11,7 +11,7 @@ export default function Footer() {
               <img 
                 src="/logo.png" 
                 alt="VictorySync Logo" 
-                className="h-6 w-auto"
+                className="h-8 w-auto"
               />
               <span className="text-xl brand-font">VictorySync</span>
             </div>
