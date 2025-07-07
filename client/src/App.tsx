@@ -59,7 +59,6 @@ function Router() {
           <Route path="/contact" component={Contact} />
           <Route path="/checkout" component={Checkout} />
           <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/kpi-tracker" component={lazy(() => import("./pages/kpi-tracker"))} />
           <Route path="/contact" component={Contact} />
           <Route path="/register" component={Register} />
           <Route path="/signup" component={Register} />
