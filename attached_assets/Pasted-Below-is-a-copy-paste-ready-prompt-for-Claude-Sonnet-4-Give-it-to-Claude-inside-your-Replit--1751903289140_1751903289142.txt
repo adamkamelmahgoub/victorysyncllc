@@ -1,0 +1,137 @@
+Below is a **“copy-paste-ready” prompt** for Claude Sonnet 4.
+Give it to Claude inside your Replit chat; it tells him to:
+
+* **Pre-build once, then serve instantly** (`npm run build` → cache → `npm run preview`)
+* Create a lightweight Koa/Express static server that starts in ≈ 0.2 s
+* Add a *Run* script so the Replit preview appears without waiting for Vite to compile every time
+* Keep hot-reload available with `npm run dev` for local edits.
+
+---
+
+````
+You are Claude Sonnet 4 (100 000 × Senior Node + Vite Engineer) working in my VictorySync Replit.
+
+#######################################################################
+# PAIN POINT
+#######################################################################
+The preview takes 10-15 s to appear because Vite rebuilds on every
+“Run”. I want the app to show **instantly** (≤1 s) when I press Run.
+
+#######################################################################
+# OBJECTIVES
+#######################################################################
+1. **One-time production build on first Nix/CI install**
+   • `npm run build` → outputs `client/dist` (hashed, minified).
+
+2. **Ultra-fast server**  
+   • Create `server/static.ts`
+     ```ts
+     import express from 'express';
+     import path from 'path';
+     const app = express();
+     app.use(express.static(path.join(__dirname, '../client/dist')));
+     app.get('*', (_, res) =>
+       res.sendFile(path.join(__dirname, '../client/dist/index.html'))
+     );
+     app.listen(process.env.PORT || 3000, () =>
+       console.log('Static server ready')
+     );
+     ```
+   • Compiles to JS via ts-node/register at runtime (no build step).
+
+3. **New scripts in root `package.json`**
+   ```json
+   "scripts": {
+     "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
+     "dev:client": "vite --clearScreen=false",
+     "dev:server": "ts-node server/index.ts",
+     "build": "vite build",
+     "preview": "node server/static.ts"
+   }
+````
+
+4. **`.replit`**
+
+   ```
+   run = "npm run preview"
+   ```
+
+5. **Nix optimisation**
+   • Add `nodejs-20` & `yarn` to `replit.nix`.
+   • Cache `node_modules` between runs (Replit does this automatically).
+
+6. **README snippet** explaining:
+   *Press ▶ Run → app starts instantly from pre-built assets.
+   For dev hot-reload use `npm run dev` in shell.*
+
+\#######################################################################
+
+# DELIVERABLES
+
+\#######################################################################
+Return only file-patch diffs + instructions.
+
+### Output format (strict)
+
+````
+### package.json
+```diff
+@@
+   "scripts": {
+-    "dev": "vite",
++    "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
++    "dev:client": "vite --clearScreen=false",
++    "dev:server": "ts-node server/index.ts",
+-    "start": "vite preview",
++    "build": "vite build",
++    "preview": "node server/static.ts"
+   },
+   "dependencies": {
+     …
+   }
+````
+
+### server/static.ts   (NEW)
+
+```ts
+<full file here>
+```
+
+### .replit
+
+```diff
+-run = "npm run dev"
++run = "npm run preview"
+```
+
+### replit.nix
+
+```diff
+-  pkgs.nodejs_18
++  pkgs.nodejs_20
++  pkgs.yarn
+```
+
+### Test steps
+
+1. Run **“Rebuild”** once → `npm ci && npm run build`.
+2. Press ▶ Run → white screen gone; HTML served in < 1 s.
+3. Verify `/api` proxy still works (if backend endpoints exist).
+4. For live coding: `npm run dev` in shell → Vite hot-reload resumes.
+
+\#######################################################################
+
+# NOTES
+
+\#######################################################################
+
+* Keep hot-reload/HMR config untouched.
+* Do **not** remove Vite; just serve the static build for preview.
+* Express chosen over ‘serve’ to stay in-repo & configurable.
+
+```
+
+---
+
+Paste everything (from the first triple back-ticks to the last) into Claude’s chat, apply the diffs he returns, then click **Run** – the preview should appear almost instantly.
+```
