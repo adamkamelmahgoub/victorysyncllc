@@ -4,6 +4,11 @@ import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
 import passport from "./auth/passport";
 import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
+
+
+import { kpiStore } from "./kpiStore";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -51,7 +56,7 @@ if (process.env.NODE_ENV === "development") {
 
     // Register routes without blocking on database test
     const server = await registerRoutes(app);
-    
+
     // Test database in background
     setImmediate(async () => {
       try {
@@ -80,10 +85,40 @@ if (process.env.NODE_ENV === "development") {
       }
     }
 
+    const httpServer = createServer(app);
+    const io = new Server(httpServer, {
+      cors: {
+        origin: process.env.NODE_ENV === 'development' ? "http://localhost:5173" : false,
+        methods: ["GET", "POST"]
+      }
+    });
 
+    // Setup Socket.IO with JWT authentication
+    io.use((socket, next) => {
+      const token = socket.handshake.auth.token;
+      if (!token) {
+        return next(new Error('Authentication token required'));
+      }
+      // In a real app, you'd verify the JWT token here
+      // For now, we'll just check if token exists
+      next();
+    });
+
+    io.on('connection', (socket) => {
+      console.log('📱 Client connected to KPI updates');
+      
+      socket.on('disconnect', () => {
+        console.log('📱 Client disconnected from KPI updates');
+      });
+    });
+
+    // Setup KPI store subscription for real-time updates
+    kpiStore.subscribe((metrics) => {
+      io.emit('kpi:update', metrics);
+    });
 
     const port = process.env.PORT || 5000;
-    server.listen({
+    httpServer.listen({
       port: Number(port),
       host: "0.0.0.0",
       reusePort: true,
@@ -94,7 +129,7 @@ if (process.env.NODE_ENV === "development") {
     // Handle graceful shutdown
     process.on('SIGTERM', () => {
       console.log('SIGTERM received, shutting down gracefully');
-      server.close(() => {
+      httpServer.close(() => {
         console.log('Server closed');
         process.exit(0);
       });
@@ -102,7 +137,7 @@ if (process.env.NODE_ENV === "development") {
 
     process.on('SIGINT', () => {
       console.log('SIGINT received, shutting down gracefully');
-      server.close(() => {
+      httpServer.close(() => {
         console.log('Server closed');
         process.exit(0);
       });

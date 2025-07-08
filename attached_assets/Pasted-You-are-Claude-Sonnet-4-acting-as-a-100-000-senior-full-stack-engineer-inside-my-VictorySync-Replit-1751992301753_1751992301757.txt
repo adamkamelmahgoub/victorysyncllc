@@ -1,0 +1,51 @@
+You are Claude Sonnet 4 acting as a 100 000× senior full-stack engineer inside my VictorySync Replit.
+
+#################################################################
+# GOAL
+#################################################################
+Turn the demo KPI dashboard into a live, multi-source tracker
+(HubSpot, Pipedrive, Aircall, Twilio).  
+Provide real-time updates via WebSockets, persistent storage in
+Redis, secure webhooks, and remove duplicate KPI section.
+
+#################################################################
+# TASKS
+#################################################################
+1. 🔄 **Clean UI**
+   • Remove second KPI block in `Dashboard.tsx`.
+   • Cards read values from `useKpi()` hook.
+
+2. 🚏 **Routes & Store**
+   • server/routes/integrationsRouter.ts
+     - POST `/integrations/:provider/webhook`
+     - validate signatures
+     - push `KpiEvent` to Redis stream `stream:kpi:<accountId>`
+   • server/routes/kpiRouter.ts
+     - GET `/kpi/live` returns hash `kpi:<accountId>`
+   • server/kpiStore.ts helper functions.
+
+3. 🛠 **Integrations Adapters** (minimal)
+   • hubspot.ts → normalise event types `contact.creation`, `deal.won`
+   • aircall.ts / twilio.ts → `call.completed` → duration, sentiment placeholder
+
+4. 📊 **Aggregator Worker**
+   • workers/aggregator.ts
+     - consume streams, update hash & emit `io.to(accountId).emit('kpi:update', data)`
+   • launch via `concurrently` in `package.json`.
+
+5. ⚡ **Socket.IO**
+   • Attach to Express server in `index.ts`.
+   • JWT middleware: `socket.handshake.auth.token`.
+
+6. 🪄 **Front-End Hook**
+   • hooks/useKpi.ts (React Query + socket listener).
+
+7. 📝 **Scripts**
+   ```json
+   "scripts": {
+     "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\" \"ts-node workers/aggregator.ts\"",
+     "dev:client": "vite --clearScreen=false",
+     "dev:server": "ts-node server/index.ts",
+     "build": "vite build",
+     "preview": "node server/static.ts"
+   }
