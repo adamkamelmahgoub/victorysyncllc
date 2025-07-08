@@ -100,7 +100,12 @@ function App() {
     // Handle unhandled promise rejections
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       console.error('Unhandled promise rejection:', event.reason);
-      event.preventDefault();
+      // Only prevent default for known API errors to avoid hiding other issues
+      if (event.reason && typeof event.reason === 'object' && event.reason.message) {
+        if (event.reason.message.includes('fetch') || event.reason.message.includes('401')) {
+          event.preventDefault();
+        }
+      }
     };
 
     window.addEventListener('unhandledrejection', handleUnhandledRejection);

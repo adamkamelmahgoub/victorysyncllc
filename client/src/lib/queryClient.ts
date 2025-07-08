@@ -82,21 +82,39 @@ function makeQueryClient() {
       queries: {
         staleTime: 60 * 1000,
         retry: (failureCount, error) => {
-          // Don't retry on 404 or 403 errors
-          if (error instanceof Error && error.message.includes('404')) return false;
-          if (error instanceof Error && error.message.includes('403')) return false;
+          // Don't retry on 401, 404, or 403 errors
+          if (error instanceof Error && (error.message.includes('401') || error.message.includes('404') || error.message.includes('403'))) return false;
           return failureCount < 3;
         },
         refetchOnWindowFocus: false,
         queryFn: async ({ queryKey }) => {
-          const url = queryKey[0] as string;
-          const response = await fetch(url);
+          try {
+            const url = queryKey[0] as string;
+            const token = localStorage.getItem('auth_token');
+            const headers: Record<string, string> = {};
 
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            if (token) {
+              headers["Authorization"] = `Bearer ${token}`;
+            }
+
+            const response = await fetch(url, {
+              headers,
+              credentials: "include",
+            });
+
+            if (!response.ok) {
+              if (response.status === 401 && token) {
+                // Token is invalid, remove it
+                localStorage.removeItem('auth_token');
+              }
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            return response.json();
+          } catch (error) {
+            console.error(`Query failed: ${queryKey[0]}`, error);
+            throw error;
           }
-
-          return response.json();
         },
       },
       mutations: {
