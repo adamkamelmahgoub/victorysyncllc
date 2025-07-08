@@ -1,57 +1,21 @@
 import { Link } from "wouter";
 import { Check, Star } from "lucide-react";
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
-import { useCart } from "../hooks/useCart";
-
-import { Badge } from "../components/ui/badge";
-import { useState, useEffect } from "react";
-
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useCart } from "@/hooks/useCart";
+import { useQuery } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
 export default function Pricing() {
   const { addItem } = useCart();
-  const [packages, setPackages] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchPackages() {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/packages');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch packages: ${response.status}`);
-        }
-        const data = await response.json();
-        setPackages(data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching packages:', err);
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchPackages();
-  }, []);
+  const { data: packages, isLoading } = useQuery({
+    queryKey: ["/api/packages"],
+  });
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  if (error) {
-    console.error("Pricing page error:", error);
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Pricing</h2>
-          <p className="text-gray-600 mb-4">Unable to load pricing packages</p>
-          <p className="text-sm text-gray-500">{error.toString()}</p>
-        </div>
       </div>
     );
   }
