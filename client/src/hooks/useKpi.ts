@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { io, Socket } from 'socket.io-client';
 import { KpiMetrics, getLiveKpi } from '@/api/kpi';
 
 export const useKpi = () => {
@@ -9,7 +8,6 @@ export const useKpi = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let socket: Socket;
     let pollInterval: NodeJS.Timeout;
 
     const initializeKpi = async () => {
@@ -19,13 +17,7 @@ export const useKpi = () => {
         setMetrics(initialMetrics);
         setLoading(false);
 
-        // Setup Socket.IO for real-time updates
-        socket = io();
-        socket.on('kpi:update', (updatedMetrics: KpiMetrics) => {
-          setMetrics(updatedMetrics);
-        });
-
-        // Fallback polling every 30 seconds
+        // Simple polling every 30 seconds
         pollInterval = setInterval(async () => {
           try {
             const freshMetrics = await getLiveKpi();
@@ -44,7 +36,6 @@ export const useKpi = () => {
     initializeKpi();
 
     return () => {
-      if (socket) socket.disconnect();
       if (pollInterval) clearInterval(pollInterval);
     };
   }, []);

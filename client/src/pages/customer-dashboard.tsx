@@ -3,10 +3,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import KpiTracker from "./kpi-tracker";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from '@/components/ui/progress';
 import {
   User,
   Package,
@@ -19,35 +20,39 @@ import {
   Calendar,
   CheckCircle,
   AlertCircle,
+  Users,
+  MessageSquare,
+  TrendingUp,
 } from "lucide-react";
 import { Link } from "wouter";
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { useKpi } from '@/hooks/useKpi';
-import { 
-  BarChart3, 
-  DollarSign, 
-  Users, 
-  MessageSquare, 
-  TrendingUp, 
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  ArrowLeft,
-  ArrowRight,
-  Calendar,
-  FileText,
-  Settings,
-  User,
-  LogOut
-} from 'lucide-react';
 
 const KpiTracker = () => {
-  const { metrics, loading, error } = useKpi();
+  const [metrics, setMetrics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchKpiData = async () => {
+      try {
+        const response = await fetch('/api/kpi/live');
+        if (response.ok) {
+          const data = await response.json();
+          setMetrics(data);
+        } else {
+          setError('Failed to load KPI data');
+        }
+      } catch (err) {
+        setError('Failed to load KPI data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchKpiData();
+    // Poll every 30 seconds
+    const interval = setInterval(fetchKpiData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (loading) {
     return (
@@ -74,7 +79,153 @@ const KpiTracker = () => {
 
   if (!metrics) return null;
 
-export default function CustomerDashboard() {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Active Services */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Users className="text-purple-600 w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Active Services</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.activeServices}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Monthly Spend */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <DollarSign className="text-green-600 w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Monthly Spend</p>
+                <p className="text-2xl font-bold text-gray-900">${metrics.monthlySpend.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Support Tickets */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <MessageSquare className="text-blue-600 w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Support Tickets</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.supportTickets}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Account Status */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <CheckCircle className="text-green-600 w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Account Status</p>
+                <p className="text-lg font-semibold text-green-600">{metrics.accountStatus}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Additional KPI Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Revenue Metrics */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <TrendingUp className="w-5 h-5" />
+              <span>Revenue Metrics</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Total Revenue</span>
+              <span className="font-semibold">${metrics.totalRevenue.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Completed Orders</span>
+              <span className="font-semibold">{metrics.completedOrders}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Avg Order Value</span>
+              <span className="font-semibold">${metrics.avgOrderValue.toFixed(2)}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Performance Metrics */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="w-5 h-5" />
+              <span>Performance</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Customer Satisfaction</span>
+                <span className="font-semibold">{metrics.customerSatisfaction}%</span>
+              </div>
+              <Progress value={metrics.customerSatisfaction} className="h-2" />
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Avg Response Time</span>
+              <span className="font-semibold">{metrics.avgResponseTime}min</span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Resolution Rate</span>
+                <span className="font-semibold">{metrics.resolutionRate}%</span>
+              </div>
+              <Progress value={metrics.resolutionRate} className="h-2" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Task Completion */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <CheckCircle className="w-5 h-5" />
+              <span>Task Management</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Completed Tasks</span>
+              <span className="font-semibold">{metrics.completedTasks}</span>
+            </div>
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="text-2xl font-bold text-green-600 mb-1">
+                {((metrics.completedTasks / (metrics.completedTasks + 10)) * 100).toFixed(1)}%
+              </div>
+              <div className="text-sm text-green-700">Task Completion Rate</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+function CustomerDashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
@@ -409,3 +560,5 @@ export default function CustomerDashboard() {
     </div>
   );
 }
+
+export default CustomerDashboard;

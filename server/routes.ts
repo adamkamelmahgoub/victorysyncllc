@@ -49,6 +49,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: 'Logged out successfully' });
   });
 
+  // KPI routes
+  app.get('/api/kpi/live', async (req, res) => {
+    try {
+      const metrics = await kpiStore.getMetrics();
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching KPI data:", error);
+      res.status(500).json({ message: "Failed to fetch KPI data" });
+    }
+  });
+
 
 
 
