@@ -7,18 +7,12 @@ import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
-import { kpiStore } from "./kpiStore";
-import { hubspotIntegration } from "./integrations/hubspot";
-import { pipedriveIntegration } from "./integrations/pipedrive";
-import { aircallIntegration } from "./integrations/aircall";
-import { twilioIntegration } from "./integrations/twilio";
-import express from 'express';
 
 let stripe: Stripe | null = null;
 
 if (process.env.STRIPE_SECRET_KEY) {
   stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2024-11-20.acacia",
+    apiVersion: "2025-05-28.basil",
   });
 }
 
@@ -47,17 +41,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Since we're using JWT tokens, logout is handled client-side
     // by removing the token from storage
     res.json({ message: 'Logged out successfully' });
-  });
-
-  // KPI routes
-  app.get('/api/kpi/live', async (req, res) => {
-    try {
-      const metrics = await kpiStore.getMetrics();
-      res.json(metrics);
-    } catch (error) {
-      console.error("Error fetching KPI data:", error);
-      res.status(500).json({ message: "Failed to fetch KPI data" });
-    }
   });
 
 
@@ -94,13 +77,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertContactSubmissionSchema.parse(req.body);
       const submission = await storage.createContactSubmission(validatedData);
-
+      
       // Send email notification for new contact form submission
       await sendEmail({
         subject: "New Contact Form Submission",
         text: `Name: ${validatedData.firstName} ${validatedData.lastName}\nEmail: ${validatedData.email}\nMessage:\n${validatedData.message}`
       });
-
+      
       res.json(submission);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -121,7 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { items } = req.body;
-
+      
       if (!items || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ message: "Items are required" });
       }
@@ -157,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id.toString();
       const { items, total, stripePaymentIntentId } = req.body;
-
+      
       // Create order
       const order = await storage.createOrder({
         userId,
@@ -198,7 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const orderId = parseInt(req.params.id);
       const userId = req.user!.id.toString();
-
+      
       const order = await storage.getOrder(orderId);
       if (!order || order.userId !== userId) {
         return res.status(404).json({ message: "Order not found" });
@@ -209,76 +192,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching order:", error);
       res.status(500).json({ message: "Failed to fetch order" });
-    }
-  });
-
-    
-
-  // Webhook endpoints for integrations
-  app.post("/api/integrations/hubspot/webhook", express.raw({ type: 'application/json' }), async (req, res) => {
-    try {
-      const signature = req.headers['x-hubspot-signature'] as string;
-      const payload = JSON.parse(req.body.toString());
-
-      if (!hubspotIntegration.validateSignature(signature, req.body.toString())) {
-        return res.status(401).json({ error: 'Invalid signature' });
-      }
-
-      await hubspotIntegration.pushEvent(payload);
-      res.json({ success: true });
-    } catch (error) {
-      console.error('HubSpot webhook error:', error);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  });
-
-  app.post("/api/integrations/pipedrive/webhook", express.json(), async (req, res) => {
-    try {
-      const signature = req.headers['x-pipedrive-signature'] as string;
-
-      if (!pipedriveIntegration.validateSignature(signature, JSON.stringify(req.body))) {
-        return res.status(401).json({ error: 'Invalid signature' });
-      }
-
-      await pipedriveIntegration.pushEvent(req.body);
-      res.json({ success: true });
-    } catch (error) {
-      console.error('Pipedrive webhook error:', error);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  });
-
-  app.post("/api/integrations/aircall/webhook", express.json(), async (req, res) => {
-    try {
-      const signature = req.headers['x-aircall-signature'] as string;
-
-      if (!aircallIntegration.validateSignature(signature, JSON.stringify(req.body))) {
-        return res.status(401).json({ error: 'Invalid signature' });
-      }
-
-      await aircallIntegration.pushEvent(req.body);
-      res.json({ success: true });
-    } catch (error) {
-      console.error('Aircall webhook error:', error);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  });
-
-  app.post("/api/integrations/twilio/webhook", express.urlencoded({ extended: false }), async (req, res) => {
-    try {
-      const signature = req.headers['x-twilio-signature'] as string;
-      const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
-
-      if (!twilioIntegration.validateSignature(signature, JSON.stringify(req.body), url)) {
-        return res.status(401).json({ error: 'Invalid signature' });
-      }
-
-      await twilioIntegration.pushEvent(req.body);
-      res.set('Content-Type', 'application/xml');
-      res.send('<Response></Response>');
-    } catch (error) {
-      console.error('Twilio webhook error:', error);
-      res.status(500).set('Content-Type', 'application/xml').send('<Response></Response>');
     }
   });
 
@@ -301,7 +214,7 @@ async function ensurePackagesExist() {
 
   try {
     const existingPackages = await storage.getPackages();
-
+    
     if (existingPackages.length === 0) {
       // Create packages in background, don't block startup
       setImmediate(async () => {
@@ -331,13 +244,13 @@ async function ensurePackagesExist() {
           console.error("Error creating packages:", error);
         }
       });
-
+      
       // Return empty array for now
       packagesCache = [];
     } else {
       packagesCache = existingPackages;
     }
-
+    
     packagesInitialized = true;
     return packagesCache;
   } catch (error) {

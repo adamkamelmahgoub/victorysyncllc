@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useKpi } from "@/hooks/useKpi";
-
+import KpiTracker from "./kpi-tracker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from '@/components/ui/progress';
 import {
   User,
   Package,
@@ -20,187 +19,10 @@ import {
   Calendar,
   CheckCircle,
   AlertCircle,
-  Users,
-  MessageSquare,
-  TrendingUp,
 } from "lucide-react";
 import { Link } from "wouter";
 
-const KpiTrackerComponent = () => {
-  const { metrics, loading, error } = useKpi();
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center p-6">
-        <p className="text-red-600">Error loading KPI data: {error}</p>
-      </div>
-    );
-  }
-
-  if (!metrics) return null;
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Active Services */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Users className="text-purple-600 w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Active Services</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.activeServices}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Monthly Spend */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-green-600 w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Monthly Spend</p>
-                <p className="text-2xl font-bold text-gray-900">${metrics.monthlySpend.toLocaleString()}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Support Tickets */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <MessageSquare className="text-blue-600 w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Support Tickets</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.supportTickets}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Account Status */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="text-green-600 w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Account Status</p>
-                <p className="text-lg font-semibold text-green-600">{metrics.accountStatus}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Additional KPI Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Revenue Metrics */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5" />
-              <span>Revenue Metrics</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Total Revenue</span>
-              <span className="font-semibold">${metrics.totalRevenue.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Completed Orders</span>
-              <span className="font-semibold">{metrics.completedOrders}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Avg Order Value</span>
-              <span className="font-semibold">${metrics.avgOrderValue.toFixed(2)}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Performance Metrics */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <BarChart3 className="w-5 h-5" />
-              <span>Performance</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Customer Satisfaction</span>
-                <span className="font-semibold">{metrics.customerSatisfaction}%</span>
-              </div>
-              <Progress value={metrics.customerSatisfaction} className="h-2" />
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Avg Response Time</span>
-              <span className="font-semibold">{metrics.avgResponseTime}min</span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Resolution Rate</span>
-                <span className="font-semibold">{metrics.resolutionRate}%</span>
-              </div>
-              <Progress value={metrics.resolutionRate} className="h-2" />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Task Completion */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <CheckCircle className="w-5 h-5" />
-              <span>Task Management</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Completed Tasks</span>
-              <span className="font-semibold">{metrics.completedTasks}</span>
-            </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600 mb-1">
-                {((metrics.completedTasks / (metrics.completedTasks + 10)) * 100).toFixed(1)}%
-              </div>
-              <div className="text-sm text-green-700">Task Completion Rate</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-function CustomerDashboard() {
+export default function CustomerDashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
@@ -245,7 +67,7 @@ function CustomerDashboard() {
         return "bg-blue-100 text-blue-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";
-      default":
+      default:
         return "bg-gray-100 text-gray-800";
     }
   };
@@ -258,7 +80,7 @@ function CustomerDashboard() {
         return <Clock className="w-4 h-4" />;
       case "pending":
         return <AlertCircle className="w-4 h-4" />;
-      default":
+      default:
         return <Clock className="w-4 h-4" />;
     }
   };
@@ -377,7 +199,7 @@ function CustomerDashboard() {
         </div>
 
         {activeTab === 'kpi-tracker' ? (
-          <KpiTrackerComponent />
+          <KpiTracker />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Recent Orders */}
@@ -535,5 +357,3 @@ function CustomerDashboard() {
     </div>
   );
 }
-
-export default CustomerDashboard;
