@@ -1,36 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 export function useAuth() {
-  const token = localStorage.getItem('auth_token');
-  
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["/api/auth/me"],
-    queryFn: async () => {
-      if (!token) {
-        return null;
-      }
-      
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Token is invalid, remove it
-          localStorage.removeItem('auth_token');
-          return null;
-        }
-        throw new Error('Failed to fetch user data');
-      }
-      
-      const data = await response.json();
-      return data.user;
-    },
-    retry: false,
-    enabled: !!token,
-  });
+  const [user] = useState(null);
+  const [isLoading] = useState(false);
 
   const logout = () => {
     localStorage.removeItem('auth_token');
@@ -40,7 +12,7 @@ export function useAuth() {
   return {
     user,
     isLoading,
-    isAuthenticated: !!user && !!token,
+    isAuthenticated: false,
     logout,
   };
 }

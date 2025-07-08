@@ -97,25 +97,7 @@ const Router = memo(function Router() {
 });
 
 function App() {
-  useEffect(() => {
-    // Handle unhandled promise rejections more gracefully
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      // Log the error for debugging but don't spam the console
-      if (event.reason?.message?.includes('401:') || event.reason?.message?.includes('Failed to fetch')) {
-        // These are expected authentication or network errors
-        console.debug('Auth/network error (expected):', event.reason?.message);
-      } else {
-        console.error('Unhandled promise rejection:', event.reason);
-      }
-      event.preventDefault();
-    };
-
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-
-    return () => {
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-    };
-  }, []);
+  // Removed promise rejection handler since we fixed the root cause
 
   return (
     <QueryClientProvider client={queryClient}>
