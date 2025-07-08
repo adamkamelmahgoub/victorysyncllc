@@ -7,7 +7,7 @@
 
 import { build as esbuild } from 'esbuild';
 import { build as viteBuild } from 'vite';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { spawn } from 'child_process';
 
 // Create dist directory
@@ -158,7 +158,7 @@ function createFallbackClient() {
 </body>
 </html>`;
   
-  require('fs').writeFileSync('dist/public/index.html', fallbackHTML);
+  writeFileSync('dist/public/index.html', fallbackHTML);
   console.log('✅ Fallback client created');
 }
 
