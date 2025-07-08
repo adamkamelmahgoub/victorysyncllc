@@ -107,7 +107,7 @@ export default function Pricing() {
               Cost Comparison: VictorySync vs. Traditional Solutions
             </h2>
             <p className="text-xl victory-gray">
-              See how much you can save with our New Jersey-based team
+              See how much you can save with our Egypt-based team
             </p>
           </div>
 
@@ -127,7 +127,7 @@ export default function Pricing() {
 
             <Card className="border-green-200">
               <CardContent className="p-8 text-center">
-                <h3 className="text-2xl font-bold text-green-600 mb-4">VictorySync (New Jersey)</h3>
+                <h3 className="text-2xl font-bold text-green-600 mb-4">VictorySync (Egypt)</h3>
                 <div className="text-4xl font-bold text-green-600 mb-4">~$6.25/hour</div>
                 <div className="space-y-2 text-sm text-gray-600">
                   <p>• 66% cost savings</p>

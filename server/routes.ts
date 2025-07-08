@@ -253,6 +253,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/admin/users/:id', requireAdmin, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+
+      const user = await storage.updateUserStatus(userId, isActive);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      res.status(500).json({ message: "Failed to update user status" });
+    }
+  });
+
+  app.delete('/api/admin/users/:id', requireAdmin, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+
+      const success = await storage.deleteUser(userId);
+      if (!success) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   app.put('/api/admin/users/:id/status', authenticateJWT as any, async (req: any, res: any) => {
     try {
       const userId = parseInt(req.params.id);
