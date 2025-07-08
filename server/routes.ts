@@ -7,12 +7,6 @@ import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
-import { kpiStore } from "./kpiStore";
-import { hubspotIntegration } from "./integrations/hubspot";
-import { pipedriveIntegration } from "./integrations/pipedrive";
-import { aircallIntegration } from "./integrations/aircall";
-import { twilioIntegration } from "./integrations/twilio";
-import express from 'express';
 
 let stripe: Stripe | null = null;
 
@@ -23,21 +17,39 @@ if (process.env.STRIPE_SECRET_KEY) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint - lightweight for fast response
-  app.get('/health', (_req, res) => {
-    res.json({
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      port: Number(process.env.PORT || 5000),
-      uptime: process.uptime()
-    });
+  // Health check endpoint - must be first to avoid being caught by other routes
+  app.get('/health', async (_req, res) => {
+    try {
+      // Test database connection
+      const dbConnected = await testDatabaseConnection();
+      
+      const healthStatus = {
+        status: dbConnected ? 'healthy' : 'unhealthy',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+        port: Number(process.env.PORT || 5000),
+        database: dbConnected ? 'connected' : 'disconnected',
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        version: process.version
+      };
+      
+      const statusCode = dbConnected ? 200 : 503;
+      res.status(statusCode).json(healthStatus);
+    } catch (error) {
+      res.status(503).json({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        error: 'Health check failed',
+        environment: process.env.NODE_ENV || 'development'
+      });
+    }
   });
 
 
 
-  // Initialize default packages lazily (only when needed)
-  // Package initialization moved to lazy loading
+  // Initialize default packages
+  await initializePackages();
 
   // Public authentication routes (new system)
   app.post('/api/auth/register', registerUser);
@@ -49,17 +61,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: 'Logged out successfully' });
   });
 
-  // KPI routes
-  app.get('/api/kpi/live', async (req, res) => {
-    try {
-      const metrics = await kpiStore.getMetrics();
-      res.json(metrics);
-    } catch (error) {
-      console.error("Error fetching KPI data:", error);
-      res.status(500).json({ message: "Failed to fetch KPI data" });
-    }
-  });
-
 
 
 
@@ -67,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Package routes
   app.get('/api/packages', async (req, res) => {
     try {
-      const packages = await ensurePackagesExist();
+      const packages = await storage.getPackages();
       res.json(packages);
     } catch (error) {
       console.error("Error fetching packages:", error);
@@ -94,13 +95,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertContactSubmissionSchema.parse(req.body);
       const submission = await storage.createContactSubmission(validatedData);
-
+      
       // Send email notification for new contact form submission
       await sendEmail({
         subject: "New Contact Form Submission",
         text: `Name: ${validatedData.firstName} ${validatedData.lastName}\nEmail: ${validatedData.email}\nMessage:\n${validatedData.message}`
       });
-
+      
       res.json(submission);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -121,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { items } = req.body;
-
+      
       if (!items || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ message: "Items are required" });
       }
@@ -157,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id.toString();
       const { items, total, stripePaymentIntentId } = req.body;
-
+      
       // Create order
       const order = await storage.createOrder({
         userId,
@@ -198,7 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const orderId = parseInt(req.params.id);
       const userId = req.user!.id.toString();
-
+      
       const order = await storage.getOrder(orderId);
       if (!order || order.userId !== userId) {
         return res.status(404).json({ message: "Order not found" });
@@ -212,84 +213,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-    // KPI live data endpoint
-  app.get("/api/kpi/live", async (req, res) => {
-    try {
-      const metrics = await kpiStore.getMetrics();
-      res.json(metrics);
-    } catch (error) {
-      console.error('KPI fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch KPI data' });
-    }
-  });
-
-  // Webhook endpoints for integrations
-  app.post("/api/integrations/hubspot/webhook", express.raw({ type: 'application/json' }), async (req, res) => {
-    try {
-      const signature = req.headers['x-hubspot-signature'] as string;
-      const payload = JSON.parse(req.body.toString());
-
-      if (!hubspotIntegration.validateSignature(signature, req.body.toString())) {
-        return res.status(401).json({ error: 'Invalid signature' });
-      }
-
-      await hubspotIntegration.pushEvent(payload);
-      res.json({ success: true });
-    } catch (error) {
-      console.error('HubSpot webhook error:', error);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  });
-
-  app.post("/api/integrations/pipedrive/webhook", express.json(), async (req, res) => {
-    try {
-      const signature = req.headers['x-pipedrive-signature'] as string;
-
-      if (!pipedriveIntegration.validateSignature(signature, JSON.stringify(req.body))) {
-        return res.status(401).json({ error: 'Invalid signature' });
-      }
-
-      await pipedriveIntegration.pushEvent(req.body);
-      res.json({ success: true });
-    } catch (error) {
-      console.error('Pipedrive webhook error:', error);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  });
-
-  app.post("/api/integrations/aircall/webhook", express.json(), async (req, res) => {
-    try {
-      const signature = req.headers['x-aircall-signature'] as string;
-
-      if (!aircallIntegration.validateSignature(signature, JSON.stringify(req.body))) {
-        return res.status(401).json({ error: 'Invalid signature' });
-      }
-
-      await aircallIntegration.pushEvent(req.body);
-      res.json({ success: true });
-    } catch (error) {
-      console.error('Aircall webhook error:', error);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  });
-
-  app.post("/api/integrations/twilio/webhook", express.urlencoded({ extended: false }), async (req, res) => {
-    try {
-      const signature = req.headers['x-twilio-signature'] as string;
-      const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
-
-      if (!twilioIntegration.validateSignature(signature, JSON.stringify(req.body), url)) {
-        return res.status(401).json({ error: 'Invalid signature' });
-      }
-
-      await twilioIntegration.pushEvent(req.body);
-      res.xml('<Response></Response>');
-    } catch (error) {
-      console.error('Twilio webhook error:', error);
-      res.status(500).xml('<Response></Response>');
-    }
-  });
-
   // Add 404 handler for API routes that don't exist
   app.use('/api/*', (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
@@ -299,57 +222,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-let packagesInitialized = false;
-let packagesCache: any[] | null = null;
-
-async function ensurePackagesExist() {
-  if (packagesInitialized && packagesCache) {
-    return packagesCache;
-  }
-
+async function initializePackages() {
   try {
+    console.log('📦 Initializing default packages...');
     const existingPackages = await storage.getPackages();
-
+    console.log(`Found ${existingPackages.length} existing packages`);
+    
     if (existingPackages.length === 0) {
-      // Create packages in background, don't block startup
-      setImmediate(async () => {
-        try {
-          await Promise.all([
-            storage.createPackage({
-              name: "Starter",
-              price: "1200.00", 
-              description: "Perfect for small businesses",
-              features: ["1 Dedicated Agent", "Business Hours Support", "Basic CRM Integration", "Email Support", "Monthly Reports"],
-            }),
-            storage.createPackage({
-              name: "Growth",
-              price: "2500.00",
-              description: "For growing companies", 
-              features: ["2 Dedicated Agents", "Extended Hours Support", "Appointment Setting", "Advanced CRM Integration", "Live Chat Support", "Weekly Reports"],
-            }),
-            storage.createPackage({
-              name: "Scale",
-              price: "4500.00",
-              description: "For enterprise needs",
-              features: ["24/7 Blended Team", "AI Automation Suite", "Dedicated Success Manager", "Custom Integrations", "Priority Support", "Real-time Analytics"],
-            })
-          ]);
-          packagesCache = await storage.getPackages();
-        } catch (error) {
-          console.error("Error creating packages:", error);
-        }
+      console.log('Creating default packages...');
+      // Create default packages
+      await storage.createPackage({
+        name: "Starter",
+        price: "1200.00",
+        description: "Perfect for small businesses",
+        features: [
+          "1 Dedicated Agent",
+          "Business Hours Support",
+          "Basic CRM Integration",
+          "Email Support",
+          "Monthly Reports"
+        ],
       });
 
-      // Return empty array for now
-      packagesCache = [];
-    } else {
-      packagesCache = existingPackages;
-    }
+      await storage.createPackage({
+        name: "Growth",
+        price: "2500.00",
+        description: "For growing companies",
+        features: [
+          "2 Dedicated Agents",
+          "Extended Hours Support",
+          "Appointment Setting",
+          "Advanced CRM Integration",
+          "Live Chat Support",
+          "Weekly Reports"
+        ],
+      });
 
-    packagesInitialized = true;
-    return packagesCache;
+      await storage.createPackage({
+        name: "Scale",
+        price: "4500.00",
+        description: "For enterprise needs",
+        features: [
+          "24/7 Blended Team",
+          "AI Automation Suite",
+          "Dedicated Success Manager",
+          "Custom Integrations",
+          "Priority Support",
+          "Real-time Analytics"
+        ],
+      });
+      console.log('✅ Default packages created successfully');
+    } else {
+      console.log('✅ Packages already exist, skipping initialization');
+    }
   } catch (error) {
-    console.error("Error ensuring packages:", error);
-    return [];
+    console.error("❌ Error initializing packages:", error);
+    throw error; // Re-throw to prevent server from starting with invalid state
   }
 }

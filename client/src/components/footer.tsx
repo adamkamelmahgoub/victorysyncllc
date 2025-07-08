@@ -9,9 +9,9 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center space-x-3 mb-6">
               <img 
-                src="/logo.png?v=3" 
-                alt="VictorySync logo" 
-                className="h-8 w-auto"
+                src="/vs_favicon_32.png" 
+                alt="VictorySync Logo" 
+                className="w-8 h-8 rounded-lg bg-white p-1"
               />
               <span className="text-xl brand-font">VictorySync</span>
             </div>
@@ -54,6 +54,7 @@ export default function Footer() {
             <ul className="space-y-3 text-gray-400">
               <li><Link href="/about-us"><span className="hover:text-white transition-colors cursor-pointer">About Us</span></Link></li>
               <li><Link href="/careers"><span className="hover:text-white transition-colors cursor-pointer">Careers</span></Link></li>
+              <li><Link href="/blog"><span className="hover:text-white transition-colors cursor-pointer">Blog</span></Link></li>
               <li><Link href="/contact"><span className="hover:text-white transition-colors cursor-pointer">Contact</span></Link></li>
             </ul>
           </div>
@@ -63,6 +64,7 @@ export default function Footer() {
             <h4 className="font-semibold mb-6">Support</h4>
             <ul className="space-y-3 text-gray-400">
               <li><Link href="/help-center"><span className="hover:text-white transition-colors cursor-pointer">Help Center</span></Link></li>
+              <li><Link href="/docs"><span className="hover:text-white transition-colors cursor-pointer">Documentation</span></Link></li>
               <li><Link href="/privacy-policy"><span className="hover:text-white transition-colors cursor-pointer">Privacy Policy</span></Link></li>
               <li><Link href="/terms"><span className="hover:text-white transition-colors cursor-pointer">Terms of Service</span></Link></li>
             </ul>

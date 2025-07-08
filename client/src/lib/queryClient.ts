@@ -1,7 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "/api";
-
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -14,31 +12,26 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  try {
-    const token = localStorage.getItem('auth_token');
-    const headers: Record<string, string> = {};
-
-    if (data) {
-      headers["Content-Type"] = "application/json";
-    }
-
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const res = await fetch(`${API_BASE}${url}`, {
-      method,
-      headers,
-      body: data ? JSON.stringify(data) : undefined,
-      credentials: "include",
-    });
-
-    await throwIfResNotOk(res);
-    return res;
-  } catch (error) {
-    console.error(`API request failed: ${method} ${url}`, error);
-    throw error;
+  const token = localStorage.getItem('auth_token');
+  const headers: Record<string, string> = {};
+  
+  if (data) {
+    headers["Content-Type"] = "application/json";
   }
+  
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(url, {
+    method,
+    headers,
+    body: data ? JSON.stringify(data) : undefined,
+    credentials: "include",
+  });
+
+  await throwIfResNotOk(res);
+  return res;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -47,52 +40,41 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      const headers: Record<string, string> = {};
-
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(`${API_BASE}${queryKey[0]}`, {
-        headers,
-        credentials: "include",
-      });
-
-      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-        // Token is invalid, remove it
-        if (token) {
-          localStorage.removeItem('auth_token');
-        }
-        return null;
-      }
-
-      await throwIfResNotOk(res);
-      return await res.json();
-    } catch (error) {
-      console.error(`Query failed: ${queryKey[0]}`, error);
-      throw error;
+    const token = localStorage.getItem('auth_token');
+    const headers: Record<string, string> = {};
+    
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
     }
+
+    const res = await fetch(queryKey[0] as string, {
+      headers,
+      credentials: "include",
+    });
+
+    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      // Token is invalid, remove it
+      if (token) {
+        localStorage.removeItem('auth_token');
+      }
+      return null;
+    }
+
+    await throwIfResNotOk(res);
+    return await res.json();
   };
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error.message.match(/^4\d\d:/)) return false;
-        return failureCount < 1; // Only retry once
-      },
-      retryDelay: 1000,
+      staleTime: Infinity,
+      retry: false,
     },
     mutations: {
       retry: false,
     },
   },
 });
-
-// Minimal error handling - removed global handler to speed up startup

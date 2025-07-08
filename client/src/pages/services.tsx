@@ -1,6 +1,6 @@
-import { Phone, Megaphone, Bot, BarChart3, Check, ArrowRight, Users, Zap, Globe } from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
+import { Phone, Megaphone, Bot, BarChart3, Check, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'wouter';
 
 export default function Services() {
@@ -8,69 +8,73 @@ export default function Services() {
     {
       icon: Phone,
       title: "Inbound Call Center",
-      description: "24/7 professional support in English and Arabic—your brand's human voice around the clock",
+      description: "Professional customer support with multilingual capabilities",
       features: [
-        "24/7/365 bilingual agents",
-        "Tier-1 & Tier-2 technical help desk",
-        "Secure order processing & billing",
-        "Omnichannel live chat & email hub",
-        "Intelligent complaint triage & root-cause tagging"
+        "24/7 Customer Support",
+        "Technical Help Desk",
+        "Order Processing & Billing",
+        "Live Chat Support",
+        "Email Support Management",
+        "Complaint Resolution"
       ],
       benefits: [
-        "80% faster response times",
-        "25-point CSAT lift",
-        "Effortless handling of launch- and holiday-spikes"
+        "Reduce response times by 80%",
+        "Improve customer satisfaction scores",
+        "Handle peak volumes effortlessly"
       ]
     },
     {
       icon: Megaphone,
       title: "Outbound Sales & Marketing",
-      description: "Data-driven outreach that fills your pipeline and books meetings for your reps",
+      description: "Drive revenue growth with targeted outreach campaigns",
       features: [
-        "ICP-targeted lead generation",
-        "Appointment setting & calendar sync",
-        "AI-guided cold-call campaigns",
-        "Sequenced follow-ups (email, LinkedIn, SMS)",
-        "Market research & NPS surveys"
+        "Lead Generation & Qualification",
+        "Appointment Setting",
+        "Cold Calling Campaigns",
+        "Follow-up Sequences",
+        "Market Research",
+        "Customer Surveys"
       ],
       benefits: [
-        "Predictable MRR growth",
-        "Higher win-rates and larger deal sizes",
-        "Rapid market-share expansion"
+        "Increase qualified leads by 150%",
+        "Boost conversion rates",
+        "Expand market reach"
       ]
     },
     {
       icon: Bot,
       title: "AI Automation",
-      description: "Smart workflows that cut costs and scale service—no code required",
+      description: "Intelligent solutions to streamline your operations",
       features: [
-        "AI chatbots (English & Arabic)",
-        "Robotic process automation (RPA)",
-        "Auto call-summary & sentiment analysis",
-        "Predictive analytics dashboards",
-        "Voice recognition & IVR routing"
+        "AI-Powered Chatbots",
+        "Automated Workflows",
+        "Call Summary Generation",
+        "Sentiment Analysis",
+        "Predictive Analytics",
+        "Voice Recognition"
       ],
       benefits: [
-        "Handle 60% more tickets with the same staff",
-        "Lower error rates—data accuracy up 98%",
-        "Payback period < 6 months"
+        "Handle 60% more inquiries",
+        "Reduce operational costs",
+        "Improve data accuracy"
       ]
     },
     {
       icon: BarChart3,
       title: "Digital Marketing",
-      description: "End-to-end growth engine: strategy, creative, execution, analytics",
+      description: "Complete digital marketing solutions to grow your brand",
       features: [
-        "Social media management & paid amplification",
-        "SEO content clusters & technical fixes",
-        "Automated email nurtures & drip campaigns",
-        "PPC & paid social with real-time bid optimization",
-        "GA4 / Looker Studio dashboards"
+        "Social Media Management",
+        "Content Creation",
+        "SEO Optimization",
+        "Email Marketing Campaigns",
+        "Pay-Per-Click Advertising",
+        "Analytics & Reporting"
       ],
       benefits: [
-        "Larger qualified-lead pipeline",
-        "Brand visibility in new markets",
-        "Marketing dollars tracked to every sale"
+        "Increase brand visibility",
+        "Generate more qualified leads",
+        "Improve ROI tracking"
       ]
     }
   ];
@@ -101,7 +105,7 @@ export default function Services() {
             {services.map((service, index) => {
               const IconComponent = service.icon;
               const isEven = index % 2 === 0;
-
+              
               return (
                 <div key={service.title} className={`grid md:grid-cols-2 gap-12 items-center ${!isEven ? 'md:flex-row-reverse' : ''}`}>
                   <div className={isEven ? 'order-1' : 'order-2'}>
@@ -110,7 +114,7 @@ export default function Services() {
                     </div>
                     <h2 className="text-3xl font-bold victory-dark mb-4">{service.title}</h2>
                     <p className="text-lg victory-gray mb-6">{service.description}</p>
-
+                    
                     <div className="mb-8">
                       <h3 className="font-semibold victory-dark mb-4">Key Features:</h3>
                       <div className="grid grid-cols-1 gap-2">
@@ -141,7 +145,7 @@ export default function Services() {
                       </Button>
                     </Link>
                   </div>
-
+                  
                   <div className={isEven ? 'order-2' : 'order-1'}>
                     <Card className="p-8 shadow-lg">
                       <CardContent className="text-center">

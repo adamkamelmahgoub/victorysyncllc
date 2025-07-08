@@ -1,37 +1,10 @@
-[run]
-run = "npm run dev"
-
-[deployment]
-build = ["npm", "run", "build"]
-run = ["npm", "run", "start"]
-deploymentTarget = "autoscale"
-
-[env]
-PORT = "5000"
-
 [nix]
 channel = "stable-24_05"
 
-[ports]
+[deployment]
+run = ["sh", "./start.sh"]
+deploymentTarget = "cloudrun"
+
+[[ports]]
 localPort = 5000
 externalPort = 80
-
-[workflows]
-runButton = "Start application"
-
-[[workflows.workflow]]
-name = "Start application"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-waitForPort = 5000
-
-[[workflows.workflow]]
-name = "Build"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run build"

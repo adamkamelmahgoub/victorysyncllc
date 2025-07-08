@@ -1,10 +1,10 @@
-import { Link } from "wouter";
 import { Check, Star } from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import { useCart } from '../hooks/useCart';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useCart } from '@/hooks/useCart';
 import { useQuery } from '@tanstack/react-query';
-import { Badge } from '../components/ui/badge';
+import { Badge } from '@/components/ui/badge';
+
 export default function Pricing() {
   const { addItem } = useCart();
 
@@ -128,15 +128,15 @@ export default function Pricing() {
             <Card className="border-green-200">
               <CardContent className="p-8 text-center">
                 <h3 className="text-2xl font-bold text-green-600 mb-4">VictorySync (Egypt)</h3>
-                <div className="text-4xl font-bold text-green-600 mb-4">~$6.25/hour</div>
+                <div className="text-4xl font-bold text-green-600 mb-4">~$1.20/hour</div>
                 <div className="space-y-2 text-sm text-gray-600">
-                  <p>• 66% cost savings</p>
+                  <p>• 93% cost savings</p>
                   <p>• 24/7 availability</p>
                   <p>• English fluency</p>
                   <p>• Professional quality</p>
                 </div>
                 <div className="mt-4 bg-green-100 text-green-800 px-4 py-2 rounded-lg font-semibold">
-                  Save $12+ per hour!
+                  Save $17+ per hour!
                 </div>
               </CardContent>
             </Card>
@@ -243,20 +243,15 @@ export default function Pricing() {
             Join hundreds of businesses that trust VictorySync for their customer engagement needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact">
-              <Button size="lg" className="bg-victory-purple hover:bg-purple-700 text-white">
-                Schedule Free Demo
-              </Button>
-            </Link>
-            <Link href="/contact">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
-                Contact Sales
-              </Button>
-            </Link>
+            <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6a4def]">
+              Schedule Free Demo
+            </Button>
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
+              Contact Sales
+            </Button>
           </div>
         </div>
       </section>
     </div>
   );
 }
-
