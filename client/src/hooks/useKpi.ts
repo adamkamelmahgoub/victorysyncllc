@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { KpiMetrics, getLiveKpi } from '@/api/kpi';
+import { KpiMetrics, getLiveKpi } from "../api/kpi";
 
 export const useKpi = () => {
   const [metrics, setMetrics] = useState<KpiMetrics | null>(null);

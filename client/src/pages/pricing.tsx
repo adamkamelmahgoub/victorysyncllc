@@ -1,10 +1,10 @@
 import { Link } from "wouter";
 import { Check, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { useCart } from '@/hooks/useCart';
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { useCart } from "../hooks/useCart";
 import { useQuery } from '@tanstack/react-query';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from "../components/ui/badge";
 export default function Pricing() {
   const { addItem } = useCart();
 
