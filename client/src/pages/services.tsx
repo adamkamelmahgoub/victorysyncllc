@@ -8,7 +8,7 @@ export default function Services() {
     {
       icon: Phone,
       title: "Inbound Call Center",
-      description: "Professional customer support with multilingual capabilities",
+      description: "Our comprehensive inbound call center services provide round-the-clock customer support with native English-speaking agents from our New Jersey facility. We handle everything from basic inquiries to complex technical support issues, ensuring your customers receive professional, empathetic assistance every time they call. Our multilingual capabilities extend to Spanish, French, and Arabic, allowing us to serve diverse customer bases across North America and beyond.",
       features: [
         "24/7 Customer Support",
         "Technical Help Desk",
@@ -26,7 +26,7 @@ export default function Services() {
     {
       icon: Megaphone,
       title: "Outbound Sales & Marketing",
-      description: "Drive revenue growth with targeted outreach campaigns",
+      description: "Transform your sales pipeline with our sophisticated outbound marketing strategies. Our experienced sales professionals use proven methodologies to identify, qualify, and convert high-value prospects into loyal customers. We leverage advanced CRM systems, predictive analytics, and personalized scripting to maximize conversion rates while maintaining your brand's integrity. Our team specializes in B2B lead generation, appointment setting, and nurturing campaigns that consistently deliver measurable ROI improvements.",
       features: [
         "Lead Generation & Qualification",
         "Appointment Setting",
@@ -44,7 +44,7 @@ export default function Services() {
     {
       icon: Bot,
       title: "AI Automation",
-      description: "Intelligent solutions to streamline your operations",
+      description: "Revolutionize your business operations with cutting-edge artificial intelligence and automation technologies. Our AI-powered solutions include intelligent chatbots that handle routine inquiries, automated workflow systems that eliminate manual processes, and predictive analytics that anticipate customer needs. We integrate seamlessly with your existing systems to create a unified, intelligent ecosystem that operates 24/7, reducing response times by up to 90% while maintaining the personal touch your customers expect.",
       features: [
         "AI-Powered Chatbots",
         "Automated Workflows",
@@ -62,7 +62,7 @@ export default function Services() {
     {
       icon: BarChart3,
       title: "Digital Marketing",
-      description: "Complete digital marketing solutions to grow your brand",
+      description: "Amplify your brand's digital presence with our comprehensive marketing suite designed for modern businesses. Our data-driven approach combines content creation, social media management, search engine optimization, and targeted advertising campaigns to maximize your online visibility and engagement. We create compelling narratives that resonate with your target audience while leveraging advanced analytics to continuously optimize performance and ensure every marketing dollar delivers maximum impact across all digital channels.",
       features: [
         "Social Media Management",
         "Content Creation",

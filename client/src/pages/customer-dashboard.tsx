@@ -183,6 +183,37 @@ export default function CustomerDashboard() {
           </Card>
         </div>
 
+        {/* KPI Tracker */}
+        <div className="mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart3 className="w-5 h-5" />
+                <span>Key Performance Indicators</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">98.5%</div>
+                  <div className="text-sm text-gray-600">Customer Satisfaction</div>
+                  <div className="text-xs text-green-600 mt-1">↑ 2.3% from last month</div>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">45 sec</div>
+                  <div className="text-sm text-gray-600">Avg Response Time</div>
+                  <div className="text-xs text-green-600 mt-1">↓ 15% from last month</div>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">1,247</div>
+                  <div className="text-sm text-gray-600">Calls Handled</div>
+                  <div className="text-xs text-green-600 mt-1">↑ 8% from last month</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Recent Orders */}
           <div className="lg:col-span-2">

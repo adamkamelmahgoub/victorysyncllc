@@ -4,6 +4,11 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 interface NavigationProps {
   onCartClick: () => void;
@@ -30,13 +35,13 @@ export default function Navigation({ onCartClick }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/">
+          <Link href="/" onClick={scrollToTop}>
             <div className="flex items-center space-x-3 cursor-pointer">
-              <img
-                src="/vs_favicon_32.png"
-                alt="VictorySync Logo"
-                className="w-8 h-8 rounded-lg"
-              />
+              <img 
+            src="/LOGO_VS.png" 
+            alt="VictorySync Logo" 
+            className="w-8 h-8 rounded-lg bg-white p-1"
+          />
               <span className="text-xl brand-font victory-dark">
                 VictorySync
               </span>
@@ -97,7 +102,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     Sign In
                   </Button>
                 </Link>
-                
+
               </div>
             )}
           </div>
@@ -179,7 +184,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     >
                       Sign In
                     </Button>
-                    
+
                   </div>
                 )}
               </div>
