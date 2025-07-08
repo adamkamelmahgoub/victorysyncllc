@@ -237,7 +237,7 @@ class KpiAggregator {
 }
 
 // Start the aggregator if this file is run directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const aggregator = new KpiAggregator();
   aggregator.start().catch(console.error);
 
