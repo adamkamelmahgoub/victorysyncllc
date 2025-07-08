@@ -128,14 +128,28 @@ export const queryClient = new QueryClient({
             return false;
           }
         }
-        return failureCount < 2; // Reduce retry attempts
+        return failureCount < 1; // Reduce retry attempts further
       },
       staleTime: 1000 * 60 * 5, // 5 minutes
       refetchOnWindowFocus: false,
       throwOnError: false, // Prevent unhandled promise rejections
+      onError: (error) => {
+        console.error("Query failed:", error);
+      },
     },
     mutations: {
       throwOnError: false, // Prevent unhandled promise rejections
+      onError: (error) => {
+        console.error("Mutation failed:", error);
+      },
     },
   },
 });
+
+// Add global unhandled rejection handler
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
+    event.preventDefault(); // Prevent default browser behavior
+  });
+}

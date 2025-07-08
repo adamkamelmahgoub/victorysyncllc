@@ -16,16 +16,21 @@ export default function Pricing() {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return response.json();
+        const data = await response.json();
+        return data;
       } catch (err) {
         console.error("Failed to fetch packages:", err);
-        throw err;
+        // Return empty array as fallback instead of throwing
+        return [];
       }
     },
-    retry: 2,
+    retry: 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
     throwOnError: false,
+    onError: (error) => {
+      console.error("Query error:", error);
+    },
   });
 
   if (isLoading) {

@@ -77,13 +77,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertContactSubmissionSchema.parse(req.body);
       const submission = await storage.createContactSubmission(validatedData);
-      
+
       // Send email notification for new contact form submission
       await sendEmail({
         subject: "New Contact Form Submission",
         text: `Name: ${validatedData.firstName} ${validatedData.lastName}\nEmail: ${validatedData.email}\nMessage:\n${validatedData.message}`
       });
-      
+
       res.json(submission);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -104,7 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { items } = req.body;
-      
+
       if (!items || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ message: "Items are required" });
       }
@@ -140,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id.toString();
       const { items, total, stripePaymentIntentId } = req.body;
-      
+
       // Create order
       const order = await storage.createOrder({
         userId,
@@ -181,7 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const orderId = parseInt(req.params.id);
       const userId = req.user!.id.toString();
-      
+
       const order = await storage.getOrder(orderId);
       if (!order || order.userId !== userId) {
         return res.status(404).json({ message: "Order not found" });
@@ -214,7 +214,7 @@ async function ensurePackagesExist() {
 
   try {
     const existingPackages = await storage.getPackages();
-    
+
     if (existingPackages.length === 0) {
       // Create packages in background, don't block startup
       setImmediate(async () => {
@@ -244,13 +244,13 @@ async function ensurePackagesExist() {
           console.error("Error creating packages:", error);
         }
       });
-      
+
       // Return empty array for now
       packagesCache = [];
     } else {
       packagesCache = existingPackages;
     }
-    
+
     packagesInitialized = true;
     return packagesCache;
   } catch (error) {
