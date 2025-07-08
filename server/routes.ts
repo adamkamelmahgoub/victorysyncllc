@@ -18,7 +18,7 @@ let stripe: Stripe | null = null;
 
 if (process.env.STRIPE_SECRET_KEY) {
   stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2025-05-28.basil",
+    apiVersion: "2024-11-20.acacia",
   });
 }
 
@@ -274,10 +274,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       await twilioIntegration.pushEvent(req.body);
-      res.xml('<Response></Response>');
+      res.set('Content-Type', 'application/xml');
+      res.send('<Response></Response>');
     } catch (error) {
       console.error('Twilio webhook error:', error);
-      res.status(500).xml('<Response></Response>');
+      res.status(500).set('Content-Type', 'application/xml').send('<Response></Response>');
     }
   });
 
