@@ -21,6 +21,58 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Link } from "wouter";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { useKpi } from '@/hooks/useKpi';
+import { 
+  BarChart3, 
+  DollarSign, 
+  Users, 
+  MessageSquare, 
+  TrendingUp, 
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  FileText,
+  Settings,
+  User,
+  LogOut
+} from 'lucide-react';
+
+const KpiTracker = () => {
+  const { metrics, loading, error } = useKpi();
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-6">
+        <p className="text-red-600">Error loading KPI data: {error}</p>
+      </div>
+    );
+  }
+
+  if (!metrics) return null;
 
 export default function CustomerDashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
