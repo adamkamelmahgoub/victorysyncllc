@@ -57,6 +57,25 @@ class KpiStore {
   }
 
   async pushEvent(event: KpiEvent): Promise<void> {
+    // Push to Redis stream for aggregator to process
+    if (this.redisClient) {
+      try {
+        await this.redisClient.xAdd('stream:kpi:events', '*', {
+          event: JSON.stringify(event)
+        });
+        console.log(`📊 KPI event pushed to stream: ${event.type}`);
+      } catch (error) {
+        console.error('Failed to push event to Redis stream:', error);
+        // Fallback to direct processing
+        await this.processEventDirectly(event);
+      }
+    } else {
+      // Fallback to direct processing if no Redis
+      await this.processEventDirectly(event);
+    }
+  }
+
+  private async processEventDirectly(event: KpiEvent): Promise<void> {
     const key = this.getKeyForEventType(event.type);
     if (!key) return;
 

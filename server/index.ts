@@ -96,6 +96,25 @@ if (process.env.NODE_ENV === "development") {
       }
     });
 
+    // Setup Socket.IO with JWT authentication
+    io.use((socket, next) => {
+      const token = socket.handshake.auth.token;
+      if (!token) {
+        return next(new Error('Authentication token required'));
+      }
+      // In a real app, you'd verify the JWT token here
+      // For now, we'll just check if token exists
+      next();
+    });
+
+    io.on('connection', (socket) => {
+      console.log('📱 Client connected to KPI updates');
+      
+      socket.on('disconnect', () => {
+        console.log('📱 Client disconnected from KPI updates');
+      });
+    });
+
     // Setup KPI store subscription for real-time updates
     kpiStore.subscribe((metrics) => {
       io.emit('kpi:update', metrics);

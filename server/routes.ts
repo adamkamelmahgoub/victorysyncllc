@@ -212,16 +212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-    // KPI live data endpoint
-  app.get("/api/kpi/live", async (req, res) => {
-    try {
-      const metrics = await kpiStore.getMetrics();
-      res.json(metrics);
-    } catch (error) {
-      console.error('KPI fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch KPI data' });
-    }
-  });
+    
 
   // Webhook endpoints for integrations
   app.post("/api/integrations/hubspot/webhook", express.raw({ type: 'application/json' }), async (req, res) => {
