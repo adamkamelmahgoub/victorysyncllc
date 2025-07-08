@@ -34,6 +34,7 @@ export const publicUsers = pgTable("public_users", {
   provider: varchar("provider").default("local"), // local, google, facebook, apple
   providerId: varchar("provider_id"),
   socialAccounts: jsonb("social_accounts").default([]), // Array of connected providers
+  privileges: jsonb("privileges"), // User privileges and permissions
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });

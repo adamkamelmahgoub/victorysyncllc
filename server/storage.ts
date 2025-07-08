@@ -48,6 +48,7 @@ export interface IStorage {
   getAllOrders(): Promise<Order[]>;
   updateUserStatus(userId: number, isActive: boolean): Promise<PublicUser | null>;
   deleteUser(userId: number): Promise<boolean>;
+  updateUserPrivileges(userId: number, privileges: any): Promise<PublicUser | null>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -132,6 +133,21 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     return results.length > 0;
+  }
+
+  async updateUserPrivileges(userId: number, privileges: any): Promise<PublicUser | null> {
+    const [user] = await db
+      .update(publicUsers)
+      .set({ 
+        socialAccounts: [
+          ...(await this.getPublicUserById(userId))?.socialAccounts || [],
+          { type: 'privileges', data: privileges }
+        ]
+      })
+      .where(eq(publicUsers.id, userId))
+      .returning();
+
+    return user || null;
   }
 
   async updateOrderStatus(id: number, status: string): Promise<Order> {

@@ -351,6 +351,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/admin/users/:id/privileges', requireAdmin, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { privileges } = req.body;
+
+      const user = await storage.updateUserPrivileges(userId, privileges);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user privileges:", error);
+      res.status(500).json({ message: "Failed to update user privileges" });
+    }
+  });
+
   // Add 404 handler for API routes that don't exist
   app.use('/api/*', (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });

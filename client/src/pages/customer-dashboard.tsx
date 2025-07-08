@@ -1,482 +1,655 @@
-import { useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  User,
-  Package,
-  Clock,
-  DollarSign,
-  Phone,
+
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { 
+  ShoppingCart, 
+  Package, 
+  CreditCard, 
+  TrendingUp, 
+  Phone, 
   Mail,
-  Settings,
   BarChart3,
-  Calendar,
+  PieChart,
+  LineChart,
+  Users,
+  DollarSign,
+  Target,
+  Activity,
+  Settings,
+  Link,
   CheckCircle,
   AlertCircle,
-} from "lucide-react";
-import { Link } from "wouter";
+  Clock,
+  Zap
+} from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+interface ExternalIntegration {
+  id: string;
+  name: string;
+  type: 'crm' | 'dialer' | 'analytics' | 'social' | 'email';
+  isConnected: boolean;
+  apiKey?: string;
+  lastSync?: string;
+  status: 'connected' | 'disconnected' | 'error' | 'syncing';
+}
+
+interface KPIData {
+  totalCalls: number;
+  callsToday: number;
+  conversionRate: number;
+  averageCallDuration: number;
+  leadsGenerated: number;
+  dealsCreated: number;
+  revenue: number;
+  customerSatisfaction: number;
+  responseTime: number;
+}
 
 export default function CustomerDashboard() {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  const { toast } = useToast();
+  const { user } = useAuth();
+  const [selectedIntegration, setSelectedIntegration] = useState<ExternalIntegration | null>(null);
+  const [isIntegrationModalOpen, setIsIntegrationModalOpen] = useState(false);
+  const [integrationApiKey, setIntegrationApiKey] = useState('');
+  const [integrationSettings, setIntegrationSettings] = useState<any>({});
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+  const [integrations, setIntegrations] = useState<ExternalIntegration[]>([
+    {
+      id: 'salesforce',
+      name: 'Salesforce CRM',
+      type: 'crm',
+      isConnected: false,
+      status: 'disconnected'
+    },
+    {
+      id: 'hubspot',
+      name: 'HubSpot CRM',
+      type: 'crm',
+      isConnected: true,
+      status: 'connected',
+      lastSync: '2024-01-15T10:30:00Z'
+    },
+    {
+      id: 'ringcentral',
+      name: 'RingCentral',
+      type: 'dialer',
+      isConnected: true,
+      status: 'connected',
+      lastSync: '2024-01-15T11:00:00Z'
+    },
+    {
+      id: 'twilio',
+      name: 'Twilio',
+      type: 'dialer',
+      isConnected: false,
+      status: 'disconnected'
+    },
+    {
+      id: 'google-analytics',
+      name: 'Google Analytics',
+      type: 'analytics',
+      isConnected: true,
+      status: 'connected',
+      lastSync: '2024-01-15T11:15:00Z'
+    },
+    {
+      id: 'mailchimp',
+      name: 'Mailchimp',
+      type: 'email',
+      isConnected: false,
+      status: 'disconnected'
+    },
+    {
+      id: 'pipedrive',
+      name: 'Pipedrive',
+      type: 'crm',
+      isConnected: false,
+      status: 'disconnected'
+    },
+    {
+      id: 'zendesk',
+      name: 'Zendesk',
+      type: 'crm',
+      isConnected: false,
+      status: 'disconnected'
+    }
+  ]);
+
+  const [kpiData] = useState<KPIData>({
+    totalCalls: 1247,
+    callsToday: 34,
+    conversionRate: 23.5,
+    averageCallDuration: 287,
+    leadsGenerated: 89,
+    dealsCreated: 21,
+    revenue: 45280,
+    customerSatisfaction: 4.2,
+    responseTime: 12
+  });
+
+  const { data: orders = [] } = useQuery({
+    queryKey: ['/api/orders'],
+    queryFn: async () => {
+      const response = await fetch('/api/orders', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      return response.json();
+    },
+    enabled: !!user,
+  });
+
+  const handleIntegrationConnect = (integration: ExternalIntegration) => {
+    setSelectedIntegration(integration);
+    setIntegrationApiKey('');
+    setIntegrationSettings({});
+    setIsIntegrationModalOpen(true);
+  };
+
+  const handleSaveIntegration = async () => {
+    if (!selectedIntegration) return;
+
+    try {
+      // Simulate API call to connect integration
+      setIntegrations(prev => prev.map(int => 
+        int.id === selectedIntegration.id 
+          ? { ...int, isConnected: true, status: 'connected' as const, apiKey: integrationApiKey, lastSync: new Date().toISOString() }
+          : int
+      ));
+
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Integration Connected",
+        description: `${selectedIntegration.name} has been successfully connected`,
+      });
+
+      setIsIntegrationModalOpen(false);
+    } catch (error) {
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect integration. Please try again.",
         variant: "destructive",
       });
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 500);
-      return;
     }
-  }, [isAuthenticated, isLoading, toast]);
+  };
 
-  const { data: orders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ["/api/orders"],
-    enabled: isAuthenticated,
-  }) as { data: any[], isLoading: boolean };
+  const handleIntegrationDisconnect = (integrationId: string) => {
+    setIntegrations(prev => prev.map(int => 
+      int.id === integrationId 
+        ? { ...int, isConnected: false, status: 'disconnected' as const, apiKey: undefined }
+        : int
+    ));
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
+    toast({
+      title: "Integration Disconnected",
+      description: "Integration has been successfully disconnected",
+    });
+  };
 
-  if (!isAuthenticated) {
-    return null; // Will redirect to login
-  }
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "processing":
-        return "bg-blue-100 text-blue-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case 'connected': return 'bg-green-100 text-green-800';
+      case 'disconnected': return 'bg-gray-100 text-gray-800';
+      case 'error': return 'bg-red-100 text-red-800';
+      case 'syncing': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "completed":
-        return <CheckCircle className="w-4 h-4" />;
-      case "processing":
-        return <Clock className="w-4 h-4" />;
-      case "pending":
-        return <AlertCircle className="w-4 h-4" />;
-      default:
-        return <Clock className="w-4 h-4" />;
+      case 'connected': return <CheckCircle className="w-4 h-4" />;
+      case 'disconnected': return <AlertCircle className="w-4 h-4" />;
+      case 'error': return <AlertCircle className="w-4 h-4" />;
+      case 'syncing': return <Clock className="w-4 h-4" />;
+      default: return <AlertCircle className="w-4 h-4" />;
     }
   };
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in to access your dashboard</h1>
+          <Button onClick={() => window.location.href = '/login'}>
+            Go to Login
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-8">
-          <div>
-            <h1 className="text-3xl font-bold victory-dark">Welcome back!</h1>
-            <p className="victory-gray">
-              Hello {user?.name || "there"}, manage your VictorySync services
-              here.
-            </p>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user.name}!</h1>
+          <p className="text-gray-600 mt-2">Monitor your performance and manage your integrations</p>
         </div>
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Active Services */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Package className="victory-purple w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm victory-gray">Active Services</p>
-                  <p className="text-2xl font-bold victory-dark">
-                    {Array.isArray(orders) ? orders.filter(
-                      (order: any) => order.status === "completed",
-                    ).length : 0}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="kpis">KPI Tracker</TabsTrigger>
+            <TabsTrigger value="integrations">Integrations</TabsTrigger>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+          </TabsList>
 
-          {/* Monthly Spend */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="text-green-600 w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm victory-gray">Monthly Spend</p>
-                  <p className="text-2xl font-bold victory-dark">
-                    $
-                    {Array.isArray(orders) ? orders
-                      .reduce(
-                        (sum: number, order: any) =>
-                          order.status === "completed"
-                            ? sum + parseFloat(order.total)
-                            : sum,
-                        0,
-                      )
-                      .toLocaleString() : "0"}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Support Tickets */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Phone className="victory-blue w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm victory-gray">Support Tickets</p>
-                  <p className="text-2xl font-bold victory-dark">0</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Account Status */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="text-green-600 w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm victory-gray">Account Status</p>
-                  <p className="text-lg font-semibold text-green-600">Active</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Enhanced KPI Tracker with Real-Time Integrations */}
-        <div className="mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="w-5 h-5" />
-                <span>Real-Time Performance Dashboard</span>
-                <Badge className="bg-green-100 text-green-700">Live Data</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Core KPIs */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="text-center p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                  <div className="text-2xl font-bold text-blue-600">98.5%</div>
-                  <div className="text-sm text-gray-600">Customer Satisfaction</div>
-                  <div className="text-xs text-green-600 mt-1">↑ 2.3% from last month</div>
-                </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
-                  <div className="text-2xl font-bold text-green-600">45 sec</div>
-                  <div className="text-sm text-gray-600">Avg Response Time</div>
-                  <div className="text-xs text-green-600 mt-1">↓ 15% from last month</div>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
-                  <div className="text-2xl font-bold text-purple-600">1,247</div>
-                  <div className="text-sm text-gray-600">Total Calls Today</div>
-                  <div className="text-xs text-green-600 mt-1">↑ 8% from yesterday</div>
-                </div>
-                <div className="text-center p-4 bg-orange-50 rounded-lg border-l-4 border-orange-500">
-                  <div className="text-2xl font-bold text-orange-600">$24,850</div>
-                  <div className="text-sm text-gray-600">Revenue Generated</div>
-                  <div className="text-xs text-green-600 mt-1">↑ 12% from last week</div>
-                </div>
-              </div>
-
-              {/* Dialer Integration Metrics */}
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold mb-3 flex items-center">
-                  <Phone className="w-5 h-5 mr-2" />
-                  Dialer Performance (Real-Time)
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Active Calls</span>
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <TabsContent value="overview" className="space-y-6">
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Phone className="text-blue-600 w-6 h-6" />
                     </div>
-                    <div className="text-xl font-bold text-gray-900">23</div>
-                    <div className="text-xs text-blue-600">12 outbound, 11 inbound</div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Connection Rate</span>
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                    </div>
-                    <div className="text-xl font-bold text-gray-900">76.2%</div>
-                    <div className="text-xs text-green-600">↑ 3.1% from target</div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Avg Call Duration</span>
-                      <Clock className="w-4 h-4 text-blue-500" />
-                    </div>
-                    <div className="text-xl font-bold text-gray-900">4:32</div>
-                    <div className="text-xs text-gray-500">+0:15 from yesterday</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* CRM Integration Metrics */}
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold mb-3 flex items-center">
-                  <User className="w-5 h-5 mr-2" />
-                  CRM Analytics (Live Sync)
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <div className="text-sm text-gray-600 mb-1">New Leads Today</div>
-                    <div className="text-xl font-bold text-blue-600">142</div>
-                    <div className="text-xs text-green-600">↑ 18% vs yesterday</div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <div className="text-sm text-gray-600 mb-1">Qualified Prospects</div>
-                    <div className="text-xl font-bold text-purple-600">67</div>
-                    <div className="text-xs text-blue-600">47% qualification rate</div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <div className="text-sm text-gray-600 mb-1">Appointments Set</div>
-                    <div className="text-xl font-bold text-green-600">29</div>
-                    <div className="text-xs text-green-600">↑ 5 from target</div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <div className="text-sm text-gray-600 mb-1">Deals Closed</div>
-                    <div className="text-xl font-bold text-orange-600">8</div>
-                    <div className="text-xs text-gray-500">$12,400 value</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Real-Time Activity Feed */}
-              <div>
-                <h4 className="text-lg font-semibold mb-3 flex items-center">
-                  <AlertCircle className="w-5 h-5 mr-2" />
-                  Live Activity Feed
-                </h4>
-                <div className="bg-gray-50 rounded-lg p-4 max-h-48 overflow-y-auto">
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-green-500">
-                      <span>🟢 New lead captured: Tech Startup Inc.</span>
-                      <span className="text-gray-500">2 min ago</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-blue-500">
-                      <span>📞 Call connected: Marketing Director</span>
-                      <span className="text-gray-500">3 min ago</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-purple-500">
-                      <span>✅ Deal closed: $2,500 Monthly Package</span>
-                      <span className="text-gray-500">7 min ago</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-orange-500">
-                      <span>📅 Appointment scheduled for tomorrow</span>
-                      <span className="text-gray-500">12 min ago</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-yellow-500">
-                      <span>📧 Follow-up email sent to 15 prospects</span>
-                      <span className="text-gray-500">18 min ago</span>
+                    <div>
+                      <p className="text-sm text-gray-600">Calls Today</p>
+                      <p className="text-2xl font-bold text-gray-900">{kpiData.callsToday}</p>
                     </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
-              {/* Integration Status */}
-              <div className="mt-6 pt-4 border-t">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                      <span>Dialer Connected</span>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <Target className="text-green-600 w-6 h-6" />
                     </div>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                      <span>CRM Synced</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                      <span>Analytics Live</span>
+                    <div>
+                      <p className="text-sm text-gray-600">Conversion Rate</p>
+                      <p className="text-2xl font-bold text-gray-900">{kpiData.conversionRate}%</p>
                     </div>
                   </div>
-                  <span className="text-gray-500">Last updated: 30 seconds ago</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                </CardContent>
+              </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Orders */}
-          <div className="lg:col-span-2">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Users className="text-purple-600 w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Leads Generated</p>
+                      <p className="text-2xl font-bold text-gray-900">{kpiData.leadsGenerated}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <DollarSign className="text-orange-600 w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Revenue</p>
+                      <p className="text-2xl font-bold text-gray-900">${kpiData.revenue.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Activity */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Package className="w-5 h-5" />
-                  <span>Recent Orders</span>
+                  <Activity className="w-5 h-5" />
+                  <span>Recent Activity</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {ordersLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                    <div>
+                      <p className="text-sm font-medium">New lead generated from HubSpot</p>
+                      <p className="text-xs text-gray-500">2 minutes ago</p>
+                    </div>
                   </div>
-                ) : Array.isArray(orders) && orders.length > 0 ? (
-                  <div className="space-y-4">
-                    {orders.slice(0, 5).map((order: any) => (
-                      <div
-                        key={order.id}
-                        className="flex items-center justify-between p-4 border border-slate-200 rounded-lg"
-                      >
+                  <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    <div>
+                      <p className="text-sm font-medium">Call completed via RingCentral</p>
+                      <p className="text-xs text-gray-500">15 minutes ago</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full" />
+                    <div>
+                      <p className="text-sm font-medium">Google Analytics data synchronized</p>
+                      <p className="text-xs text-gray-500">1 hour ago</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="kpis" className="space-y-6">
+            {/* KPI Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Phone className="w-5 h-5" />
+                    <span>Call Metrics</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Total Calls</span>
+                    <span className="font-semibold">{kpiData.totalCalls}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Today</span>
+                    <span className="font-semibold">{kpiData.callsToday}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Avg Duration</span>
+                    <span className="font-semibold">{formatDuration(kpiData.averageCallDuration)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Response Time</span>
+                    <span className="font-semibold">{kpiData.responseTime}s</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Target className="w-5 h-5" />
+                    <span>Sales Performance</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Conversion Rate</span>
+                    <span className="font-semibold">{kpiData.conversionRate}%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Leads Generated</span>
+                    <span className="font-semibold">{kpiData.leadsGenerated}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Deals Created</span>
+                    <span className="font-semibold">{kpiData.dealsCreated}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Revenue</span>
+                    <span className="font-semibold">${kpiData.revenue.toLocaleString()}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <BarChart3 className="w-5 h-5" />
+                    <span>Customer Satisfaction</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Rating</span>
+                    <span className="font-semibold">{kpiData.customerSatisfaction}/5.0</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full" 
+                      style={{ width: `${(kpiData.customerSatisfaction / 5) * 100}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Based on {Math.floor(kpiData.totalCalls * 0.3)} customer reviews
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Real-time Data Feed */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Zap className="w-5 h-5" />
+                  <span>Real-time Data Feed</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-sm">HubSpot: New lead captured</span>
+                    </div>
+                    <span className="text-xs text-gray-500">Just now</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                      <span className="text-sm">RingCentral: Call in progress</span>
+                    </div>
+                    <span className="text-xs text-gray-500">2 min ago</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                      <span className="text-sm">Google Analytics: Traffic spike detected</span>
+                    </div>
+                    <span className="text-xs text-gray-500">5 min ago</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="integrations" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Link className="w-5 h-5" />
+                  <span>External Integrations</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {integrations.map((integration) => (
+                    <div key={integration.id} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          {getStatusIcon(order.status)}
+                          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                            {integration.type === 'crm' && <Users className="w-5 h-5 text-gray-600" />}
+                            {integration.type === 'dialer' && <Phone className="w-5 h-5 text-gray-600" />}
+                            {integration.type === 'analytics' && <BarChart3 className="w-5 h-5 text-gray-600" />}
+                            {integration.type === 'email' && <Mail className="w-5 h-5 text-gray-600" />}
+                            {integration.type === 'social' && <Users className="w-5 h-5 text-gray-600" />}
+                          </div>
                           <div>
-                            <p className="font-semibold victory-dark">
-                              Order #{order.id}
-                            </p>
-                            <p className="text-sm victory-gray">
-                              {new Date(order.createdAt).toLocaleDateString()}
-                            </p>
+                            <h3 className="font-semibold">{integration.name}</h3>
+                            <p className="text-sm text-gray-600 capitalize">{integration.type}</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <Badge className={getStatusColor(order.status)}>
+                        <Badge className={getStatusColor(integration.status)}>
+                          {getStatusIcon(integration.status)}
+                          <span className="ml-1 capitalize">{integration.status}</span>
+                        </Badge>
+                      </div>
+                      
+                      {integration.isConnected && integration.lastSync && (
+                        <div className="text-xs text-gray-500">
+                          Last sync: {new Date(integration.lastSync).toLocaleString()}
+                        </div>
+                      )}
+                      
+                      <div className="flex space-x-2">
+                        {integration.isConnected ? (
+                          <>
+                            <Button size="sm" variant="outline">
+                              <Settings className="w-4 h-4 mr-1" />
+                              Configure
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => handleIntegrationDisconnect(integration.id)}
+                            >
+                              Disconnect
+                            </Button>
+                          </>
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleIntegrationConnect(integration)}
+                            className="bg-victory-purple hover:bg-purple-700"
+                          >
+                            Connect
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="orders" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <ShoppingCart className="w-5 h-5" />
+                  <span>Your Orders</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {orders.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No orders yet</h3>
+                    <p className="text-gray-600 mb-4">When you place orders, they'll appear here.</p>
+                    <Button onClick={() => window.location.href = '/pricing'}>
+                      View Services
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {orders.map((order: any) => (
+                      <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-semibold">Order #{order.id}</p>
+                          <p className="text-sm text-gray-600">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <Badge className={
+                            order.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                            order.status === 'processing' ? 'bg-blue-100 text-blue-800' : 
+                            'bg-yellow-100 text-yellow-800'
+                          }>
                             {order.status}
                           </Badge>
-                          <p className="text-sm font-semibold victory-dark mt-1">
-                            ${parseFloat(order.total).toLocaleString()}
-                          </p>
+                          <span className="font-semibold">${parseFloat(order.total).toLocaleString()}</span>
                         </div>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Package className="w-12 h-12 victory-gray mx-auto mb-4" />
-                    <p className="victory-gray mb-4">No orders yet</p>
-                    <Link href="/pricing">
-                      <Button className="bg-victory-purple hover:bg-purple-700 text-white">
-                        Browse Services
-                      </Button>
-                    </Link>
-                  </div>
                 )}
               </CardContent>
             </Card>
-          </div>
+          </TabsContent>
+        </Tabs>
 
-          {/* Quick Actions & Account Info */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="w-5 h-5" />
-                  <span>Quick Actions</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Link href="/pricing">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Package className="w-4 h-4 mr-2" />
-                    Add New Service
-                  </Button>
-                </Link>
-                <Link href="/contact">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Contact Support
-                  </Button>
-                </Link>
-                <Button variant="outline" className="w-full justify-start">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  View Analytics
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Schedule Meeting
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Account Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="w-5 h-5" />
-                  <span>Account Information</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                    <User className="victory-purple w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="font-semibold victory-dark">
-                      {user?.name || "User"}
-                    </p>
-                    <p className="text-sm victory-gray flex items-center">
-                      <Mail className="w-3 h-3 mr-1" />
-                      {user?.email || "No email provided"}
-                    </p>
-                  </div>
+        {/* Integration Setup Modal */}
+        <Dialog open={isIntegrationModalOpen} onOpenChange={setIsIntegrationModalOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Connect {selectedIntegration?.name}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="api-key">API Key</Label>
+                <Input
+                  id="api-key"
+                  type="password"
+                  placeholder="Enter your API key"
+                  value={integrationApiKey}
+                  onChange={(e) => setIntegrationApiKey(e.target.value)}
+                />
+              </div>
+              
+              {selectedIntegration?.type === 'crm' && (
+                <div>
+                  <Label htmlFor="crm-url">CRM URL</Label>
+                  <Input
+                    id="crm-url"
+                    placeholder="https://your-crm-domain.com"
+                    value={integrationSettings.crmUrl || ''}
+                    onChange={(e) => setIntegrationSettings({...integrationSettings, crmUrl: e.target.value})}
+                  />
                 </div>
-
-                <div className="pt-4 border-t border-slate-200">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="victory-gray">Member since:</span>
-                    <span className="font-medium">
-                      {user?.createdAt
-                        ? new Date(user.createdAt).toLocaleDateString()
-                        : "N/A"}
-                    </span>
-                  </div>
+              )}
+              
+              {selectedIntegration?.type === 'dialer' && (
+                <div>
+                  <Label htmlFor="phone-number">Phone Number</Label>
+                  <Input
+                    id="phone-number"
+                    placeholder="+1234567890"
+                    value={integrationSettings.phoneNumber || ''}
+                    onChange={(e) => setIntegrationSettings({...integrationSettings, phoneNumber: e.target.value})}
+                  />
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Support Card */}
-            <Card className="gradient-victory text-white">
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-2">Need Help?</h3>
-                <p className="text-purple-100 text-sm mb-4">
-                  Our support team is available 24/7 to assist you with any
-                  questions.
-                </p>
-                <Link href="/contact">
-                  <Button className="bg-white text-victory-purple hover:bg-gray-100 w-full">
-                    Contact Support
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              )}
+              
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  checked={integrationSettings.autoSync || false}
+                  onCheckedChange={(checked) => setIntegrationSettings({...integrationSettings, autoSync: checked})}
+                />
+                <Label>Enable automatic data synchronization</Label>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setIsIntegrationModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveIntegration} className="bg-victory-purple hover:bg-purple-700">
+                  Connect
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
