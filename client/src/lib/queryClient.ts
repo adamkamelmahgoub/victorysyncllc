@@ -76,24 +76,45 @@ export const getQueryFn: <T>(options: {
     }
   };
 
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchInterval: false,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes instead of infinity
-      retry: (failureCount, error) => {
-        // Don't retry on 4xx errors except 401
-        if (error.message.includes('401:')) return false;
-        if (error.message.match(/^4\d\d:/)) return false;
-        return failureCount < 1; // Reduced retries
-      },
-      retryDelay: 1000, // Faster retry
-    },
-    mutations: {
-      retry: false,
-    },
-  },
-});
+function makeQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60 * 1000,
+        retry: (failureCount, error) => {
+          // Don't retry on 404 or 403 errors
+          if (error instanceof Error && error.message.includes('404')) return false;
+          if (error instanceof Error && error.message.includes('403')) return false;
+          return failureCount < 3;
+        },
+        refetchOnWindowFocus: false,
+        queryFn: async ({ queryKey }) => {
+          const url = queryKey[0] as string;
+          const response = await fetch(url);
 
-// Minimal error handling - removed global handler to speed up startup
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          return response.json();
+        },
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  });
+}
+
+let browserQueryClient: QueryClient | undefined = undefined;
+
+function getQueryClient() {
+  if (typeof window === "undefined") {
+    return makeQueryClient();
+  } else {
+    if (!browserQueryClient) browserQueryClient = makeQueryClient();
+    return browserQueryClient;
+  }
+}
+
+export const queryClient = getQueryClient();

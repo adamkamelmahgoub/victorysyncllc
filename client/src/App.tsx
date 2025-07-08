@@ -44,7 +44,7 @@ import "@fontsource/inter/700.css";
 import "@fontsource/inter/800.css";
 
 // Simplified app wrapper without error boundary overhead
-
+import { ErrorBoundary } from 'react-error-boundary'
 
 const Router = memo(function Router() {
   const [cartModalOpen, setCartModalOpen] = useState(false);
@@ -116,7 +116,9 @@ function App() {
       <CartProvider>
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <ErrorBoundary fallback={<div>Something went wrong</div>}>
+            <Router />
+          </ErrorBoundary>
         </TooltipProvider>
       </CartProvider>
     </QueryClientProvider>
