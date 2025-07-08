@@ -53,5 +53,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
-// client/src/components/ui/index.ts
-export { default as Button } from "./button";
+export { Button, buttonVariants }
