@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -409,12 +408,12 @@ export default function AdminPortal() {
 
   const handleSaveUserPrivileges = () => {
     if (!selectedUser) return;
-    
+
     updateUserPrivilegesMutation.mutate({
       userId: selectedUser.id,
       privileges: userPrivileges
     });
-    
+
     setIsUserDetailOpen(false);
   };
 
@@ -460,7 +459,7 @@ export default function AdminPortal() {
                          (statusFilter === 'inactive' && user.isActive === false);
     const matchesTier = tierFilter === 'all' || 
                        (user.privileges?.subscriptionTier || 'basic') === tierFilter;
-    
+
     return matchesSearch && matchesStatus && matchesTier;
   });
 
@@ -646,7 +645,7 @@ export default function AdminPortal() {
                     </Button>
                   </div>
                 </div>
-                
+
                 {/* Filters and Search */}
                 <div className="flex space-x-4 items-center">
                   <div className="flex-1">
@@ -859,7 +858,7 @@ export default function AdminPortal() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>User Growth</CardTitle>
@@ -910,7 +909,7 @@ export default function AdminPortal() {
                 <span>Complete User Management: {selectedUser?.name}</span>
               </DialogTitle>
             </DialogHeader>
-            
+
             {selectedUser && (
               <div className="space-y-6">
                 {/* User Overview */}
@@ -923,13 +922,13 @@ export default function AdminPortal() {
                         </div>
                         <p className="font-semibold">{selectedUser.name}</p>
                         <p className="text-sm text-gray-600">{selectedUser.email}</p>
-                        <Badge className={getStatusColor(userPrivileges.accountStatus)} className="mt-2">
+                        <Badge className={`${getStatusColor(userPrivileges.accountStatus)} mt-2`}>
                           {userPrivileges.accountStatus}
                         </Badge>
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardContent className="p-4">
                       <div className="space-y-2">
@@ -948,7 +947,7 @@ export default function AdminPortal() {
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardContent className="p-4">
                       <div className="space-y-2">
@@ -967,7 +966,7 @@ export default function AdminPortal() {
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardContent className="p-4">
                       <div className="space-y-2">
@@ -1019,7 +1018,7 @@ export default function AdminPortal() {
                               onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canCreateOrders: checked})}
                             />
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <Label>Can View Reports</Label>
                             <Switch 
@@ -1027,7 +1026,7 @@ export default function AdminPortal() {
                               onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canViewReports: checked})}
                             />
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <Label>Can Access Premium Features</Label>
                             <Switch 
@@ -1035,7 +1034,7 @@ export default function AdminPortal() {
                               onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canAccessPremiumFeatures: checked})}
                             />
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <Label>Can Modify Profile</Label>
                             <Switch 
@@ -1043,7 +1042,7 @@ export default function AdminPortal() {
                               onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canModifyProfile: checked})}
                             />
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <Label>Can Delete Account</Label>
                             <Switch 
@@ -1066,7 +1065,7 @@ export default function AdminPortal() {
                               onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canViewBilling: checked})}
                             />
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <Label>Can Manage Integrations</Label>
                             <Switch 
@@ -1074,7 +1073,7 @@ export default function AdminPortal() {
                               onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canManageIntegrations: checked})}
                             />
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <Label>Can Export Data</Label>
                             <Switch 
@@ -1082,7 +1081,7 @@ export default function AdminPortal() {
                               onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canExportData: checked})}
                             />
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <Label>Can Access API</Label>
                             <Switch 
@@ -1090,7 +1089,7 @@ export default function AdminPortal() {
                               onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canAccessAPI: checked})}
                             />
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <Label>Can View Analytics</Label>
                             <Switch 
@@ -1111,7 +1110,7 @@ export default function AdminPortal() {
                           onChange={(e) => setUserPrivileges({...userPrivileges, maxOrderValue: parseInt(e.target.value)})}
                         />
                       </div>
-                      
+
                       <div>
                         <Label>Max Orders Per Month</Label>
                         <Input 
@@ -1120,7 +1119,7 @@ export default function AdminPortal() {
                           onChange={(e) => setUserPrivileges({...userPrivileges, maxOrdersPerMonth: parseInt(e.target.value)})}
                         />
                       </div>
-                      
+
                       <div>
                         <Label>API Rate Limit (per hour)</Label>
                         <Input 
@@ -1147,7 +1146,7 @@ export default function AdminPortal() {
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       <div>
                         <Label>Priority Level</Label>
                         <Select value={userPrivileges.priority} onValueChange={(value: any) => setUserPrivileges({...userPrivileges, priority: value})}>
@@ -1186,7 +1185,7 @@ export default function AdminPortal() {
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           <div>
                             <Label>Billing Cycle</Label>
                             <Select value={userPrivileges.billingCycle} onValueChange={(value: any) => setUserPrivileges({...userPrivileges, billingCycle: value})}>
@@ -1200,7 +1199,7 @@ export default function AdminPortal() {
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           <div>
                             <Label>Credit Limit ($)</Label>
                             <Input 
@@ -1209,7 +1208,7 @@ export default function AdminPortal() {
                               onChange={(e) => setUserPrivileges({...userPrivileges, creditLimit: parseInt(e.target.value)})}
                             />
                           </div>
-                          
+
                           <div>
                             <Label>Data Retention (days)</Label>
                             <Input 
@@ -1220,7 +1219,7 @@ export default function AdminPortal() {
                           </div>
                         </CardContent>
                       </Card>
-                      
+
                       <Card>
                         <CardHeader>
                           <CardTitle>Usage Statistics</CardTitle>
@@ -1234,7 +1233,7 @@ export default function AdminPortal() {
                             <div className="w-full bg-gray-200 rounded-full h-2">
                               <div className="bg-blue-500 h-2 rounded-full" style={{ width: '23%' }} />
                             </div>
-                            
+
                             <div className="flex justify-between items-center">
                               <span className="text-sm">API Calls This Month</span>
                               <span className="font-semibold">1,247 / 10,000</span>
@@ -1242,7 +1241,7 @@ export default function AdminPortal() {
                             <div className="w-full bg-gray-200 rounded-full h-2">
                               <div className="bg-green-500 h-2 rounded-full" style={{ width: '12%' }} />
                             </div>
-                            
+
                             <div className="flex justify-between items-center">
                               <span className="text-sm">Bandwidth Used</span>
                               <span className="font-semibold">45 GB / 100 GB</span>
@@ -1266,7 +1265,7 @@ export default function AdminPortal() {
                         </Button>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       {orders.filter((order: any) => order.userId === selectedUser.id.toString()).map((order: any) => (
                         <div key={order.id} className="flex items-center justify-between p-3 border rounded">
@@ -1290,7 +1289,7 @@ export default function AdminPortal() {
                         </div>
                       ))}
                     </div>
-                    
+
                     <div className="pt-4 border-t">
                       <h5 className="font-semibold mb-3">Create New Order</h5>
                       <div className="flex space-x-2">
@@ -1374,7 +1373,7 @@ export default function AdminPortal() {
                           </div>
                         </CardContent>
                       </Card>
-                      
+
                       <Card>
                         <CardHeader>
                           <CardTitle>Payment History</CardTitle>
@@ -1419,7 +1418,7 @@ export default function AdminPortal() {
                         className="mt-2"
                       />
                     </div>
-                    
+
                     <div>
                       <Label>Internal Tags</Label>
                       <Input 
