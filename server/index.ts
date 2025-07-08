@@ -1,8 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { testDatabaseConnection } from "./db";
-import passport from "./auth/passport";
+import { registerRoutes } from "./routes.js";
+import { setupVite, serveStatic, log } from "./vite.js";
+import { testDatabaseConnection } from "./db.js";
+import passport from "./auth/passport.js";
 import cors from "cors";
 
 // Validate required environment variables at startup
@@ -69,7 +69,7 @@ if (process.env.NODE_ENV === "development") {
     });
 
     // Setup vite/static serving
-    if (app.get("env") === "development") {
+    if (process.env.NODE_ENV === "development") {
       await setupVite(app, server);
     } else {
       try {
