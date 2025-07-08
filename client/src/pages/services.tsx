@@ -1,6 +1,6 @@
 import { Phone, Megaphone, Bot, BarChart3, Check, ArrowRight, Users, Zap, Globe } from 'lucide-react';
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'wouter';
 
 export default function Services() {

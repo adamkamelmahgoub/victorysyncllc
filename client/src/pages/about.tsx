@@ -1,6 +1,6 @@
 import { Globe, Users, Shield, Award, Target, Heart } from 'lucide-react';
-import { Card, CardContent } from "../components/ui/card";
-import { Button } from "../components/ui/button";
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
 
 export default function About() {

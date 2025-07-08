@@ -5,9 +5,31 @@ export function useAuth() {
   
   const { data: user, isLoading } = useQuery({
     queryKey: ["/api/auth/me"],
-    enabled: false, // Disable automatic execution to prevent rejections
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    queryFn: async () => {
+      if (!token) {
+        return null;
+      }
+      
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Token is invalid, remove it
+          localStorage.removeItem('auth_token');
+          return null;
+        }
+        throw new Error('Failed to fetch user data');
+      }
+      
+      const data = await response.json();
+      return data.user;
+    },
     retry: false,
+    enabled: !!token,
   });
 
   const logout = () => {
@@ -16,9 +38,9 @@ export function useAuth() {
   };
 
   return {
-    user: null, // Temporarily disable auth to fix loading issues
-    isLoading: false,
-    isAuthenticated: false,
+    user,
+    isLoading,
+    isAuthenticated: !!user && !!token,
     logout,
   };
 }

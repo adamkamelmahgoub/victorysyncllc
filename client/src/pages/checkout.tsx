@@ -6,13 +6,13 @@ import {
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { useEffect, useState } from "react";
-import { useCart } from "../hooks/useCart";
-import { useAuth } from "../hooks/useAuth";
-import { apiRequest } from "../lib/queryClient";
-import { useToast } from "../hooks/use-toast";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Separator } from "../components/ui/separator";
+import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { ShieldCheck, CreditCard, Check } from "lucide-react";
 import { Link } from "wouter";
 

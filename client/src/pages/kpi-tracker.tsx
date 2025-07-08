@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
-import { useToast } from "../hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   TrendingUp,
   TrendingDown,
@@ -16,7 +16,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Link } from "wouter";
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
 
 export default function KPITracker() {
   const { user, isAuthenticated, isLoading } = useAuth();

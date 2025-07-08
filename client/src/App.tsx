@@ -1,39 +1,39 @@
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "./components/ui/toaster";
-import { TooltipProvider } from "./components/ui/tooltip";
-import { CartProvider } from "./contexts/CartContext";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { CartProvider } from "@/contexts/CartContext";
 import { useState, lazy, Suspense, memo, useEffect } from "react";
 
 // Layout Components
-import Navigation from "./components/navigation";
-import Footer from "./components/footer";
-import CartModal from "./components/cart-modal";
-import ScrollToTop from "./components/ScrollToTop";
+import Navigation from "@/components/navigation";
+import Footer from "@/components/footer";
+import CartModal from "@/components/cart-modal";
+import ScrollToTop from "@/components/ScrollToTop";
 
 // Core Pages (loaded immediately)
-import Home from "./pages/home";
-import Services from "./pages/services";
-import Pricing from "./pages/pricing";
+import Home from "@/pages/home";
+import Services from "@/pages/services";
+import Pricing from "@/pages/pricing";
 
 // Lazy load less critical pages
-const About = lazy(() => import("./pages/about"));
-const Contact = lazy(() => import("./pages/contact"));
-const Checkout = lazy(() => import("./pages/checkout"));
-const CustomerDashboard = lazy(() => import("./pages/customer-dashboard"));
-const Register = lazy(() => import("./pages/register"));
-const Login = lazy(() => import("./pages/login"));
-const NotFound = lazy(() => import("./pages/not-found"));
+const About = lazy(() => import("@/pages/about"));
+const Contact = lazy(() => import("@/pages/contact"));
+const Checkout = lazy(() => import("@/pages/checkout"));
+const CustomerDashboard = lazy(() => import("@/pages/customer-dashboard"));
+const Register = lazy(() => import("@/pages/register"));
+const Login = lazy(() => import("@/pages/login"));
+const NotFound = lazy(() => import("@/pages/not-found"));
 
 // Footer Pages (lazy loaded)
-const AboutUs = lazy(() => import("./pages/about-us"));
-const Careers = lazy(() => import("./pages/careers"));
-const Blog = lazy(() => import("./pages/blog"));
-const HelpCenter = lazy(() => import("./pages/help-center"));
-const Documentation = lazy(() => import("./pages/docs"));
-const PrivacyPolicy = lazy(() => import("./pages/privacy-policy"));
-const TermsOfService = lazy(() => import("./pages/terms"));
+const AboutUs = lazy(() => import("@/pages/about-us"));
+const Careers = lazy(() => import("@/pages/careers"));
+const Blog = lazy(() => import("@/pages/blog"));
+const HelpCenter = lazy(() => import("@/pages/help-center"));
+const Documentation = lazy(() => import("@/pages/docs"));
+const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
+const TermsOfService = lazy(() => import("@/pages/terms"));
 
 // Import Google Fonts
 import "@fontsource/inter/300.css";
@@ -97,6 +97,20 @@ const Router = memo(function Router() {
 });
 
 function App() {
+  useEffect(() => {
+    // Handle unhandled promise rejections
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      event.preventDefault();
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
