@@ -6,12 +6,7 @@ import passport from "./auth/passport";
 import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { createYoga } from "graphql-yoga";
-import { buildSchema } from "type-graphql";
-import { setupAuth, authMiddleware } from "./auth/publicAuth";
-import { db } from "./db";
 import { kpiStore } from "./kpiStore";
-import { promises as fs } from "fs";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
