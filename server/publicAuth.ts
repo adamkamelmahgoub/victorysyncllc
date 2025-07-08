@@ -47,6 +47,10 @@ export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, 
       return res.status(401).json({ error: "Invalid token - user not found" });
     }
 
+    if (!user.isActive) {
+      return res.status(403).json({ error: "Account has been deactivated" });
+    }
+
     req.user = user;
     next();
   } catch (error) {

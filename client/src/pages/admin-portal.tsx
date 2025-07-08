@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,14 +18,32 @@ import {
   Plus,
   DollarSign,
   Phone,
-  Mail
+  Mail,
+  UserCheck,
+  UserX,
+  ShoppingCart
 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function AdminPortal() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedPackage, setSelectedPackage] = useState('');
+  const [orderQuantity, setOrderQuantity] = useState(1);
+  const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +69,122 @@ export default function AdminPortal() {
     queryKey: ['/api/admin/packages'],
     enabled: isAuthenticated,
   });
+
+  const updateUserStatusMutation = useMutation({
+    mutationFn: async ({ userId, isActive }: { userId: number; isActive: boolean }) => {
+      const response = await fetch(`/api/admin/users/${userId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ isActive }),
+      });
+      if (!response.ok) throw new Error('Failed to update user status');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: "Success",
+        description: "User status updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update user status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to delete user');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const addOrderMutation = useMutation({
+    mutationFn: async ({ userId, packageId, quantity }: { userId: number; packageId: number; quantity: number }) => {
+      const response = await fetch(`/api/admin/users/${userId}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ packageId, quantity }),
+      });
+      if (!response.ok) throw new Error('Failed to create order');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/orders'] });
+      setIsAddOrderOpen(false);
+      setSelectedUser(null);
+      setSelectedPackage('');
+      setOrderQuantity(1);
+      toast({
+        title: "Success",
+        description: "Order created successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create order",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleToggleUserStatus = (user: any) => {
+    updateUserStatusMutation.mutate({ userId: user.id, isActive: !user.isActive });
+  };
+
+  const handleDeleteUser = (userId: number) => {
+    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      deleteUserMutation.mutate(userId);
+    }
+  };
+
+  const handleAddOrder = () => {
+    if (!selectedUser || !selectedPackage) {
+      toast({
+        title: "Error",
+        description: "Please select a user and package",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addOrderMutation.mutate({
+      userId: selectedUser.id,
+      packageId: parseInt(selectedPackage),
+      quantity: orderQuantity,
+    });
+  };
 
   if (!isAuthenticated) {
     return (
@@ -175,7 +309,71 @@ export default function AdminPortal() {
           <TabsContent value="users" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>User Management</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle>User Management</CardTitle>
+                  <Dialog open={isAddOrderOpen} onOpenChange={setIsAddOrderOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-victory-purple hover:bg-purple-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Order to User
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Order to User</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="user-select">Select User</Label>
+                          <Select onValueChange={(value) => setSelectedUser(users.find((u: any) => u.id === parseInt(value)))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose a user" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {users.map((user: any) => (
+                                <SelectItem key={user.id} value={user.id.toString()}>
+                                  {user.name} - {user.email}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="package-select">Select Package</Label>
+                          <Select onValueChange={setSelectedPackage}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose a package" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {packages.map((pkg: any) => (
+                                <SelectItem key={pkg.id} value={pkg.id.toString()}>
+                                  {pkg.name} - ${pkg.price}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="quantity">Quantity</Label>
+                          <Input
+                            id="quantity"
+                            type="number"
+                            min="1"
+                            value={orderQuantity}
+                            onChange={(e) => setOrderQuantity(parseInt(e.target.value))}
+                          />
+                        </div>
+                        <Button 
+                          onClick={handleAddOrder} 
+                          className="w-full bg-victory-purple hover:bg-purple-700"
+                          disabled={addOrderMutation.isPending}
+                        >
+                          {addOrderMutation.isPending ? 'Creating...' : 'Create Order'}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -188,15 +386,40 @@ export default function AdminPortal() {
                         <div>
                           <p className="font-semibold">{user.name}</p>
                           <p className="text-sm text-gray-600">{user.email}</p>
+                          <p className="text-xs text-gray-500">
+                            Created: {new Date(user.createdAt).toLocaleDateString()}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline">Active</Badge>
-                        <Button size="sm" variant="outline">
-                          <Eye className="w-4 h-4" />
+                        <Badge variant={user.isActive ? "default" : "secondary"}>
+                          {user.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleToggleUserStatus(user)}
+                          disabled={updateUserStatusMutation.isPending}
+                        >
+                          {user.isActive ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                         </Button>
-                        <Button size="sm" variant="outline">
-                          <Edit className="w-4 h-4" />
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsAddOrderOpen(true);
+                          }}
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleDeleteUser(user.id)}
+                          disabled={deleteUserMutation.isPending}
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>

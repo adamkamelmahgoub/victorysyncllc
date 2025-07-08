@@ -213,6 +213,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes - protected by authentication
+  app.get('/api/admin/users', authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const users = await storage.getAllPublicUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.get('/api/admin/orders', authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const orders = await storage.getAllOrders();
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  app.get('/api/admin/packages', authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const packages = await storage.getPackages();
+      res.json(packages);
+    } catch (error) {
+      console.error("Error fetching packages:", error);
+      res.status(500).json({ message: "Failed to fetch packages" });
+    }
+  });
+
+  app.put('/api/admin/users/:id/status', authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      const user = await storage.updateUserStatus(userId, isActive);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      res.status(500).json({ message: "Failed to update user status" });
+    }
+  });
+
+  app.delete('/api/admin/users/:id', authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      const success = await storage.deleteUser(userId);
+      if (!success) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
+  app.post('/api/admin/users/:id/orders', authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = req.params.id;
+      const { packageId, quantity } = req.body;
+      
+      const pkg = await storage.getPackage(packageId);
+      if (!pkg) {
+        return res.status(400).json({ message: "Package not found" });
+      }
+      
+      const total = parseFloat(pkg.price) * quantity;
+      
+      const order = await storage.createOrder({
+        userId,
+        total: total.toString(),
+        status: 'admin_created',
+      });
+
+      await storage.createOrderItem({
+        orderId: order.id,
+        packageId,
+        quantity,
+        price: pkg.price,
+      });
+
+      res.json(order);
+    } catch (error) {
+      console.error("Error creating order for user:", error);
+      res.status(500).json({ message: "Failed to create order" });
+    }
+  });
+
   // Add 404 handler for API routes that don't exist
   app.use('/api/*', (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
