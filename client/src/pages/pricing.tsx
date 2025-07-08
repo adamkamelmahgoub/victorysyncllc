@@ -10,9 +10,22 @@ export default function Pricing() {
 
   const { data: packages, isLoading, error } = useQuery({
     queryKey: ["/api/packages"],
-    retry: 3,
+    queryFn: async () => {
+      try {
+        const response = await fetch("/api/packages");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      } catch (err) {
+        console.error("Failed to fetch packages:", err);
+        throw err;
+      }
+    },
+    retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    throwOnError: false,
   });
 
   if (isLoading) {

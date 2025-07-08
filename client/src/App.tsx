@@ -43,7 +43,6 @@ import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "@fontsource/inter/800.css";
 
-// Simplified app wrapper without error boundary overhead
 import { ErrorBoundary } from 'react-error-boundary'
 
 const Router = memo(function Router() {
@@ -116,7 +115,27 @@ function App() {
       <CartProvider>
         <TooltipProvider>
           <Toaster />
-          <ErrorBoundary fallback={<div>Something went wrong</div>}>
+          <ErrorBoundary 
+            fallback={
+              <div className="min-h-screen flex items-center justify-center p-4">
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h2>
+                  <p className="text-gray-600 mb-6">
+                    We're sorry, but something unexpected happened. Please try refreshing the page.
+                  </p>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded"
+                  >
+                    Refresh Page
+                  </button>
+                </div>
+              </div>
+            }
+            onError={(error, errorInfo) => {
+              console.error('ErrorBoundary caught an error:', error, errorInfo);
+            }}
+          >
             <Router />
           </ErrorBoundary>
         </TooltipProvider>
