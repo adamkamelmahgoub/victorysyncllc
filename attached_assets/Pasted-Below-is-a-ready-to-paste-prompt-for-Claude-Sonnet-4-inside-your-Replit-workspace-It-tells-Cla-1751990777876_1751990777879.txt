@@ -1,0 +1,93 @@
+Below is a **ready-to-paste prompt** for Claude Sonnet 4 inside your Replit workspace.
+It tells Claude exactly what to change: clean up the duplicated KPI section, add modular CRM/Dialer connectors (HubSpot, Pipedrive, Aircall, Twilio) that stream metrics into the KPI tracker in real-time, and expose a simple webhook so future tools can push events.
+
+---
+
+````
+You are Claude Sonnet 4 acting as “100 000× Senior Full-Stack & Integrations Engineer” in my **VictorySync** Replit.
+
+#######################################################################
+# CURRENT ISSUE
+#######################################################################
+• Dashboard renders two stacked “KPI Tracker” sections (see screenshot).  
+• Metrics are hard-coded zero; no live CRM/Dialer data.
+
+#######################################################################
+# GOALS
+#######################################################################
+A. **UI Fix**
+   1. Remove duplicate KPI component.
+   2. Header card counts should render dynamic values from `/api/kpi/live`.
+
+B. **Real-time KPI Pipeline**
+   1. **server/integrations/**
+      • `hubspot.ts`, `pipedrive.ts` → OAuth/token env vars  
+      • `aircall.ts`, `twilio.ts` → basic auth headers  
+      • Each file exports `pushEvent(event)` ⇒ normalised `{ type, value, ts }`.
+   2. **server/kpiStore.ts**  
+      • In-memory + Redis fallback.  
+      • Aggregates events into metrics: `activeServices`, `monthlySpend`, `tickets`, etc.
+   3. **Webhooks**
+      • POST `/api/integrations/:provider/webhook` accepts raw payload, validates signature, calls corresponding `pushEvent`.
+   4. **Socket.IO**
+      • When store updates, emit `kpi:update` so React dashboard updates instantly.
+
+C. **Front-end**
+   1. `client/src/api/kpi.ts`  
+      ```ts
+      export const getLiveKpi = () => fetch('/api/kpi/live').then(r=>r.json());
+      export const useKpi = () => useQuery('kpi', getLiveKpi, { refetchInterval: 5000 });
+      ```
+   2. `KpiCards.tsx` subscribes to Socket.IO for immediate refresh.
+
+D. **Security**
+   • JWT auth middleware stays; allow webhook bypass via provider IP allowlist.
+
+E. **Deliverables / Acceptance**
+   • Running `npm run dev` shows single KPI tracker populated with live (mock) data in <1 s.  
+   • Publishing sample HubSpot “contact.created” curl triggers counts.  
+   • No console errors; lighthouse ≥ 90 perf.
+
+#######################################################################
+# RETURN FORMAT
+#######################################################################
+Provide **only** unified patch diffs + any new files with full content.
+
+````
+
+### server/kpiStore.ts  (NEW)
+
+```ts
+/* full file here */
+```
+
+### server/routes/integrations.ts  (NEW)
+
+… etc.
+
+### client/src/pages/Dashboard.tsx
+
+```diff
+-<KpiTracker />   // duplicated
+-<KpiTracker />
++<KpiTracker />
+```
+
+Include a short **“Test Steps”** section.
+
+\#######################################################################
+
+# NOTES
+
+\#######################################################################
+
+* Use Socket.IO v4 (already in package.json).
+* If Redis URL not set, default to in-memory Map.
+* Keep code TS strict, lint-clean.
+
+```
+
+---
+
+Paste everything (from the first triple back-ticks to the last) into Claude’s chat, hit Enter, and let it generate the patch set.  Apply the diffs, restart, and you’ll have a single KPI tracker fed by real-time CRM & dialer events.
+```

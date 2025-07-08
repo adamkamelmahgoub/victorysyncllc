@@ -10,30 +10,23 @@ export function useAuth() {
         return null;
       }
       
-      try {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            // Token is invalid, remove it
-            localStorage.removeItem('auth_token');
-            return null;
-          }
-          throw new Error('Failed to fetch user data');
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-        
-        const data = await response.json();
-        return data.user;
-      } catch (error) {
-        // Handle network errors and other exceptions
-        console.error('Auth error:', error);
-        localStorage.removeItem('auth_token');
-        return null;
+      });
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Token is invalid, remove it
+          localStorage.removeItem('auth_token');
+          return null;
+        }
+        throw new Error('Failed to fetch user data');
       }
+      
+      const data = await response.json();
+      return data.user;
     },
     retry: false,
     enabled: !!token,

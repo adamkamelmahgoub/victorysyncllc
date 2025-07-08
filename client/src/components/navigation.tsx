@@ -1,8 +1,8 @@
 import { Link, useLocation } from "wouter";
 import { ShoppingCart, User, Menu, X } from "lucide-react";
-import { Button } from "./ui/button";
-import { useCart } from "../hooks/useCart";
-import { useAuth } from "../hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 
 interface NavigationProps {

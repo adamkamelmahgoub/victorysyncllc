@@ -1,9 +1,17 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes.js";
-import { setupVite, serveStatic, log } from "./vite.js";
-import { testDatabaseConnection } from "./db.js";
-import passport from "./auth/passport.js";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+import { testDatabaseConnection } from "./db";
+import passport from "./auth/passport";
 import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { createYoga } from "graphql-yoga";
+import { buildSchema } from "type-graphql";
+import { setupAuth, authMiddleware } from "./auth/publicAuth";
+import { db } from "./db";
+import { kpiStore } from "./kpiStore";
+import { promises as fs } from "fs";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -51,7 +59,7 @@ if (process.env.NODE_ENV === "development") {
 
     // Register routes without blocking on database test
     const server = await registerRoutes(app);
-    
+
     // Test database in background
     setImmediate(async () => {
       try {
@@ -69,7 +77,7 @@ if (process.env.NODE_ENV === "development") {
     });
 
     // Setup vite/static serving
-    if (process.env.NODE_ENV === "development") {
+    if (app.get("env") === "development") {
       await setupVite(app, server);
     } else {
       try {
@@ -80,10 +88,21 @@ if (process.env.NODE_ENV === "development") {
       }
     }
 
+    const httpServer = createServer(app);
+    const io = new Server(httpServer, {
+      cors: {
+        origin: process.env.NODE_ENV === 'development' ? "http://localhost:5173" : false,
+        methods: ["GET", "POST"]
+      }
+    });
 
+    // Setup KPI store subscription for real-time updates
+    kpiStore.subscribe((metrics) => {
+      io.emit('kpi:update', metrics);
+    });
 
     const port = process.env.PORT || 5000;
-    server.listen({
+    httpServer.listen({
       port: Number(port),
       host: "0.0.0.0",
       reusePort: true,
@@ -94,7 +113,7 @@ if (process.env.NODE_ENV === "development") {
     // Handle graceful shutdown
     process.on('SIGTERM', () => {
       console.log('SIGTERM received, shutting down gracefully');
-      server.close(() => {
+      httpServer.close(() => {
         console.log('Server closed');
         process.exit(0);
       });
@@ -102,7 +121,7 @@ if (process.env.NODE_ENV === "development") {
 
     process.on('SIGINT', () => {
       console.log('SIGINT received, shutting down gracefully');
-      server.close(() => {
+      httpServer.close(() => {
         console.log('Server closed');
         process.exit(0);
       });

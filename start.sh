@@ -1,30 +1,24 @@
 #!/bin/bash
 
-echo "🚀 Starting VictorySync production deployment..."
+echo "🚀 Starting VictorySync in production mode..."
 
-# Environment validation
+# Set NODE_ENV to production if not already set
+export NODE_ENV="${NODE_ENV:-production}"
+
+# Validate required environment variables
 if [ -z "$DATABASE_URL" ]; then
-    echo "❌ DATABASE_URL environment variable is required"
+    echo "❌ ERROR: DATABASE_URL environment variable is required"
     exit 1
 fi
 
 echo "✅ Environment variables validated"
+echo "Environment: $NODE_ENV"
+echo "Port: ${PORT:-5000}"
 
-# Create dist directory
-mkdir -p dist
-
-# Build both server and client with optimized configuration (fixes lightningcss issues)
-echo "🔨 Building application with lightningcss fixes..."
-node scripts/deploy-build.mjs
-if [ $? -ne 0 ]; then
-    echo "❌ Build failed"
-    exit 1
-fi
-
-# Update database schema
-echo "🗄️ Updating database schema..."
+# Run database push to ensure schema is up to date
+echo "📦 Ensuring database schema is up to date..."
 npm run db:push
 
-# Start the production server
-echo "🌟 Starting VictorySync server..."
-exec node dist/server.js
+# Start the application
+echo "🎉 Starting VictorySync server..."
+exec npm start

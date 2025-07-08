@@ -76,98 +76,24 @@ export const getQueryFn: <T>(options: {
     }
   };
 
-function makeQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60 * 1000,
-        retry: (failureCount, error) => {
-          // Don't retry on 401, 404, or 403 errors
-          if (error instanceof Error && (error.message.includes('401') || error.message.includes('404') || error.message.includes('403'))) return false;
-          return failureCount < 3;
-        },
-        refetchOnWindowFocus: false,
-        queryFn: async ({ queryKey }) => {
-          try {
-            const url = queryKey[0] as string;
-            const token = localStorage.getItem('auth_token');
-            const headers: Record<string, string> = {};
-
-            if (token) {
-              headers["Authorization"] = `Bearer ${token}`;
-            }
-
-            const response = await fetch(url, {
-              headers,
-              credentials: "include",
-            });
-
-            if (!response.ok) {
-              if (response.status === 401 && token) {
-                // Token is invalid, remove it
-                localStorage.removeItem('auth_token');
-              }
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            return response.json();
-          } catch (error) {
-            console.error(`Query failed: ${queryKey[0]}`, error);
-            throw error;
-          }
-        },
-      },
-      mutations: {
-        retry: false,
-      },
-    },
-  });
-}
-
-let browserQueryClient: QueryClient | undefined = undefined;
-
-function getQueryClient() {
-  if (typeof window === "undefined") {
-    return makeQueryClient();
-  } else {
-    if (!browserQueryClient) browserQueryClient = makeQueryClient();
-    return browserQueryClient;
-  }
-}
-
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error instanceof Error && 'status' in error) {
-          const status = (error as any).status;
-          if (status >= 400 && status < 500) {
-            return false;
-          }
-        }
-        return failureCount < 1; // Reduce retry attempts further
-      },
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchInterval: false,
       refetchOnWindowFocus: false,
-      throwOnError: false, // Prevent unhandled promise rejections
-      onError: (error) => {
-        console.error("Query failed:", error);
+      staleTime: 5 * 60 * 1000, // 5 minutes instead of infinity
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors except 401
+        if (error.message.includes('401:')) return false;
+        if (error.message.match(/^4\d\d:/)) return false;
+        return failureCount < 1; // Reduced retries
       },
+      retryDelay: 1000, // Faster retry
     },
     mutations: {
-      throwOnError: false, // Prevent unhandled promise rejections
-      onError: (error) => {
-        console.error("Mutation failed:", error);
-      },
+      retry: false,
     },
   },
 });
 
-// Add global unhandled rejection handler
-if (typeof window !== 'undefined') {
-  window.addEventListener('unhandledrejection', (event) => {
-    console.error('Unhandled promise rejection:', event.reason);
-    event.preventDefault(); // Prevent default browser behavior
-  });
-}
+// Minimal error handling - removed global handler to speed up startup
