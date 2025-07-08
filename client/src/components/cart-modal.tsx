@@ -1,6 +1,6 @@
 import { X, Plus, Minus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useCart } from '@/hooks/useCart';
+import { Button } from './ui/button';
+import { useCart } from '../hooks/useCart';
 import { Link } from 'wouter';
 
 interface CartModalProps {

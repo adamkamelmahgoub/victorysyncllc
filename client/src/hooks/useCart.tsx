@@ -1,5 +1,5 @@
-import { useCartContext } from '@/contexts/CartContext';
-import { useToast } from '@/hooks/use-toast';
+import { useCartContext } from '../contexts/CartContext';
+import { useToast } from './use-toast';
 
 export const useCart = () => {
   const { state, dispatch } = useCartContext();
