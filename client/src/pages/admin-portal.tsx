@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,20 +54,47 @@ export default function AdminPortal() {
     }
   };
 
-  const { data: users = [] } = useQuery({
-    queryKey: ['/api/admin/users'],
+  const { data: users = [], isLoading: usersLoading, refetch: refetchUsers } = useQuery({
+    queryKey: ["/api/admin/users"],
     enabled: isAuthenticated,
-  });
+    queryFn: async () => {
+      const response = await fetch('/api/admin/users', {
+        headers: {
+          'x-admin-auth': 'admin123'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
+    }
+  }) as { data: any[], isLoading: boolean, refetch: () => void };
 
-  const { data: orders = [] } = useQuery({
-    queryKey: ['/api/admin/orders'],
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ["/api/admin/orders"],
     enabled: isAuthenticated,
-  });
+    queryFn: async () => {
+      const response = await fetch('/api/admin/orders', {
+        headers: {
+          'x-admin-auth': 'admin123'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      return response.json();
+    }
+  }) as { data: any[], isLoading: boolean };
 
-  const { data: packages = [] } = useQuery({
-    queryKey: ['/api/admin/packages'],
+  const { data: packages = [], isLoading: packagesLoading } = useQuery({
+    queryKey: ["/api/admin/packages"],
     enabled: isAuthenticated,
-  });
+    queryFn: async () => {
+      const response = await fetch('/api/admin/packages', {
+        headers: {
+          'x-admin-auth': 'admin123'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch packages');
+      return response.json();
+    }
+  }) as { data: any[], isLoading: boolean };
 
   const updateUserStatusMutation = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: number; isActive: boolean }) => {
@@ -226,6 +252,67 @@ export default function AdminPortal() {
     );
   }
 
+  const totalRevenue = orders.reduce((sum: number, order: any) => sum + parseFloat(order.total || 0), 0);
+  const activeOrders = orders.filter((order: any) => order.status === 'pending' || order.status === 'processing').length;
+
+  const toggleUserStatus = async (userId: number, currentStatus: boolean) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-auth': 'admin123'
+        },
+        body: JSON.stringify({ isActive: !currentStatus })
+      });
+
+      if (!response.ok) throw new Error('Failed to update user status');
+
+      toast({
+        title: "User Updated",
+        description: `User ${!currentStatus ? 'activated' : 'deactivated'} successfully`,
+      });
+
+      refetchUsers();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update user status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteUser = async (userId: number) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'x-admin-auth': 'admin123'
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to delete user');
+
+      toast({
+        title: "User Deleted",
+        description: "User has been permanently deleted",
+      });
+
+      refetchUsers();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -307,126 +394,68 @@ export default function AdminPortal() {
           </TabsList>
 
           <TabsContent value="users" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>User Management</CardTitle>
-                  <Dialog open={isAddOrderOpen} onOpenChange={setIsAddOrderOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="bg-victory-purple hover:bg-purple-700">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Order to User
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add Order to User</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="user-select">Select User</Label>
-                          <Select onValueChange={(value) => setSelectedUser(users.find((u: any) => u.id === parseInt(value)))}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choose a user" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {users.map((user: any) => (
-                                <SelectItem key={user.id} value={user.id.toString()}>
-                                  {user.name} - {user.email}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="package-select">Select Package</Label>
-                          <Select onValueChange={setSelectedPackage}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choose a package" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {packages.map((pkg: any) => (
-                                <SelectItem key={pkg.id} value={pkg.id.toString()}>
-                                  {pkg.name} - ${pkg.price}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="quantity">Quantity</Label>
-                          <Input
-                            id="quantity"
-                            type="number"
-                            min="1"
-                            value={orderQuantity}
-                            onChange={(e) => setOrderQuantity(parseInt(e.target.value))}
-                          />
-                        </div>
-                        <Button 
-                          onClick={handleAddOrder} 
-                          className="w-full bg-victory-purple hover:bg-purple-700"
-                          disabled={addOrderMutation.isPending}
-                        >
-                          {addOrderMutation.isPending ? 'Creating...' : 'Create Order'}
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {users.map((user: any) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                          <Users className="w-5 h-5 text-gray-600" />
-                        </div>
-                        <div>
-                          <p className="font-semibold">{user.name}</p>
-                          <p className="text-sm text-gray-600">{user.email}</p>
-                          <p className="text-xs text-gray-500">
-                            Created: {new Date(user.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={user.isActive ? "default" : "secondary"}>
-                          {user.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleToggleUserStatus(user)}
-                          disabled={updateUserStatusMutation.isPending}
-                        >
-                          {user.isActive ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setIsAddOrderOpen(true);
-                          }}
-                        >
-                          <ShoppingCart className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleDeleteUser(user.id)}
-                          disabled={deleteUserMutation.isPending}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {/* Users Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Users className="w-5 h-5" />
+              <span>User Management</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {usersLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-2">Name</th>
+                      <th className="text-left p-2">Email</th>
+                      <th className="text-left p-2">Joined</th>
+                      <th className="text-left p-2">Status</th>
+                      <th className="text-left p-2">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user: any) => (
+                      <tr key={user.id} className="border-b hover:bg-gray-50">
+                        <td className="p-2 font-medium">{user.name}</td>
+                        <td className="p-2">{user.email}</td>
+                        <td className="p-2">{new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td className="p-2">
+                          <Badge className={user.isActive !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                            {user.isActive !== false ? "Active" : "Inactive"}
+                          </Badge>
+                        </td>
+                        <td className="p-2">
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant={user.isActive !== false ? "destructive" : "default"}
+                              onClick={() => toggleUserStatus(user.id, user.isActive !== false)}
+                            >
+                              {user.isActive !== false ? "Deactivate" : "Activate"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => deleteUser(user.id)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-4">

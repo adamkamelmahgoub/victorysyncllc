@@ -16,13 +16,22 @@ if (process.env.STRIPE_SECRET_KEY) {
   });
 }
 
+// Admin middleware
+const requireAdmin = (req: any, res: any, next: any) => {
+  // Simple admin check - in production this should be more robust
+  if (req.headers['x-admin-auth'] !== 'admin123') {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint - must be first to avoid being caught by other routes
   app.get('/health', async (_req, res) => {
     try {
       // Test database connection
       const dbConnected = await testDatabaseConnection();
-      
+
       const healthStatus = {
         status: dbConnected ? 'healthy' : 'unhealthy',
         timestamp: new Date().toISOString(),
@@ -33,7 +42,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         memory: process.memoryUsage(),
         version: process.version
       };
-      
+
       const statusCode = dbConnected ? 200 : 503;
       res.status(statusCode).json(healthStatus);
     } catch (error) {
@@ -95,13 +104,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertContactSubmissionSchema.parse(req.body);
       const submission = await storage.createContactSubmission(validatedData);
-      
+
       // Send email notification for new contact form submission
       await sendEmail({
         subject: "New Contact Form Submission",
         text: `Name: ${validatedData.firstName} ${validatedData.lastName}\nEmail: ${validatedData.email}\nMessage:\n${validatedData.message}`
       });
-      
+
       res.json(submission);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -122,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { items } = req.body;
-      
+
       if (!items || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ message: "Items are required" });
       }
@@ -158,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id.toString();
       const { items, total, stripePaymentIntentId } = req.body;
-      
+
       // Create order
       const order = await storage.createOrder({
         userId,
@@ -199,7 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const orderId = parseInt(req.params.id);
       const userId = req.user!.id.toString();
-      
+
       const order = await storage.getOrder(orderId);
       if (!order || order.userId !== userId) {
         return res.status(404).json({ message: "Order not found" });
@@ -214,7 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes - protected by authentication
-  app.get('/api/admin/users', authenticateJWT as any, async (req: any, res: any) => {
+  app.get("/api/admin/users", requireAdmin, async (req: any, res: any) => {
     try {
       const users = await storage.getAllPublicUsers();
       res.json(users);
@@ -224,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/orders', authenticateJWT as any, async (req: any, res: any) => {
+  app.get("/api/admin/orders", requireAdmin, async (req: any, res: any) => {
     try {
       const orders = await storage.getAllOrders();
       res.json(orders);
@@ -234,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/packages', authenticateJWT as any, async (req: any, res: any) => {
+  app.get("/api/admin/packages", requireAdmin, async (req: any, res: any) => {
     try {
       const packages = await storage.getPackages();
       res.json(packages);
@@ -248,12 +257,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.id);
       const { isActive } = req.body;
-      
+
       const user = await storage.updateUserStatus(userId, isActive);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       res.json(user);
     } catch (error) {
       console.error("Error updating user status:", error);
@@ -264,12 +273,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/admin/users/:id', authenticateJWT as any, async (req: any, res: any) => {
     try {
       const userId = parseInt(req.params.id);
-      
+
       const success = await storage.deleteUser(userId);
       if (!success) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       res.json({ message: "User deleted successfully" });
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -281,14 +290,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.params.id;
       const { packageId, quantity } = req.body;
-      
+
       const pkg = await storage.getPackage(packageId);
       if (!pkg) {
         return res.status(400).json({ message: "Package not found" });
       }
-      
+
       const total = parseFloat(pkg.price) * quantity;
-      
+
       const order = await storage.createOrder({
         userId,
         total: total.toString(),
@@ -323,7 +332,7 @@ async function initializePackages() {
     console.log('📦 Initializing default packages...');
     const existingPackages = await storage.getPackages();
     console.log(`Found ${existingPackages.length} existing packages`);
-    
+
     if (existingPackages.length === 0) {
       console.log('Creating default packages...');
       // Create default packages

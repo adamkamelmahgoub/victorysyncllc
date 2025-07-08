@@ -70,7 +70,7 @@ export default function Pricing() {
                         </div>
                         <p className="victory-gray">{pkg.description}</p>
                       </div>
-                      
+
                       <ul className="space-y-4 mb-8">
                         {pkg.features.map((feature: string, idx: number) => (
                           <li key={idx} className="flex items-center">
@@ -79,7 +79,7 @@ export default function Pricing() {
                           </li>
                         ))}
                       </ul>
-                      
+
                       <Button 
                         onClick={() => handleAddToCart(pkg)}
                         className={`w-full ${isPopular ? 'bg-victory-purple hover:bg-purple-700' : 'bg-victory-purple hover:bg-purple-700'} text-white`}
@@ -164,7 +164,7 @@ export default function Pricing() {
               <h3 className="font-semibold victory-dark mb-2">Quality Assurance</h3>
               <p className="text-sm victory-gray">Continuous monitoring and quality control</p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star className="victory-blue w-8 h-8" />
@@ -172,7 +172,7 @@ export default function Pricing() {
               <h3 className="font-semibold victory-dark mb-2">Dedicated Manager</h3>
               <p className="text-sm victory-gray">Personal account manager for all plans</p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Check className="text-green-600 w-8 h-8" />
@@ -180,7 +180,7 @@ export default function Pricing() {
               <h3 className="font-semibold victory-dark mb-2">Security & Compliance</h3>
               <p className="text-sm victory-gray">Enterprise-grade security standards</p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Check className="victory-purple w-8 h-8" />
