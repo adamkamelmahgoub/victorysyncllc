@@ -26,33 +26,8 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 
-const KpiTracker = () => {
-  const [metrics, setMetrics] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchKpiData = async () => {
-      try {
-        const response = await fetch('/api/kpi/live');
-        if (response.ok) {
-          const data = await response.json();
-          setMetrics(data);
-        } else {
-          setError('Failed to load KPI data');
-        }
-      } catch (err) {
-        setError('Failed to load KPI data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchKpiData();
-    // Poll every 30 seconds
-    const interval = setInterval(fetchKpiData, 30000);
-    return () => clearInterval(interval);
-  }, []);
+const KpiTrackerComponent = () => {
+  const { metrics, loading, error } = useKpi();
 
   if (loading) {
     return (
@@ -402,7 +377,7 @@ function CustomerDashboard() {
         </div>
 
         {activeTab === 'kpi-tracker' ? (
-          <KpiTracker />
+          <KpiTrackerComponent />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Recent Orders */}
