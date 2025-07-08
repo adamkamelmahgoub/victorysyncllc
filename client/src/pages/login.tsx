@@ -2,14 +2,13 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
 import { loginSchema } from "../../../shared/schema";
-import { apiRequest } from "../lib/queryClient";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { useToast } from "../hooks/use-toast";
+import { useAuth } from "../hooks/useAuth";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
@@ -19,6 +18,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormData>({

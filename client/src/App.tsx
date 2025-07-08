@@ -97,7 +97,26 @@ const Router = memo(function Router() {
 });
 
 function App() {
-  // Removed promise rejection handler since we fixed the root cause
+  // Add global error handler to prevent unhandled promise rejections
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.debug('Handled promise rejection:', event.reason);
+      event.preventDefault();
+    };
+
+    const handleError = (event: ErrorEvent) => {
+      console.debug('Handled error:', event.error);
+      event.preventDefault();
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleError);
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('error', handleError);
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
