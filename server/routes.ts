@@ -371,15 +371,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/users/:id/impersonate', requireAdmin, async (req: any, res: any) => {
     try {
       const userId = parseInt(req.params.id);
-      const user = await storage.getPublicUser(userId);
-      
-      if (!user) {
+      const userToImpersonate = await storage.getUserById(userId);
+
+      if (!userToImpersonate) {
         return res.status(404).json({ message: "User not found" });
       }
 
       // Generate JWT token for impersonation
-      const token = generateJWT(user);
-      res.json({ token, user });
+      const token = generateJWT(userToImpersonate);
+      res.json({ token, user: userToImpersonate });
     } catch (error) {
       console.error("Error impersonating user:", error);
       res.status(500).json({ message: "Failed to impersonate user" });

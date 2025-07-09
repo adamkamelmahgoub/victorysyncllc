@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Remove all button outlines */
+button {
+  outline: none !important;
+  border: none !important;
+}
+
+button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Add white outline to all buttons */
 button {
   outline: 2px solid white !important;
