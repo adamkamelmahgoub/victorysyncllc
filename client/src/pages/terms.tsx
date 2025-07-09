@@ -112,8 +112,7 @@ export default function TermsOfService() {
                   inbound services
                 </li>
                 <li>
-                  <strong>Languages Supported:</strong> English, Spanish,
-                  French, Arabic
+                  <strong>Languages Supported:</strong> English
                 </li>
                 <li>
                   <strong>Geographic Coverage:</strong> North American markets
