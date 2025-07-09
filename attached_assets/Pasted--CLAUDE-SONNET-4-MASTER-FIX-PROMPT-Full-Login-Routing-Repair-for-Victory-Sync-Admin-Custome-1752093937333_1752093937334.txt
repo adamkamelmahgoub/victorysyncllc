@@ -1,0 +1,179 @@
+🧠 CLAUDE SONNET 4 MASTER FIX PROMPT — Full Login + Routing Repair for Victory Sync (Admin + Customer)
+You are a senior full-stack web architect and Replit deployment expert.
+You will fix the Victory Sync platform's broken login system, cleanly separate the admin and customer portals, and deliver a launch-ready, database-synced, fully validated authentication system.
+
+❌ CURRENT ISSUES (Fix Immediately)
+🔴 Admin Login
+
+Even with correct credentials (admin, victorysync2025), login fails briefly, shows an error, and returns to the login screen.
+
+Likely issue: response not processed correctly, or redirect failing.
+
+Admin login must:
+
+Only require username and password
+
+Be matched against hardcoded values
+
+Not use email or database lookup
+
+🔴 Customer Login
+
+Fails with "Invalid credentials" even with correct values from the database.
+
+Likely issue: database is not connected or password is not hashed/validated correctly.
+
+Must:
+
+Check email and hashed password
+
+Authenticate against real DB
+
+Generate valid JWT
+
+Redirect to /dashboard
+
+🔁 Redirection + Session Logic Broken
+
+Login flows do not persist session
+
+User is returned to login without auth context
+
+Routes not protected by role properly
+
+🚫 Unwanted UI and Signup Options
+
+Must remove:
+
+“Sign up here”
+
+“Demo Credentials” buttons
+
+Any customer self-registration or public signup
+
+✅ REQUIRED FEATURES & IMPLEMENTATION
+🔐 Admin Login (/admin)
+Fields: username + password
+
+Match these hardcoded credentials:
+
+username: admin
+
+password: victorysync2025
+
+Backend logic:
+
+ts
+Copy
+Edit
+if (username === 'admin' && password === 'victorysync2025') {
+  generate JWT with role: 'admin';
+  redirect to /admin/dashboard;
+} else {
+  return error: 'Invalid admin credentials';
+}
+Do not query the database
+
+Routes under /admin/* must require admin role via middleware
+
+📩 Customer Login (/login)
+Fields: email + password
+
+Lookup user from database (MongoDB/SQLite)
+
+Validate password using hashing (e.g. bcrypt)
+
+If valid:
+
+Issue JWT
+
+Redirect to /dashboard
+
+If invalid:
+
+Return a proper error without reload loop
+
+DB schema must include email, password, and optionally role: 'customer'
+
+🧠 Shared Features
+JWT auth for both portals
+
+Secure token handling (use httpOnly cookies or localStorage)
+
+Role-based route protection:
+
+/admin/* → admin-only
+
+/dashboard → customer-only
+
+Re-auth on page refresh
+
+Full route protection and redirect logic working
+
+🛠 Portal Separation
+Separate frontend layouts and components for:
+
+Admin login, dashboard, and sidebar
+
+Customer login and dashboard
+
+Shared structure: frontend/admin/, frontend/customer/
+
+📦 Launch-Grade Features (Previously Requested)
+✅ Admin Panel:
+
+Full customer management
+
+CRM/dialer integration status
+
+Live KPI dashboard (after CRM sync)
+
+Billing control, impersonation, audit logs
+
+✅ Customer Portal:
+
+Connect CRM/dialer
+
+View usage and KPI data (only after integration)
+
+Manage services, support, and account
+
+✅ Shared:
+
+JWT login/session
+
+Secure auth middleware
+
+Database sync
+
+Protected routes
+
+Clean UI (no demo data, no sign-up)
+
+🧪 REQUIRED TESTING
+✅ Admin login with hardcoded creds
+
+✅ Admin redirect to dashboard
+
+✅ Customer login with DB-stored hashed creds
+
+✅ Customer redirect to dashboard
+
+✅ Protected routes enforced by role
+
+✅ JWT working and reusable
+
+✅ Replit deployment stable (no redirect loops or crashes)
+
+📦 FINAL DELIVERABLE
+Fully working Replit app
+
+Clean separation of admin/customer views
+
+JWT-based login
+
+All features tested and working
+
+No broken logic
+
+Production-ready system
