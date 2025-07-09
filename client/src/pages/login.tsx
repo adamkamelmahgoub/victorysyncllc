@@ -46,6 +46,12 @@ export default function Login() {
       if (data.token) {
         localStorage.setItem('auth_token', data.token);
         
+        toast({
+          title: "Login Successful",
+          description: `Welcome ${loginType === 'admin' ? 'Admin' : 'back'}!`,
+          variant: "default"
+        });
+        
         // Add a small delay to ensure token is stored
         setTimeout(() => {
           if (loginType === 'admin') {
@@ -53,7 +59,7 @@ export default function Login() {
           } else {
             window.location.href = '/dashboard';
           }
-        }, 100);
+        }, 200);
       } else {
         throw new Error('No authentication token received');
       }

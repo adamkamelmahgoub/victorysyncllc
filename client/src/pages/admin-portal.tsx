@@ -49,7 +49,7 @@ export default function AdminPortal() {
 
   // Check if user is admin - redirect if not
   useEffect(() => {
-    if (!isLoading && (!admin || !isAdmin)) {
+    if (!isLoading && (!user && !admin)) {
       toast({
         title: "Access Denied",
         description: "Admin access required. Redirecting to login.",
@@ -58,7 +58,7 @@ export default function AdminPortal() {
       window.location.href = '/login?type=admin&redirect=/admin';
       return;
     }
-  }, [admin, isAdmin, isLoading]);
+  }, [user, admin, isAdmin, isLoading]);
 
   // Show loading while checking auth
   if (isLoading) {
@@ -80,7 +80,7 @@ export default function AdminPortal() {
             <p className="text-gray-600 mb-6">
               You need admin privileges to access this portal.
             </p>
-            <Button onClick={() => window.location.href = '/login'} className="w-full">
+            <Button onClick={() => window.location.href = '/login?type=admin'} className="w-full">
               Go to Login
             </Button>
           </CardContent>

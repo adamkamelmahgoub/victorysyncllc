@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect, useMemo } from 'react';
 
 interface User {
@@ -28,48 +29,53 @@ export function useAuth() {
   });
 
   const checkAuth = async () => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-      return;
-    }
-
     try {
-      // Try admin auth first
-      const adminResponse = await fetch('/api/admin/auth/me', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (adminResponse.ok) {
-        const data = await adminResponse.json();
-        setAuthState({
-          user: null,
-          admin: data.admin,
-          isLoading: false,
-          isAuthenticated: true,
-          userType: 'admin'
-        });
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setAuthState(prev => ({ ...prev, isLoading: false }));
         return;
       }
 
-      // Try customer auth
-      const customerResponse = await fetch('/api/auth/me', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (customerResponse.ok) {
-        const data = await customerResponse.json();
-        setAuthState({
-          user: data.user,
-          admin: null,
-          isLoading: false,
-          isAuthenticated: true,
-          userType: 'customer'
+      // Decode token to check userType
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      
+      if (payload.userType === 'admin') {
+        // Try admin auth
+        const adminResponse = await fetch('/api/admin/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
-        return;
+
+        if (adminResponse.ok) {
+          const data = await adminResponse.json();
+          setAuthState({
+            user: null,
+            admin: data.admin,
+            isLoading: false,
+            isAuthenticated: true,
+            userType: 'admin'
+          });
+          return;
+        }
+      } else {
+        // Try customer auth
+        const customerResponse = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (customerResponse.ok) {
+          const data = await customerResponse.json();
+          setAuthState({
+            user: data.user,
+            admin: null,
+            isLoading: false,
+            isAuthenticated: true,
+            userType: 'customer'
+          });
+          return;
+        }
       }
 
-      // No valid auth found
+      // Token is invalid, clear it
       localStorage.removeItem('auth_token');
       setAuthState({
         user: null,
@@ -108,16 +114,19 @@ export function useAuth() {
   }, []);
 
   const isAdmin = useMemo(() => {
-    if (authState.admin) {
-      return ['admin', 'super_admin'].includes(authState.admin.role);
-    }
-    return false;
+    return authState.admin && ['admin', 'super_admin'].includes(authState.admin.role);
   }, [authState.admin]);
+
+  const isCustomer = useMemo(() => {
+    return authState.user && authState.user.role === 'customer';
+  }, [authState.user]);
 
   return {
     ...authState,
     logout,
     checkAuth,
-    isAdmin
+    isAdmin,
+    isCustomer
   };
 }
+

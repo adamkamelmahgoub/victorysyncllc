@@ -77,38 +77,36 @@ export const loginAdmin = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Username and password are required' });
     }
 
-    // Hardcoded admin credentials - do not check database
-    if (username === 'admin' && password === 'victorysync2025') {
-      const adminUser = {
-        id: 1,
-        username: 'admin',
-        name: 'Victory Sync Admin',
-        role: 'super_admin',
-        permissions: {
-          canManageUsers: true,
-          canViewAllOrders: true,
-          canManageIntegrations: true,
-          canViewAnalytics: true,
-          canImpersonate: true,
-          canManageSettings: true
-        }
-      };
-
-      const token = generateAdminJWT(adminUser);
-
-      res.json({ 
-        success: true,
-        token, 
-        admin: { 
-          id: adminUser.id, 
-          username: adminUser.username, 
-          name: adminUser.name, 
-          role: adminUser.role 
-        } 
-      });
-    } else {
+    // Get admin user from database
+    const admin = await storage.getAdminUserByUsername(username);
+    if (!admin) {
       return res.status(401).json({ success: false, message: "Invalid admin credentials" });
     }
+
+    // Check if admin is active
+    if (!admin.isActive) {
+      return res.status(403).json({ success: false, message: "Admin account has been deactivated" });
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
+    if (!isValidPassword) {
+      return res.status(401).json({ success: false, message: "Invalid admin credentials" });
+    }
+
+    // Generate JWT
+    const token = generateAdminJWT(admin);
+
+    res.json({ 
+      success: true,
+      token, 
+      admin: { 
+        id: admin.id, 
+        username: admin.username, 
+        name: admin.name, 
+        role: admin.role 
+      } 
+    });
   } catch (error) {
     console.error("Admin login error:", error);
     res.status(500).json({ success: false, message: "Login failed" });

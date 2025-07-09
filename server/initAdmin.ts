@@ -12,7 +12,7 @@ export async function initializeAdminUser() {
     }
 
     // Create admin user
-    const hashedPassword = await bcrypt.hash('Mshmsh7184365700!', 10);
+    const hashedPassword = await bcrypt.hash('victorysync2025', 10);
     
     const adminUser = await storage.createAdminUser({
       username: 'admin',

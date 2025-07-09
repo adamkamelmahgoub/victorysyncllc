@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
 import { useState } from "react";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Layout Components
 import Navigation from "@/components/navigation";
@@ -59,9 +60,17 @@ function Router() {
           <Route path="/about" component={About} />
           <Route path="/contact" component={Contact} />
           <Route path="/checkout" component={Checkout} />
-          <Route path="/dashboard" component={CustomerDashboard} />
+          <Route path="/dashboard">
+            <ProtectedRoute requireCustomer>
+              <CustomerDashboard />
+            </ProtectedRoute>
+          </Route>
           <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/admin" component={AdminPortal} />
+          <Route path="/admin">
+            <ProtectedRoute requireAdmin>
+              <AdminPortal />
+            </ProtectedRoute>
+          </Route>
           <Route path="/register" component={Register} />
           <Route path="/signup" component={Register} />
           <Route path="/login" component={Login} />
