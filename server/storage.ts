@@ -49,6 +49,12 @@ export interface IStorage {
   updateUserStatus(userId: number, isActive: boolean): Promise<PublicUser | null>;
   deleteUser(userId: number): Promise<boolean>;
   updateUserPrivileges(userId: number, privileges: any): Promise<PublicUser | null>;
+  updateUserProfile(userId: number, updates: { name?: string; email?: string }): Promise<any>;
+  getUserIntegrations(userId: number): Promise<any[]>;
+  createUserIntegration(integration: any): Promise<any>;
+  deleteUserIntegration(integrationId: number, userId: number): Promise<boolean>;
+  updatePackage(packageId: number, updates: any): Promise<any>;
+  deletePackage(packageId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -177,6 +183,114 @@ export class DatabaseStorage implements IStorage {
 
   async getContactSubmissions(): Promise<ContactSubmission[]> {
     return await db.select().from(contactSubmissions);
+  }
+
+  async updateUserProfile(userId: number, updates: { name?: string; email?: string }): Promise<any> {
+    try {
+      const result = await db.update(publicUsers)
+        .set(updates)
+        .where(eq(publicUsers.id, userId))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      return null;
+    }
+  }
+
+  async getUserIntegrations(userId: number): Promise<any[]> {
+    try {
+      // Mock integrations data - in production would be a real table
+      return [
+        {
+          id: 1,
+          type: 'crm',
+          name: 'Salesforce',
+          isActive: true,
+          lastSync: new Date().toISOString(),
+          status: 'connected'
+        },
+        {
+          id: 2,
+          type: 'dialer',
+          name: 'VoIP System',
+          isActive: false,
+          lastSync: null,
+          status: 'disconnected'
+        }
+      ];
+    } catch (error) {
+      console.error("Error fetching user integrations:", error);
+      return [];
+    }
+  }
+
+  async createUserIntegration(integration: any): Promise<any> {
+    try {
+      // Mock creation - in production would save to database
+      return {
+        id: Date.now(),
+        ...integration,
+        createdAt: new Date().toISOString(),
+        status: 'connected'
+      };
+    } catch (error) {
+      console.error("Error creating user integration:", error);
+      throw error;
+    }
+  }
+
+  async deleteUserIntegration(integrationId: number, userId: number): Promise<boolean> {
+    try {
+      // Mock deletion - in production would delete from database
+      return true;
+    } catch (error) {
+      console.error("Error deleting user integration:", error);
+      return false;
+    }
+  }
+
+  async updatePackage(packageId: number, updates: any): Promise<any> {
+    try {
+      const result = await db.update(packages)
+        .set(updates)
+        .where(eq(packages.id, packageId))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error updating package:", error);
+      return null;
+    }
+  }
+
+  async deletePackage(packageId: number): Promise<boolean> {
+    try {
+      const result = await db.delete(packages).where(eq(packages.id, packageId)).returning();
+      return result.length > 0;
+    } catch (error) {
+      console.error("Error deleting package:", error);
+      return false;
+    }
+  }
+
+  async updateUserPrivileges(userId: number, privileges: any): Promise<any> {
+    try {
+      // Store privileges in the user record or a separate table
+      // For now, we'll store as JSON in a privileges column (would need migration)
+      const result = await db.update(publicUsers)
+        .set({ 
+          socialAccounts: [
+            ...(await this.getPublicUserById(userId))?.socialAccounts || [],
+            { type: 'privileges', data: privileges }
+          ]
+         })
+        .where(eq(publicUsers.id, userId))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error updating user privileges:", error);
+      return null;
+    }
   }
 }
 

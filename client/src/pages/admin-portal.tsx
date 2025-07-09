@@ -215,6 +215,21 @@ export default function AdminPortal() {
     refetchInterval: 60000, // Refetch every minute
   }) as { data: any[]; isLoading: boolean };
 
+  const { data: analytics = {}, isLoading: analyticsLoading } = useQuery({
+    queryKey: ["/api/admin/analytics"],
+    enabled: isAuthenticated,
+    queryFn: async () => {
+      const response = await fetch("/api/admin/analytics", {
+        headers: {
+          "x-admin-auth": "admin123",
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch analytics");
+      return response.json();
+    },
+    refetchInterval: 60000, // Refetch every minute
+  }) as { data: any; isLoading: boolean };
+
   const updateUserPrivilegesMutation = useMutation({
     mutationFn: async ({
       userId,
@@ -611,19 +626,90 @@ export default function AdminPortal() {
     };
   };
 
+  // Package management mutations
+  const editPackageMutation = useMutation({
+    mutationFn: async ({ packageId, data }: { packageId: number; data: any }) => {
+      const response = await fetch(`/api/admin/packages/${packageId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-auth": "admin123",
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to update package");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/packages"] });
+      toast({
+        title: "Success",
+        description: "Package updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update package: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deletePackageMutation = useMutation({
+    mutationFn: async (packageId: number) => {
+      const response = await fetch(`/api/admin/packages/${packageId}`, {
+        method: "DELETE",
+        headers: {
+          "x-admin-auth": "admin123",
+        },
+      });
+      if (!response.ok) throw new Error("Failed to delete package");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/packages"] });
+      toast({
+        title: "Success",
+        description: "Package deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete package: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Handler functions for edit and delete package buttons
   const handleEditPackage = (packageId: number) => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "Edit package functionality will be implemented soon",
-    });
+    const pkg = packages.find(p => p.id === packageId);
+    if (pkg) {
+      // For now, just show a simple prompt - in production would be a modal
+      const newName = prompt("Enter new package name:", pkg.name);
+      const newPrice = prompt("Enter new price:", pkg.price);
+      const newDescription = prompt("Enter new description:", pkg.description);
+      
+      if (newName && newPrice && newDescription) {
+        editPackageMutation.mutate({
+          packageId,
+          data: {
+            name: newName,
+            price: newPrice,
+            description: newDescription,
+            features: pkg.features
+          }
+        });
+      }
+    }
   };
 
   const handleDeletePackage = (packageId: number) => {
-    toast({
-      title: "Feature Coming Soon", 
-      description: "Delete package functionality will be implemented soon",
-    });
+    if (confirm("Are you sure you want to delete this package? This action cannot be undone.")) {
+      deletePackageMutation.mutate(packageId);
+    }
   };
 
   if (!isAuthenticated) {
@@ -1179,30 +1265,153 @@ export default function AdminPortal() {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Revenue Overview</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <BarChart3 className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-500">Analytics dashboard coming soon</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>User Growth</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <TrendingUp className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-500">User growth charts coming soon</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {analyticsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Key Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600">Total Revenue</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            ${analytics.totalRevenue?.toLocaleString() || 0}
+                          </p>
+                          <p className="text-xs text-green-600">{analytics.monthlyGrowth?.revenue || '+0%'}</p>
+                        </div>
+                        <DollarSign className="w-8 h-8 text-green-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600">Avg Order Value</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            ${analytics.avgOrderValue?.toFixed(2) || 0}
+                          </p>
+                          <p className="text-xs text-blue-600">Per transaction</p>
+                        </div>
+                        <BarChart3 className="w-8 h-8 text-blue-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600">Conversion Rate</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {analytics.conversionRate?.toFixed(1) || 0}%
+                          </p>
+                          <p className="text-xs text-purple-600">Orders/Users</p>
+                        </div>
+                        <TrendingUp className="w-8 h-8 text-purple-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600">Active Users</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {analytics.activeUsers || 0}
+                          </p>
+                          <p className="text-xs text-orange-600">
+                            {((analytics.activeUsers / analytics.totalUsers) * 100).toFixed(1)}% of total
+                          </p>
+                        </div>
+                        <Users className="w-8 h-8 text-orange-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Top Packages */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Top Performing Packages</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {analytics.topPackages?.map((pkg: any, index: number) => (
+                        <div key={pkg.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <span className="text-blue-600 font-bold">{index + 1}</span>
+                            </div>
+                            <div>
+                              <p className="font-semibold">{pkg.name}</p>
+                              <p className="text-sm text-gray-600">${pkg.price}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">{pkg.orders} orders</p>
+                            <p className="text-sm text-gray-600">
+                              ${(parseFloat(pkg.price) * pkg.orders).toLocaleString()} revenue
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Growth Trends */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>User Growth</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-4">
+                        <div className="text-3xl font-bold text-green-600 mb-2">
+                          {analytics.monthlyGrowth?.users || '+0%'}
+                        </div>
+                        <p className="text-sm text-gray-600">This month</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Revenue Growth</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-4">
+                        <div className="text-3xl font-bold text-blue-600 mb-2">
+                          {analytics.monthlyGrowth?.revenue || '+0%'}
+                        </div>
+                        <p className="text-sm text-gray-600">This month</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Order Growth</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-4">
+                        <div className="text-3xl font-bold text-purple-600 mb-2">
+                          {analytics.monthlyGrowth?.orders || '+0%'}
+                        </div>
+                        <p className="text-sm text-gray-600">This month</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">
