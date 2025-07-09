@@ -45,13 +45,13 @@ export default function Login() {
 
       if (data.token) {
         localStorage.setItem('auth_token', data.token);
-        
+
         toast({
           title: "Login Successful",
           description: `Welcome ${loginType === 'admin' ? 'Admin' : 'back'}!`,
           variant: "default"
         });
-        
+
         // Add a small delay to ensure token is stored
         setTimeout(() => {
           if (loginType === 'admin') {
@@ -81,7 +81,7 @@ export default function Login() {
     });
   };
 
-  
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -114,23 +114,26 @@ export default function Login() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {loginType === 'admin' ? (
-                <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                    Username
-                  </label>
-                  <Input
-                    id="username"
-                    name="username"
-                    type="text"
-                    autoComplete="username"
-                    required
-                    value={formData.username}
-                    onChange={handleChange}
-                    className="mt-1"
-                    placeholder="Enter admin username"
-                  />
-                </div>
-              ) : (
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                  Admin Username
+                </label>
+                <Input
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="username"
+                  required
+                  value={formData.username}
+                  onChange={handleChange}
+                  className="mt-1"
+                  placeholder="kimo8723"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Use your assigned admin username
+                </p>
+              </div>
+            ) : (
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                     Email address
@@ -190,7 +193,7 @@ export default function Login() {
               </Button>
             </form>
 
-            
+
 
             {loginType === 'admin' && (
               <div className="mt-4 text-center">

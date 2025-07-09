@@ -33,19 +33,32 @@ import {
   XCircle,
   Clock,
   TrendingUp,
-  TrendingDown,
   Activity,
-  Zap
+  Zap,
+  Crown,
+  Lock,
+  Unlock,
+  ExternalLink,
+  FileText,
+  AlertCircle
 } from 'lucide-react';
 
 export default function AdminPortal() {
-  const { user, logout, isAdmin, isLoading } = useAuth();
+  const { admin, logout, isAdmin, isSuperAdmin, isLoading, hasPermission, error, clearError } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [activeTab, setActiveTab] = useState('overview');
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'customer',
+    isActive: true
+  });
 
   // Always declare all hooks at the top level
   const getAuthHeaders = () => ({
@@ -53,8 +66,9 @@ export default function AdminPortal() {
     'Content-Type': 'application/json'
   });
 
+  // Admin-only data fetching
   const { data: users = [], isLoading: usersLoading } = useQuery({
-    queryKey: ['/api/admin/users'],
+    queryKey: ['admin-users'],
     queryFn: async () => {
       const response = await fetch('/api/admin/users', {
         headers: getAuthHeaders()
@@ -66,7 +80,7 @@ export default function AdminPortal() {
   });
 
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ['/api/admin/orders'],
+    queryKey: ['admin-orders'],
     queryFn: async () => {
       const response = await fetch('/api/admin/orders', {
         headers: getAuthHeaders()
@@ -78,7 +92,7 @@ export default function AdminPortal() {
   });
 
   const { data: crmIntegrations = [], isLoading: integrationsLoading } = useQuery({
-    queryKey: ['/api/admin/crm/integrations'],
+    queryKey: ['admin-crm-integrations'],
     queryFn: async () => {
       const response = await fetch('/api/admin/crm/integrations', {
         headers: getAuthHeaders()
@@ -90,7 +104,7 @@ export default function AdminPortal() {
   });
 
   const { data: supportTickets = [], isLoading: ticketsLoading } = useQuery({
-    queryKey: ['/api/admin/support/tickets'],
+    queryKey: ['admin-support-tickets'],
     queryFn: async () => {
       const response = await fetch('/api/admin/support/tickets', {
         headers: getAuthHeaders()
@@ -102,7 +116,7 @@ export default function AdminPortal() {
   });
 
   const { data: auditLogs = [], isLoading: logsLoading } = useQuery({
-    queryKey: ['/api/admin/audit-logs'],
+    queryKey: ['admin-audit-logs'],
     queryFn: async () => {
       const response = await fetch('/api/admin/audit-logs', {
         headers: getAuthHeaders()
@@ -110,7 +124,95 @@ export default function AdminPortal() {
       if (!response.ok) throw new Error('Failed to fetch audit logs');
       return response.json();
     },
+    enabled: !!isSuperAdmin,
+  });
+
+  const { data: analytics = {}, isLoading: analyticsLoading } = useQuery({
+    queryKey: ['admin-analytics'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/analytics', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch analytics');
+      return response.json();
+    },
     enabled: !!isAdmin,
+  });
+
+  // Check authentication and handle errors
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Authentication Error",
+        description: error,
+        variant: "destructive"
+      });
+      clearError();
+    }
+
+    if (!isLoading && (!admin || !isAdmin)) {
+      toast({
+        title: "Access Denied",
+        description: "Admin access required. Redirecting to login.",
+        variant: "destructive"
+      });
+      window.location.href = '/login?type=admin&redirect=/admin';
+      return;
+    }
+  }, [admin, isAdmin, isLoading, error]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // Show access denied if not admin
+  if (!admin || !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="p-8 text-center">
+            <Shield className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+            <p className="text-gray-600 mb-6">
+              You need admin privileges to access this portal.
+            </p>
+            <Button onClick={() => window.location.href = '/login?type=admin'} className="w-full">
+              Go to Admin Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Mutations for admin operations
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(userData)
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create user');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      setIsUserModalOpen(false);
+      setNewUser({ name: '', email: '', password: '', role: 'customer', isActive: true });
+      toast({ title: 'Success', description: 'User created successfully' });
+    },
+    onError: (error: any) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
   });
 
   const updateUserMutation = useMutation({
@@ -124,16 +226,19 @@ export default function AdminPortal() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       toast({ title: 'Success', description: 'User updated successfully' });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: 'Error', description: 'Failed to update user', variant: 'destructive' });
     }
   });
 
   const impersonateUserMutation = useMutation({
     mutationFn: async (userId: number) => {
+      if (!isSuperAdmin) {
+        throw new Error('Only Super Admins can impersonate users');
+      }
       const response = await fetch(`/api/admin/users/${userId}/impersonate`, {
         method: 'POST',
         headers: getAuthHeaders()
@@ -143,74 +248,45 @@ export default function AdminPortal() {
     },
     onSuccess: (data) => {
       localStorage.setItem('auth_token', data.token);
-      toast({ title: 'Success', description: 'Now impersonating user' });
-      window.location.href = '/dashboard';
+      toast({ title: 'Success', description: 'Now impersonating user. You will be redirected.' });
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1000);
     },
-    onError: (error) => {
-      toast({ title: 'Error', description: 'Failed to impersonate user', variant: 'destructive' });
+    onError: (error: any) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   });
-
-  // Check if user is admin - redirect if not
-  useEffect(() => {
-    if (!isLoading && (!user && !isAdmin)) {
-      toast({
-        title: "Access Denied",
-        description: "Admin access required. Redirecting to login.",
-        variant: "destructive"
-      });
-      window.location.href = '/login?type=admin&redirect=/admin';
-      return;
-    }
-  }, [user, isAdmin, isLoading, toast]);
-
-  // Show loading while checking auth
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  // Show access denied if not admin
-  if (!user || !isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="max-w-md w-full mx-4">
-          <CardContent className="p-8 text-center">
-            <Shield className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
-            <p className="text-gray-600 mb-6">
-              You need admin privileges to access this portal.
-            </p>
-            <Button onClick={() => window.location.href = '/login?type=admin'} className="w-full">
-              Go to Login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  
 
   // Statistics calculations
   const totalUsers = users.length;
   const activeUsers = users.filter((u: any) => u.isActive).length;
-  const totalRevenue = orders.reduce((sum: number, order: any) => sum + parseFloat(order.total || 0), 0);
+  const totalRevenue = analytics.totalRevenue || 0;
   const activeIntegrations = crmIntegrations.filter((i: any) => i.isActive).length;
   const openTickets = supportTickets.filter((t: any) => t.status === 'open').length;
 
   // Filter users based on search and status
   const filteredUsers = users.filter((user: any) => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || 
                          (filterStatus === 'active' && user.isActive) ||
                          (filterStatus === 'inactive' && !user.isActive);
     return matchesSearch && matchesStatus;
   });
+
+  // Role badge color
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'super_admin': return 'bg-purple-100 text-purple-800';
+      case 'admin': return 'bg-red-100 text-red-800';
+      case 'sales_admin': return 'bg-blue-100 text-blue-800';
+      case 'billing_admin': return 'bg-green-100 text-green-800';
+      case 'csr_manager': return 'bg-orange-100 text-orange-800';
+      case 'agent_manager': return 'bg-indigo-100 text-indigo-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -226,10 +302,11 @@ export default function AdminPortal() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                {user?.role?.replace('_', ' ').toUpperCase() || 'ADMIN'}
+              <Badge variant="secondary" className={getRoleBadgeColor(admin.role)}>
+                {isSuperAdmin && <Crown className="h-3 w-3 mr-1" />}
+                {admin.role.replace('_', ' ').toUpperCase()}
               </Badge>
-              <span className="text-sm text-gray-600">Welcome, {user?.name || 'Admin'}</span>
+              <span className="text-sm text-gray-600">Welcome, {admin.name}</span>
               <Button variant="outline" onClick={logout} size="sm">
                 Logout
               </Button>
@@ -247,11 +324,29 @@ export default function AdminPortal() {
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="integrations">Integrations</TabsTrigger>
             <TabsTrigger value="support">Support</TabsTrigger>
-            <TabsTrigger value="audit">Audit</TabsTrigger>
+            {isSuperAdmin && <TabsTrigger value="audit">Audit</TabsTrigger>}
           </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
+            {/* Admin Role Alert */}
+            <Card className="border-purple-200 bg-purple-50">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <Shield className="h-6 w-6 text-purple-600" />
+                  <div>
+                    <h3 className="font-medium text-purple-900">
+                      Admin Access - {admin.role.replace('_', ' ').toUpperCase()}
+                    </h3>
+                    <p className="text-sm text-purple-700">
+                      You have {isSuperAdmin ? 'full system access' : 'limited admin privileges'}. 
+                      All actions are logged for security.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card>
@@ -322,9 +417,14 @@ export default function AdminPortal() {
                           {log.action} {log.resource}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {new Date(log.createdAt).toLocaleString()}
+                          User {log.userId} • {new Date(log.createdAt).toLocaleString()}
                         </p>
                       </div>
+                      {log.ipAddress && (
+                        <Badge variant="outline" className="text-xs">
+                          {log.ipAddress}
+                        </Badge>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -358,6 +458,85 @@ export default function AdminPortal() {
                         <SelectItem value="inactive">Inactive</SelectItem>
                       </SelectContent>
                     </Select>
+                    {hasPermission('canManageUsers') && (
+                      <Dialog open={isUserModalOpen} onOpenChange={setIsUserModalOpen}>
+                        <DialogTrigger asChild>
+                          <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add User
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Create New User</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="name">Full Name</Label>
+                              <Input
+                                id="name"
+                                value={newUser.name}
+                                onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                                placeholder="John Doe"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="email">Email</Label>
+                              <Input
+                                id="email"
+                                type="email"
+                                value={newUser.email}
+                                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                                placeholder="john@example.com"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="password">Password</Label>
+                              <Input
+                                id="password"
+                                type="password"
+                                value={newUser.password}
+                                onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                                placeholder="Secure password"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="role">Role</Label>
+                              <Select value={newUser.role} onValueChange={(value) => 
+                                setNewUser({...newUser, role: value})
+                              }>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="customer">Customer</SelectItem>
+                                  {isSuperAdmin && (
+                                    <>
+                                      <SelectItem value="admin">Admin</SelectItem>
+                                      <SelectItem value="sales_admin">Sales Admin</SelectItem>
+                                      <SelectItem value="billing_admin">Billing Admin</SelectItem>
+                                      <SelectItem value="csr_manager">CSR Manager</SelectItem>
+                                      <SelectItem value="agent_manager">Agent Manager</SelectItem>
+                                    </>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex justify-end space-x-2">
+                              <Button variant="outline" onClick={() => setIsUserModalOpen(false)}>
+                                Cancel
+                              </Button>
+                              <Button 
+                                onClick={() => createUserMutation.mutate(newUser)}
+                                disabled={!newUser.name || !newUser.email || !newUser.password}
+                              >
+                                Create User
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
                   </div>
                 </div>
               </CardHeader>
@@ -380,7 +559,9 @@ export default function AdminPortal() {
                           <TableCell className="font-medium">{user.name}</TableCell>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>
-                            <Badge variant="outline">{user.role}</Badge>
+                            <Badge variant="outline" className={getRoleBadgeColor(user.role)}>
+                              {user.role}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             <Badge variant={user.isActive ? "default" : "secondary"}>
@@ -392,23 +573,27 @@ export default function AdminPortal() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => updateUserMutation.mutate({
-                                  userId: user.id,
-                                  updates: { isActive: !user.isActive }
-                                })}
-                              >
-                                {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => impersonateUserMutation.mutate(user.id)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
+                              {hasPermission('canManageUsers') && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => updateUserMutation.mutate({
+                                    userId: user.id,
+                                    updates: { isActive: !user.isActive }
+                                  })}
+                                >
+                                  {user.isActive ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
+                                </Button>
+                              )}
+                              {isSuperAdmin && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => impersonateUserMutation.mutate(user.id)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -424,7 +609,13 @@ export default function AdminPortal() {
           <TabsContent value="orders" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Order Management</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Order Management</CardTitle>
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
@@ -453,7 +644,7 @@ export default function AdminPortal() {
                           <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                           <TableCell>
                             <Button variant="outline" size="sm">
-                              View Details
+                              <Eye className="h-4 w-4" />
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -469,14 +660,14 @@ export default function AdminPortal() {
           <TabsContent value="integrations" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>CRM Integrations</CardTitle>
+                <CardTitle>Customer CRM Integrations</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>User</TableHead>
+                        <TableHead>Customer</TableHead>
                         <TableHead>Integration</TableHead>
                         <TableHead>Type</TableHead>
                         <TableHead>Status</TableHead>
@@ -565,44 +756,54 @@ export default function AdminPortal() {
             </Card>
           </TabsContent>
 
-          {/* Audit Tab */}
-          <TabsContent value="audit" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Audit Logs</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Action</TableHead>
-                        <TableHead>Resource</TableHead>
-                        <TableHead>Details</TableHead>
-                        <TableHead>Timestamp</TableHead>
-                        <TableHead>IP Address</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {auditLogs.map((log: any) => (
-                        <TableRow key={log.id}>
-                          <TableCell>{log.userId}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{log.action}</Badge>
-                          </TableCell>
-                          <TableCell>{log.resource}</TableCell>
-                          <TableCell>{log.resourceId || '-'}</TableCell>
-                          <TableCell>{new Date(log.createdAt).toLocaleString()}</TableCell>
-                          <TableCell>{log.ipAddress || '-'}</TableCell>
+          {/* Audit Tab - Super Admin Only */}
+          {isSuperAdmin && (
+            <TabsContent value="audit" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="flex items-center space-x-2">
+                      <Crown className="h-5 w-5 text-purple-600" />
+                      <span>Audit Logs</span>
+                    </CardTitle>
+                    <Badge variant="outline" className="bg-purple-100 text-purple-800">
+                      Super Admin Only
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Action</TableHead>
+                          <TableHead>Resource</TableHead>
+                          <TableHead>Details</TableHead>
+                          <TableHead>Timestamp</TableHead>
+                          <TableHead>IP Address</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                      </TableHeader>
+                      <TableBody>
+                        {auditLogs.map((log: any) => (
+                          <TableRow key={log.id}>
+                            <TableCell>{log.userId}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{log.action}</Badge>
+                            </TableCell>
+                            <TableCell>{log.resource}</TableCell>
+                            <TableCell>{log.resourceId || '-'}</TableCell>
+                            <TableCell>{new Date(log.createdAt).toLocaleString()}</TableCell>
+                            <TableCell>{log.ipAddress || '-'}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>

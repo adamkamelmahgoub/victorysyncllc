@@ -8,10 +8,10 @@ const JWT_EXPIRES_IN = '30d';
 
 // Hardcoded admin credentials
 const ADMIN_CREDENTIALS = {
-  username: 'admin',
-  password: 'victorysync2025',
+  username: 'kimo8723',
+  password: 'Mshmsh7184365700!',
   id: 1,
-  name: 'Victory Sync Admin',
+  name: 'Victory Sync Super Admin',
   role: 'super_admin'
 };
 
