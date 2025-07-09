@@ -1,59 +1,114 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from 'react';
+
+interface User {
+  id: number;
+  email?: string;
+  username?: string;
+  name: string;
+  role: string;
+  permissions?: any;
+}
+
+interface AuthState {
+  user: User | null;
+  admin: User | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  userType: 'customer' | 'admin' | null;
+}
 
 export function useAuth() {
-  const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
-  
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["/api/auth/me"],
-    queryFn: async () => {
-      if (!token) {
-        return null;
-      }
-      
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Token is invalid, remove it
-          localStorage.removeItem('token');
-          localStorage.removeItem('auth_token');
-          return null;
-        }
-        throw new Error('Failed to fetch user data');
-      }
-      
-      const data = await response.json();
-      return data.user;
-    },
-    retry: false,
-    enabled: !!token,
+  const [authState, setAuthState] = useState<AuthState>({
+    user: null,
+    admin: null,
+    isLoading: true,
+    isAuthenticated: false,
+    userType: null
   });
 
+  const checkAuth = async () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      return;
+    }
+
+    try {
+      // Try customer auth first
+      const customerResponse = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (customerResponse.ok) {
+        const data = await customerResponse.json();
+        setAuthState({
+          user: data.user,
+          admin: null,
+          isLoading: false,
+          isAuthenticated: true,
+          userType: 'customer'
+        });
+        return;
+      }
+
+      // Try admin auth
+      const adminResponse = await fetch('/api/admin/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (adminResponse.ok) {
+        const data = await adminResponse.json();
+        setAuthState({
+          user: null,
+          admin: data.admin,
+          isLoading: false,
+          isAuthenticated: true,
+          userType: 'admin'
+        });
+        return;
+      }
+
+      // No valid auth found
+      localStorage.removeItem('auth_token');
+      setAuthState({
+        user: null,
+        admin: null,
+        isLoading: false,
+        isAuthenticated: false,
+        userType: null
+      });
+    } catch (error) {
+      localStorage.removeItem('auth_token');
+      setAuthState({
+        user: null,
+        admin: null,
+        isLoading: false,
+        isAuthenticated: false,
+        userType: null
+      });
+    }
+  };
+
   const logout = () => {
-    localStorage.removeItem('token');
     localStorage.removeItem('auth_token');
+    setAuthState({
+      user: null,
+      admin: null,
+      isLoading: false,
+      isAuthenticated: false,
+      userType: null
+    });
     window.location.href = '/';
   };
 
-  const isAdmin = () => {
-    return user && ['admin', 'super_admin', 'billing', 'crm_manager'].includes(user.role);
-  };
-
-  const isCustomer = () => {
-    return user && (user.role === 'user' || user.role === 'customer');
-  };
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   return {
-    user,
-    isLoading,
-    isAuthenticated: !!user && !!token,
-    isAdmin: isAdmin(),
-    isCustomer: isCustomer(),
+    ...authState,
     logout,
+    checkAuth
   };
 }

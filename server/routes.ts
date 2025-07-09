@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { registerUser, loginUser, getCurrentUser, authenticateJWT, generateJWT, requireAdmin, requireSuperAdmin, logAudit, type AuthenticatedRequest } from "./publicAuth";
+import { loginAdmin, getCurrentAdmin, authenticateAdminJWT } from "./adminAuth";
 import { initializeAdminUser } from "./initAdmin";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
@@ -57,15 +58,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize admin user
   await initializeAdminUser();
 
-  // Public authentication routes (new system)
-  app.post('/api/auth/register', registerUser);
-  app.post('/api/auth/login', loginUser);
-  app.get('/api/auth/me', authenticateJWT as any, getCurrentUser as any);
-  app.post('/api/auth/logout', (req, res) => {
-    // Since we're using JWT tokens, logout is handled client-side
-    // by removing the token from storage
-    res.json({ message: 'Logged out successfully' });
-  });
+  // Customer Authentication routes
+  app.post("/api/auth/register", registerUser);
+  app.post("/api/auth/login", loginUser);
+  app.get("/api/auth/me", authenticateJWT, getCurrentUser);
+
+  // Admin Authentication routes
+  app.post("/api/admin/auth/login", loginAdmin);
+  app.get("/api/admin/auth/me", authenticateAdminJWT, getCurrentAdmin);
 
 
 
@@ -223,17 +223,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/users", authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { name, email, password, role, isActive, permissions } = req.body;
-      
+
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
-      
+
       // Hash password
       const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash(password, 10);
-      
+
       const user = await storage.createUser({
         name,
         email,
@@ -248,7 +248,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdUser: { name, email, role },
         createdBy: req.user!.email
       }, req);
-      
+
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
@@ -485,12 +485,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id;
       const { name, email } = req.body;
-      
+
       const updatedUser = await storage.updateUserProfile(userId, { name, email });
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       res.json(updatedUser);
     } catch (error) {
       console.error("Error updating user profile:", error);
@@ -503,11 +503,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id.toString();
       const orders = await storage.getUserOrders(userId);
-      
+
       const totalOrders = orders.length;
       const totalSpent = orders.reduce((sum: number, order: any) => sum + parseFloat(order.total || 0), 0);
       const avgOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
-      
+
       const kpis = {
         totalOrders,
         totalSpent,
@@ -518,7 +518,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         conversionRate: '3.2%', // Mock data
         satisfactionScore: 4.8 // Mock data
       };
-      
+
       res.json(kpis);
     } catch (error) {
       console.error("Error fetching user KPIs:", error);
@@ -542,7 +542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id;
       const { type, name, apiKey, webhookUrl } = req.body;
-      
+
       const integration = await storage.createUserIntegration({
         userId,
         type,
@@ -551,7 +551,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         webhookUrl,
         isActive: true
       });
-      
+
       res.json(integration);
     } catch (error) {
       console.error("Error creating integration:", error);
@@ -563,12 +563,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const integrationId = parseInt(req.params.id);
       const userId = req.user!.id;
-      
+
       const success = await storage.deleteUserIntegration(integrationId, userId);
       if (!success) {
         return res.status(404).json({ message: "Integration not found" });
       }
-      
+
       res.json({ message: "Integration deleted successfully" });
     } catch (error) {
       console.error("Error deleting integration:", error);
@@ -580,14 +580,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/packages', requireAdmin, async (req: any, res: any) => {
     try {
       const { name, price, description, features } = req.body;
-      
+
       const pkg = await storage.createPackage({
         name,
         price,
         description,
         features
       });
-      
+
       res.json(pkg);
     } catch (error) {
       console.error("Error creating package:", error);
@@ -599,18 +599,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const packageId = parseInt(req.params.id);
       const { name, price, description, features } = req.body;
-      
+
       const pkg = await storage.updatePackage(packageId, {
         name,
         price,
         description,
         features
       });
-      
+
       if (!pkg) {
         return res.status(404).json({ message: "Package not found" });
       }
-      
+
       res.json(pkg);
     } catch (error) {
       console.error("Error updating package:", error);
@@ -621,12 +621,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/admin/packages/:id', requireAdmin, async (req: any, res: any) => {
     try {
       const packageId = parseInt(req.params.id);
-      
+
       const success = await storage.deletePackage(packageId);
       if (!success) {
         return res.status(404).json({ message: "Package not found" });
       }
-      
+
       res.json({ message: "Package deleted successfully" });
     } catch (error) {
       console.error("Error deleting package:", error);
@@ -638,7 +638,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/users/bulk', requireAdmin, async (req: any, res: any) => {
     try {
       const { userIds, action, value } = req.body;
-      
+
       let results = [];
       for (const userId of userIds) {
         try {
@@ -663,7 +663,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           results.push({ userId, success: false, error: error.message });
         }
       }
-      
+
       res.json({ results });
     } catch (error) {
       console.error("Error performing bulk action:", error);
@@ -677,7 +677,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const users = await storage.getAllPublicUsers();
       const orders = await storage.getAllOrders();
       const packages = await storage.getPackages();
-      
+
       const analytics = {
         totalUsers: users.length,
         activeUsers: users.filter(u => u.isActive !== false).length,
@@ -695,7 +695,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           orders: '+15%'
         }
       };
-      
+
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching analytics:", error);
@@ -719,7 +719,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id.toString();
       const { type, name, apiKey, accessToken, refreshToken, webhookUrl, config } = req.body;
-      
+
       const integration = await storage.createCrmIntegration({
         userId,
         type,
@@ -735,7 +735,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await logAudit(userId, 'create', 'crm_integration', integration.id.toString(), {
         type, name
       }, req);
-      
+
       res.json(integration);
     } catch (error) {
       console.error("Error creating CRM integration:", error);
@@ -747,7 +747,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const integrationId = parseInt(req.params.id);
       const updates = req.body;
-      
+
       const integration = await storage.updateCrmIntegration(integrationId, updates);
       if (!integration) {
         return res.status(404).json({ message: "Integration not found" });
@@ -756,7 +756,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await logAudit(req.user!.id.toString(), 'update', 'crm_integration', integrationId.toString(), {
         updates
       }, req);
-      
+
       res.json(integration);
     } catch (error) {
       console.error("Error updating CRM integration:", error);
@@ -768,14 +768,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const integrationId = parseInt(req.params.id);
       const userId = req.user!.id.toString();
-      
+
       const success = await storage.deleteCrmIntegration(integrationId, userId);
       if (!success) {
         return res.status(404).json({ message: "Integration not found" });
       }
 
       await logAudit(userId, 'delete', 'crm_integration', integrationId.toString(), {}, req);
-      
+
       res.json({ message: "Integration deleted successfully" });
     } catch (error) {
       console.error("Error deleting CRM integration:", error);
@@ -799,7 +799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id.toString();
       const { title, description, priority } = req.body;
-      
+
       const ticket = await storage.createSupportTicket({
         userId,
         title,
@@ -811,7 +811,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await logAudit(userId, 'create', 'support_ticket', ticket.id.toString(), {
         title, priority
       }, req);
-      
+
       res.json(ticket);
     } catch (error) {
       console.error("Error creating support ticket:", error);
@@ -824,10 +824,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id.toString();
       const { startDate, endDate } = req.query;
-      
+
       const start = startDate ? new Date(startDate as string) : undefined;
       const end = endDate ? new Date(endDate as string) : undefined;
-      
+
       const metrics = await storage.getKpiMetrics(userId, start, end);
       res.json(metrics);
     } catch (error) {
@@ -861,7 +861,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const ticketId = parseInt(req.params.id);
       const updates = req.body;
-      
+
       const ticket = await storage.updateSupportTicket(ticketId, {
         ...updates,
         assignedTo: req.user!.id.toString()
@@ -870,7 +870,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await logAudit(req.user!.id.toString(), 'update', 'support_ticket', ticketId.toString(), {
         updates
       }, req);
-      
+
       res.json(ticket);
     } catch (error) {
       console.error("Error updating support ticket:", error);
@@ -881,10 +881,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/kpi/metrics', authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { startDate, endDate } = req.query;
-      
+
       const start = startDate ? new Date(startDate as string) : undefined;
       const end = endDate ? new Date(endDate as string) : undefined;
-      
+
       const metrics = await storage.getAllKpiMetrics(start, end);
       res.json(metrics);
     } catch (error) {
@@ -942,7 +942,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const submissionId = parseInt(req.params.id);
       const updates = req.body;
-      
+
       const submission = await storage.updateContactSubmission(submissionId, {
         ...updates,
         assignedTo: req.user!.id.toString()
@@ -951,7 +951,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await logAudit(req.user!.id.toString(), 'update', 'contact_submission', submissionId.toString(), {
         updates
       }, req);
-      
+
       res.json(submission);
     } catch (error) {
       console.error("Error updating contact submission:", error);

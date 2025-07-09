@@ -152,6 +152,23 @@ export const kpiMetrics = pgTable("kpi_metrics", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Admin users table for internal Victory Sync staff
+export const adminUsers = pgTable('admin_users', {
+  id: serial('id').primaryKey(),
+  username: varchar('username', { length: 50 }).unique().notNull(),
+  passwordHash: text('password_hash').notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  role: varchar('role', { length: 50 }).default('admin').notNull(),
+  permissions: json('permissions'),
+  isActive: boolean('is_active').default(true).notNull(),
+  lastLogin: timestamp('last_login'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export type AdminUser = typeof adminUsers.$inferSelect;
+export type InsertAdminUser = typeof adminUsers.$inferInsert;
+
 // Zod schemas
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);

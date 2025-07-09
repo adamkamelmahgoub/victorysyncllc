@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +8,9 @@ import { Eye, EyeOff, Shield, User } from "lucide-react";
 
 export default function Login() {
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: '',
+    username: '',
+    password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,71 +26,33 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const endpoint = loginType === 'admin' ? '/api/admin/auth/login' : '/api/auth/login';
+      const payload = loginType === 'admin' 
+        ? { username: formData.username, password: formData.password }
+        : { email: formData.email, password: formData.password };
 
-      const data = await response.json();
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
       if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
       }
 
-      // Store token
-      localStorage.setItem("token", data.token);
-      localStorage.removeItem("auth_token"); // Clean up old token key
+      const data = await response.json();
+      localStorage.setItem('auth_token', data.token);
 
-      // Check user role and redirect appropriately
-      const userRole = data.user.role;
-      const isAdmin = ['admin', 'super_admin', 'billing', 'crm_manager'].includes(userRole);
-      const isCustomer = userRole === 'user' || userRole === 'customer';
-
-      toast({
-        title: "Success",
-        description: "Logged in successfully",
-      });
-
-      // Role-based redirect logic
-      if (redirectTo === '/admin') {
-        if (isAdmin) {
-          window.location.href = '/admin';
-        } else {
-          toast({
-            title: "Access Denied",
-            description: "Admin privileges required",
-            variant: "destructive"
-          });
-          window.location.href = '/dashboard';
-        }
-      } else if (redirectTo === '/dashboard') {
-        if (isCustomer) {
-          window.location.href = '/dashboard';
-        } else if (isAdmin) {
-          // Admin accessing customer area - allow but show notice
-          toast({
-            title: "Admin Access",
-            description: "You're accessing the customer dashboard as an admin",
-          });
-          window.location.href = '/dashboard';
-        }
+      // Redirect based on login type
+      if (loginType === 'admin') {
+        window.location.href = '/admin';
       } else {
-        // Default redirect based on role
-        if (isAdmin) {
-          window.location.href = '/admin';
-        } else {
-          window.location.href = '/dashboard';
-        }
+        window.location.href = '/dashboard';
       }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Login failed",
-        variant: "destructive",
-      });
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during login');
     } finally {
       setIsLoading(false);
     }
@@ -188,19 +150,7 @@ export default function Login() {
                 </div>
               </div>
 
-              {loginType === 'admin' && (
-                <div className="text-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={fillAdminCredentials}
-                    className="text-xs"
-                  >
-                    Fill Admin Credentials (Demo)
-                  </Button>
-                </div>
-              )}
+              
 
               <Button
                 type="submit"

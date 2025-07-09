@@ -1,5 +1,6 @@
 import {
   publicUsers,
+  adminUsers,
   packages,
   orders,
   orderItems,
@@ -8,6 +9,8 @@ import {
   supportTickets, auditLogs, kpiMetrics,
   type PublicUser,
   type InsertPublicUser,
+  type AdminUser,
+  type InsertAdminUser,
   type Package,
   type InsertPackage,
   type Order,
@@ -29,6 +32,12 @@ export interface IStorage {
   getPublicUserByEmail(email: string): Promise<PublicUser | undefined>;
   getPublicUserById(id: number): Promise<PublicUser | undefined>;
   updatePublicUserSocialAccounts(id: number, socialAccounts: any[]): Promise<PublicUser>;
+
+  // Admin user operations
+  createAdminUser(user: InsertAdminUser): Promise<AdminUser>;
+  getAdminUserByUsername(username: string): Promise<AdminUser | undefined>;
+  getAdminUserById(id: number): Promise<AdminUser | undefined>;
+  updateAdminLastLogin(id: number): Promise<AdminUser>;
 
   // Package operations
   getPackages(): Promise<Package[]>;
@@ -95,11 +104,34 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations
   // Public user operations
   async createPublicUser(user: InsertPublicUser): Promise<PublicUser> {
     const [newUser] = await db.insert(publicUsers).values(user).returning();
     return newUser;
+  }
+
+  // Admin user operations
+  async createAdminUser(user: InsertAdminUser): Promise<AdminUser> {
+    const [newUser] = await db.insert(adminUsers).values(user).returning();
+    return newUser;
+  }
+
+  async getAdminUserByUsername(username: string): Promise<AdminUser | undefined> {
+    const [user] = await db.select().from(adminUsers).where(eq(adminUsers.username, username));
+    return user;
+  }
+
+  async getAdminUserById(id: number): Promise<AdminUser | undefined> {
+    const [user] = await db.select().from(adminUsers).where(eq(adminUsers.id, id));
+    return user;
+  }
+
+  async updateAdminLastLogin(id: number): Promise<AdminUser> {
+    const [updated] = await db.update(adminUsers)
+      .set({ lastLogin: new Date(), updatedAt: new Date() })
+      .where(eq(adminUsers.id, id))
+      .returning();
+    return updated;
   }
 
   async getPublicUserByEmail(email: string): Promise<PublicUser | undefined> {
