@@ -123,7 +123,7 @@ export class DatabaseStorage implements IStorage {
 
   // Package operations
   async getPackages(): Promise<Package[]> {
-    return await db.select().from(packages).where(eq(packages.isActive, true));
+    return await db.select().from(packages);
   }
 
   async getPackage(id: number): Promise<Package | undefined> {
