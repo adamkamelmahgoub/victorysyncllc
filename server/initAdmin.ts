@@ -5,19 +5,19 @@ import { storage } from './storage';
 export async function initializeAdminUser() {
   try {
     // Check if admin user already exists
-    const existingAdmin = await storage.getAdminUserByUsername('kimo8723');
+    const existingAdmin = await storage.getUserByEmail('kimo8723@victorysync.com');
     if (existingAdmin) {
       console.log('✅ Admin user already exists');
-      return existingAdmin;
+      return;
     }
 
-    // Create admin user with correct credentials
+    // Create admin user
     const hashedPassword = await bcrypt.hash('Mshmsh7184365700!', 10);
     
-    const adminUser = await storage.createAdminUser({
-      username: 'kimo8723',
-      name: 'Victory Sync Super Admin',
-      passwordHash: hashedPassword,
+    const adminUser = await storage.createUser({
+      name: 'Victory Sync Admin',
+      email: 'kimo8723@victorysync.com',
+      password: hashedPassword,
       role: 'super_admin',
       isActive: true,
       permissions: {
@@ -30,7 +30,7 @@ export async function initializeAdminUser() {
       }
     });
 
-    console.log('✅ Admin user created successfully:', adminUser.username);
+    console.log('✅ Admin user created successfully:', adminUser.email);
     return adminUser;
   } catch (error) {
     console.error('❌ Failed to create admin user:', error);

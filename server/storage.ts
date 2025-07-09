@@ -1,6 +1,5 @@
 import {
   publicUsers,
-  adminUsers,
   packages,
   orders,
   orderItems,
@@ -9,8 +8,6 @@ import {
   supportTickets, auditLogs, kpiMetrics,
   type PublicUser,
   type InsertPublicUser,
-  type AdminUser,
-  type InsertAdminUser,
   type Package,
   type InsertPackage,
   type Order,
@@ -32,12 +29,6 @@ export interface IStorage {
   getPublicUserByEmail(email: string): Promise<PublicUser | undefined>;
   getPublicUserById(id: number): Promise<PublicUser | undefined>;
   updatePublicUserSocialAccounts(id: number, socialAccounts: any[]): Promise<PublicUser>;
-
-  // Admin user operations
-  createAdminUser(user: InsertAdminUser): Promise<AdminUser>;
-  getAdminUserByUsername(username: string): Promise<AdminUser | undefined>;
-  getAdminUserById(id: number): Promise<AdminUser | undefined>;
-  updateAdminLastLogin(id: number): Promise<AdminUser>;
 
   // Package operations
   getPackages(): Promise<Package[]>;
@@ -101,42 +92,14 @@ export interface IStorage {
   // Contact submission management
   updateContactSubmission(id: number, updates: Partial<InsertContactSubmission>): Promise<any>;
   getAllContactSubmissions(): Promise<ContactSubmission[]>;
-
-    // Customer data
-  getUserOrders(userId: number): Promise<any[]>;
-  getUserCrmIntegrations(userId: number): Promise<any[]>;
-  getUserSupportTickets(userId: number): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
+  // User operations
   // Public user operations
   async createPublicUser(user: InsertPublicUser): Promise<PublicUser> {
     const [newUser] = await db.insert(publicUsers).values(user).returning();
     return newUser;
-  }
-
-  // Admin user operations
-  async createAdminUser(user: InsertAdminUser): Promise<AdminUser> {
-    const [newUser] = await db.insert(adminUsers).values(user).returning();
-    return newUser;
-  }
-
-  async getAdminUserByUsername(username: string): Promise<AdminUser | undefined> {
-    const [user] = await db.select().from(adminUsers).where(eq(adminUsers.username, username));
-    return user;
-  }
-
-  async getAdminUserById(id: number): Promise<AdminUser | undefined> {
-    const [user] = await db.select().from(adminUsers).where(eq(adminUsers.id, id));
-    return user;
-  }
-
-  async updateAdminLastLogin(id: number): Promise<AdminUser> {
-    const [updated] = await db.update(adminUsers)
-      .set({ lastLogin: new Date(), updatedAt: new Date() })
-      .where(eq(adminUsers.id, id))
-      .returning();
-    return updated;
   }
 
   async getPublicUserByEmail(email: string): Promise<PublicUser | undefined> {
@@ -160,7 +123,7 @@ export class DatabaseStorage implements IStorage {
 
   // Package operations
   async getPackages(): Promise<Package[]> {
-    return await db.select().from(packages);
+    return await db.select().from(packages).where(eq(packages.isActive, true));
   }
 
   async getPackage(id: number): Promise<Package | undefined> {
@@ -373,25 +336,25 @@ export class DatabaseStorage implements IStorage {
 
   // User management for admins
   async updateUserRole(userId: number, role: string) {
-    const [updated] = await db.update(publicUsers)
+    const [updated] = await db.update(users)
       .set({ role, updatedAt: new Date() })
-      .where(eq(publicUsers.id, userId))
+      .where(eq(users.id, userId))
       .returning();
     return updated;
   }
 
   async updateUserPermissions(userId: number, permissions: any) {
-    const [updated] = await db.update(publicUsers)
+    const [updated] = await db.update(users)
       .set({ permissions, updatedAt: new Date() })
-      .where(eq(publicUsers.id, userId))
+      .where(eq(users.id, userId))
       .returning();
     return updated;
   }
 
   async updateLastLogin(userId: number) {
-    const [updated] = await db.update(publicUsers)
-      .set({ lastLogin: new Date(), updatedAt: new Date() })
-      .where(eq(publicUsers.id, userId))
+    const [updated] = await db.update(users)
+      .set({ lastLogin: new Date() })
+      .where(eq(users.id, userId))
       .returning();
     return updated;
   }
@@ -420,48 +383,6 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUserIntegration(id: number, userId: number) {
     return await this.deleteCrmIntegration(id, userId.toString());
-  }
-
-  // Customer data
-  async getUserOrders(userId: number): Promise<any[]> {
-    // Mock data for user orders
-    return [
-      {
-        id: 1,
-        userId: userId,
-        total: '299.99',
-        status: 'completed',
-        createdAt: new Date()
-      }
-    ];
-  }
-
-  async getUserCrmIntegrations(userId: number): Promise<any[]> {
-    // Mock data for user CRM integrations
-    return [
-      {
-        id: 1,
-        userId: userId,
-        name: 'Salesforce',
-        type: 'crm',
-        isActive: true,
-        lastSync: new Date()
-      }
-    ];
-  }
-
-  async getUserSupportTickets(userId: number): Promise<any[]> {
-    // Mock data for user support tickets
-    return [
-      {
-        id: 1,
-        userId: userId,
-        title: 'Integration Issue',
-        priority: 'medium',
-        status: 'open',
-        createdAt: new Date()
-      }
-    ];
   }
 }
 

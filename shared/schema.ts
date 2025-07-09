@@ -1,5 +1,16 @@
-import { pgTable, text, integer, timestamp, boolean, decimal, jsonb, json, varchar, serial, index } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import {
+  pgTable,
+  text,
+  varchar,
+  timestamp,
+  jsonb,
+  index,
+  serial,
+  integer,
+  decimal,
+  boolean,
+} from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
@@ -28,7 +39,104 @@ export const publicUsers = pgTable("public_users", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Register and login schemas for public users
+// Service packages
+export const packages = pgTable("packages", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  description: text("description"),
+  features: jsonb("features").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Orders
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id"),
+  status: varchar("status").default("pending"), // pending, processing, completed, cancelled
+  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  stripePaymentIntentId: varchar("stripe_payment_intent_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Order items
+export const orderItems = pgTable("order_items", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").references(() => orders.id),
+  packageId: integer("package_id").references(() => packages.id),
+  quantity: integer("quantity").notNull().default(1),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Contact form submissions
+export const contactSubmissions = pgTable("contact_submissions", {
+  id: serial("id").primaryKey(),
+  firstName: varchar("first_name").notNull(),
+  lastName: varchar("last_name").notNull(),
+  email: varchar("email").notNull(),
+  company: varchar("company"),
+  message: text("message").notNull(),
+  status: varchar("status").default("new"), // new, contacted, resolved
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Relations
+export const ordersRelations = relations(orders, ({ many }) => ({
+  items: many(orderItems),
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+  package: one(packages, {
+    fields: [orderItems.packageId],
+    references: [packages.id],
+  }),
+}));
+
+export const packagesRelations = relations(packages, ({ many }) => ({
+  orderItems: many(orderItems),
+}));
+
+// Types
+export type InsertPublicUser = typeof publicUsers.$inferInsert;
+export type PublicUser = typeof publicUsers.$inferSelect;
+
+export type InsertPackage = typeof packages.$inferInsert;
+export type Package = typeof packages.$inferSelect;
+
+export type InsertOrder = typeof orders.$inferInsert;
+export type Order = typeof orders.$inferSelect;
+
+export type InsertOrderItem = typeof orderItems.$inferInsert;
+export type OrderItem = typeof orderItems.$inferSelect;
+
+export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
+export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+
+// Schemas
+export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+});
+
+export const insertOrderSchema = createInsertSchema(orders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const registerUserSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Please enter a valid email address"),
@@ -39,6 +147,9 @@ export const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
+import { pgTable, text, integer, timestamp, boolean, decimal, jsonb } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 export const users = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -152,23 +263,6 @@ export const kpiMetrics = pgTable("kpi_metrics", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Admin users table for internal Victory Sync staff
-export const adminUsers = pgTable('admin_users', {
-  id: serial('id').primaryKey(),
-  username: varchar('username', { length: 50 }).unique().notNull(),
-  passwordHash: text('password_hash').notNull(),
-  name: varchar('name', { length: 255 }).notNull(),
-  role: varchar('role', { length: 50 }).default('admin').notNull(),
-  permissions: json('permissions'),
-  isActive: boolean('is_active').default(true).notNull(),
-  lastLogin: timestamp('last_login'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
-
-export type AdminUser = typeof adminUsers.$inferSelect;
-export type InsertAdminUser = typeof adminUsers.$inferInsert;
-
 // Zod schemas
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
@@ -207,27 +301,3 @@ export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
 export type KpiMetric = typeof kpiMetrics.$inferSelect;
 export type InsertKpiMetric = typeof kpiMetrics.$inferInsert;
-
-// Public User types (for compatibility with existing code)
-export type InsertPublicUser = typeof publicUsers.$inferInsert;
-export type PublicUser = typeof publicUsers.$inferSelect;
-
-// Relations
-export const ordersRelations = relations(orders, ({ many }) => ({
-  items: many(orderItems),
-}));
-
-export const orderItemsRelations = relations(orderItems, ({ one }) => ({
-  order: one(orders, {
-    fields: [orderItems.orderId],
-    references: [orders.id],
-  }),
-  package: one(packages, {
-    fields: [orderItems.packageId],
-    references: [packages.id],
-  }),
-}));
-
-export const packagesRelations = relations(packages, ({ many }) => ({
-  orderItems: many(orderItems),
-}));
