@@ -1,4 +1,3 @@
-
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { Request, Response, NextFunction } from 'express';
@@ -42,7 +41,7 @@ export const authenticateAdminJWT = async (req: AdminAuthenticatedRequest, res: 
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    
+
     if (decoded.userType !== 'admin') {
       return res.status(403).json({ error: "Admin access required" });
     }
@@ -78,33 +77,40 @@ export const loginAdmin = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Username and password are required' });
     }
 
-    const admin = await storage.getAdminUserByUsername(username);
-    if (!admin) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+    // Hardcoded admin credentials - do not check database
+    if (username === 'admin' && password === 'victorysync2025') {
+      const adminUser = {
+        id: 1,
+        username: 'admin',
+        name: 'Victory Sync Admin',
+        role: 'super_admin',
+        permissions: {
+          canManageUsers: true,
+          canViewAllOrders: true,
+          canManageIntegrations: true,
+          canViewAnalytics: true,
+          canImpersonate: true,
+          canManageSettings: true
+        }
+      };
+
+      const token = generateAdminJWT(adminUser);
+
+      res.json({ 
+        token, 
+        admin: { 
+          id: adminUser.id, 
+          username: adminUser.username, 
+          name: adminUser.name, 
+          role: adminUser.role 
+        } 
+      });
+    } else {
+      return res.status(401).json({ error: "Invalid credentials" });
     }
-
-    if (!admin.isActive) {
-      return res.status(401).json({ message: 'Admin account is deactivated' });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, admin.passwordHash);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    await storage.updateAdminLastLogin(admin.id);
-
-    const token = generateAdminJWT(admin);
-
-    const { passwordHash: _, ...adminWithoutPassword } = admin;
-    res.json({ 
-      admin: adminWithoutPassword,
-      token,
-      userType: 'admin'
-    });
   } catch (error) {
-    console.error('Admin login error:', error);
-    res.status(500).json({ message: 'Admin login failed' });
+    console.error("Admin login error:", error);
+    res.status(500).json({ error: "Login failed" });
   }
 };
 

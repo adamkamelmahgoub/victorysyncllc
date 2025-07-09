@@ -43,12 +43,11 @@ export default function Login() {
       }
 
       const data = await response.json();
-      localStorage.setItem('auth_token', data.token);
-
-      // Redirect based on login type
       if (loginType === 'admin') {
+        localStorage.setItem('auth_token', data.token);
         window.location.href = '/admin';
       } else {
+        localStorage.setItem('auth_token', data.token);
         window.location.href = '/dashboard';
       }
     } catch (err: any) {
@@ -69,13 +68,7 @@ export default function Login() {
     });
   };
 
-  // Pre-fill admin credentials for testing
-  const fillAdminCredentials = () => {
-    setFormData({
-      email: "kimo8723@gmail.com",
-      password: "Mshmsh7184365700!"
-    });
-  };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -107,22 +100,41 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email address
-                </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="mt-1"
-                  placeholder="Enter your email"
-                />
-              </div>
+              {loginType === 'admin' ? (
+                <div>
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                    Username
+                  </label>
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    autoComplete="username"
+                    required
+                    value={formData.username}
+                    onChange={handleChange}
+                    className="mt-1"
+                    placeholder="Enter admin username"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Email address
+                  </label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="mt-1"
+                    placeholder="Enter your email"
+                  />
+                </div>
+              )}
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
@@ -165,16 +177,7 @@ export default function Login() {
               </Button>
             </form>
 
-            {loginType !== 'admin' && (
-              <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
-                  Don't have an account?{" "}
-                  <Link href="/register" className="font-medium text-purple-600 hover:text-purple-500">
-                    Sign up here
-                  </Link>
-                </p>
-              </div>
-            )}
+            
 
             {loginType === 'admin' && (
               <div className="mt-4 text-center">

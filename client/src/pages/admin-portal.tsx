@@ -55,7 +55,7 @@ export default function AdminPortal() {
         description: "Admin access required. Redirecting to login.",
         variant: "destructive"
       });
-      window.location.href = '/login?redirect=/admin&type=admin';
+      window.location.href = '/login?type=admin&redirect=/admin';
       return;
     }
   }, [user, isAdmin, isLoading]);
