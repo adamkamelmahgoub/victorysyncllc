@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 
 interface User {
@@ -34,7 +35,24 @@ export function useAuth() {
     }
 
     try {
-      // Try customer auth first
+      // Try admin auth first
+      const adminResponse = await fetch('/api/admin/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (adminResponse.ok) {
+        const data = await adminResponse.json();
+        setAuthState({
+          user: null,
+          admin: data.admin,
+          isLoading: false,
+          isAuthenticated: true,
+          userType: 'admin'
+        });
+        return;
+      }
+
+      // Try customer auth
       const customerResponse = await fetch('/api/auth/me', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -51,24 +69,6 @@ export function useAuth() {
         return;
       }
 
-      // Try admin auth
-      //Removed admin auth fetch and replaced with hardcoded admin check
-      if (token === 'admin_token') {
-          const adminUser = {
-              id: 1,
-              name: 'Admin User',
-              role: 'admin'
-          };
-          setAuthState({
-              user: null,
-              admin: adminUser,
-              isLoading: false,
-              isAuthenticated: true,
-              userType: 'admin'
-          });
-          return;
-      }
-
       // No valid auth found
       localStorage.removeItem('auth_token');
       setAuthState({
@@ -79,6 +79,7 @@ export function useAuth() {
         userType: null
       });
     } catch (error) {
+      console.error('Auth check failed:', error);
       localStorage.removeItem('auth_token');
       setAuthState({
         user: null,

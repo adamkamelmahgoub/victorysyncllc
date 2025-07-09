@@ -87,7 +87,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     Dashboard
                   </Button>
                 </Link>
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -166,7 +166,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                         Dashboard
                       </Button>
                     </Link>
-                    
+
                     <Button
                       variant="ghost"
                       size="sm"

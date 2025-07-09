@@ -97,6 +97,7 @@ export const loginAdmin = async (req: Request, res: Response) => {
       const token = generateAdminJWT(adminUser);
 
       res.json({ 
+        success: true,
         token, 
         admin: { 
           id: adminUser.id, 
@@ -106,11 +107,11 @@ export const loginAdmin = async (req: Request, res: Response) => {
         } 
       });
     } else {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ success: false, message: "Invalid admin credentials" });
     }
   } catch (error) {
     console.error("Admin login error:", error);
-    res.status(500).json({ error: "Login failed" });
+    res.status(500).json({ success: false, message: "Login failed" });
   }
 };
 

@@ -37,18 +37,25 @@ export default function Login() {
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Login failed');
       }
 
-      const data = await response.json();
-      if (loginType === 'admin') {
+      if (data.token) {
         localStorage.setItem('auth_token', data.token);
-        window.location.href = '/admin';
+        
+        // Add a small delay to ensure token is stored
+        setTimeout(() => {
+          if (loginType === 'admin') {
+            window.location.href = '/admin';
+          } else {
+            window.location.href = '/dashboard';
+          }
+        }, 100);
       } else {
-        localStorage.setItem('auth_token', data.token);
-        window.location.href = '/dashboard';
+        throw new Error('No authentication token received');
       }
     } catch (err: any) {
         toast({
@@ -184,6 +191,16 @@ export default function Login() {
                 <p className="text-xs text-gray-500">
                   <Link href="/login" className="text-purple-600 hover:text-purple-500">
                     Customer Login
+                  </Link>
+                </p>
+              </div>
+            )}
+
+            {loginType === 'customer' && (
+              <div className="mt-4 text-center">
+                <p className="text-xs text-gray-500">
+                  <Link href="/login?type=admin" className="text-purple-600 hover:text-purple-500">
+                    Admin Portal
                   </Link>
                 </p>
               </div>
