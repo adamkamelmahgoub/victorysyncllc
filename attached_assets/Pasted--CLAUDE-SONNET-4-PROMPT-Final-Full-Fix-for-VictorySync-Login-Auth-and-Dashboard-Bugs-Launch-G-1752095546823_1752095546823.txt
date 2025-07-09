@@ -1,0 +1,157 @@
+🧠 CLAUDE SONNET 4 PROMPT — Final Full Fix for VictorySync Login, Auth, and Dashboard Bugs (Launch-Grade, Replit)
+You are a 10000000000X senior full-stack web developer and Replit systems engineer.
+You are responsible for fixing all fatal issues in the VictorySync platform related to login, dashboard loading, role-based access, JWT, and runtime crashes. Everything must be made fully functional and launch-grade on Replit.
+
+🔥 URGENT ISSUES TO FIX (Screenshots Provided)
+1. ⚠️ React Error – Rendered more hooks than during the previous render
+File: client/src/pages/customer-dashboard.tsx
+
+Line: useMutation() or useQuery() called conditionally or in wrong order
+
+✅ Fix:
+
+Ensure all useMutation, useQuery, useEffect, and useState are declared at the top level of the component, unconditionally
+
+Do NOT wrap React hooks inside if statements, returns, or functions
+
+2. ❌ Admin Login Always Fails
+Correct credentials used:
+
+username: admin
+
+password: victorysync2025
+
+But it returns “Invalid admin credentials”
+
+✅ Fix:
+
+In the backend, authenticate only against those hardcoded values
+
+If match:
+
+Return JWT token with role: 'admin'
+
+Frontend stores it
+
+Redirect to /admin/dashboard
+
+If not match:
+
+Return proper 401 error
+
+3. ❌ Customer Login Fails (Even With Correct Info)
+Database credentials valid, but login fails with “Login failed”
+
+✅ Fix:
+
+Backend:
+
+Query user by email
+
+Use bcrypt to verify hashed password
+
+Return JWT with role: 'customer'
+
+Frontend:
+
+Store token (localStorage or secure cookie)
+
+Load user from token and auth context
+
+Redirect to /dashboard after login
+
+4. 🔁 Login Loop / Session Loss
+After logging in, user is sent back to login with “Login Required”
+
+✅ Fix:
+
+Store token after login
+
+Load it using AuthProvider or context
+
+On every page load:
+
+Check if token exists
+
+Decode it
+
+Set user and role
+
+Route guards must check token and role BEFORE rendering dashboard
+
+5. 🚫 Access Denied (Even After Logging In)
+/admin and /dashboard routes return “Access Denied” after successful login
+
+✅ Fix:
+
+Add proper role check to route guards
+
+If user has role: 'admin' → allow /admin/*
+
+If user has role: 'customer' → allow /dashboard
+
+All other cases → redirect to login
+
+✅ REQUIRED FINAL STATE (What You Must Deliver)
+✅ Admin Login Flow:
+
+✅ Only username + password
+
+✅ Uses hardcoded admin credentials
+
+✅ Returns JWT
+
+✅ Redirects to /admin/dashboard
+
+✅ Protects /admin/* with role: 'admin' check
+
+✅ Customer Login Flow:
+
+✅ Email + Password
+
+✅ Checks real database
+
+✅ Uses bcrypt hash for password
+
+✅ Returns JWT
+
+✅ Redirects to /dashboard
+
+✅ Shared:
+
+✅ JWT token stored + decoded on reload
+
+✅ Token-based auth context
+
+✅ Full route protection
+
+✅ Login persists across refresh
+
+✅ No signup buttons, demo credentials, or unsecure flows
+
+✅ UI/UX:
+
+✅ Clean login success/fail messages
+
+✅ No crashing React hooks
+
+✅ Customer dashboard loads /api/user/orders and /api/crm/integrations safely
+
+✅ Replit-ready and error-free deployment
+
+🧪 Final Checklist (Must Validate Before Done)
+Admin login works ✅
+
+Customer login works ✅
+
+Admin dashboard protected ✅
+
+Customer dashboard protected ✅
+
+React hook order is valid ✅
+
+No access denied loops ✅
+
+JWT is stored, decoded, used ✅
+
+Everything runs clean on Replit ✅
