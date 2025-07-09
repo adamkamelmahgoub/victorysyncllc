@@ -223,6 +223,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes - protected by authentication
+  app.post("/api/admin/users", requireAdmin, async (req: any, res: any) => {
+    try {
+      const { name, email, password, role, isActive } = req.body;
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+      
+      // Hash password
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      const user = await storage.createUser({
+        name,
+        email,
+        password: hashedPassword,
+        role: role || 'user',
+        isActive: isActive !== false
+      });
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
   app.get("/api/admin/users", requireAdmin, async (req: any, res: any) => {
     try {
       const users = await storage.getAllPublicUsers();

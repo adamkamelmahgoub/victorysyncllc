@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -91,7 +91,7 @@ interface Package {
   createdAt: string;
 }
 
-const AdminPortal: React.FC = () => {
+const AdminPortal = () => {
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
@@ -133,6 +133,18 @@ const AdminPortal: React.FC = () => {
   const adminToken = localStorage.getItem('admin_token') || 'admin123';
   const adminHeaders = { 'x-admin-auth': adminToken };
 
+  // Real-time refresh interval
+  useEffect(() => {
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-packages'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-analytics'] });
+    }, 3000); // Refresh every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [queryClient]);
+
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
@@ -147,7 +159,8 @@ const AdminPortal: React.FC = () => {
         throw new Error('Failed to fetch users');
       }
       return response.json();
-    }
+    },
+    refetchInterval: 5000 // Refetch every 5 seconds
   });
 
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
@@ -158,7 +171,8 @@ const AdminPortal: React.FC = () => {
       });
       if (!response.ok) throw new Error('Failed to fetch orders');
       return response.json();
-    }
+    },
+    refetchInterval: 5000 // Refetch every 5 seconds
   });
 
   const { data: packages = [], isLoading: packagesLoading } = useQuery({
@@ -169,7 +183,8 @@ const AdminPortal: React.FC = () => {
       });
       if (!response.ok) throw new Error('Failed to fetch packages');
       return response.json();
-    }
+    },
+    refetchInterval: 5000 // Refetch every 5 seconds
   });
 
   const { data: analytics } = useQuery({
@@ -180,10 +195,28 @@ const AdminPortal: React.FC = () => {
       });
       if (!response.ok) throw new Error('Failed to fetch analytics');
       return response.json();
-    }
+    },
+    refetchInterval: 3000 // Refetch every 3 seconds for real-time stats
   });
 
   // Mutations
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      if (!response.ok) throw new Error('Failed to create user');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      setIsAddUserModalOpen(false);
+      toast({ title: 'User created successfully' });
+    }
+  });
+
   const updateUserMutation = useMutation({
     mutationFn: async ({ userId, data }: { userId: number; data: any }) => {
       const response = await fetch(`/api/admin/users/${userId}`, {
@@ -945,11 +978,72 @@ const AdminPortal: React.FC = () => {
         </Tabs>
       </div>
 
+      {/* Add User Modal */}
+      <Dialog open={isAddUserModalOpen} onOpenChange={setIsAddUserModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogDescription>Create a new user account</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            
+            createUserMutation.mutate({
+              name: formData.get('name'),
+              email: formData.get('email'),
+              password: formData.get('password'),
+              role: formData.get('role') || 'user',
+              isActive: formData.get('isActive') === 'on'
+            });
+          }}>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Full Name</Label>
+                <Input id="name" name="name" required />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" name="email" type="email" required />
+              </div>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" name="password" type="password" required />
+              </div>
+              <div>
+                <Label htmlFor="role">Role</Label>
+                <Select name="role">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="isActive" name="isActive" defaultChecked />
+                <Label htmlFor="isActive">Active</Label>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsAddUserModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Create User</Button>
+              </div>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Add Package Modal */}
       <Dialog open={isAddPackageModalOpen} onOpenChange={setIsAddPackageModalOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Add New Package</DialogTitle>
+            <DialogDescription>Create a new service package</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => {
             e.preventDefault();
@@ -991,11 +1085,72 @@ const AdminPortal: React.FC = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit User Modal */}
+      <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>Update user information</DialogDescription>
+          </DialogHeader>
+          {editingUser && (
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              
+              updateUserMutation.mutate({
+                userId: editingUser.id,
+                data: {
+                  name: formData.get('name'),
+                  email: formData.get('email'),
+                  role: formData.get('role'),
+                  isActive: formData.get('isActive') === 'on'
+                }
+              });
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-user-name">Full Name</Label>
+                  <Input id="edit-user-name" name="name" defaultValue={editingUser.name} required />
+                </div>
+                <div>
+                  <Label htmlFor="edit-user-email">Email</Label>
+                  <Input id="edit-user-email" name="email" type="email" defaultValue={editingUser.email} required />
+                </div>
+                <div>
+                  <Label htmlFor="edit-user-role">Role</Label>
+                  <Select name="role" defaultValue={editingUser.role}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="edit-user-isActive" name="isActive" defaultChecked={editingUser.isActive} />
+                  <Label htmlFor="edit-user-isActive">Active</Label>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setEditingUser(null)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Update User</Button>
+                </div>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Package Modal */}
       <Dialog open={!!editingPackage} onOpenChange={() => setEditingPackage(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Package</DialogTitle>
+            <DialogDescription>Update package information</DialogDescription>
           </DialogHeader>
           {editingPackage && (
             <form onSubmit={(e) => {
@@ -1047,6 +1202,7 @@ const AdminPortal: React.FC = () => {
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>System Settings</DialogTitle>
+            <DialogDescription>Configure system-wide settings and preferences</DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
