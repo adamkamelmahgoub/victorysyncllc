@@ -4,6 +4,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/hooks/useCart';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'wouter';
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 export default function Pricing() {
   const { addItem } = useCart();
@@ -243,12 +248,16 @@ export default function Pricing() {
             Join hundreds of businesses that trust VictorySync for their customer engagement needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6a4def]">
-              Schedule Free Demo
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
-              Contact Sales
-            </Button>
+            <Link href="/contact">
+              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6a4def]" onClick={scrollToTop}>
+                Schedule Free Demo
+              </Button>
+            </Link>
+            <Link href="/contact">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]" onClick={scrollToTop}>
+                Contact Sales
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
