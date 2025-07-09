@@ -6,22 +6,25 @@ import { storage } from './storage';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const JWT_EXPIRES_IN = '30d';
 
-export interface AuthenticatedRequest extends Request {
+export interface CustomerAuthenticatedRequest extends Request {
   user?: {
     id: number;
     email: string;
     name: string;
     role: string;
+    privileges?: any;
+    isActive: boolean;
   };
 }
 
-export const generateJWT = (user: any) => {
+export const generateCustomerJWT = (user: any) => {
   return jwt.sign(
     { 
       id: user.id, 
       email: user.email, 
       name: user.name, 
-      role: user.role || 'customer',
+      role: 'customer',
+      privileges: user.privileges,
       userType: 'customer'
     },
     JWT_SECRET,
@@ -29,7 +32,7 @@ export const generateJWT = (user: any) => {
   );
 };
 
-export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const authenticateCustomerJWT = async (req: CustomerAuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(" ")[1];
@@ -44,34 +47,80 @@ export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, 
       return res.status(403).json({ error: "Customer access required" });
     }
 
+    // Get customer from database
     const user = await storage.getPublicUserById(decoded.id);
-
-    if (!user) {
-      return res.status(401).json({ error: "Invalid token - user not found" });
-    }
-
-    if (!user.isActive) {
-      return res.status(403).json({ error: "Account has been deactivated" });
+    if (!user || !user.isActive) {
+      return res.status(401).json({ error: "Invalid or deactivated account" });
     }
 
     req.user = {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role || 'customer'
+      role: 'customer',
+      privileges: user.privileges,
+      isActive: user.isActive
     };
+
     next();
   } catch (error) {
     return res.status(403).json({ error: "Invalid or expired token" });
   }
 };
 
-export const registerUser = async (req: Request, res: Response) => {
+export const loginCustomer = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required' });
+    }
+
+    // Get customer from database
+    const user = await storage.getPublicUserByEmail(email);
+    if (!user || !user.isActive) {
+      return res.status(401).json({ success: false, message: "Invalid credentials or account deactivated" });
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash || '');
+    if (!isValidPassword) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    // Update last login (using the privileges field to store last login)
+    await storage.updatePublicUserSocialAccounts(user.id, [
+      ...(user.socialAccounts || []),
+      { type: 'lastLogin', timestamp: new Date().toISOString() }
+    ]);
+
+    // Generate JWT
+    const token = generateCustomerJWT(user);
+
+    res.json({ 
+      success: true,
+      token, 
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        name: user.name, 
+        role: 'customer',
+        privileges: user.privileges,
+        isActive: user.isActive
+      } 
+    });
+  } catch (error) {
+    console.error("Customer login error:", error);
+    res.status(500).json({ success: false, message: "Login failed" });
+  }
+};
+
+export const registerCustomer = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
+      return res.status(400).json({ success: false, message: 'Name, email and password are required' });
     }
 
     // Check if user already exists
@@ -81,67 +130,26 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     // Hash password
-    const passwordHash = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
     const user = await storage.createPublicUser({
       name,
       email,
-      passwordHash,
-      role: 'customer',
-      isActive: true,
-      socialAccounts: []
+      passwordHash: hashedPassword,
+      provider: 'local',
+      socialAccounts: [],
+      privileges: {
+        role: 'customer',
+        canAccessDashboard: true,
+        canViewOrders: true,
+        canManageIntegrations: true
+      },
+      isActive: true
     });
 
     // Generate JWT
-    const token = generateJWT(user);
-
-    res.status(201).json({ 
-      success: true,
-      token, 
-      user: { 
-        id: user.id, 
-        email: user.email, 
-        name: user.name, 
-        role: user.role || 'customer' 
-      } 
-    });
-  } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({ success: false, message: "Registration failed" });
-  }
-};
-
-export const loginUser = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Email and password are required' });
-    }
-
-    // Get user from database
-    const user = await storage.getPublicUserByEmail(email);
-    if (!user) {
-      return res.status(401).json({ success: false, message: "Invalid email or password" });
-    }
-
-    // Check if user is active
-    if (!user.isActive) {
-      return res.status(403).json({ success: false, message: "Account has been deactivated" });
-    }
-
-    // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
-    if (!isValidPassword) {
-      return res.status(401).json({ success: false, message: "Invalid email or password" });
-    }
-
-    // Update last login
-    await storage.updateLastLogin(user.id);
-
-    // Generate JWT
-    const token = generateJWT(user);
+    const token = generateCustomerJWT(user);
 
     res.json({ 
       success: true,
@@ -150,16 +158,18 @@ export const loginUser = async (req: Request, res: Response) => {
         id: user.id, 
         email: user.email, 
         name: user.name, 
-        role: user.role || 'customer' 
+        role: 'customer',
+        privileges: user.privileges,
+        isActive: user.isActive
       } 
     });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ success: false, message: "Login failed" });
+    console.error("Customer registration error:", error);
+    res.status(500).json({ success: false, message: "Registration failed" });
   }
 };
 
-export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
+export const getCurrentCustomer = async (req: CustomerAuthenticatedRequest, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: "Not authenticated" });
@@ -167,13 +177,13 @@ export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) =
 
     res.json({ user: req.user, userType: 'customer' });
   } catch (error) {
-    console.error("Get current user error:", error);
+    console.error("Get current customer error:", error);
     res.status(500).json({ error: "Failed to get user data" });
   }
 };
 
 // Admin role check middleware
-export const requireAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const requireAdmin = (req: CustomerAuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Authentication required' });
   }
@@ -187,7 +197,7 @@ export const requireAdmin = (req: AuthenticatedRequest, res: Response, next: Nex
 };
 
 // Super admin role check
-export const requireSuperAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const requireSuperAdmin = (req: CustomerAuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Authentication required' });
   }

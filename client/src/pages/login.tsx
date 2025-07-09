@@ -1,222 +1,181 @@
-import { useState } from "react";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { Link } from "wouter";
-import { Eye, EyeOff, Shield, User } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Login() {
-  const [formData, setFormData] = useState({
-    email: '',
-    username: '',
-    password: ''
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const [adminForm, setAdminForm] = useState({ username: '', password: '' });
+  const [customerForm, setCustomerForm] = useState({ email: '', password: '' });
+  const [errors, setErrors] = useState<{ admin?: string; customer?: string }>({});
+  const [loading, setLoading] = useState<{ admin: boolean; customer: boolean }>({ admin: false, customer: false });
+  const navigate = useNavigate();
+  const { checkAuth } = useAuth();
 
-  // Get redirect URL from query params
-  const urlParams = new URLSearchParams(window.location.search);
-  const redirectTo = urlParams.get('redirect') || '/dashboard';
-  const loginType = urlParams.get('type') || 'customer';
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(prev => ({ ...prev, admin: true }));
+    setErrors(prev => ({ ...prev, admin: undefined }));
 
     try {
-      const endpoint = loginType === 'admin' ? '/api/admin/auth/login' : '/api/auth/login';
-      const payload = loginType === 'admin' 
-        ? { username: formData.username, password: formData.password }
-        : { email: formData.email, password: formData.password };
-
-      const response = await fetch(endpoint, {
+      const response = await fetch('/api/admin/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(adminForm)
       });
 
       const data = await response.json();
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      if (data.token) {
+      if (data.success && data.token) {
         localStorage.setItem('auth_token', data.token);
-
-        toast({
-          title: "Login Successful",
-          description: `Welcome ${loginType === 'admin' ? 'Admin' : 'back'}!`,
-          variant: "default"
-        });
-
-        // Add a small delay to ensure token is stored
-        setTimeout(() => {
-          if (loginType === 'admin') {
-            window.location.href = '/admin';
-          } else {
-            window.location.href = '/dashboard';
-          }
-        }, 200);
+        await checkAuth();
+        navigate('/admin');
       } else {
-        throw new Error('No authentication token received');
+        setErrors(prev => ({ ...prev, admin: data.message || 'Login failed' }));
       }
-    } catch (err: any) {
-        toast({
-          title: "Login Failed",
-          description: err.message || 'An error occurred during login',
-          variant: "destructive"
-        });
-      } finally {
-      setIsLoading(false);
+    } catch (error) {
+      setErrors(prev => ({ ...prev, admin: 'Network error. Please try again.' }));
+    } finally {
+      setLoading(prev => ({ ...prev, admin: false }));
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const handleCustomerLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(prev => ({ ...prev, customer: true }));
+    setErrors(prev => ({ ...prev, customer: undefined }));
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(customerForm)
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.token) {
+        localStorage.setItem('auth_token', data.token);
+        await checkAuth();
+        navigate('/dashboard');
+      } else {
+        setErrors(prev => ({ ...prev, customer: data.message || 'Login failed' }));
+      }
+    } catch (error) {
+      setErrors(prev => ({ ...prev, customer: 'Network error. Please try again.' }));
+    } finally {
+      setLoading(prev => ({ ...prev, customer: false }));
+    }
   };
 
-
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            {loginType === 'admin' ? (
-              <Shield className="h-12 w-12 text-purple-600" />
-            ) : (
-              <User className="h-12 w-12 text-blue-600" />
-            )}
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900">
-            {loginType === 'admin' ? 'Admin Portal Login' : 'Sign in to your account'}
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            {loginType === 'admin' 
-              ? 'Access the Victory Sync administration panel'
-              : 'Access your Victory Sync customer dashboard'
-            }
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-gray-900">Welcome to VictorySync</CardTitle>
+          <CardDescription>Sign in to your account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="customer" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="customer">Customer</TabsTrigger>
+              <TabsTrigger value="admin">Admin</TabsTrigger>
+            </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center">
-              {loginType === 'admin' ? 'Admin Login' : 'Customer Login'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {loginType === 'admin' ? (
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Admin Username
-                </label>
-                <Input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  value={formData.username}
-                  onChange={handleChange}
-                  className="mt-1"
-                  placeholder="kimo8723"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Use your assigned admin username
-                </p>
-              </div>
-            ) : (
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                    Email address
-                  </label>
+            <TabsContent value="customer">
+              <form onSubmit={handleCustomerLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="customer-email">Email</Label>
                   <Input
-                    id="email"
-                    name="email"
+                    id="customer-email"
                     type="email"
-                    autoComplete="email"
-                    required
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="mt-1"
                     placeholder="Enter your email"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="relative mt-1">
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
+                    value={customerForm.email}
+                    onChange={(e) => setCustomerForm(prev => ({ ...prev, email: e.target.value }))}
                     required
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="pr-10"
-                    placeholder="Enter your password"
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
-                    )}
-                  </button>
                 </div>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="customer-password">Password</Label>
+                  <Input
+                    id="customer-password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={customerForm.password}
+                    onChange={(e) => setCustomerForm(prev => ({ ...prev, password: e.target.value }))}
+                    required
+                  />
+                </div>
+                {errors.customer && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{errors.customer}</AlertDescription>
+                  </Alert>
+                )}
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={loading.customer}
+                >
+                  {loading.customer ? 'Signing in...' : 'Sign In'}
+                </Button>
+                <div className="text-center">
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={() => navigate('/register')}
+                    className="text-sm"
+                  >
+                    Don't have an account? Sign up
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
 
-
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? "Signing in..." : "Sign in"}
-              </Button>
-            </form>
-
-
-
-            {loginType === 'admin' && (
-              <div className="mt-4 text-center">
-                <p className="text-xs text-gray-500">
-                  <Link href="/login" className="text-purple-600 hover:text-purple-500">
-                    Customer Login
-                  </Link>
-                </p>
-              </div>
-            )}
-
-            {loginType === 'customer' && (
-              <div className="mt-4 text-center">
-                <p className="text-xs text-gray-500">
-                  <Link href="/login?type=admin" className="text-purple-600 hover:text-purple-500">
-                    Admin Portal
-                  </Link>
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            <TabsContent value="admin">
+              <form onSubmit={handleAdminLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="admin-username">Username</Label>
+                  <Input
+                    id="admin-username"
+                    type="text"
+                    placeholder="Enter admin username"
+                    value={adminForm.username}
+                    onChange={(e) => setAdminForm(prev => ({ ...prev, username: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="admin-password">Password</Label>
+                  <Input
+                    id="admin-password"
+                    type="password"
+                    placeholder="Enter admin password"
+                    value={adminForm.password}
+                    onChange={(e) => setAdminForm(prev => ({ ...prev, password: e.target.value }))}
+                    required
+                  />
+                </div>
+                {errors.admin && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{errors.admin}</AlertDescription>
+                  </Alert>
+                )}
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={loading.admin}
+                >
+                  {loading.admin ? 'Signing in...' : 'Sign In as Admin'}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 interface User {
   id: number;
@@ -8,6 +8,7 @@ interface User {
   name: string;
   role: string;
   permissions?: any;
+  privileges?: any;
   isActive?: boolean;
 }
 
@@ -30,7 +31,7 @@ export function useAuth() {
     error: null
   });
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       
@@ -119,9 +120,9 @@ export function useAuth() {
         error: error.message || 'Authentication failed'
       });
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('auth_token');
     setAuthState({
       user: null,
@@ -132,15 +133,15 @@ export function useAuth() {
       error: null
     });
     window.location.href = '/';
-  };
+  }, []);
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setAuthState(prev => ({ ...prev, error: null }));
-  };
+  }, []);
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   const isAdmin = useMemo(() => {
     return authState.admin && ['admin', 'super_admin', 'sales_admin', 'billing_admin', 'csr_manager', 'agent_manager'].includes(authState.admin.role);
@@ -154,13 +155,13 @@ export function useAuth() {
     return authState.user && authState.user.role === 'customer' && authState.user.isActive !== false;
   }, [authState.user]);
 
-  const hasPermission = (permission: string) => {
+  const hasPermission = useCallback((permission: string) => {
     if (authState.userType === 'admin' && authState.admin) {
       if (authState.admin.role === 'super_admin') return true;
       return authState.admin.permissions?.[permission] === true;
     }
     return false;
-  };
+  }, [authState.userType, authState.admin]);
 
   return {
     ...authState,
