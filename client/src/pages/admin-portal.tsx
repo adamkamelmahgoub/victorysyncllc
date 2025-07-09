@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,10 +22,11 @@ export default function AdminPortal() {
     password: '',
     role: 'admin'
   });
+  
   const { admin, logout, isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
-  // All hooks must be at the top level - FIXED
+  // All queries - these will be enabled/disabled based on isAdmin but must be declared at top level
   const usersQuery = useQuery({
     queryKey: ['admin', 'users'],
     queryFn: async () => {
@@ -128,7 +129,31 @@ export default function AdminPortal() {
     }
   });
 
-  // Early return after all hooks are declared
+  // Memoized values
+  const users = useMemo(() => usersQuery.data || [], [usersQuery.data]);
+  const orders = useMemo(() => ordersQuery.data || [], [ordersQuery.data]);
+  const contacts = useMemo(() => contactsQuery.data || [], [contactsQuery.data]);
+  const integrations = useMemo(() => integrationsQuery.data || [], [integrationsQuery.data]);
+  const tickets = useMemo(() => ticketsQuery.data || [], [ticketsQuery.data]);
+  const auditLogs = useMemo(() => auditLogsQuery.data || [], [auditLogsQuery.data]);
+
+  const stats = useMemo(() => ({
+    totalUsers: users.length,
+    activeUsers: users.filter((u: any) => u.isActive).length,
+    totalOrders: orders.length,
+    completedOrders: orders.filter((o: any) => o.status === 'completed').length,
+    pendingContacts: contacts.filter((c: any) => c.status === 'new').length,
+    activeIntegrations: integrations.filter((i: any) => i.isActive).length,
+    openTickets: tickets.filter((t: any) => t.status === 'open').length
+  }), [users, orders, contacts, integrations, tickets]);
+
+  // Event handlers
+  const handleCreateUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    createUserMutation.mutate(newUserForm);
+  };
+
+  // Now we can do the conditional rendering after all hooks are declared
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -146,28 +171,6 @@ export default function AdminPortal() {
       </div>
     );
   }
-
-  const users = usersQuery.data || [];
-  const orders = ordersQuery.data || [];
-  const contacts = contactsQuery.data || [];
-  const integrations = integrationsQuery.data || [];
-  const tickets = ticketsQuery.data || [];
-  const auditLogs = auditLogsQuery.data || [];
-
-  const stats = {
-    totalUsers: users.length,
-    activeUsers: users.filter((u: any) => u.isActive).length,
-    totalOrders: orders.length,
-    completedOrders: orders.filter((o: any) => o.status === 'completed').length,
-    pendingContacts: contacts.filter((c: any) => c.status === 'new').length,
-    activeIntegrations: integrations.filter((i: any) => i.isActive).length,
-    openTickets: tickets.filter((t: any) => t.status === 'open').length
-  };
-
-  const handleCreateUser = (e: React.FormEvent) => {
-    e.preventDefault();
-    createUserMutation.mutate(newUserForm);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
