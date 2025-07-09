@@ -19,9 +19,8 @@ import { initializeAdminUser } from "./initAdmin";
 import { initializeTestCustomer } from "./initCustomer";
 
 export function registerRoutes(app: Express) {
-  // Initialize admin and test customer on startup
+  // Initialize admin user only on startup
   initializeAdminUser().catch(console.error);
-  initializeTestCustomer().catch(console.error);
 
   // Health check
   app.get("/health", (req, res) => {
@@ -34,7 +33,6 @@ export function registerRoutes(app: Express) {
 
   // Customer Authentication Routes
   app.post("/api/auth/login", loginCustomer);
-  app.post("/api/auth/register", registerCustomer);
   app.get("/api/auth/me", authenticateCustomerJWT, getCurrentCustomer);
 
   // Admin Protected Routes
@@ -95,6 +93,52 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error fetching audit logs:", error);
       res.status(500).json({ error: "Failed to fetch audit logs" });
+    }
+  });
+
+  // Admin user creation endpoint (super admin only)
+  app.post("/api/admin/users", authenticateAdminJWT, async (req: AdminAuthenticatedRequest, res) => {
+    try {
+      // Check if current admin is super admin
+      if (req.admin?.role !== 'super_admin') {
+        return res.status(403).json({ error: "Only super admin can create new admin users" });
+      }
+
+      const { username, name, password, role, permissions } = req.body;
+      
+      if (!username || !name || !password || !role) {
+        return res.status(400).json({ error: "Username, name, password, and role are required" });
+      }
+
+      // Check if admin already exists
+      const existingAdmin = await storage.getAdminUserByUsername(username);
+      if (existingAdmin) {
+        return res.status(400).json({ error: "Admin user already exists with this username" });
+      }
+
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newAdmin = await storage.createAdminUser({
+        username,
+        name,
+        passwordHash: hashedPassword,
+        role,
+        isActive: true,
+        permissions: permissions || {
+          canManageUsers: role === 'admin',
+          canViewAllOrders: true,
+          canManageIntegrations: role === 'admin',
+          canViewAnalytics: true,
+          canImpersonate: role === 'super_admin',
+          canManageSettings: role === 'admin'
+        }
+      });
+
+      res.json({ success: true, admin: { id: newAdmin.id, username: newAdmin.username, name: newAdmin.name, role: newAdmin.role } });
+    } catch (error) {
+      console.error("Error creating admin user:", error);
+      res.status(500).json({ error: "Failed to create admin user" });
     }
   });
 

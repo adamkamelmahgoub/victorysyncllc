@@ -123,14 +123,9 @@ export default function Login() {
                   {loading.customer ? 'Signing in...' : 'Sign In'}
                 </Button>
                 <div className="text-center">
-                  <Button
-                    type="button"
-                    variant="link"
-                    onClick={() => navigate('/register')}
-                    className="text-sm"
-                  >
-                    Don't have an account? Sign up
-                  </Button>
+                  <p className="text-sm text-gray-600">
+                    Contact your administrator for account access
+                  </p>
                 </div>
               </form>
             </TabsContent>

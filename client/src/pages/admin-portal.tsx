@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,11 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, ShoppingCart, MessageSquare, Settings, BarChart3, LogOut } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Users, ShoppingCart, MessageSquare, Settings, BarChart3, LogOut, Plus } from 'lucide-react';
 import { useAuth } from "@/hooks/useAuth";
 
 export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({
+    username: '',
+    name: '',
+    password: '',
+    role: 'admin'
+  });
   const { admin, logout, isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
@@ -92,6 +104,30 @@ export default function AdminPortal() {
     enabled: !!isAdmin
   });
 
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: typeof newUserForm) => {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create user');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      setIsCreateUserModalOpen(false);
+      setNewUserForm({ username: '', name: '', password: '', role: 'admin' });
+    }
+  });
+
   // Early return after all hooks are declared
   if (!isAdmin) {
     return (
@@ -126,6 +162,11 @@ export default function AdminPortal() {
     pendingContacts: contacts.filter((c: any) => c.status === 'new').length,
     activeIntegrations: integrations.filter((i: any) => i.isActive).length,
     openTickets: tickets.filter((t: any) => t.status === 'open').length
+  };
+
+  const handleCreateUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    createUserMutation.mutate(newUserForm);
   };
 
   return (
@@ -264,8 +305,81 @@ export default function AdminPortal() {
           <TabsContent value="users">
             <Card>
               <CardHeader>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>Manage customer accounts and permissions</CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>User Management</CardTitle>
+                    <CardDescription>Manage customer accounts and permissions</CardDescription>
+                  </div>
+                  {admin?.role === 'super_admin' && (
+                    <Dialog open={isCreateUserModalOpen} onOpenChange={setIsCreateUserModalOpen}>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create Admin User
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Create New Admin User</DialogTitle>
+                          <DialogDescription>
+                            Add a new admin user to the system.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleCreateUser} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="username">Username</Label>
+                            <Input
+                              id="username"
+                              value={newUserForm.username}
+                              onChange={(e) => setNewUserForm(prev => ({ ...prev, username: e.target.value }))}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="name">Full Name</Label>
+                            <Input
+                              id="name"
+                              value={newUserForm.name}
+                              onChange={(e) => setNewUserForm(prev => ({ ...prev, name: e.target.value }))}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="password">Password</Label>
+                            <Input
+                              id="password"
+                              type="password"
+                              value={newUserForm.password}
+                              onChange={(e) => setNewUserForm(prev => ({ ...prev, password: e.target.value }))}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="role">Role</Label>
+                            <Select value={newUserForm.role} onValueChange={(value) => setNewUserForm(prev => ({ ...prev, role: value }))}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="billing">Billing</SelectItem>
+                                <SelectItem value="crm_manager">CRM Manager</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button type="button" variant="outline" onClick={() => setIsCreateUserModalOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button type="submit" disabled={createUserMutation.isPending}>
+                              {createUserMutation.isPending ? 'Creating...' : 'Create User'}
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>

@@ -1,4 +1,3 @@
-
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { Request, Response, NextFunction } from 'express';
@@ -60,7 +59,7 @@ export const authenticateAdminJWT = async (req: AdminAuthenticatedRequest, res: 
       role: admin.role,
       permissions: admin.permissions
     };
-    
+
     next();
   } catch (error) {
     return res.status(403).json({ error: "Invalid or expired admin token" });
@@ -75,16 +74,21 @@ export const loginAdmin = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: 'Username and password are required' });
     }
 
+    // Only allow the specific super admin credentials
+    if (username !== 'kimo8723') {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
     // Get admin from database
     const admin = await storage.getAdminUserByUsername(username);
     if (!admin || !admin.isActive) {
-      return res.status(401).json({ success: false, message: "Invalid admin credentials" });
+      return res.status(401).json({ success: false, message: "Invalid credentials or account deactivated" });
     }
 
     // Verify password
     const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
     if (!isValidPassword) {
-      return res.status(401).json({ success: false, message: "Invalid admin credentials" });
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
     // Update last login
