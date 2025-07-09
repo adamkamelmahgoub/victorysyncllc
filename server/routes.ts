@@ -172,7 +172,7 @@ export function registerRoutes(app: Express) {
   });
 
   if (app.get("env") === "development") {
-    await setupVite(app);
+    setupVite(app);
   } else {
     serveStatic(app);
   }

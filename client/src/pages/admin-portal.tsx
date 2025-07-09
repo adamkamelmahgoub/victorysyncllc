@@ -24,7 +24,7 @@ export default function AdminPortal() {
       if (!response.ok) throw new Error('Failed to fetch users');
       return response.json();
     },
-    enabled: isAdmin
+    enabled: !!isAdmin
   });
 
   const ordersQuery = useQuery({
@@ -37,7 +37,7 @@ export default function AdminPortal() {
       if (!response.ok) throw new Error('Failed to fetch orders');
       return response.json();
     },
-    enabled: isAdmin
+    enabled: !!isAdmin
   });
 
   const contactsQuery = useQuery({
@@ -50,7 +50,7 @@ export default function AdminPortal() {
       if (!response.ok) throw new Error('Failed to fetch contacts');
       return response.json();
     },
-    enabled: isAdmin
+    enabled: !!isAdmin
   });
 
   const integrationsQuery = useQuery({
@@ -63,7 +63,7 @@ export default function AdminPortal() {
       if (!response.ok) throw new Error('Failed to fetch integrations');
       return response.json();
     },
-    enabled: isAdmin
+    enabled: !!isAdmin
   });
 
   const ticketsQuery = useQuery({
@@ -76,7 +76,7 @@ export default function AdminPortal() {
       if (!response.ok) throw new Error('Failed to fetch tickets');
       return response.json();
     },
-    enabled: isAdmin
+    enabled: !!isAdmin
   });
 
   const auditLogsQuery = useQuery({
@@ -89,7 +89,7 @@ export default function AdminPortal() {
       if (!response.ok) throw new Error('Failed to fetch audit logs');
       return response.json();
     },
-    enabled: isAdmin
+    enabled: !!isAdmin
   });
 
   // Early return after all hooks are declared
