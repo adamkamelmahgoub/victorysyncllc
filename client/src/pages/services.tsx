@@ -10,6 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
 
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 export default function Services() {
   const services = [
     {
@@ -119,6 +123,7 @@ export default function Services() {
             <Button
               size="lg"
               className="text-victory-purple hover:bg-gray-100 bg-[#6750f0]"
+              onClick={scrollToTop}
             >
               View Our Packages
             </Button>
@@ -180,7 +185,7 @@ export default function Services() {
                     </div>
 
                     <Link href="/contact">
-                      <Button className="bg-victory-purple hover:bg-purple-700 text-white">
+                      <Button className="bg-victory-purple hover:bg-purple-700 text-white" onClick={scrollToTop}>
                         Learn More
                       </Button>
                     </Link>
@@ -199,12 +204,12 @@ export default function Services() {
                         </p>
                         <div className="space-y-3">
                           <Link href="/pricing">
-                            <Button className="w-full bg-victory-purple hover:bg-purple-700 text-white">
+                            <Button className="w-full bg-victory-purple hover:bg-purple-700 text-white" onClick={scrollToTop}>
                               View Pricing Plans
                             </Button>
                           </Link>
                           <Link href="/contact">
-                            <Button variant="outline" className="w-full">
+                            <Button variant="outline" className="w-full" onClick={scrollToTop}>
                               Schedule Consultation
                             </Button>
                           </Link>
@@ -296,6 +301,7 @@ export default function Services() {
               <Button
                 size="lg"
                 className="text-victory-purple hover:bg-gray-100 bg-[#7046ee]"
+                onClick={scrollToTop}
               >
                 Get Free Consultation
               </Button>
@@ -305,6 +311,7 @@ export default function Services() {
                 size="lg"
                 variant="outline"
                 className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#7147ef]"
+                onClick={scrollToTop}
               >
                 View Pricing
               </Button>
