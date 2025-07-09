@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect, useMemo } from 'react';
 
 interface User {
@@ -56,7 +55,7 @@ export function useAuth() {
           });
           return;
         }
-      } else {
+      } else if (payload.userType === 'customer') {
         // Try customer auth
         const customerResponse = await fetch('/api/auth/me', {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -129,4 +128,3 @@ export function useAuth() {
     isCustomer
   };
 }
-

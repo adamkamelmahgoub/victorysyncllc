@@ -71,39 +71,39 @@ export const registerUser = async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Name, email and password are required' });
+      return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
     }
 
     // Check if user already exists
     const existingUser = await storage.getPublicUserByEmail(email);
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists with this email' });
+      return res.status(400).json({ success: false, message: 'User already exists with this email' });
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
     // Create user
-    const newUser = await storage.createPublicUser({
+    const user = await storage.createPublicUser({
       name,
       email,
-      passwordHash: hashedPassword,
+      passwordHash,
       role: 'customer',
       isActive: true,
       socialAccounts: []
     });
 
     // Generate JWT
-    const token = generateJWT(newUser);
+    const token = generateJWT(user);
 
     res.status(201).json({ 
       success: true,
       token, 
       user: { 
-        id: newUser.id, 
-        email: newUser.email, 
-        name: newUser.name, 
-        role: newUser.role 
+        id: user.id, 
+        email: user.email, 
+        name: user.name, 
+        role: user.role || 'customer' 
       } 
     });
   } catch (error) {
@@ -117,13 +117,13 @@ export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+      return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
-    // Get user by email
+    // Get user from database
     const user = await storage.getPublicUserByEmail(email);
     if (!user) {
-      return res.status(401).json({ success: false, message: "Invalid credentials" });
+      return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
     // Check if user is active
@@ -134,16 +134,11 @@ export const loginUser = async (req: Request, res: Response) => {
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.passwordHash);
     if (!isValidPassword) {
-      return res.status(401).json({ success: false, message: "Invalid credentials" });
+      return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
-    // Update last login - but don't let it fail the login process
-    try {
-      await storage.updateLastLogin(user.id);
-    } catch (updateError) {
-      console.warn("Failed to update last login:", updateError);
-      // Continue with login process even if update fails
-    }
+    // Update last login
+    await storage.updateLastLogin(user.id);
 
     // Generate JWT
     const token = generateJWT(user);
@@ -155,7 +150,7 @@ export const loginUser = async (req: Request, res: Response) => {
         id: user.id, 
         email: user.email, 
         name: user.name, 
-        role: user.role || 'customer'
+        role: user.role || 'customer' 
       } 
     });
   } catch (error) {

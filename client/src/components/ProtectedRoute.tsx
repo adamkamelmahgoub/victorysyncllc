@@ -15,7 +15,11 @@ export function ProtectedRoute({ children, requireAdmin = false, requireCustomer
     if (isLoading) return;
 
     if (!isAuthenticated) {
-      window.location.href = '/login';
+      if (requireAdmin) {
+        window.location.href = '/login?type=admin';
+      } else {
+        window.location.href = '/login';
+      }
       return;
     }
 

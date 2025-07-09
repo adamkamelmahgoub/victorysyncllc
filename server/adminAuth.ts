@@ -1,10 +1,19 @@
+
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { Request, Response, NextFunction } from 'express';
-import { storage } from './storage';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const JWT_EXPIRES_IN = '30d';
+
+// Hardcoded admin credentials
+const ADMIN_CREDENTIALS = {
+  username: 'admin',
+  password: 'victorysync2025',
+  id: 1,
+  name: 'Victory Sync Admin',
+  role: 'super_admin'
+};
 
 export interface AdminAuthenticatedRequest extends Request {
   admin?: {
@@ -46,24 +55,19 @@ export const authenticateAdminJWT = async (req: AdminAuthenticatedRequest, res: 
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    const admin = await storage.getAdminUserById(decoded.id);
-
-    if (!admin) {
-      return res.status(401).json({ error: "Invalid token - admin not found" });
+    // For hardcoded admin, just verify the token is valid
+    if (decoded.username === ADMIN_CREDENTIALS.username) {
+      req.admin = {
+        id: decoded.id,
+        username: decoded.username,
+        name: decoded.name,
+        role: decoded.role || 'super_admin',
+        permissions: decoded.permissions
+      };
+      next();
+    } else {
+      return res.status(401).json({ error: "Invalid admin token" });
     }
-
-    if (!admin.isActive) {
-      return res.status(403).json({ error: "Admin account has been deactivated" });
-    }
-
-    req.admin = {
-      id: admin.id,
-      username: admin.username,
-      name: admin.name,
-      role: admin.role || 'admin',
-      permissions: admin.permissions
-    };
-    next();
   } catch (error) {
     return res.status(403).json({ error: "Invalid or expired admin token" });
   }
@@ -74,39 +78,27 @@ export const loginAdmin = async (req: Request, res: Response) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ message: 'Username and password are required' });
+      return res.status(400).json({ success: false, message: 'Username and password are required' });
     }
 
-    // Get admin user from database
-    const admin = await storage.getAdminUserByUsername(username);
-    if (!admin) {
+    // Check hardcoded credentials
+    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+      // Generate JWT
+      const token = generateAdminJWT(ADMIN_CREDENTIALS);
+
+      res.json({ 
+        success: true,
+        token, 
+        admin: { 
+          id: ADMIN_CREDENTIALS.id, 
+          username: ADMIN_CREDENTIALS.username, 
+          name: ADMIN_CREDENTIALS.name, 
+          role: ADMIN_CREDENTIALS.role 
+        } 
+      });
+    } else {
       return res.status(401).json({ success: false, message: "Invalid admin credentials" });
     }
-
-    // Check if admin is active
-    if (!admin.isActive) {
-      return res.status(403).json({ success: false, message: "Admin account has been deactivated" });
-    }
-
-    // Verify password
-    const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
-    if (!isValidPassword) {
-      return res.status(401).json({ success: false, message: "Invalid admin credentials" });
-    }
-
-    // Generate JWT
-    const token = generateAdminJWT(admin);
-
-    res.json({ 
-      success: true,
-      token, 
-      admin: { 
-        id: admin.id, 
-        username: admin.username, 
-        name: admin.name, 
-        role: admin.role 
-      } 
-    });
   } catch (error) {
     console.error("Admin login error:", error);
     res.status(500).json({ success: false, message: "Login failed" });

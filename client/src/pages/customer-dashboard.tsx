@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,6 +56,59 @@ export default function CustomerDashboard() {
   });
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
+  // Always declare hooks in the same order
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ['/api/user/orders'],
+    queryFn: async () => {
+      const response = await fetch('/api/user/orders', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
+        'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      return response.json();
+    },
+    enabled: !!user && !isLoading,
+  });
+
+  const { data: crmIntegrations = [], isLoading: integrationsLoading } = useQuery({
+    queryKey: ['/api/crm/integrations'],
+    queryFn: async () => {
+      const response = await fetch('/api/crm/integrations', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
+        'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to fetch integrations');
+      return response.json();
+    },
+    enabled: !!user && !isLoading,
+  });
+
+  const { data: supportTickets = [], isLoading: ticketsLoading } = useQuery({
+    queryKey: ['/api/support/tickets'],
+    queryFn: async () => {
+      const response = await fetch('/api/support/tickets', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
+        'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to fetch tickets');
+      return response.json();
+    },
+    enabled: !!user && !isLoading,
+  });
+
+  const { data: kpiMetrics = [], isLoading: metricsLoading } = useQuery({
+    queryKey: ['/api/kpi/metrics'],
+    queryFn: async () => {
+      const response = await fetch('/api/kpi/metrics', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
+        'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to fetch metrics');
+      return response.json();
+    },
+    enabled: !!user && !isLoading,
+  });
+
   // Check if user is authenticated and is a customer
   useEffect(() => {
     if (!isLoading && (!user || !isCustomer)) {
@@ -103,55 +155,6 @@ export default function CustomerDashboard() {
   const getAuthHeaders = () => ({
     'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
     'Content-Type': 'application/json'
-  });
-
-  // Queries with proper error handling
-  const { data: orders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ['/api/user/orders'],
-    queryFn: async () => {
-      const response = await fetch('/api/user/orders', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch orders');
-      return response.json();
-    },
-    enabled: !!user,
-  });
-
-  const { data: crmIntegrations = [], isLoading: integrationsLoading } = useQuery({
-    queryKey: ['/api/crm/integrations'],
-    queryFn: async () => {
-      const response = await fetch('/api/crm/integrations', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch integrations');
-      return response.json();
-    },
-    enabled: !!user,
-  });
-
-  const { data: supportTickets = [], isLoading: ticketsLoading } = useQuery({
-    queryKey: ['/api/support/tickets'],
-    queryFn: async () => {
-      const response = await fetch('/api/support/tickets', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch tickets');
-      return response.json();
-    },
-    enabled: !!user,
-  });
-
-  const { data: kpiMetrics = [], isLoading: metricsLoading } = useQuery({
-    queryKey: ['/api/kpi/metrics'],
-    queryFn: async () => {
-      const response = await fetch('/api/kpi/metrics', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch metrics');
-      return response.json();
-    },
-    enabled: !!user,
   });
 
   // Mutations
@@ -343,7 +346,7 @@ export default function CustomerDashboard() {
                       Active
                     </Badge>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-4 rounded-lg border">
                     <div className="flex items-center space-x-4">
                       <Target className="h-8 w-8 text-blue-500" />
@@ -356,7 +359,7 @@ export default function CustomerDashboard() {
                       Active
                     </Badge>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-4 rounded-lg border">
                     <div className="flex items-center space-x-4">
                       <Zap className="h-8 w-8 text-purple-500" />
@@ -541,7 +544,7 @@ export default function CustomerDashboard() {
                         <Phone className="h-8 w-8 text-blue-600" />
                       </div>
                     </div>
-                    
+
                     <div className="bg-green-50 p-6 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div>
@@ -551,7 +554,7 @@ export default function CustomerDashboard() {
                         <Users className="h-8 w-8 text-green-600" />
                       </div>
                     </div>
-                    
+
                     <div className="bg-purple-50 p-6 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div>
