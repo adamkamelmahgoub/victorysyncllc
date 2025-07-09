@@ -2,17 +2,8 @@ import { Calendar, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Phone, Mail, MapPin, Clock, CheckCircle } from 'lucide-react';
-import { useState } from 'react';
-import { Link } from 'wouter';
-
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
+import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { insertContactSubmissionSchema } from '@shared/schema';
@@ -107,7 +98,7 @@ export default function Contact() {
                       )}
                     </div>
                   </div>
-
+                  
                   <div>
                     <Label htmlFor="company">Company (Optional)</Label>
                     <Input
@@ -116,7 +107,7 @@ export default function Contact() {
                       placeholder="Your Company"
                     />
                   </div>
-
+                  
                   <div>
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -130,7 +121,7 @@ export default function Contact() {
                       <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
                     )}
                   </div>
-
+                  
                   <div>
                     <Label htmlFor="message">Message</Label>
                     <Textarea
@@ -144,7 +135,7 @@ export default function Contact() {
                       <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
                     )}
                   </div>
-
+                  
                   <Button 
                     type="submit" 
                     className="w-full bg-victory-purple hover:bg-purple-700 text-white"
@@ -301,7 +292,7 @@ export default function Contact() {
           <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
             Ready to reduce costs and improve customer satisfaction? We're here to help make it happen.
           </p>
-
+          
         </div>
       </section>
     </div>
