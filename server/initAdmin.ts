@@ -8,7 +8,7 @@ export async function initializeAdminUser() {
     const existingAdmin = await storage.getPublicUserByEmail('kimo8723@victorysync.com');
     if (existingAdmin) {
       console.log('✅ Admin user already exists');
-      return;
+      return existingAdmin;
     }
 
     // Create admin user
@@ -21,14 +21,14 @@ export async function initializeAdminUser() {
       provider: 'local',
       role: 'super_admin',
       isActive: true,
-      permissions: {
+      permissions: JSON.stringify({
         canManageUsers: true,
         canViewAllOrders: true,
         canManageIntegrations: true,
         canViewAnalytics: true,
         canImpersonate: true,
         canManageSettings: true
-      }
+      })
     });
 
     console.log('✅ Admin user created successfully:', adminUser.email);
