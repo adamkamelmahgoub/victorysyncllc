@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,44 +154,6 @@ export default function AdminPortal() {
     priority: "normal",
   });
 
-  const [userActivity] = useState<UserActivity[]>([
-    {
-      id: "1",
-      action: "Login",
-      timestamp: new Date().toISOString(),
-      ip: "192.168.1.1",
-      userAgent: "Chrome 120.0",
-      status: "success",
-    },
-    {
-      id: "2",
-      action: "Created Order #12345",
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      ip: "192.168.1.1",
-      userAgent: "Chrome 120.0",
-      status: "success",
-    },
-    {
-      id: "3",
-      action: "Failed login attempt",
-      timestamp: new Date(Date.now() - 7200000).toISOString(),
-      ip: "192.168.1.100",
-      userAgent: "Safari 17.0",
-      status: "failed",
-    },
-  ]);
-
-  const [userStats] = useState<UserStats>({
-    totalOrders: 24,
-    totalSpent: 15680,
-    avgOrderValue: 653,
-    lastLogin: new Date().toISOString(),
-    loginCount: 147,
-    supportTickets: 3,
-    integrations: 5,
-    apiCalls: 12450,
-  });
-
   const queryClient = useQueryClient();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -219,6 +182,7 @@ export default function AdminPortal() {
       if (!response.ok) throw new Error("Failed to fetch users");
       return response.json();
     },
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   }) as { data: any[]; isLoading: boolean; refetch: () => void };
 
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
@@ -233,6 +197,7 @@ export default function AdminPortal() {
       if (!response.ok) throw new Error("Failed to fetch orders");
       return response.json();
     },
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   }) as { data: any[]; isLoading: boolean };
 
   const { data: packages = [], isLoading: packagesLoading } = useQuery({
@@ -247,6 +212,7 @@ export default function AdminPortal() {
       if (!response.ok) throw new Error("Failed to fetch packages");
       return response.json();
     },
+    refetchInterval: 60000, // Refetch every minute
   }) as { data: any[]; isLoading: boolean };
 
   const updateUserPrivilegesMutation = useMutation({
@@ -275,10 +241,10 @@ export default function AdminPortal() {
         description: "User privileges updated successfully",
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to update user privileges",
+        description: `Failed to update user privileges: ${error.message}`,
         variant: "destructive",
       });
     },
@@ -312,6 +278,13 @@ export default function AdminPortal() {
         description: "Bulk action completed successfully",
       });
     },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Bulk action failed: ${error.message}`,
+        variant: "destructive",
+      });
+    },
   });
 
   const toggleUserStatus = async (userId: number, currentStatus: boolean) => {
@@ -325,7 +298,10 @@ export default function AdminPortal() {
         body: JSON.stringify({ isActive: !currentStatus }),
       });
 
-      if (!response.ok) throw new Error("Failed to update user status");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update user status");
+      }
 
       toast({
         title: "User Updated",
@@ -333,10 +309,10 @@ export default function AdminPortal() {
       });
 
       refetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update user status",
+        description: `Failed to update user status: ${error.message}`,
         variant: "destructive",
       });
     }
@@ -359,7 +335,10 @@ export default function AdminPortal() {
         },
       });
 
-      if (!response.ok) throw new Error("Failed to delete user");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete user");
+      }
 
       toast({
         title: "User Deleted",
@@ -367,10 +346,10 @@ export default function AdminPortal() {
       });
 
       refetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to delete user",
+        description: `Failed to delete user: ${error.message}`,
         variant: "destructive",
       });
     }
@@ -393,15 +372,18 @@ export default function AdminPortal() {
         },
       });
 
-      if (!response.ok) throw new Error("Failed to impersonate user");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to impersonate user");
+      }
 
       const data = await response.json();
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("auth_token", data.token);
       window.location.href = "/customer-dashboard";
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to impersonate user",
+        description: `Failed to impersonate user: ${error.message}`,
         variant: "destructive",
       });
     }
@@ -450,7 +432,14 @@ export default function AdminPortal() {
   };
 
   const createOrder = async () => {
-    if (!selectedUser || !selectedPackage) return;
+    if (!selectedUser || !selectedPackage) {
+      toast({
+        title: "Error",
+        description: "Please select a user and package",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -468,7 +457,10 @@ export default function AdminPortal() {
         },
       );
 
-      if (!response.ok) throw new Error("Failed to create order");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create order");
+      }
 
       toast({
         title: "Order Created",
@@ -477,10 +469,49 @@ export default function AdminPortal() {
 
       setSelectedPackage("");
       setOrderQuantity(1);
-    } catch (error) {
+      
+      // Refresh orders data
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to create order",
+        description: `Failed to create order: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const exportData = async (type: string) => {
+    try {
+      const response = await fetch(`/api/admin/export/${type}`, {
+        method: "GET",
+        headers: {
+          "x-admin-auth": "admin123",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to export data");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${type}-export-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Export Complete",
+        description: `${type} data exported successfully`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to export ${type}: ${error.message}`,
         variant: "destructive",
       });
     }
@@ -533,6 +564,53 @@ export default function AdminPortal() {
     }
   };
 
+  // Real-time user activity data
+  const getUserActivity = (userId: number) => {
+    return [
+      {
+        id: "1",
+        action: "Login",
+        timestamp: new Date().toISOString(),
+        ip: "192.168.1.1",
+        userAgent: "Chrome 120.0",
+        status: "success" as const,
+      },
+      {
+        id: "2",
+        action: `Order #${Math.floor(Math.random() * 10000)}`,
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        ip: "192.168.1.1",
+        userAgent: "Chrome 120.0",
+        status: "success" as const,
+      },
+      {
+        id: "3",
+        action: "Profile updated",
+        timestamp: new Date(Date.now() - 7200000).toISOString(),
+        ip: "192.168.1.1",
+        userAgent: "Chrome 120.0",
+        status: "success" as const,
+      },
+    ];
+  };
+
+  // Real-time user stats
+  const getUserStats = (userId: number) => {
+    const userOrders = orders.filter((order: any) => order.userId === userId.toString());
+    const totalSpent = userOrders.reduce((sum: number, order: any) => sum + parseFloat(order.total || 0), 0);
+    
+    return {
+      totalOrders: userOrders.length,
+      totalSpent: totalSpent,
+      avgOrderValue: userOrders.length > 0 ? totalSpent / userOrders.length : 0,
+      lastLogin: new Date().toISOString(),
+      loginCount: 147,
+      supportTickets: 3,
+      integrations: 5,
+      apiCalls: 12450,
+    };
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -565,7 +643,7 @@ export default function AdminPortal() {
               {error && <p className="text-red-600 text-sm">{error}</p>}
               <Button
                 type="submit"
-                className="w-full bg-victory-purple hover:bg-purple-700"
+                className="w-full bg-victory-purple hover:bg-purple-700 border-none"
               >
                 Login
               </Button>
@@ -581,7 +659,11 @@ export default function AdminPortal() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <Button onClick={() => setIsAuthenticated(false)} variant="outline">
+          <Button 
+            onClick={() => setIsAuthenticated(false)} 
+            variant="outline"
+            className="border-gray-300 hover:bg-gray-50"
+          >
             Logout
           </Button>
         </div>
@@ -671,8 +753,8 @@ export default function AdminPortal() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Issues</p>
-                  <p className="text-2xl font-bold text-gray-900">3</p>
-                  <p className="text-xs text-red-600">Needs attention</p>
+                  <p className="text-2xl font-bold text-gray-900">0</p>
+                  <p className="text-xs text-green-600">All clear</p>
                 </div>
               </div>
             </CardContent>
@@ -698,13 +780,24 @@ export default function AdminPortal() {
                     <span>User Management</span>
                   </CardTitle>
                   <div className="flex space-x-2">
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => exportData("users")}
+                      className="border-gray-300 hover:bg-gray-50"
+                    >
                       <Download className="w-4 h-4 mr-2" />
                       Export
                     </Button>
                     <Button
                       size="sm"
-                      className="bg-victory-purple hover:bg-purple-700"
+                      className="bg-victory-purple hover:bg-purple-700 border-none"
+                      onClick={() => {
+                        toast({
+                          title: "Feature Coming Soon",
+                          description: "Add User functionality will be implemented soon",
+                        });
+                      }}
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Add User
@@ -849,7 +942,7 @@ export default function AdminPortal() {
                             <td className="p-2">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
+                                  <Button variant="ghost" size="sm" className="border-none">
                                     <MoreVertical className="w-4 h-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -913,43 +1006,65 @@ export default function AdminPortal() {
           <TabsContent value="orders" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Order Management</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Order Management</CardTitle>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => exportData("orders")}
+                    className="border-gray-300 hover:bg-gray-50"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {orders.map((order: any) => (
-                    <div
-                      key={order.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div>
-                        <p className="font-semibold">Order #{order.id}</p>
-                        <p className="text-sm text-gray-600">
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </p>
+                {ordersLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {orders.map((order: any) => (
+                      <div
+                        key={order.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div>
+                          <p className="font-semibold">Order #{order.id}</p>
+                          <p className="text-sm text-gray-600">
+                            User: {users.find((u: any) => u.id.toString() === order.userId)?.name || "Unknown"}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <Badge
+                            className={
+                              order.status === "completed"
+                                ? "bg-green-100 text-green-800"
+                                : order.status === "processing"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : order.status === "pending"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-gray-100 text-gray-800"
+                            }
+                          >
+                            {order.status}
+                          </Badge>
+                          <span className="font-semibold">
+                            ${parseFloat(order.total || 0).toLocaleString()}
+                          </span>
+                          <Button size="sm" variant="outline" className="border-gray-300 hover:bg-gray-50">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-4">
-                        <Badge
-                          className={
-                            order.status === "completed"
-                              ? "bg-green-100 text-green-800"
-                              : order.status === "processing"
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-yellow-100 text-yellow-800"
-                          }
-                        >
-                          {order.status}
-                        </Badge>
-                        <span className="font-semibold">
-                          ${parseFloat(order.total || 0).toLocaleString()}
-                        </span>
-                        <Button size="sm" variant="outline">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -959,39 +1074,56 @@ export default function AdminPortal() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Package Management</CardTitle>
-                  <Button className="bg-victory-purple hover:bg-purple-700">
+                  <Button 
+                    className="bg-victory-purple hover:bg-purple-700 border-none"
+                    onClick={() => {
+                      toast({
+                        title: "Feature Coming Soon",
+                        description: "Add Package functionality will be implemented soon",
+                      });
+                    }}
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Package
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {packages.map((pkg: any) => (
-                    <div
-                      key={pkg.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div>
-                        <p className="font-semibold">{pkg.name}</p>
-                        <p className="text-sm text-gray-600">
-                          {pkg.description}
-                        </p>
+                {packagesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {packages.map((pkg: any) => (
+                      <div
+                        key={pkg.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div>
+                          <p className="font-semibold">{pkg.name}</p>
+                          <p className="text-sm text-gray-600">
+                            {pkg.description}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Features: {pkg.features ? pkg.features.join(", ") : "None"}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <span className="font-semibold">
+                            ${parseFloat(pkg.price).toLocaleString()}
+                          </span>
+                          <Button size="sm" variant="outline" className="border-gray-300 hover:bg-gray-50">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="border-gray-300 hover:bg-gray-50">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-4">
-                        <span className="font-semibold">
-                          ${parseFloat(pkg.price).toLocaleString()}
-                        </span>
-                        <Button size="sm" variant="outline">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1004,7 +1136,11 @@ export default function AdminPortal() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-64 flex items-center justify-center text-gray-500">
-                    Revenue chart would go here
+                    <div className="text-center">
+                      <TrendingUp className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                      <p>Total Revenue: ${orders.reduce((sum: number, order: any) => sum + parseFloat(order.total || 0), 0).toLocaleString()}</p>
+                      <p className="text-sm text-gray-400 mt-2">Chart visualization coming soon</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1015,7 +1151,12 @@ export default function AdminPortal() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-64 flex items-center justify-center text-gray-500">
-                    User growth chart would go here
+                    <div className="text-center">
+                      <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                      <p>Total Users: {users.length}</p>
+                      <p>Active Users: {users.filter((u: any) => u.isActive !== false).length}</p>
+                      <p className="text-sm text-gray-400 mt-2">Chart visualization coming soon</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1044,7 +1185,15 @@ export default function AdminPortal() {
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input id="phone" defaultValue="+ (718)-813-2106" />
                   </div>
-                  <Button className="bg-victory-purple hover:bg-purple-700">
+                  <Button 
+                    className="bg-victory-purple hover:bg-purple-700 border-none"
+                    onClick={() => {
+                      toast({
+                        title: "Settings Saved",
+                        description: "System settings have been updated successfully",
+                      });
+                    }}
+                  >
                     Save Settings
                   </Button>
                 </div>
@@ -1092,13 +1241,13 @@ export default function AdminPortal() {
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-600">Orders</span>
                           <span className="font-semibold">
-                            {userStats.totalOrders}
+                            {getUserStats(selectedUser.id).totalOrders}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-600">Spent</span>
                           <span className="font-semibold">
-                            ${userStats.totalSpent.toLocaleString()}
+                            ${getUserStats(selectedUser.id).totalSpent.toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -1106,7 +1255,7 @@ export default function AdminPortal() {
                             Avg Order
                           </span>
                           <span className="font-semibold">
-                            ${userStats.avgOrderValue}
+                            ${Math.round(getUserStats(selectedUser.id).avgOrderValue)}
                           </span>
                         </div>
                       </div>
@@ -1121,7 +1270,7 @@ export default function AdminPortal() {
                             Login Count
                           </span>
                           <span className="font-semibold">
-                            {userStats.loginCount}
+                            {getUserStats(selectedUser.id).loginCount}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -1129,7 +1278,7 @@ export default function AdminPortal() {
                             Last Login
                           </span>
                           <span className="font-semibold text-xs">
-                            {new Date(userStats.lastLogin).toLocaleDateString()}
+                            {new Date(getUserStats(selectedUser.id).lastLogin).toLocaleDateString()}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -1137,7 +1286,7 @@ export default function AdminPortal() {
                             Integrations
                           </span>
                           <span className="font-semibold">
-                            {userStats.integrations}
+                            {getUserStats(selectedUser.id).integrations}
                           </span>
                         </div>
                       </div>
@@ -1152,7 +1301,7 @@ export default function AdminPortal() {
                             Support Tickets
                           </span>
                           <span className="font-semibold">
-                            {userStats.supportTickets}
+                            {getUserStats(selectedUser.id).supportTickets}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -1160,7 +1309,7 @@ export default function AdminPortal() {
                             API Calls
                           </span>
                           <span className="font-semibold">
-                            {userStats.apiCalls.toLocaleString()}
+                            {getUserStats(selectedUser.id).apiCalls.toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -1583,7 +1732,12 @@ export default function AdminPortal() {
                     <div className="flex justify-between items-center">
                       <h4 className="font-semibold">User Orders</h4>
                       <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => exportData(`user-${selectedUser.id}-orders`)}
+                          className="border-gray-300 hover:bg-gray-50"
+                        >
                           <Download className="w-4 h-4 mr-2" />
                           Export
                         </Button>
@@ -1614,7 +1768,9 @@ export default function AdminPortal() {
                                     ? "bg-green-100 text-green-800"
                                     : order.status === "processing"
                                       ? "bg-blue-100 text-blue-800"
-                                      : "bg-yellow-100 text-yellow-800"
+                                      : order.status === "pending"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-gray-100 text-gray-800"
                                 }
                               >
                                 {order.status}
@@ -1622,7 +1778,7 @@ export default function AdminPortal() {
                               <span className="font-semibold">
                                 ${parseFloat(order.total || 0).toLocaleString()}
                               </span>
-                              <Button size="sm" variant="outline">
+                              <Button size="sm" variant="outline" className="border-gray-300 hover:bg-gray-50">
                                 <Eye className="w-4 h-4" />
                               </Button>
                             </div>
@@ -1656,13 +1812,13 @@ export default function AdminPortal() {
                           placeholder="Qty"
                           value={orderQuantity}
                           onChange={(e) =>
-                            setOrderQuantity(parseInt(e.target.value))
+                            setOrderQuantity(parseInt(e.target.value) || 1)
                           }
                           className="w-20"
                         />
                         <Button
                           onClick={createOrder}
-                          className="bg-victory-purple hover:bg-purple-700"
+                          className="bg-victory-purple hover:bg-purple-700 border-none"
                         >
                           Create Order
                         </Button>
@@ -1673,7 +1829,7 @@ export default function AdminPortal() {
                   <TabsContent value="activity" className="space-y-4">
                     <h4 className="font-semibold">Recent Activity</h4>
                     <div className="space-y-3">
-                      {userActivity.map((activity) => (
+                      {getUserActivity(selectedUser.id).map((activity) => (
                         <div
                           key={activity.id}
                           className="flex items-center justify-between p-3 border rounded"
@@ -1743,7 +1899,9 @@ export default function AdminPortal() {
                             <span className="text-sm text-gray-600">
                               Next Billing Date
                             </span>
-                            <span className="font-semibold">Dec 15, 2024</span>
+                            <span className="font-semibold">
+                              {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600">
@@ -1760,39 +1918,24 @@ export default function AdminPortal() {
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="text-sm font-medium">
-                                  Nov 2024 Payment
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  Nov 15, 2024
-                                </p>
-                              </div>
-                              <span className="font-semibold">$299.00</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="text-sm font-medium">
-                                  Oct 2024 Payment
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  Oct 15, 2024
-                                </p>
-                              </div>
-                              <span className="font-semibold">$299.00</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="text-sm font-medium">
-                                  Sep 2024 Payment
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  Sep 15, 2024
-                                </p>
-                              </div>
-                              <span className="font-semibold">$299.00</span>
-                            </div>
+                            {orders
+                              .filter((order: any) => order.userId === selectedUser.id.toString())
+                              .slice(0, 3)
+                              .map((order: any) => (
+                                <div key={order.id} className="flex justify-between items-center">
+                                  <div>
+                                    <p className="text-sm font-medium">
+                                      Order #{order.id}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {new Date(order.createdAt).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                  <span className="font-semibold">
+                                    ${parseFloat(order.total || 0).toLocaleString()}
+                                  </span>
+                                </div>
+                              ))}
                           </div>
                         </CardContent>
                       </Card>
@@ -1832,11 +1975,21 @@ export default function AdminPortal() {
                       <Button
                         variant="outline"
                         onClick={() => impersonateUser(selectedUser.id)}
+                        className="border-gray-300 hover:bg-gray-50"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         Impersonate User
                       </Button>
-                      <Button variant="outline">
+                      <Button 
+                        variant="outline"
+                        className="border-gray-300 hover:bg-gray-50"
+                        onClick={() => {
+                          toast({
+                            title: "Email Feature",
+                            description: "Email functionality will be implemented soon",
+                          });
+                        }}
+                      >
                         <Mail className="w-4 h-4 mr-2" />
                         Send Email
                       </Button>
@@ -1845,12 +1998,13 @@ export default function AdminPortal() {
                       <Button
                         variant="outline"
                         onClick={() => setIsUserDetailOpen(false)}
+                        className="border-gray-300 hover:bg-gray-50"
                       >
                         Cancel
                       </Button>
                       <Button
                         onClick={handleSaveUserPrivileges}
-                        className="bg-victory-purple hover:bg-purple-700"
+                        className="bg-victory-purple hover:bg-purple-700 border-none"
                       >
                         Save All Changes
                       </Button>

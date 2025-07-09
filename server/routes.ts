@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
-import { registerUser, loginUser, getCurrentUser, authenticateJWT, type AuthenticatedRequest } from "./publicAuth";
+import { registerUser, loginUser, getCurrentUser, authenticateJWT, generateJWT, type AuthenticatedRequest } from "./publicAuth";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
@@ -365,6 +365,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating user privileges:", error);
       res.status(500).json({ message: "Failed to update user privileges" });
+    }
+  });
+
+  app.post('/api/admin/users/:id/impersonate', requireAdmin, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.getPublicUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Generate JWT token for impersonation
+      const token = generateJWT(user);
+      res.json({ token, user });
+    } catch (error) {
+      console.error("Error impersonating user:", error);
+      res.status(500).json({ message: "Failed to impersonate user" });
+    }
+  });
+
+  app.get('/api/admin/export/:type', requireAdmin, async (req: any, res: any) => {
+    try {
+      const { type } = req.params;
+      let data = [];
+      let filename = '';
+
+      switch (type) {
+        case 'users':
+          data = await storage.getAllPublicUsers();
+          filename = 'users-export.csv';
+          break;
+        case 'orders':
+          data = await storage.getAllOrders();
+          filename = 'orders-export.csv';
+          break;
+        default:
+          return res.status(400).json({ message: 'Invalid export type' });
+      }
+
+      // Simple CSV generation
+      const headers = Object.keys(data[0] || {});
+      const csvContent = [
+        headers.join(','),
+        ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+      ].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(csvContent);
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      res.status(500).json({ message: "Failed to export data" });
     }
   });
 
