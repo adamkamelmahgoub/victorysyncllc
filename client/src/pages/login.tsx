@@ -52,8 +52,12 @@ export default function Login() {
         window.location.href = '/dashboard';
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred during login');
-    } finally {
+        toast({
+          title: "Login Failed",
+          description: err.message || 'An error occurred during login',
+          variant: "destructive"
+        });
+      } finally {
       setIsLoading(false);
     }
   };
@@ -150,7 +154,7 @@ export default function Login() {
                 </div>
               </div>
 
-              
+
 
               <Button
                 type="submit"
