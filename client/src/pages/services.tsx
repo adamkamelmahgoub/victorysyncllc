@@ -7,7 +7,7 @@ export default function Services() {
   const services = [
     {
       icon: Phone,
-      title: "Inbound Call Center",
+      title: "Inbound Contact Center",
       features: [
         "24/7 Multilingual Customer Support with native English speakers and fluency in Spanish, French, and Arabic",
         "Advanced Technical Help Desk with tier-1, tier-2, and tier-3 escalation protocols",
@@ -121,7 +121,7 @@ export default function Services() {
             {services.map((service, index) => {
               const IconComponent = service.icon;
               const isEven = index % 2 === 0;
-              
+
               return (
                 <div key={service.title} className={`grid md:grid-cols-2 gap-12 items-center ${!isEven ? 'md:flex-row-reverse' : ''}`}>
                   <div className={isEven ? 'order-1' : 'order-2'}>
@@ -129,7 +129,7 @@ export default function Services() {
                       <IconComponent className="victory-purple w-8 h-8" />
                     </div>
                     <h2 className="text-3xl font-bold victory-dark mb-6">{service.title}</h2>
-                    
+
                     <div className="mb-8">
                       <h3 className="font-semibold victory-dark mb-4">Key Features:</h3>
                       <div className="grid grid-cols-1 gap-2">
@@ -160,7 +160,7 @@ export default function Services() {
                       </Button>
                     </Link>
                   </div>
-                  
+
                   <div className={isEven ? 'order-2' : 'order-1'}>
                     <Card className="p-8 shadow-lg">
                       <CardContent className="text-center">
