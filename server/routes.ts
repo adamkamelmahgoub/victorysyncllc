@@ -17,14 +17,7 @@ if (process.env.STRIPE_SECRET_KEY) {
   });
 }
 
-// Admin middleware
-const requireAdmin = (req: any, res: any, next: any) => {
-  // Simple admin check - in production this should be more robust
-  if (req.headers['x-admin-auth'] !== 'admin123') {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-  next();
-};
+// Remove duplicate admin middleware - using the one from publicAuth.ts
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint - must be first to avoid being caught by other routes

@@ -39,7 +39,7 @@ import {
 } from 'lucide-react';
 
 export default function CustomerDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, isCustomer, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('overview');
@@ -57,31 +57,100 @@ export default function CustomerDashboard() {
   });
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
-  // Check if user is authenticated
+  // Check if user is authenticated and is a customer
   useEffect(() => {
-    if (!user) {
-      window.location.href = '/login';
+    if (!isLoading && (!user || !isCustomer)) {
+      toast({
+        title: "Access Required",
+        description: "Please log in to access your dashboard.",
+        variant: "destructive"
+      });
+      window.location.href = '/login?redirect=/dashboard';
+      return;
     }
-  }, [user]);
+  }, [user, isCustomer, isLoading]);
 
-  // Queries
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // Show login prompt if not authenticated
+  if (!user || !isCustomer) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="p-8 text-center">
+            <Activity className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h2>
+            <p className="text-gray-600 mb-6">
+              Please log in to access your customer dashboard.
+            </p>
+            <Button onClick={() => window.location.href = '/login'} className="w-full">
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Helper function for auth headers
+  const getAuthHeaders = () => ({
+    'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
+    'Content-Type': 'application/json'
+  });
+
+  // Queries with proper error handling
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ['/api/user/orders'],
+    queryFn: async () => {
+      const response = await fetch('/api/user/orders', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      return response.json();
+    },
     enabled: !!user,
   });
 
   const { data: crmIntegrations = [], isLoading: integrationsLoading } = useQuery({
     queryKey: ['/api/crm/integrations'],
+    queryFn: async () => {
+      const response = await fetch('/api/crm/integrations', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch integrations');
+      return response.json();
+    },
     enabled: !!user,
   });
 
   const { data: supportTickets = [], isLoading: ticketsLoading } = useQuery({
     queryKey: ['/api/support/tickets'],
+    queryFn: async () => {
+      const response = await fetch('/api/support/tickets', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch tickets');
+      return response.json();
+    },
     enabled: !!user,
   });
 
   const { data: kpiMetrics = [], isLoading: metricsLoading } = useQuery({
     queryKey: ['/api/kpi/metrics'],
+    queryFn: async () => {
+      const response = await fetch('/api/kpi/metrics', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch metrics');
+      return response.json();
+    },
     enabled: !!user,
   });
 
@@ -90,10 +159,7 @@ export default function CustomerDashboard() {
     mutationFn: async (integration: any) => {
       const response = await fetch('/api/crm/integrations', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(integration)
       });
       if (!response.ok) throw new Error('Failed to create integration');
@@ -114,9 +180,7 @@ export default function CustomerDashboard() {
     mutationFn: async (integrationId: number) => {
       const response = await fetch(`/api/crm/integrations/${integrationId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        headers: getAuthHeaders()
       });
       if (!response.ok) throw new Error('Failed to delete integration');
       return response.json();
@@ -134,10 +198,7 @@ export default function CustomerDashboard() {
     mutationFn: async (ticket: any) => {
       const response = await fetch('/api/support/tickets', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(ticket)
       });
       if (!response.ok) throw new Error('Failed to create ticket');
@@ -168,14 +229,6 @@ export default function CustomerDashboard() {
     new Date(m.timestamp).toDateString() === new Date().toDateString()).length;
   const conversionsToday = kpiMetrics.filter((m: any) => m.metricType === 'conversions' && 
     new Date(m.timestamp).toDateString() === new Date().toDateString()).length;
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
