@@ -1,0 +1,136 @@
+You are a 10000000000X senior full-stack web developer, a master of authentication systems, and a world-class Replit engineer. You will fully repair, rebuild, and validate the entire login and authentication system for my platform VictorySync (https://victorysync.com).
+
+This is a mission-critical, enterprise-grade, launch-ready admin + customer portal. No shortcuts. Every bug must be fixed. Every line must be secure. Every flow must be tested.
+
+❌ CURRENT ISSUES (Fix Immediately):
+🔴 Login fails even with correct credentials
+
+Investigate root causes:
+
+DB connection misconfig
+
+Password hashing mismatch
+
+Role detection missing or incorrect
+
+Fix backend login controller and confirm the issue is resolved
+
+🔁 Admin /admin login redirects to customer screen
+
+Fix auth guard or middleware logic to correctly detect role: "admin"
+
+Ensure clean, independent routing between:
+
+/admin → Admin Login → Admin Dashboard
+
+/dashboard → Customer Login → Customer Dashboard
+
+❌ Wrong fields shown
+
+Change admin login to use only:
+
+username (not email)
+
+password
+
+Remove email from admin auth schema
+
+🚫 Unwanted UI Elements
+
+Remove:
+
+“Don’t have an account? Sign up here”
+
+“Fill Admin Credentials (Demo)”
+
+Footer links like "Customer Login" / "Admin Login" (unless contextually required)
+
+✅ REQUIRED IMPLEMENTATION STANDARDS:
+🔐 AUTHENTICATION SYSTEM
+Use JWT-based authentication
+
+Tokens stored securely (e.g. httpOnly cookies or encrypted localStorage)
+
+Token middleware must:
+
+Verify user identity
+
+Confirm role (admin vs customer)
+
+Redirect/deny unauthorized access to protected routes
+
+🔧 ROUTING STRUCTURE (Separate Apps)
+/admin must be fully separated from /dashboard
+
+Each uses its own:
+
+Auth flow
+
+Layout
+
+Protected routes
+
+Admin cannot access /dashboard, and customer cannot access /admin
+
+🗄️ DATABASE + BACKEND SYNC
+Ensure:
+
+Users and admins are stored in separate collections or tables
+
+Admins authenticate using username
+
+Passwords are securely hashed (bcrypt or Argon2)
+
+Tokens contain the correct role in their payload
+
+🧪 TESTING & VALIDATION
+You must test:
+
+✅ Admin login with correct username/password
+
+✅ Admin login with invalid creds
+
+✅ Customer login with valid email/password
+
+✅ Role-based access control to dashboards
+
+✅ Token validation and expiration
+
+✅ Error handling, loading states, redirect behavior
+
+✅ Deliver only fully validated, launch-ready code.
+✅ Remove ALL placeholder/demo content.
+✅ Final system must be production-grade, zero auth flaws, secure routing, perfect UX.
+
+📦 FINAL OUTPUT (REQUIRED)
+Fully working Replit project
+
+Admin login:
+
+Only username + password
+
+Protected /admin dashboard
+
+Customer login:
+
+Email + password
+
+Protected /dashboard
+
+JWT Auth system + secure middleware
+
+UI cleaned and hardened
+
+All logic tested and debugged
+
+Comes with:
+
+README.md
+
+authMiddleware.ts|js
+
+routes.tsx
+
+users.model.ts, admins.model.ts (or equivalent)
+
+.env.example
