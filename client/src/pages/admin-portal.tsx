@@ -1,7 +1,4 @@
-The code changes aim to make the edit and delete package buttons in the admin portal functional by adding onClick handlers that display toast messages indicating that these features are coming soon.
-```
 
-```replit_final_file
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -614,6 +611,21 @@ export default function AdminPortal() {
     };
   };
 
+  // Handler functions for edit and delete package buttons
+  const handleEditPackage = (packageId: number) => {
+    toast({
+      title: "Feature Coming Soon",
+      description: "Edit package functionality will be implemented soon",
+    });
+  };
+
+  const handleDeletePackage = (packageId: number) => {
+    toast({
+      title: "Feature Coming Soon", 
+      description: "Delete package functionality will be implemented soon",
+    });
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -952,3 +964,588 @@ export default function AdminPortal() {
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                   <DropdownMenuItem
+                                    onClick={() => handleUserClick(user)}
+                                  >
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    View Details
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => impersonateUser(user.id)}
+                                  >
+                                    <UserCheck className="w-4 h-4 mr-2" />
+                                    Impersonate
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => toggleUserStatus(user.id, user.isActive)}
+                                  >
+                                    {user.isActive !== false ? (
+                                      <>
+                                        <UserX className="w-4 h-4 mr-2" />
+                                        Deactivate
+                                      </>
+                                    ) : (
+                                      <>
+                                        <UserCheck className="w-4 h-4 mr-2" />
+                                        Activate
+                                      </>
+                                    )}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => deleteUser(user.id)}
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="packages" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center space-x-2">
+                    <Package className="w-5 h-5" />
+                    <span>Package Management</span>
+                  </CardTitle>
+                  <div className="flex space-x-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => exportData("packages")}
+                      className="border-gray-300 hover:bg-gray-50"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Export
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-victory-purple hover:bg-purple-700 border-none"
+                      onClick={() => {
+                        toast({
+                          title: "Feature Coming Soon",
+                          description: "Add Package functionality will be implemented soon",
+                        });
+                      }}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Package
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {packagesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-2">Package</th>
+                          <th className="text-left p-2">Price</th>
+                          <th className="text-left p-2">Description</th>
+                          <th className="text-left p-2">Created</th>
+                          <th className="text-left p-2">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {packages.map((pkg: any) => (
+                          <tr key={pkg.id} className="border-b hover:bg-gray-50">
+                            <td className="p-2">
+                              <div>
+                                <p className="font-medium">{pkg.name}</p>
+                                <p className="text-xs text-gray-500">ID: {pkg.id}</p>
+                              </div>
+                            </td>
+                            <td className="p-2">
+                              <p className="font-medium">${parseFloat(pkg.price).toLocaleString()}</p>
+                            </td>
+                            <td className="p-2">
+                              <p className="text-sm text-gray-600">{pkg.description}</p>
+                            </td>
+                            <td className="p-2">
+                              {new Date(pkg.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="p-2">
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleEditPackage(pkg.id)}
+                                  className="border-gray-300 hover:bg-gray-50"
+                                >
+                                  <Edit className="w-4 h-4 mr-1" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeletePackage(pkg.id)}
+                                  className="border-red-300 text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-1" />
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="orders" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center space-x-2">
+                    <ShoppingCart className="w-5 h-5" />
+                    <span>Order Management</span>
+                  </CardTitle>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => exportData("orders")}
+                    className="border-gray-300 hover:bg-gray-50"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {ordersLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-2">Order ID</th>
+                          <th className="text-left p-2">User</th>
+                          <th className="text-left p-2">Total</th>
+                          <th className="text-left p-2">Status</th>
+                          <th className="text-left p-2">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.map((order: any) => (
+                          <tr key={order.id} className="border-b hover:bg-gray-50">
+                            <td className="p-2 font-medium">#{order.id}</td>
+                            <td className="p-2">
+                              {users.find((u: any) => u.id.toString() === order.userId)?.name || 'Unknown'}
+                            </td>
+                            <td className="p-2">${parseFloat(order.total || 0).toLocaleString()}</td>
+                            <td className="p-2">
+                              <Badge className={
+                                order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                order.status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }>
+                                {order.status}
+                              </Badge>
+                            </td>
+                            <td className="p-2">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenue Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <BarChart3 className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-500">Analytics dashboard coming soon</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>User Growth</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <TrendingUp className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-500">User growth charts coming soon</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>System Settings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Settings className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-500">Settings panel coming soon</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* User Detail Modal */}
+        <Dialog open={isUserDetailOpen} onOpenChange={setIsUserDetailOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>User Details - {selectedUser?.name}</DialogTitle>
+            </DialogHeader>
+            {selectedUser && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">Basic Information</h3>
+                      <div className="space-y-2">
+                        <p><strong>Name:</strong> {selectedUser.name}</p>
+                        <p><strong>Email:</strong> {selectedUser.email}</p>
+                        <p><strong>ID:</strong> {selectedUser.id}</p>
+                        <p><strong>Created:</strong> {new Date(selectedUser.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-2">Statistics</h3>
+                      <div className="space-y-2">
+                        <p><strong>Total Orders:</strong> {getUserStats(selectedUser.id).totalOrders}</p>
+                        <p><strong>Total Spent:</strong> ${getUserStats(selectedUser.id).totalSpent.toLocaleString()}</p>
+                        <p><strong>Avg Order Value:</strong> ${getUserStats(selectedUser.id).avgOrderValue.toFixed(2)}</p>
+                        <p><strong>Support Tickets:</strong> {getUserStats(selectedUser.id).supportTickets}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">Account Settings</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <Label>Account Status</Label>
+                          <Select 
+                            value={userPrivileges.accountStatus} 
+                            onValueChange={(value: "active" | "suspended" | "pending" | "banned" | "trial") => 
+                              setUserPrivileges(prev => ({ ...prev, accountStatus: value }))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="suspended">Suspended</SelectItem>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="banned">Banned</SelectItem>
+                              <SelectItem value="trial">Trial</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>Subscription Tier</Label>
+                          <Select 
+                            value={userPrivileges.subscriptionTier} 
+                            onValueChange={(value: "basic" | "premium" | "enterprise" | "custom") => 
+                              setUserPrivileges(prev => ({ ...prev, subscriptionTier: value }))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="basic">Basic</SelectItem>
+                              <SelectItem value="premium">Premium</SelectItem>
+                              <SelectItem value="enterprise">Enterprise</SelectItem>
+                              <SelectItem value="custom">Custom</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-4">User Privileges</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="canCreateOrders">Can Create Orders</Label>
+                        <Switch
+                          id="canCreateOrders"
+                          checked={userPrivileges.canCreateOrders}
+                          onCheckedChange={(checked) => 
+                            setUserPrivileges(prev => ({ ...prev, canCreateOrders: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="canViewReports">Can View Reports</Label>
+                        <Switch
+                          id="canViewReports"
+                          checked={userPrivileges.canViewReports}
+                          onCheckedChange={(checked) => 
+                            setUserPrivileges(prev => ({ ...prev, canViewReports: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="canAccessPremiumFeatures">Can Access Premium Features</Label>
+                        <Switch
+                          id="canAccessPremiumFeatures"
+                          checked={userPrivileges.canAccessPremiumFeatures}
+                          onCheckedChange={(checked) => 
+                            setUserPrivileges(prev => ({ ...prev, canAccessPremiumFeatures: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="canModifyProfile">Can Modify Profile</Label>
+                        <Switch
+                          id="canModifyProfile"
+                          checked={userPrivileges.canModifyProfile}
+                          onCheckedChange={(checked) => 
+                            setUserPrivileges(prev => ({ ...prev, canModifyProfile: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="canDeleteAccount">Can Delete Account</Label>
+                        <Switch
+                          id="canDeleteAccount"
+                          checked={userPrivileges.canDeleteAccount}
+                          onCheckedChange={(checked) => 
+                            setUserPrivileges(prev => ({ ...prev, canDeleteAccount: checked }))
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="canViewBilling">Can View Billing</Label>
+                        <Switch
+                          id="canViewBilling"
+                          checked={userPrivileges.canViewBilling}
+                          onCheckedChange={(checked) => 
+                            setUserPrivileges(prev => ({ ...prev, canViewBilling: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="canManageIntegrations">Can Manage Integrations</Label>
+                        <Switch
+                          id="canManageIntegrations"
+                          checked={userPrivileges.canManageIntegrations}
+                          onCheckedChange={(checked) => 
+                            setUserPrivileges(prev => ({ ...prev, canManageIntegrations: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="canExportData">Can Export Data</Label>
+                        <Switch
+                          id="canExportData"
+                          checked={userPrivileges.canExportData}
+                          onCheckedChange={(checked) => 
+                            setUserPrivileges(prev => ({ ...prev, canExportData: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="canAccessAPI">Can Access API</Label>
+                        <Switch
+                          id="canAccessAPI"
+                          checked={userPrivileges.canAccessAPI}
+                          onCheckedChange={(checked) => 
+                            setUserPrivileges(prev => ({ ...prev, canAccessAPI: checked }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="canViewAnalytics">Can View Analytics</Label>
+                        <Switch
+                          id="canViewAnalytics"
+                          checked={userPrivileges.canViewAnalytics}
+                          onCheckedChange={(checked) => 
+                            setUserPrivileges(prev => ({ ...prev, canViewAnalytics: checked }))
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-4">Limits & Settings</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="maxOrderValue">Max Order Value: ${userPrivileges.maxOrderValue.toLocaleString()}</Label>
+                        <Slider
+                          value={[userPrivileges.maxOrderValue]}
+                          onValueChange={(value) => 
+                            setUserPrivileges(prev => ({ ...prev, maxOrderValue: value[0] }))
+                          }
+                          max={100000}
+                          min={100}
+                          step={100}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="maxOrdersPerMonth">Max Orders Per Month: {userPrivileges.maxOrdersPerMonth}</Label>
+                        <Slider
+                          value={[userPrivileges.maxOrdersPerMonth]}
+                          onValueChange={(value) => 
+                            setUserPrivileges(prev => ({ ...prev, maxOrdersPerMonth: value[0] }))
+                          }
+                          max={500}
+                          min={1}
+                          step={1}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="creditLimit">Credit Limit: ${userPrivileges.creditLimit.toLocaleString()}</Label>
+                        <Slider
+                          value={[userPrivileges.creditLimit]}
+                          onValueChange={(value) => 
+                            setUserPrivileges(prev => ({ ...prev, creditLimit: value[0] }))
+                          }
+                          max={50000}
+                          min={0}
+                          step={500}
+                          className="mt-2"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="apiRateLimit">API Rate Limit: {userPrivileges.apiRateLimit}/hour</Label>
+                        <Slider
+                          value={[userPrivileges.apiRateLimit]}
+                          onValueChange={(value) => 
+                            setUserPrivileges(prev => ({ ...prev, apiRateLimit: value[0] }))
+                          }
+                          max={10000}
+                          min={100}
+                          step={100}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="dataRetentionDays">Data Retention: {userPrivileges.dataRetentionDays} days</Label>
+                        <Slider
+                          value={[userPrivileges.dataRetentionDays]}
+                          onValueChange={(value) => 
+                            setUserPrivileges(prev => ({ ...prev, dataRetentionDays: value[0] }))
+                          }
+                          max={2555}
+                          min={30}
+                          step={30}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <Label>Priority Level</Label>
+                        <Select 
+                          value={userPrivileges.priority} 
+                          onValueChange={(value: "low" | "normal" | "high" | "critical") => 
+                            setUserPrivileges(prev => ({ ...prev, priority: value }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="critical">Critical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="customNotes">Custom Notes</Label>
+                  <Textarea
+                    id="customNotes"
+                    value={userPrivileges.customNotes}
+                    onChange={(e) => 
+                      setUserPrivileges(prev => ({ ...prev, customNotes: e.target.value }))
+                    }
+                    placeholder="Add any custom notes about this user..."
+                    className="mt-2"
+                  />
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-4">Recent Activity</h3>
+                  <div className="space-y-2">
+                    {getUserActivity(selectedUser.id).map((activity) => (
+                      <div key={activity.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded">
+                        <div className={`w-2 h-2 rounded-full ${
+                          activity.status === 'success' ? 'bg-green-500' : 
+                          activity.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500'
+                        }`} />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{activity.action}</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(activity.timestamp).toLocaleString()} • {activity.ip}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsUserDetailOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveUserPrivileges} className="bg-victory-purple hover:bg-purple-700">
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+}
