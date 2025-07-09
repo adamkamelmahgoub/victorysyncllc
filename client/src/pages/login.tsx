@@ -172,19 +172,15 @@ export default function Login() {
               </div>
             )}
 
-            <div className="mt-4 text-center">
-              <p className="text-xs text-gray-500">
-                {loginType === 'admin' ? (
+            {loginType === 'admin' && (
+              <div className="mt-4 text-center">
+                <p className="text-xs text-gray-500">
                   <Link href="/login" className="text-purple-600 hover:text-purple-500">
                     Customer Login
                   </Link>
-                ) : (
-                  <Link href="/login?type=admin" className="text-purple-600 hover:text-purple-500">
-                    Admin Login
-                  </Link>
-                )}
-              </p>
-            </div>
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -61,7 +61,16 @@ function Router() {
           <Route path="/checkout" component={Checkout} />
           <Route path="/dashboard" component={CustomerDashboard} />
           <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/admin" component={AdminPortal} />
+          <Route path="/admin" component={() => {
+            // Check if user is already logged in as admin
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.get('type')) {
+              // Redirect to admin login if not already on admin login
+              window.location.href = '/login?type=admin&redirect=/admin';
+              return null;
+            }
+            return <AdminPortal />;
+          }} />
           <Route path="/register" component={Register} />
           <Route path="/signup" component={Register} />
           <Route path="/login" component={Login} />
@@ -74,7 +83,6 @@ function Router() {
           <Route path="/docs" component={Documentation} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route path="/terms" component={TermsOfService} />
-          <Route path="/admin" component={AdminPortal} />
           <Route component={NotFound} />
         </Switch>
       </main>
