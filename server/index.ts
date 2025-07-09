@@ -18,6 +18,8 @@ function validateEnvironment() {
 }
 
 const app = express();
+const port = process.env.PORT || 5000;
+const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '0.0.0.0';
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -101,3 +103,11 @@ app.use((req, res, next) => {
     process.exit(1);
   }
 })();
+
+// Start server
+app.listen(port, host, () => {
+  console.log(`🎉 VictorySync server is running successfully!`);
+  console.log(`🌐 Server running on: http://${host}:${port}`);
+  console.log(`🔐 Admin login: username=kimo8723, password=Mshmsh7184365700!`);
+  console.log(`👤 Test customer: email=test@customer.com, password=testpass123`);
+});

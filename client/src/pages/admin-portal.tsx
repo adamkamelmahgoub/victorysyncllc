@@ -14,6 +14,9 @@ import { Users, ShoppingCart, MessageSquare, Settings, BarChart3, LogOut, Plus }
 import { useAuth } from "@/hooks/useAuth";
 
 export default function AdminPortal() {
+  const { admin, logout, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
+  
   const [activeTab, setActiveTab] = useState('overview');
   const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
   const [newUserForm, setNewUserForm] = useState({
@@ -22,11 +25,8 @@ export default function AdminPortal() {
     password: '',
     role: 'admin'
   });
-  
-  const { admin, logout, isAdmin } = useAuth();
-  const queryClient = useQueryClient();
 
-  // All queries - these will be enabled/disabled based on isAdmin but must be declared at top level
+  // All queries - always declared but conditionally enabled
   const usersQuery = useQuery({
     queryKey: ['admin', 'users'],
     queryFn: async () => {
@@ -153,7 +153,7 @@ export default function AdminPortal() {
     createUserMutation.mutate(newUserForm);
   };
 
-  // Now we can do the conditional rendering after all hooks are declared
+  // Conditional rendering AFTER all hooks
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
