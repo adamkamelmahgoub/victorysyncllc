@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +39,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminPortal() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedUser, setSelectedUser] = useState(null);
@@ -46,47 +47,112 @@ export default function AdminPortal() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Check if user is admin
+  // Check if user is admin - redirect if not
   useEffect(() => {
-    if (!user || !['admin', 'super_admin', 'billing', 'crm_manager'].includes(user.role)) {
-      window.location.href = '/login';
+    if (!isLoading && (!user || !isAdmin)) {
+      toast({
+        title: "Access Denied",
+        description: "Admin access required. Redirecting to login.",
+        variant: "destructive"
+      });
+      window.location.href = '/login?redirect=/admin&type=admin';
+      return;
     }
-  }, [user]);
+  }, [user, isAdmin, isLoading]);
 
-  // Queries
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // Show access denied if not admin
+  if (!user || !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="p-8 text-center">
+            <Shield className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+            <p className="text-gray-600 mb-6">
+              You need admin privileges to access this portal.
+            </p>
+            <Button onClick={() => window.location.href = '/login'} className="w-full">
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Queries with proper token handling
+  const getAuthHeaders = () => ({
+    'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
+    'Content-Type': 'application/json'
+  });
+
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ['/api/admin/users'],
-    enabled: !!user && ['admin', 'super_admin'].includes(user.role),
+    queryFn: async () => {
+      const response = await fetch('/api/admin/users', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
+    },
+    enabled: isAdmin,
   });
 
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ['/api/admin/orders'],
-    enabled: !!user && ['admin', 'super_admin', 'billing'].includes(user.role),
+    queryFn: async () => {
+      const response = await fetch('/api/admin/orders', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      return response.json();
+    },
+    enabled: isAdmin,
   });
 
   const { data: crmIntegrations = [], isLoading: integrationsLoading } = useQuery({
     queryKey: ['/api/admin/crm/integrations'],
-    enabled: !!user && ['admin', 'super_admin', 'crm_manager'].includes(user.role),
+    queryFn: async () => {
+      const response = await fetch('/api/admin/crm/integrations', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch integrations');
+      return response.json();
+    },
+    enabled: isAdmin,
   });
 
   const { data: supportTickets = [], isLoading: ticketsLoading } = useQuery({
     queryKey: ['/api/admin/support/tickets'],
-    enabled: !!user && ['admin', 'super_admin'].includes(user.role),
-  });
-
-  const { data: kpiMetrics = [], isLoading: metricsLoading } = useQuery({
-    queryKey: ['/api/admin/kpi/metrics'],
-    enabled: !!user && ['admin', 'super_admin', 'crm_manager'].includes(user.role),
+    queryFn: async () => {
+      const response = await fetch('/api/admin/support/tickets', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch tickets');
+      return response.json();
+    },
+    enabled: isAdmin,
   });
 
   const { data: auditLogs = [], isLoading: logsLoading } = useQuery({
     queryKey: ['/api/admin/audit-logs'],
-    enabled: !!user && ['admin', 'super_admin'].includes(user.role),
-  });
-
-  const { data: contactSubmissions = [], isLoading: contactsLoading } = useQuery({
-    queryKey: ['/api/admin/contact-submissions'],
-    enabled: !!user && ['admin', 'super_admin'].includes(user.role),
+    queryFn: async () => {
+      const response = await fetch('/api/admin/audit-logs', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch audit logs');
+      return response.json();
+    },
+    enabled: isAdmin,
   });
 
   // Mutations
@@ -94,10 +160,7 @@ export default function AdminPortal() {
     mutationFn: async ({ userId, updates }: { userId: number; updates: any }) => {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updates)
       });
       if (!response.ok) throw new Error('Failed to update user');
@@ -116,16 +179,14 @@ export default function AdminPortal() {
     mutationFn: async (userId: number) => {
       const response = await fetch(`/api/admin/users/${userId}/impersonate`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        headers: getAuthHeaders()
       });
       if (!response.ok) throw new Error('Failed to impersonate user');
       return response.json();
     },
     onSuccess: (data) => {
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.removeItem('auth_token');
       toast({ title: 'Success', description: 'Now impersonating user' });
       window.location.href = '/dashboard';
     },
@@ -150,14 +211,6 @@ export default function AdminPortal() {
                          (filterStatus === 'inactive' && !user.isActive);
     return matchesSearch && matchesStatus;
   });
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -349,15 +402,13 @@ export default function AdminPortal() {
                               >
                                 {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                               </Button>
-                              {user.role === 'super_admin' && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => impersonateUserMutation.mutate(user.id)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => impersonateUserMutation.mutate(user.id)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
