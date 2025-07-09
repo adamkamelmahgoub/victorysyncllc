@@ -5,6 +5,9 @@ import { testDatabaseConnection } from "./db";
 import passport from "./auth/passport";
 import { initializeAdminUser } from './initAdmin';
 import { initializeTestCustomer } from './initCustomer';
+import { loginAdmin, getCurrentAdmin, authenticateAdminJWT } from './adminAuth';
+import { generateJWT } from './publicAuth';
+import { storage } from './storage';
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -73,6 +76,88 @@ app.use((req, res, next) => {
     const server = await registerRoutes(app);
     console.log(`✅ Routes registered successfully`);
 
+    // Admin routes
+    app.post('/api/admin/auth/login', loginAdmin);
+    app.get('/api/admin/auth/me', authenticateAdminJWT, getCurrentAdmin);
+
+    // Admin API routes (all require admin authentication)
+    app.get('/api/admin/users', authenticateAdminJWT, async (req, res) => {
+      try {
+        const users = await storage.getAllPublicUsers();
+        res.json(users);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch users' });
+      }
+    });
+
+    app.get('/api/admin/orders', authenticateAdminJWT, async (req, res) => {
+      try {
+        const orders = await storage.getAllOrders();
+        res.json(orders);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch orders' });
+      }
+    });
+
+    app.get('/api/admin/crm/integrations', authenticateAdminJWT, async (req, res) => {
+      try {
+        const integrations = await storage.getAllCrmIntegrations();
+        res.json(integrations);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch integrations' });
+      }
+    });
+
+    app.get('/api/admin/support/tickets', authenticateAdminJWT, async (req, res) => {
+      try {
+        const tickets = await storage.getAllSupportTickets();
+        res.json(tickets);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch support tickets' });
+      }
+    });
+
+    app.get('/api/admin/audit-logs', authenticateAdminJWT, async (req, res) => {
+      try {
+        const logs = await storage.getAuditLogs();
+        res.json(logs);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch audit logs' });
+      }
+    });
+
+    app.patch('/api/admin/users/:id', authenticateAdminJWT, async (req, res) => {
+      try {
+        const userId = parseInt(req.params.id);
+        const updates = req.body;
+
+        if (updates.isActive !== undefined) {
+          const user = await storage.updateUserStatus(userId, updates.isActive);
+          res.json(user);
+        } else {
+          res.status(400).json({ error: 'Invalid update parameters' });
+        }
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to update user' });
+      }
+    });
+
+    app.post('/api/admin/users/:id/impersonate', authenticateAdminJWT, async (req, res) => {
+      try {
+        const userId = parseInt(req.params.id);
+        const user = await storage.getPublicUserById(userId);
+
+        if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+
+        const token = generateJWT(user);
+        res.json({ token });
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to impersonate user' });
+      }
+    });
+
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
@@ -99,90 +184,7 @@ app.use((req, res, next) => {
       }
     }
 
-// Admin routes
-app.post('/api/admin/auth/login', loginAdmin);
-app.get('/api/admin/auth/me', authenticateAdminJWT, getCurrentAdmin);
-
-// Admin API routes (all require admin authentication)
-app.get('/api/admin/users', authenticateAdminJWT, async (req, res) => {
-  try {
-    const users = await storage.getAllPublicUsers();
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch users' });
-  }
-});
-
-app.get('/api/admin/orders', authenticateAdminJWT, async (req, res) => {
-  try {
-    const orders = await storage.getAllOrders();
-    res.json(orders);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch orders' });
-  }
-});
-
-app.get('/api/admin/crm/integrations', authenticateAdminJWT, async (req, res) => {
-  try {
-    const integrations = await storage.getAllCrmIntegrations();
-    res.json(integrations);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch integrations' });
-  }
-});
-
-app.get('/api/admin/support/tickets', authenticateAdminJWT, async (req, res) => {
-  try {
-    const tickets = await storage.getAllSupportTickets();
-    res.json(tickets);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch support tickets' });
-  }
-});
-
-app.get('/api/admin/audit-logs', authenticateAdminJWT, async (req, res) => {
-  try {
-    const logs = await storage.getAuditLogs();
-    res.json(logs);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch audit logs' });
-  }
-});
-
-app.patch('/api/admin/users/:id', authenticateAdminJWT, async (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
-    const updates = req.body;
-
-    if (updates.isActive !== undefined) {
-      const user = await storage.updateUserStatus(userId, updates.isActive);
-      res.json(user);
-    } else {
-      res.status(400).json({ error: 'Invalid update parameters' });
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update user' });
-  }
-});
-
-app.post('/api/admin/users/:id/impersonate', authenticateAdminJWT, async (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
-    const user = await storage.getPublicUserById(userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const token = generateJWT(user);
-    res.json({ token });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to impersonate user' });
-  }
-});
-
-
-    // ALWAYS serve the app on port 5000
+// ALWAYS serve the app on port 5000
     // this serves both the API and the client.
     // It is the only port that is not firewalled.
     const port = process.env.PORT || 5000;

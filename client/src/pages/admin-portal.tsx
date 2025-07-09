@@ -49,7 +49,7 @@ export default function AdminPortal() {
 
   // Check if user is admin - redirect if not
   useEffect(() => {
-    if (!isLoading && (!admin && !isAdmin)) {
+    if (!isLoading && (!user && !isAdmin)) {
       toast({
         title: "Access Denied",
         description: "Admin access required. Redirecting to login.",
@@ -58,7 +58,7 @@ export default function AdminPortal() {
       window.location.href = '/login?type=admin&redirect=/admin';
       return;
     }
-  }, [admin, isAdmin, isLoading]);
+  }, [user, isAdmin, isLoading]);
 
   // Show loading while checking auth
   if (isLoading) {
@@ -70,7 +70,7 @@ export default function AdminPortal() {
   }
 
   // Show access denied if not admin
-  if (!admin || !isAdmin) {
+  if (!user || !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="max-w-md w-full mx-4">
@@ -227,9 +227,9 @@ export default function AdminPortal() {
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                {admin?.role?.replace('_', ' ').toUpperCase() || 'ADMIN'}
+                {user?.role?.replace('_', ' ').toUpperCase() || 'ADMIN'}
               </Badge>
-              <span className="text-sm text-gray-600">Welcome, {admin?.name || 'Admin'}</span>
+              <span className="text-sm text-gray-600">Welcome, {user?.name || 'Admin'}</span>
               <Button variant="outline" onClick={logout} size="sm">
                 Logout
               </Button>
