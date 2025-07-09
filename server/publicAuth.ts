@@ -1,14 +1,21 @@
-import { Request, Response, NextFunction } from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { registerUserSchema, loginSchema, type PublicUser } from "@shared/schema";
-import { storage } from "./storage";
-import { sendEmail } from "./utils/sendEmail";
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { Request, Response, NextFunction } from 'express';
+import { storage } from './storage';
+import { insertUserSchema } from '@shared/schema';
+import { z } from 'zod';
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_EXPIRES_IN = '30d';
 
 export interface AuthenticatedRequest extends Request {
-  user?: PublicUser;
+  user?: {
+    id: number;
+    email: string;
+    name: string;
+    role: string;
+    permissions?: any;
+  };
 }
 
 export const hashPassword = async (password: string): Promise<string> => {
@@ -19,11 +26,17 @@ export const comparePassword = async (password: string, hash: string): Promise<b
   return await bcrypt.compare(password, hash);
 };
 
-export const generateJWT = (user: PublicUser): string => {
+export const generateJWT = (user: any) => {
   return jwt.sign(
-    { id: user.id, email: user.email, name: user.name },
+    { 
+      id: user.id, 
+      email: user.email, 
+      name: user.name, 
+      role: user.role,
+      permissions: user.permissions
+    },
     JWT_SECRET,
-    { expiresIn: "30d" }
+    { expiresIn: JWT_EXPIRES_IN }
   );
 };
 
@@ -42,7 +55,7 @@ export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, 
 
     const decoded = verifyJWT(token);
     const user = await storage.getPublicUserById(decoded.id);
-    
+
     if (!user) {
       return res.status(401).json({ error: "Invalid token - user not found" });
     }
@@ -51,7 +64,13 @@ export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, 
       return res.status(403).json({ error: "Account has been deactivated" });
     }
 
-    req.user = user;
+    req.user = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role || 'user',
+      permissions: user.permissions
+    };
     next();
   } catch (error) {
     return res.status(403).json({ error: "Invalid or expired token" });
@@ -60,8 +79,8 @@ export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, 
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const validatedData = registerUserSchema.parse(req.body);
-    
+    const validatedData = insertUserSchema.parse(req.body);
+
     // Check if user already exists
     const existingUser = await storage.getPublicUserByEmail(validatedData.email);
     if (existingUser) {
@@ -70,27 +89,23 @@ export const registerUser = async (req: Request, res: Response) => {
 
     // Hash password
     const passwordHash = await hashPassword(validatedData.password);
-    
+
     // Create user
     const newUser = await storage.createPublicUser({
       name: validatedData.name,
       email: validatedData.email,
       passwordHash,
       provider: "local",
+      role: validatedData.role || 'user',
+      permissions: validatedData.permissions
     });
 
     // Generate JWT
     const token = generateJWT(newUser);
 
-    // Send email notification for new user signup
-    await sendEmail({
-      subject: "New User Signup",
-      text: `A new user just signed up:\n\nName: ${newUser.name}\nEmail: ${newUser.email}`
-    });
-
     // Return user data without password hash
     const { passwordHash: _, ...userWithoutPassword } = newUser;
-    
+
     res.status(201).json({
       token,
       user: userWithoutPassword,
@@ -106,40 +121,50 @@ export const registerUser = async (req: Request, res: Response) => {
 
 export const loginUser = async (req: Request, res: Response) => {
   try {
-    const validatedData = loginSchema.parse(req.body);
-    
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     // Find user by email
-    const user = await storage.getPublicUserByEmail(validatedData.email);
+    const user = await storage.getUserByEmail(email);
     if (!user) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Verify password (only for local auth users)
-    if (!user.passwordHash) {
-      return res.status(401).json({ error: "Please use social login for this account" });
-    }
-    
-    const isValidPassword = await comparePassword(validatedData.password, user.passwordHash);
-    if (!isValidPassword) {
-      return res.status(401).json({ error: "Invalid email or password" });
+    // Check if user is active
+    if (!user.isActive) {
+      return res.status(401).json({ message: 'Account is deactivated' });
     }
 
-    // Generate JWT
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Update last login
+    await storage.updateLastLogin(user.id);
+
+    // Log audit event
+    await logAudit(user.id.toString(), 'login', 'user', user.id.toString(), {
+      email: user.email,
+      role: user.role
+    }, req);
+
+    // Generate JWT token
     const token = generateJWT(user);
 
-    // Return user data without password hash
-    const { passwordHash: _, ...userWithoutPassword } = user;
-    
-    res.json({
-      token,
+    // Return user data (excluding password) and token
+    const { password: _, ...userWithoutPassword } = user;
+    res.json({ 
       user: userWithoutPassword,
+      token 
     });
-  } catch (error: any) {
-    console.error("Login error:", error);
-    if (error.name === "ZodError") {
-      return res.status(400).json({ error: "Validation failed", details: error.errors });
-    }
-    res.status(500).json({ error: "Login failed" });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Login failed' });
   }
 };
 
@@ -155,5 +180,56 @@ export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) =
   } catch (error) {
     console.error("Get current user error:", error);
     res.status(500).json({ error: "Failed to get user data" });
+  }
+};
+
+// Admin role check middleware
+export const requireAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  const adminRoles = ['admin', 'super_admin', 'billing', 'crm_manager'];
+  if (!adminRoles.includes(req.user.role)) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+
+  next();
+};
+
+// Super admin role check
+export const requireSuperAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  if (req.user.role !== 'super_admin') {
+    return res.status(403).json({ error: 'Super admin access required' });
+  }
+
+  next();
+};
+
+// Audit logging helper
+export const logAudit = async (
+  userId: string,
+  action: string,
+  resource: string,
+  resourceId?: string,
+  details?: any,
+  req?: Request
+) => {
+  try {
+    await storage.createAuditLog({
+      userId,
+      action,
+      resource,
+      resourceId,
+      details,
+      ipAddress: req?.ip || req?.socket?.remoteAddress,
+      userAgent: req?.get('User-Agent'),
+    });
+  } catch (error) {
+    console.error('Failed to log audit:', error);
   }
 };
