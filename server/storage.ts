@@ -101,6 +101,11 @@ export interface IStorage {
   // Contact submission management
   updateContactSubmission(id: number, updates: Partial<InsertContactSubmission>): Promise<any>;
   getAllContactSubmissions(): Promise<ContactSubmission[]>;
+
+    // Customer data
+  getUserOrders(userId: number): Promise<any[]>;
+  getUserCrmIntegrations(userId: number): Promise<any[]>;
+  getUserSupportTickets(userId: number): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -415,6 +420,48 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUserIntegration(id: number, userId: number) {
     return await this.deleteCrmIntegration(id, userId.toString());
+  }
+
+  // Customer data
+  async getUserOrders(userId: number): Promise<any[]> {
+    // Mock data for user orders
+    return [
+      {
+        id: 1,
+        userId: userId,
+        total: '299.99',
+        status: 'completed',
+        createdAt: new Date()
+      }
+    ];
+  }
+
+  async getUserCrmIntegrations(userId: number): Promise<any[]> {
+    // Mock data for user CRM integrations
+    return [
+      {
+        id: 1,
+        userId: userId,
+        name: 'Salesforce',
+        type: 'crm',
+        isActive: true,
+        lastSync: new Date()
+      }
+    ];
+  }
+
+  async getUserSupportTickets(userId: number): Promise<any[]> {
+    // Mock data for user support tickets
+    return [
+      {
+        id: 1,
+        userId: userId,
+        title: 'Integration Issue',
+        priority: 'medium',
+        status: 'open',
+        createdAt: new Date()
+      }
+    ];
   }
 }
 

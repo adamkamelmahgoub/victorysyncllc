@@ -158,6 +158,34 @@ app.use((req, res, next) => {
       }
     });
 
+    // Customer API endpoints
+    app.get('/api/user/orders', async (req, res) => {
+      try {
+        const orders = await storage.getUserOrders(1); // For demo purposes
+        res.json(orders);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch orders' });
+      }
+    });
+
+    app.get('/api/crm/integrations', async (req, res) => {
+      try {
+        const integrations = await storage.getUserCrmIntegrations(1); // For demo purposes
+        res.json(integrations);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch integrations' });
+      }
+    });
+
+    app.get('/api/support/tickets', async (req, res) => {
+      try {
+        const tickets = await storage.getUserSupportTickets(1); // For demo purposes
+        res.json(tickets);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch tickets' });
+      }
+    });
+
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";

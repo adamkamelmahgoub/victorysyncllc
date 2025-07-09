@@ -47,6 +47,110 @@ export default function AdminPortal() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Always declare all hooks at the top level
+  const getAuthHeaders = () => ({
+    'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+    'Content-Type': 'application/json'
+  });
+
+  const { data: users = [], isLoading: usersLoading } = useQuery({
+    queryKey: ['/api/admin/users'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/users', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+  });
+
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ['/api/admin/orders'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/orders', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+  });
+
+  const { data: crmIntegrations = [], isLoading: integrationsLoading } = useQuery({
+    queryKey: ['/api/admin/crm/integrations'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/crm/integrations', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch integrations');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+  });
+
+  const { data: supportTickets = [], isLoading: ticketsLoading } = useQuery({
+    queryKey: ['/api/admin/support/tickets'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/support/tickets', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch tickets');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+  });
+
+  const { data: auditLogs = [], isLoading: logsLoading } = useQuery({
+    queryKey: ['/api/admin/audit-logs'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/audit-logs', {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch audit logs');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ userId, updates }: { userId: number; updates: any }) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updates)
+      });
+      if (!response.ok) throw new Error('Failed to update user');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({ title: 'Success', description: 'User updated successfully' });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: 'Failed to update user', variant: 'destructive' });
+    }
+  });
+
+  const impersonateUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await fetch(`/api/admin/users/${userId}/impersonate`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to impersonate user');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      localStorage.setItem('auth_token', data.token);
+      toast({ title: 'Success', description: 'Now impersonating user' });
+      window.location.href = '/dashboard';
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: 'Failed to impersonate user', variant: 'destructive' });
+    }
+  });
+
   // Check if user is admin - redirect if not
   useEffect(() => {
     if (!isLoading && (!user && !isAdmin)) {
@@ -58,7 +162,7 @@ export default function AdminPortal() {
       window.location.href = '/login?type=admin&redirect=/admin';
       return;
     }
-  }, [user, isAdmin, isLoading]);
+  }, [user, isAdmin, isLoading, toast]);
 
   // Show loading while checking auth
   if (isLoading) {
@@ -89,111 +193,7 @@ export default function AdminPortal() {
     );
   }
 
-  // Queries with proper token handling
-  const getAuthHeaders = () => ({
-    'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
-    'Content-Type': 'application/json'
-  });
-
-  const { data: users = [], isLoading: usersLoading } = useQuery({
-    queryKey: ['/api/admin/users'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/users', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch users');
-      return response.json();
-    },
-    enabled: isAdmin,
-  });
-
-  const { data: orders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ['/api/admin/orders'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/orders', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch orders');
-      return response.json();
-    },
-    enabled: isAdmin,
-  });
-
-  const { data: crmIntegrations = [], isLoading: integrationsLoading } = useQuery({
-    queryKey: ['/api/admin/crm/integrations'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/crm/integrations', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch integrations');
-      return response.json();
-    },
-    enabled: isAdmin,
-  });
-
-  const { data: supportTickets = [], isLoading: ticketsLoading } = useQuery({
-    queryKey: ['/api/admin/support/tickets'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/support/tickets', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch tickets');
-      return response.json();
-    },
-    enabled: isAdmin,
-  });
-
-  const { data: auditLogs = [], isLoading: logsLoading } = useQuery({
-    queryKey: ['/api/admin/audit-logs'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/audit-logs', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch audit logs');
-      return response.json();
-    },
-    enabled: isAdmin,
-  });
-
-  // Mutations
-  const updateUserMutation = useMutation({
-    mutationFn: async ({ userId, updates }: { userId: number; updates: any }) => {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(updates)
-      });
-      if (!response.ok) throw new Error('Failed to update user');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      toast({ title: 'Success', description: 'User updated successfully' });
-    },
-    onError: (error) => {
-      toast({ title: 'Error', description: 'Failed to update user', variant: 'destructive' });
-    }
-  });
-
-  const impersonateUserMutation = useMutation({
-    mutationFn: async (userId: number) => {
-      const response = await fetch(`/api/admin/users/${userId}/impersonate`, {
-        method: 'POST',
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to impersonate user');
-      return response.json();
-    },
-    onSuccess: (data) => {
-      localStorage.setItem('token', data.token);
-      localStorage.removeItem('auth_token');
-      toast({ title: 'Success', description: 'Now impersonating user' });
-      window.location.href = '/dashboard';
-    },
-    onError: (error) => {
-      toast({ title: 'Error', description: 'Failed to impersonate user', variant: 'destructive' });
-    }
-  });
+  
 
   // Statistics calculations
   const totalUsers = users.length;

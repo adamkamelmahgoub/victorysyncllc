@@ -56,44 +56,46 @@ export default function CustomerDashboard() {
   });
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
-  // Always declare hooks in the same order
+  // Always declare all hooks at the top level
+  const getAuthHeaders = () => ({
+    'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+    'Content-Type': 'application/json'
+  });
+
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ['/api/user/orders'],
     queryFn: async () => {
       const response = await fetch('/api/user/orders', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
-        'Content-Type': 'application/json' }
+        headers: getAuthHeaders()
       });
       if (!response.ok) throw new Error('Failed to fetch orders');
       return response.json();
     },
-    enabled: !!user && !isLoading,
+    enabled: !!isCustomer,
   });
 
   const { data: crmIntegrations = [], isLoading: integrationsLoading } = useQuery({
     queryKey: ['/api/crm/integrations'],
     queryFn: async () => {
       const response = await fetch('/api/crm/integrations', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
-        'Content-Type': 'application/json' }
+        headers: getAuthHeaders()
       });
       if (!response.ok) throw new Error('Failed to fetch integrations');
       return response.json();
     },
-    enabled: !!user && !isLoading,
+    enabled: !!isCustomer,
   });
 
   const { data: supportTickets = [], isLoading: ticketsLoading } = useQuery({
     queryKey: ['/api/support/tickets'],
     queryFn: async () => {
       const response = await fetch('/api/support/tickets', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
-        'Content-Type': 'application/json' }
+        headers: getAuthHeaders()
       });
       if (!response.ok) throw new Error('Failed to fetch tickets');
       return response.json();
     },
-    enabled: !!user && !isLoading,
+    enabled: !!isCustomer,
   });
 
   const { data: kpiMetrics = [], isLoading: metricsLoading } = useQuery({
@@ -109,7 +111,7 @@ export default function CustomerDashboard() {
     enabled: !!user && !isLoading,
   });
 
-  // Check if user is authenticated and is a customer
+  // Check authentication
   useEffect(() => {
     if (!isLoading && (!user || !isCustomer)) {
       toast({
@@ -150,12 +152,6 @@ export default function CustomerDashboard() {
       </div>
     );
   }
-
-  // Helper function for auth headers
-  const getAuthHeaders = () => ({
-    'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
-    'Content-Type': 'application/json'
-  });
 
   // Mutations
   const createIntegrationMutation = useMutation({
