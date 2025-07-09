@@ -153,7 +153,7 @@ export default function AdminPortal() {
     createUserMutation.mutate(newUserForm);
   };
 
-  // Conditional rendering AFTER all hooks
+  // Early return for non-admin users
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
