@@ -128,7 +128,7 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     // Find user by email
-    const user = await storage.getUserByEmail(email);
+    const user = await storage.getPublicUserByEmail(email);
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -139,7 +139,7 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -157,7 +157,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const token = generateJWT(user);
 
     // Return user data (excluding password) and token
-    const { password: _, ...userWithoutPassword } = user;
+    const { passwordHash: _, ...userWithoutPassword } = user;
     res.json({ 
       user: userWithoutPassword,
       token 

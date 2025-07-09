@@ -19,15 +19,15 @@ export async function initializeAdminUser() {
       email: 'kimo8723@victorysync.com',
       passwordHash: hashedPassword,
       provider: 'local',
+      role: 'super_admin',
       isActive: true,
-      privileges: {
+      permissions: {
         canManageUsers: true,
         canViewAllOrders: true,
         canManageIntegrations: true,
         canViewAnalytics: true,
         canImpersonate: true,
-        canManageSettings: true,
-        role: 'super_admin'
+        canManageSettings: true
       }
     });
 
