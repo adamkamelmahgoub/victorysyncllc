@@ -1,610 +1,226 @@
-
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { 
-  Users, 
-  Settings, 
-  BarChart3, 
-  Shield, 
-  Database, 
-  Mail, 
-  Eye, 
-  UserCheck, 
-  UserX, 
-  Trash2,
-  Plus,
-  Search,
-  Filter,
-  Download,
-  RefreshCw,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Clock,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  Zap
-} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import '../App.css';
 
-export default function AdminPortal() {
-  const { user, logout, isAdmin, isLoading } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [activeTab, setActiveTab] = useState('overview');
+const AdminPortal: React.FC = () => {
+  const navigate = useNavigate();
 
-  // Check if user is admin - redirect if not
-  useEffect(() => {
-    if (!isLoading && (!user || !isAdmin)) {
-      toast({
-        title: "Access Denied",
-        description: "Admin access required. Redirecting to login.",
-        variant: "destructive"
+  // All hooks must be at the top level
+  const [users, setUsers] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [integrations, setIntegrations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Check if user is authenticated as admin
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('adminToken');
+
+      // Fetch users
+      const usersResponse = await fetch('/api/admin/users', {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      window.location.href = '/login?redirect=/admin&type=admin';
+      if (usersResponse.ok) {
+        const usersData = await usersResponse.json();
+        setUsers(usersData);
+      }
+
+      // Fetch orders  
+      const ordersResponse = await fetch('/api/admin/orders', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (ordersResponse.ok) {
+        const ordersData = await ordersResponse.json();
+        setOrders(ordersData);
+      }
+
+      // Fetch integrations
+      const integrationsResponse = await fetch('/api/admin/integrations', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (integrationsResponse.ok) {
+        const integrationsData = await integrationsResponse.json();
+        setIntegrations(integrationsData);
+      }
+
+    } catch (err) {
+      setError('Failed to fetch data');
+      console.error('Error fetching admin data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate('/admin-login');
       return;
     }
-  }, [user, isAdmin, isLoading]);
+    fetchData();
+  }, [isAdmin, navigate]);
 
-  // Show loading while checking auth
-  if (isLoading) {
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('isAdmin');
+    navigate('/admin-login');
+  };
+
+  if (!isAdmin) {
+    return null;
+  }
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading admin data...</p>
+        </div>
       </div>
     );
   }
-
-  // Show access denied if not admin
-  if (!user || !isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="max-w-md w-full mx-4">
-          <CardContent className="p-8 text-center">
-            <Shield className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
-            <p className="text-gray-600 mb-6">
-              You need admin privileges to access this portal.
-            </p>
-            <Button onClick={() => window.location.href = '/login'} className="w-full">
-              Go to Login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Queries with proper token handling
-  const getAuthHeaders = () => ({
-    'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token')}`,
-    'Content-Type': 'application/json'
-  });
-
-  const { data: users = [], isLoading: usersLoading } = useQuery({
-    queryKey: ['/api/admin/users'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/users', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch users');
-      return response.json();
-    },
-    enabled: isAdmin,
-  });
-
-  const { data: orders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ['/api/admin/orders'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/orders', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch orders');
-      return response.json();
-    },
-    enabled: isAdmin,
-  });
-
-  const { data: crmIntegrations = [], isLoading: integrationsLoading } = useQuery({
-    queryKey: ['/api/admin/crm/integrations'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/crm/integrations', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch integrations');
-      return response.json();
-    },
-    enabled: isAdmin,
-  });
-
-  const { data: supportTickets = [], isLoading: ticketsLoading } = useQuery({
-    queryKey: ['/api/admin/support/tickets'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/support/tickets', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch tickets');
-      return response.json();
-    },
-    enabled: isAdmin,
-  });
-
-  const { data: auditLogs = [], isLoading: logsLoading } = useQuery({
-    queryKey: ['/api/admin/audit-logs'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/audit-logs', {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch audit logs');
-      return response.json();
-    },
-    enabled: isAdmin,
-  });
-
-  // Mutations
-  const updateUserMutation = useMutation({
-    mutationFn: async ({ userId, updates }: { userId: number; updates: any }) => {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(updates)
-      });
-      if (!response.ok) throw new Error('Failed to update user');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      toast({ title: 'Success', description: 'User updated successfully' });
-    },
-    onError: (error) => {
-      toast({ title: 'Error', description: 'Failed to update user', variant: 'destructive' });
-    }
-  });
-
-  const impersonateUserMutation = useMutation({
-    mutationFn: async (userId: number) => {
-      const response = await fetch(`/api/admin/users/${userId}/impersonate`, {
-        method: 'POST',
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to impersonate user');
-      return response.json();
-    },
-    onSuccess: (data) => {
-      localStorage.setItem('token', data.token);
-      localStorage.removeItem('auth_token');
-      toast({ title: 'Success', description: 'Now impersonating user' });
-      window.location.href = '/dashboard';
-    },
-    onError: (error) => {
-      toast({ title: 'Error', description: 'Failed to impersonate user', variant: 'destructive' });
-    }
-  });
-
-  // Statistics calculations
-  const totalUsers = users.length;
-  const activeUsers = users.filter((u: any) => u.isActive).length;
-  const totalRevenue = orders.reduce((sum: number, order: any) => sum + parseFloat(order.total || 0), 0);
-  const activeIntegrations = crmIntegrations.filter((i: any) => i.isActive).length;
-  const openTickets = supportTickets.filter((t: any) => t.status === 'open').length;
-
-  // Filter users based on search and status
-  const filteredUsers = users.filter((user: any) => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || 
-                         (filterStatus === 'active' && user.isActive) ||
-                         (filterStatus === 'inactive' && !user.isActive);
-    return matchesSearch && matchesStatus;
-  });
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <Shield className="h-8 w-8 text-purple-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
-                <p className="text-sm text-gray-500">Victory Sync Administration</p>
-              </div>
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center">
+              <h1 className="text-3xl font-bold text-gray-900">Victory Sync Admin Portal</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                {user.role.replace('_', ' ').toUpperCase()}
-              </Badge>
-              <span className="text-sm text-gray-600">Welcome, {user.name}</span>
-              <Button variant="outline" onClick={logout} size="sm">
-                Logout
-              </Button>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="integrations">Integrations</TabsTrigger>
-            <TabsTrigger value="support">Support</TabsTrigger>
-            <TabsTrigger value="audit">Audit</TabsTrigger>
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{totalUsers}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {activeUsers} active users
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">
-                    From {orders.length} orders
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Active Integrations</CardTitle>
-                  <Zap className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{activeIntegrations}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Of {crmIntegrations.length} total
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Open Tickets</CardTitle>
-                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{openTickets}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Needs attention
-                  </p>
-                </CardContent>
-              </Card>
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+              {error}
             </div>
+          )}
 
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {auditLogs.slice(0, 10).map((log: any, index: number) => (
-                    <div key={index} className="flex items-center space-x-4 p-3 rounded-lg bg-gray-50">
-                      <Activity className="h-5 w-5 text-gray-500" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">
-                          {log.action} {log.resource}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(log.createdAt).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Users Tab */}
-          <TabsContent value="users" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>User Management</CardTitle>
-                  <div className="flex space-x-2">
-                    <div className="relative">
-                      <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <Input
-                        placeholder="Search users..."
-                        className="pl-10"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                      />
-                    </div>
-                    <Select value={filterStatus} onValueChange={setFilterStatus}>
-                      <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Filter by status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Users</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Users Card */}
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Total Users</dt>
+                      <dd className="text-lg font-medium text-gray-900">{users.length}</dd>
+                    </dl>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Last Login</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredUsers.map((user: any) => (
-                        <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.name}</TableCell>
-                          <TableCell>{user.email}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{user.role}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={user.isActive ? "default" : "secondary"}>
-                              {user.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => updateUserMutation.mutate({
-                                  userId: user.id,
-                                  updates: { isActive: !user.isActive }
-                                })}
-                              >
-                                {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => impersonateUserMutation.mutate(user.id)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
+              </div>
+            </div>
+
+            {/* Orders Card */}
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
+                      <dd className="text-lg font-medium text-gray-900">{orders.length}</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Integrations Card */}
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Active Integrations</dt>
+                      <dd className="text-lg font-medium text-gray-900">{integrations.length}</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Users Table */}
+          <div className="mt-8">
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="px-4 py-5 sm:px-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">Recent Users</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">Latest user registrations</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users.slice(0, 5).map((user: any, index: number) => (
+                      <tr key={user.id || index}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                              <span className="text-sm font-medium text-gray-700">
+                                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                              </span>
                             </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Orders Tab */}
-          <TabsContent value="orders" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Order ID</TableHead>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Total</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {orders.map((order: any) => (
-                        <TableRow key={order.id}>
-                          <TableCell className="font-medium">#{order.id}</TableCell>
-                          <TableCell>{order.userId}</TableCell>
-                          <TableCell>${parseFloat(order.total).toLocaleString()}</TableCell>
-                          <TableCell>
-                            <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
-                              {order.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                          <TableCell>
-                            <Button variant="outline" size="sm">
-                              View Details
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Integrations Tab */}
-          <TabsContent value="integrations" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>CRM Integrations</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Integration</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Last Sync</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {crmIntegrations.map((integration: any) => (
-                        <TableRow key={integration.id}>
-                          <TableCell>{integration.userId}</TableCell>
-                          <TableCell className="font-medium">{integration.name}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{integration.type}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={integration.isActive ? 'default' : 'secondary'}>
-                              {integration.isActive ? 'Active' : 'Inactive'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {integration.lastSync ? new Date(integration.lastSync).toLocaleDateString() : 'Never'}
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="outline" size="sm">
-                              <RefreshCw className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Support Tab */}
-          <TabsContent value="support" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Support Tickets</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Ticket ID</TableHead>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Priority</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {supportTickets.map((ticket: any) => (
-                        <TableRow key={ticket.id}>
-                          <TableCell className="font-medium">#{ticket.id}</TableCell>
-                          <TableCell>{ticket.userId}</TableCell>
-                          <TableCell>{ticket.title}</TableCell>
-                          <TableCell>
-                            <Badge variant={ticket.priority === 'high' ? 'destructive' : 'secondary'}>
-                              {ticket.priority}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={ticket.status === 'open' ? 'default' : 'secondary'}>
-                              {ticket.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{new Date(ticket.createdAt).toLocaleDateString()}</TableCell>
-                          <TableCell>
-                            <Button variant="outline" size="sm">
-                              Respond
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Audit Tab */}
-          <TabsContent value="audit" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Audit Logs</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Action</TableHead>
-                        <TableHead>Resource</TableHead>
-                        <TableHead>Details</TableHead>
-                        <TableHead>Timestamp</TableHead>
-                        <TableHead>IP Address</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {auditLogs.map((log: any) => (
-                        <TableRow key={log.id}>
-                          <TableCell>{log.userId}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{log.action}</Badge>
-                          </TableCell>
-                          <TableCell>{log.resource}</TableCell>
-                          <TableCell>{log.resourceId || '-'}</TableCell>
-                          <TableCell>{new Date(log.createdAt).toLocaleString()}</TableCell>
-                          <TableCell>{log.ipAddress || '-'}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">{user.name || 'Unknown'}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                            Active
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default AdminPortal;
