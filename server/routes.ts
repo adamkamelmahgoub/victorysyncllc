@@ -2,8 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
-import { registerUser, loginUser, getCurrentUser, authenticateJWT, generateJWT, requireAdmin, requireSuperAdmin, logAudit, type AuthenticatedRequest } from "./publicAuth";
-import { initializeAdminUser } from "./initAdmin";
+import { registerUser, loginUser, getCurrentUser, authenticateJWT, generateJWT, type AuthenticatedRequest } from "./publicAuth";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
@@ -17,7 +16,14 @@ if (process.env.STRIPE_SECRET_KEY) {
   });
 }
 
-// Remove duplicate admin middleware - using the one from publicAuth.ts
+// Admin middleware
+const requireAdmin = (req: any, res: any, next: any) => {
+  // Simple admin check - in production this should be more robust
+  if (req.headers['x-admin-auth'] !== 'admin123') {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+  next();
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint - must be first to avoid being caught by other routes
@@ -53,9 +59,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Initialize default packages
   await initializePackages();
-
-  // Initialize admin user
-  await initializeAdminUser();
 
   // Public authentication routes (new system)
   app.post('/api/auth/register', registerUser);
@@ -219,10 +222,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes - protected by JWT authentication
-  app.post("/api/admin/users", authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  // Admin routes - protected by authentication
+  app.post("/api/admin/users", requireAdmin, async (req: any, res: any) => {
     try {
-      const { name, email, password, role, isActive, permissions } = req.body;
+      const { name, email, password, role, isActive } = req.body;
       
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
@@ -239,25 +242,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email,
         password: hashedPassword,
         role: role || 'user',
-        isActive: isActive !== false,
-        permissions: permissions || {}
+        isActive: isActive !== false
       });
-
-      // Log audit event
-      await logAudit(req.user!.id.toString(), 'create', 'user', user.id.toString(), {
-        createdUser: { name, email, role },
-        createdBy: req.user!.email
-      }, req);
       
-      const { password: _, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      res.json(user);
     } catch (error) {
       console.error("Error creating user:", error);
       res.status(500).json({ message: "Failed to create user" });
     }
   });
 
-  app.get("/api/admin/users", authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get("/api/admin/users", requireAdmin, async (req: any, res: any) => {
     try {
       const users = await storage.getAllPublicUsers();
       res.json(users);
@@ -267,7 +262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/orders", authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get("/api/admin/orders", requireAdmin, async (req: any, res: any) => {
     try {
       const orders = await storage.getAllOrders();
       res.json(orders);
@@ -277,7 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/packages", authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get("/api/admin/packages", requireAdmin, async (req: any, res: any) => {
     try {
       const packages = await storage.getPackages();
       res.json(packages);
@@ -700,262 +695,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching analytics:", error);
       res.status(500).json({ message: "Failed to fetch analytics" });
-    }
-  });
-
-  // CRM Integration routes
-  app.get('/api/crm/integrations', authenticateJWT as any, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = req.user!.id.toString();
-      const integrations = await storage.getCrmIntegrations(userId);
-      res.json(integrations);
-    } catch (error) {
-      console.error("Error fetching CRM integrations:", error);
-      res.status(500).json({ message: "Failed to fetch integrations" });
-    }
-  });
-
-  app.post('/api/crm/integrations', authenticateJWT as any, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = req.user!.id.toString();
-      const { type, name, apiKey, accessToken, refreshToken, webhookUrl, config } = req.body;
-      
-      const integration = await storage.createCrmIntegration({
-        userId,
-        type,
-        name,
-        apiKey,
-        accessToken,
-        refreshToken,
-        webhookUrl,
-        config: config || {},
-        isActive: true
-      });
-
-      await logAudit(userId, 'create', 'crm_integration', integration.id.toString(), {
-        type, name
-      }, req);
-      
-      res.json(integration);
-    } catch (error) {
-      console.error("Error creating CRM integration:", error);
-      res.status(500).json({ message: "Failed to create integration" });
-    }
-  });
-
-  app.put('/api/crm/integrations/:id', authenticateJWT as any, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const integrationId = parseInt(req.params.id);
-      const updates = req.body;
-      
-      const integration = await storage.updateCrmIntegration(integrationId, updates);
-      if (!integration) {
-        return res.status(404).json({ message: "Integration not found" });
-      }
-
-      await logAudit(req.user!.id.toString(), 'update', 'crm_integration', integrationId.toString(), {
-        updates
-      }, req);
-      
-      res.json(integration);
-    } catch (error) {
-      console.error("Error updating CRM integration:", error);
-      res.status(500).json({ message: "Failed to update integration" });
-    }
-  });
-
-  app.delete('/api/crm/integrations/:id', authenticateJWT as any, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const integrationId = parseInt(req.params.id);
-      const userId = req.user!.id.toString();
-      
-      const success = await storage.deleteCrmIntegration(integrationId, userId);
-      if (!success) {
-        return res.status(404).json({ message: "Integration not found" });
-      }
-
-      await logAudit(userId, 'delete', 'crm_integration', integrationId.toString(), {}, req);
-      
-      res.json({ message: "Integration deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting CRM integration:", error);
-      res.status(500).json({ message: "Failed to delete integration" });
-    }
-  });
-
-  // Support Tickets
-  app.get('/api/support/tickets', authenticateJWT as any, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = req.user!.id.toString();
-      const tickets = await storage.getSupportTickets(userId);
-      res.json(tickets);
-    } catch (error) {
-      console.error("Error fetching support tickets:", error);
-      res.status(500).json({ message: "Failed to fetch tickets" });
-    }
-  });
-
-  app.post('/api/support/tickets', authenticateJWT as any, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = req.user!.id.toString();
-      const { title, description, priority } = req.body;
-      
-      const ticket = await storage.createSupportTicket({
-        userId,
-        title,
-        description,
-        priority: priority || 'medium',
-        status: 'open'
-      });
-
-      await logAudit(userId, 'create', 'support_ticket', ticket.id.toString(), {
-        title, priority
-      }, req);
-      
-      res.json(ticket);
-    } catch (error) {
-      console.error("Error creating support ticket:", error);
-      res.status(500).json({ message: "Failed to create ticket" });
-    }
-  });
-
-  // KPI Metrics
-  app.get('/api/kpi/metrics', authenticateJWT as any, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = req.user!.id.toString();
-      const { startDate, endDate } = req.query;
-      
-      const start = startDate ? new Date(startDate as string) : undefined;
-      const end = endDate ? new Date(endDate as string) : undefined;
-      
-      const metrics = await storage.getKpiMetrics(userId, start, end);
-      res.json(metrics);
-    } catch (error) {
-      console.error("Error fetching KPI metrics:", error);
-      res.status(500).json({ message: "Failed to fetch metrics" });
-    }
-  });
-
-  // Admin-only routes
-  app.get('/api/admin/crm/integrations', authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const integrations = await storage.getAllCrmIntegrations();
-      res.json(integrations);
-    } catch (error) {
-      console.error("Error fetching all CRM integrations:", error);
-      res.status(500).json({ message: "Failed to fetch integrations" });
-    }
-  });
-
-  app.get('/api/admin/support/tickets', authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const tickets = await storage.getAllSupportTickets();
-      res.json(tickets);
-    } catch (error) {
-      console.error("Error fetching all support tickets:", error);
-      res.status(500).json({ message: "Failed to fetch tickets" });
-    }
-  });
-
-  app.put('/api/admin/support/tickets/:id', authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const ticketId = parseInt(req.params.id);
-      const updates = req.body;
-      
-      const ticket = await storage.updateSupportTicket(ticketId, {
-        ...updates,
-        assignedTo: req.user!.id.toString()
-      });
-
-      await logAudit(req.user!.id.toString(), 'update', 'support_ticket', ticketId.toString(), {
-        updates
-      }, req);
-      
-      res.json(ticket);
-    } catch (error) {
-      console.error("Error updating support ticket:", error);
-      res.status(500).json({ message: "Failed to update ticket" });
-    }
-  });
-
-  app.get('/api/admin/kpi/metrics', authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const { startDate, endDate } = req.query;
-      
-      const start = startDate ? new Date(startDate as string) : undefined;
-      const end = endDate ? new Date(endDate as string) : undefined;
-      
-      const metrics = await storage.getAllKpiMetrics(start, end);
-      res.json(metrics);
-    } catch (error) {
-      console.error("Error fetching all KPI metrics:", error);
-      res.status(500).json({ message: "Failed to fetch metrics" });
-    }
-  });
-
-  app.get('/api/admin/audit-logs', authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const limit = parseInt(req.query.limit as string) || 100;
-      const logs = await storage.getAuditLogs(limit);
-      res.json(logs);
-    } catch (error) {
-      console.error("Error fetching audit logs:", error);
-      res.status(500).json({ message: "Failed to fetch audit logs" });
-    }
-  });
-
-  app.post('/api/admin/users/:id/impersonate', authenticateJWT as any, requireSuperAdmin, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const userToImpersonate = await storage.getUserById(userId);
-
-      if (!userToImpersonate) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      await logAudit(req.user!.id.toString(), 'impersonate', 'user', userId.toString(), {
-        impersonatedUser: userToImpersonate.email,
-        impersonatedBy: req.user!.email
-      }, req);
-
-      // Generate JWT token for impersonation
-      const token = generateJWT(userToImpersonate);
-      const { password: _, ...userWithoutPassword } = userToImpersonate;
-      res.json({ token, user: userWithoutPassword });
-    } catch (error) {
-      console.error("Error impersonating user:", error);
-      res.status(500).json({ message: "Failed to impersonate user" });
-    }
-  });
-
-  app.get('/api/admin/contact-submissions', authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const submissions = await storage.getAllContactSubmissions();
-      res.json(submissions);
-    } catch (error) {
-      console.error("Error fetching contact submissions:", error);
-      res.status(500).json({ message: "Failed to fetch contact submissions" });
-    }
-  });
-
-  app.put('/api/admin/contact-submissions/:id', authenticateJWT as any, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const submissionId = parseInt(req.params.id);
-      const updates = req.body;
-      
-      const submission = await storage.updateContactSubmission(submissionId, {
-        ...updates,
-        assignedTo: req.user!.id.toString()
-      });
-
-      await logAudit(req.user!.id.toString(), 'update', 'contact_submission', submissionId.toString(), {
-        updates
-      }, req);
-      
-      res.json(submission);
-    } catch (error) {
-      console.error("Error updating contact submission:", error);
-      res.status(500).json({ message: "Failed to update contact submission" });
     }
   });
 
