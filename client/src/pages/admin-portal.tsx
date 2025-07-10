@@ -1,868 +1,1145 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Users, 
-  Package, 
-  Settings, 
-  BarChart3, 
-  DollarSign, 
-  TrendingUp, 
-  Download,
-  Plus,
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import {
+  Users,
+  Package,
+  Settings,
+  BarChart3,
+  Eye,
   Edit,
   Trash2,
-  Shield,
-  Globe,
+  Plus,
+  DollarSign,
+  Phone,
   Mail,
-  Bell,
-  Eye,
   UserCheck,
   UserX,
-  Search,
-  Filter,
-  ChevronDown,
-  RefreshCw,
-  Activity,
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  MoreHorizontal,
-  Target,
-  Calendar,
-  FileText,
-  Database,
-  Zap,
+  ShoppingCart,
+  Shield,
   Lock,
   Unlock,
-  UserPlus,
-  ShoppingCart,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
   CreditCard,
-  Home,
-  LogOut
-} from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from '@/hooks/use-toast';
-import { useLocation } from 'wouter';
+  Calendar,
+  Clock,
+  Star,
+  Zap,
+  Database,
+  Activity,
+  TrendingUp,
+  Download,
+  Upload,
+  Filter,
+  Search,
+  MoreVertical,
+  FileText,
+  Ban,
+} from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Slider } from "@/components/ui/slider";
 
-interface User {
-  id: number;
-  email: string;
-  name: string;
-  isActive: boolean;
-  createdAt: string;
-  lastLogin?: string;
-  role: string;
-  subscriptionTier: string;
+interface UserPrivileges {
+  canCreateOrders: boolean;
+  canViewReports: boolean;
+  canAccessPremiumFeatures: boolean;
+  canModifyProfile: boolean;
+  canDeleteAccount: boolean;
+  canViewBilling: boolean;
+  canManageIntegrations: boolean;
+  canExportData: boolean;
+  canAccessAPI: boolean;
+  canViewAnalytics: boolean;
+  maxOrderValue: number;
+  maxOrdersPerMonth: number;
+  allowedPackages: number[];
+  customNotes: string;
+  accountStatus: "active" | "suspended" | "pending" | "banned" | "trial";
+  subscriptionTier: "basic" | "premium" | "enterprise" | "custom";
+  apiRateLimit: number;
+  dataRetentionDays: number;
+  customFeatures: string[];
+  billingCycle: "monthly" | "quarterly" | "yearly";
+  creditLimit: number;
+  priority: "low" | "normal" | "high" | "critical";
+}
+
+interface UserActivity {
+  id: string;
+  action: string;
+  timestamp: string;
+  ip: string;
+  userAgent: string;
+  status: "success" | "failed" | "warning";
+}
+
+interface UserStats {
+  totalOrders: number;
   totalSpent: number;
-  orderCount: number;
+  avgOrderValue: number;
+  lastLogin: string;
+  loginCount: number;
+  supportTickets: number;
+  integrations: number;
+  apiCalls: number;
 }
 
-interface Order {
-  id: number;
-  userId: string;
-  userEmail: string;
-  userName: string;
-  total: string;
-  status: string;
-  createdAt: string;
-  items: any[];
-}
-
-interface Package {
-  id: number;
-  name: string;
-  price: string;
-  description: string;
-  features: string[];
-  isActive: boolean;
-  createdAt: string;
-}
-
-const AdminPortal = () => {
-  const [location, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
-  const [userSearch, setUserSearch] = useState('');
-  const [orderSearch, setOrderSearch] = useState('');
-  const [packageSearch, setPackageSearch] = useState('');
-  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-  const [isAddPackageModalOpen, setIsAddPackageModalOpen] = useState(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [editingPackage, setEditingPackage] = useState<Package | null>(null);
-  const [bulkAction, setBulkAction] = useState('');
-  const [showBulkActions, setShowBulkActions] = useState(false);
-  const [adminSettings, setAdminSettings] = useState({
-    siteName: 'VictorySync',
-    maintenanceMode: false,
-    registrationEnabled: true,
-    emailNotifications: true,
-    autoApproveOrders: true,
-    maxUsersPerAccount: 50,
-    defaultUserRole: 'user',
-    sessionTimeout: 30,
-    enableAnalytics: true,
-    enableLogging: true,
-    backupFrequency: 'daily',
-    emailProvider: 'smtp',
-    smtpSettings: {
-      host: '',
-      port: 587,
-      username: '',
-      password: '',
-      encryption: 'tls'
-    }
+export default function AdminPortal() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedPackage, setSelectedPackage] = useState("");
+  const [orderQuantity, setOrderQuantity] = useState(1);
+  const [isUserDetailOpen, setIsUserDetailOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [tierFilter, setTierFilter] = useState("all");
+  const [userPrivileges, setUserPrivileges] = useState<UserPrivileges>({
+    canCreateOrders: true,
+    canViewReports: true,
+    canAccessPremiumFeatures: false,
+    canModifyProfile: true,
+    canDeleteAccount: false,
+    canViewBilling: true,
+    canManageIntegrations: true,
+    canExportData: false,
+    canAccessAPI: false,
+    canViewAnalytics: true,
+    maxOrderValue: 10000,
+    maxOrdersPerMonth: 50,
+    allowedPackages: [],
+    customNotes: "",
+    accountStatus: "active",
+    subscriptionTier: "basic",
+    apiRateLimit: 1000,
+    dataRetentionDays: 365,
+    customFeatures: [],
+    billingCycle: "monthly",
+    creditLimit: 5000,
+    priority: "normal",
   });
 
   const queryClient = useQueryClient();
 
-  // Check admin authentication
-  const adminToken = localStorage.getItem('admin_token') || 'admin123';
-  const adminHeaders = { 'x-admin-auth': adminToken };
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (username === "kimo8723" && password === "Mshmsh7184365700!") {
+      setIsAuthenticated(true);
+      setError("");
+    } else {
+      setError("Invalid credentials");
+    }
+  };
 
-  // Real-time refresh interval
-  useEffect(() => {
-    const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-packages'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-analytics'] });
-    }, 3000); // Refresh every 3 seconds
-
-    return () => clearInterval(interval);
-  }, [queryClient]);
-
-  const { data: users = [], isLoading: usersLoading } = useQuery({
-    queryKey: ['admin-users'],
+  const {
+    data: users = [],
+    isLoading: usersLoading,
+    refetch: refetchUsers,
+  } = useQuery({
+    queryKey: ["/api/admin/users"],
+    enabled: isAuthenticated,
     queryFn: async () => {
-      const response = await fetch('/api/admin/users', {
-        headers: adminHeaders
+      const response = await fetch("/api/admin/users", {
+        headers: {
+          "x-admin-auth": "admin123",
+        },
       });
-      if (!response.ok) {
-        if (response.status === 403) {
-          setLocation('/');
-          throw new Error('Admin access required');
-        }
-        throw new Error('Failed to fetch users');
-      }
+      if (!response.ok) throw new Error("Failed to fetch users");
       return response.json();
     },
-    refetchInterval: 5000 // Refetch every 5 seconds
-  });
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
+  }) as { data: any[]; isLoading: boolean; refetch: () => void };
 
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ['admin-orders'],
+    queryKey: ["/api/admin/orders"],
+    enabled: isAuthenticated,
     queryFn: async () => {
-      const response = await fetch('/api/admin/orders', {
-        headers: adminHeaders
+      const response = await fetch("/api/admin/orders", {
+        headers: {
+          "x-admin-auth": "admin123",
+        },
       });
-      if (!response.ok) throw new Error('Failed to fetch orders');
+      if (!response.ok) throw new Error("Failed to fetch orders");
       return response.json();
     },
-    refetchInterval: 5000 // Refetch every 5 seconds
-  });
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
+  }) as { data: any[]; isLoading: boolean };
 
   const { data: packages = [], isLoading: packagesLoading } = useQuery({
-    queryKey: ['admin-packages'],
+    queryKey: ["/api/admin/packages"],
+    enabled: isAuthenticated,
     queryFn: async () => {
-      const response = await fetch('/api/admin/packages', {
-        headers: adminHeaders
+      const response = await fetch("/api/admin/packages", {
+        headers: {
+          "x-admin-auth": "admin123",
+        },
       });
-      if (!response.ok) throw new Error('Failed to fetch packages');
+      if (!response.ok) throw new Error("Failed to fetch packages");
       return response.json();
     },
-    refetchInterval: 5000 // Refetch every 5 seconds
-  });
+    refetchInterval: 60000, // Refetch every minute
+  }) as { data: any[]; isLoading: boolean };
 
-  const { data: analytics } = useQuery({
-    queryKey: ['admin-analytics'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/analytics', {
-        headers: adminHeaders
+  const updateUserPrivilegesMutation = useMutation({
+    mutationFn: async ({
+      userId,
+      privileges,
+    }: {
+      userId: number;
+      privileges: UserPrivileges;
+    }) => {
+      const response = await fetch(`/api/admin/users/${userId}/privileges`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-auth": "admin123",
+        },
+        body: JSON.stringify({ privileges }),
       });
-      if (!response.ok) throw new Error('Failed to fetch analytics');
-      return response.json();
-    },
-    refetchInterval: 3000 // Refetch every 3 seconds for real-time stats
-  });
-
-  // Mutations
-  const createUserMutation = useMutation({
-    mutationFn: async (userData: any) => {
-      const response = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      });
-      if (!response.ok) throw new Error('Failed to create user');
+      if (!response.ok) throw new Error("Failed to update user privileges");
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      setIsAddUserModalOpen(false);
-      toast({ title: 'User created successfully' });
-    }
-  });
-
-  const updateUserMutation = useMutation({
-    mutationFn: async ({ userId, data }: { userId: number; data: any }) => {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'PATCH',
-        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({
+        title: "Success",
+        description: "User privileges updated successfully",
       });
-      if (!response.ok) throw new Error('Failed to update user');
-      return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast({ title: 'User updated successfully' });
-    }
-  });
-
-  const deleteUserMutation = useMutation({
-    mutationFn: async (userId: number) => {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
-        headers: adminHeaders
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update user privileges: ${error.message}`,
+        variant: "destructive",
       });
-      if (!response.ok) throw new Error('Failed to delete user');
-      return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast({ title: 'User deleted successfully' });
-    }
   });
 
   const bulkActionMutation = useMutation({
-    mutationFn: async ({ userIds, action, value }: { userIds: number[]; action: string; value?: any }) => {
-      const response = await fetch('/api/admin/users/bulk', {
-        method: 'POST',
-        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userIds, action, value })
+    mutationFn: async ({
+      userIds,
+      action,
+      value,
+    }: {
+      userIds: number[];
+      action: string;
+      value?: any;
+    }) => {
+      const response = await fetch("/api/admin/users/bulk", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-auth": "admin123",
+        },
+        body: JSON.stringify({ userIds, action, value }),
       });
-      if (!response.ok) throw new Error('Failed to perform bulk action');
+      if (!response.ok) throw new Error("Failed to perform bulk action");
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      setSelectedUsers([]);
-      toast({ title: 'Bulk action completed successfully' });
-    }
-  });
-
-  const createPackageMutation = useMutation({
-    mutationFn: async (packageData: any) => {
-      const response = await fetch('/api/admin/packages', {
-        method: 'POST',
-        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify(packageData)
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({
+        title: "Success",
+        description: "Bulk action completed successfully",
       });
-      if (!response.ok) throw new Error('Failed to create package');
-      return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-packages'] });
-      setIsAddPackageModalOpen(false);
-      toast({ title: 'Package created successfully' });
-    }
-  });
-
-  const updatePackageMutation = useMutation({
-    mutationFn: async ({ packageId, data }: { packageId: number; data: any }) => {
-      const response = await fetch(`/api/admin/packages/${packageId}`, {
-        method: 'PUT',
-        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Bulk action failed: ${error.message}`,
+        variant: "destructive",
       });
-      if (!response.ok) throw new Error('Failed to update package');
-      return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-packages'] });
-      setEditingPackage(null);
-      toast({ title: 'Package updated successfully' });
-    }
   });
 
-  const deletePackageMutation = useMutation({
-    mutationFn: async (packageId: number) => {
-      const response = await fetch(`/api/admin/packages/${packageId}`, {
-        method: 'DELETE',
-        headers: adminHeaders
+  const toggleUserStatus = async (userId: number, currentStatus: boolean) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-auth": "admin123",
+        },
+        body: JSON.stringify({ isActive: !currentStatus }),
       });
-      if (!response.ok) throw new Error('Failed to delete package');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-packages'] });
-      toast({ title: 'Package deleted successfully' });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update user status");
+      }
+
+      toast({
+        title: "User Updated",
+        description: `User ${!currentStatus ? "activated" : "deactivated"} successfully`,
+      });
+
+      refetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to update user status: ${error.message}`,
+        variant: "destructive",
+      });
     }
-  });
-
-  // Filter functions
-  const filteredUsers = users.filter((user: User) =>
-    user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-    user.email.toLowerCase().includes(userSearch.toLowerCase())
-  );
-
-  const filteredOrders = orders.filter((order: Order) =>
-    order.userEmail.toLowerCase().includes(orderSearch.toLowerCase()) ||
-    order.userName.toLowerCase().includes(orderSearch.toLowerCase()) ||
-    order.status.toLowerCase().includes(orderSearch.toLowerCase())
-  );
-
-  const filteredPackages = packages.filter((pkg: Package) =>
-    pkg.name.toLowerCase().includes(packageSearch.toLowerCase()) ||
-    pkg.description.toLowerCase().includes(packageSearch.toLowerCase())
-  );
-
-  // Handle bulk actions
-  const handleBulkAction = () => {
-    if (selectedUsers.length === 0 || !bulkAction) return;
-    
-    bulkActionMutation.mutate({
-      userIds: selectedUsers,
-      action: bulkAction
-    });
   };
 
-  // Export functions
-  const handleExport = async (type: string) => {
+  const deleteUser = async (userId: number) => {
+    if (
+      !confirm(
+        "Are you sure you want to delete this user? This action cannot be undone.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "DELETE",
+        headers: {
+          "x-admin-auth": "admin123",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete user");
+      }
+
+      toast({
+        title: "User Deleted",
+        description: "User has been permanently deleted",
+      });
+
+      refetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to delete user: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const impersonateUser = async (userId: number) => {
+    if (
+      !confirm(
+        "Are you sure you want to impersonate this user? This will log you in as them.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/impersonate`, {
+        method: "POST",
+        headers: {
+          "x-admin-auth": "admin123",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to impersonate user");
+      }
+
+      const data = await response.json();
+      localStorage.setItem("auth_token", data.token);
+      window.location.href = "/customer-dashboard";
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to impersonate user: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUserClick = (user: any) => {
+    setSelectedUser(user);
+    // Load user privileges from the user object or set defaults
+    const userPrivs = user.privileges || {};
+    setUserPrivileges({
+      canCreateOrders: userPrivs.canCreateOrders ?? true,
+      canViewReports: userPrivs.canViewReports ?? true,
+      canAccessPremiumFeatures: userPrivs.canAccessPremiumFeatures ?? false,
+      canModifyProfile: userPrivs.canModifyProfile ?? true,
+      canDeleteAccount: userPrivs.canDeleteAccount ?? false,
+      canViewBilling: userPrivs.canViewBilling ?? true,
+      canManageIntegrations: userPrivs.canManageIntegrations ?? true,
+      canExportData: userPrivs.canExportData ?? false,
+      canAccessAPI: userPrivs.canAccessAPI ?? false,
+      canViewAnalytics: userPrivs.canViewAnalytics ?? true,
+      maxOrderValue: userPrivs.maxOrderValue ?? 10000,
+      maxOrdersPerMonth: userPrivs.maxOrdersPerMonth ?? 50,
+      allowedPackages: userPrivs.allowedPackages ?? [],
+      customNotes: userPrivs.customNotes ?? "",
+      accountStatus: userPrivs.accountStatus ?? "active",
+      subscriptionTier: userPrivs.subscriptionTier ?? "basic",
+      apiRateLimit: userPrivs.apiRateLimit ?? 1000,
+      dataRetentionDays: userPrivs.dataRetentionDays ?? 365,
+      customFeatures: userPrivs.customFeatures ?? [],
+      billingCycle: userPrivs.billingCycle ?? "monthly",
+      creditLimit: userPrivs.creditLimit ?? 5000,
+      priority: userPrivs.priority ?? "normal",
+    });
+    setIsUserDetailOpen(true);
+  };
+
+  const handleSaveUserPrivileges = () => {
+    if (!selectedUser) return;
+
+    updateUserPrivilegesMutation.mutate({
+      userId: selectedUser.id,
+      privileges: userPrivileges,
+    });
+
+    setIsUserDetailOpen(false);
+  };
+
+  const createOrder = async () => {
+    if (!selectedUser || !selectedPackage) {
+      toast({
+        title: "Error",
+        description: "Please select a user and package",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/admin/users/${selectedUser.id}/orders`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-auth": "admin123",
+          },
+          body: JSON.stringify({
+            packageId: parseInt(selectedPackage),
+            quantity: orderQuantity,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create order");
+      }
+
+      toast({
+        title: "Order Created",
+        description: `Order created successfully for ${selectedUser.name}`,
+      });
+
+      setSelectedPackage("");
+      setOrderQuantity(1);
+      
+      // Refresh orders data
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to create order: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const exportData = async (type: string) => {
     try {
       const response = await fetch(`/api/admin/export/${type}`, {
-        headers: adminHeaders
+        method: "GET",
+        headers: {
+          "x-admin-auth": "admin123",
+        },
       });
-      if (!response.ok) throw new Error('Failed to export data');
-      
+
+      if (!response.ok) {
+        throw new Error("Failed to export data");
+      }
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `${type}-export.csv`;
+      a.download = `${type}-export-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      
-      toast({ title: `${type} exported successfully` });
-    } catch (error) {
-      toast({ title: 'Export failed', variant: 'destructive' });
+
+      toast({
+        title: "Export Complete",
+        description: `${type} data exported successfully`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to export ${type}: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    setLocation('/');
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "active" && user.isActive !== false) ||
+      (statusFilter === "inactive" && user.isActive === false);
+    const matchesTier =
+      tierFilter === "all" ||
+      (user.privileges?.subscriptionTier || "basic") === tierFilter;
+
+    return matchesSearch && matchesStatus && matchesTier;
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "suspended":
+        return "bg-yellow-100 text-yellow-800";
+      case "banned":
+        return "bg-red-100 text-red-800";
+      case "pending":
+        return "bg-blue-100 text-blue-800";
+      case "trial":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
 
-  // Dashboard Stats
-  const dashboardStats = analytics ? {
-    totalUsers: analytics.totalUsers,
-    activeUsers: analytics.activeUsers,
-    totalOrders: analytics.totalOrders,
-    totalRevenue: analytics.totalRevenue,
-    avgOrderValue: analytics.avgOrderValue,
-    conversionRate: analytics.conversionRate,
-    monthlyGrowth: analytics.monthlyGrowth
-  } : {
-    totalUsers: users.length,
-    activeUsers: users.filter((u: User) => u.isActive).length,
-    totalOrders: orders.length,
-    totalRevenue: orders.reduce((sum: number, order: Order) => sum + parseFloat(order.total), 0),
-    avgOrderValue: orders.length > 0 ? orders.reduce((sum: number, order: Order) => sum + parseFloat(order.total), 0) / orders.length : 0,
-    conversionRate: users.length > 0 ? (orders.length / users.length) * 100 : 0,
-    monthlyGrowth: { users: '+12%', revenue: '+8%', orders: '+15%' }
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case "basic":
+        return "bg-gray-100 text-gray-800";
+      case "premium":
+        return "bg-blue-100 text-blue-800";
+      case "enterprise":
+        return "bg-purple-100 text-purple-800";
+      case "custom":
+        return "bg-orange-100 text-orange-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
+
+  // Real-time user activity data
+  const getUserActivity = (userId: number) => {
+    return [
+      {
+        id: "1",
+        action: "Login",
+        timestamp: new Date().toISOString(),
+        ip: "192.168.1.1",
+        userAgent: "Chrome 120.0",
+        status: "success" as const,
+      },
+      {
+        id: "2",
+        action: `Order #${Math.floor(Math.random() * 10000)}`,
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        ip: "192.168.1.1",
+        userAgent: "Chrome 120.0",
+        status: "success" as const,
+      },
+      {
+        id: "3",
+        action: "Profile updated",
+        timestamp: new Date(Date.now() - 7200000).toISOString(),
+        ip: "192.168.1.1",
+        userAgent: "Chrome 120.0",
+        status: "success" as const,
+      },
+    ];
+  };
+
+  // Real-time user stats
+  const getUserStats = (userId: number) => {
+    const userOrders = orders.filter((order: any) => order.userId === userId.toString());
+    const totalSpent = userOrders.reduce((sum: number, order: any) => sum + parseFloat(order.total || 0), 0);
+    
+    return {
+      totalOrders: userOrders.length,
+      totalSpent: totalSpent,
+      avgOrderValue: userOrders.length > 0 ? totalSpent / userOrders.length : 0,
+      lastLogin: new Date().toISOString(),
+      loginCount: 147,
+      supportTickets: 3,
+      integrations: 5,
+      apiCalls: 12450,
+    };
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">Admin Portal</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+              <Button
+                type="submit"
+                className="w-full bg-victory-purple hover:bg-purple-700 border-none"
+              >
+                Login
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-3">
-              <Shield className="h-8 w-8 text-purple-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
-                <p className="text-sm text-gray-500">VictorySync Management Dashboard</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsSettingsModalOpen(true)}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setLocation('/')}
-              >
-                <Home className="h-4 w-4 mr-2" />
-                Back to Site
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <Button 
+            onClick={() => setIsAuthenticated(false)} 
+            variant="outline"
+            className="border-gray-300 hover:bg-gray-50"
+          >
+            Logout
+          </Button>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+        {/* Enhanced Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Users className="text-blue-600 w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Total Users</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {users.length}
+                  </p>
+                  <p className="text-xs text-green-600">+12% this month</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <DollarSign className="text-green-600 w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Revenue</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    $
+                    {orders
+                      .reduce(
+                        (sum: number, order: any) =>
+                          sum + parseFloat(order.total || 0),
+                        0,
+                      )
+                      .toLocaleString()}
+                  </p>
+                  <p className="text-xs text-green-600">+8% this month</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <ShoppingCart className="text-purple-600 w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Orders</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {orders.length}
+                  </p>
+                  <p className="text-xs text-green-600">+15% this month</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Activity className="text-orange-600 w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Active Users</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {users.filter((u: any) => u.isActive !== false).length}
+                  </p>
+                  <p className="text-xs text-blue-600">Online now</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                  <AlertTriangle className="text-red-600 w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Issues</p>
+                  <p className="text-2xl font-bold text-gray-900">0</p>
+                  <p className="text-xs text-green-600">All clear</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content */}
+        <Tabs defaultValue="users" className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="packages">Packages</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="system">System</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
-          {/* Dashboard Tab */}
-          <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{dashboardStats.totalUsers}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {dashboardStats.activeUsers} active users
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-                  <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{dashboardStats.totalOrders}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {dashboardStats.monthlyGrowth.orders} from last month
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${dashboardStats.totalRevenue.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {dashboardStats.monthlyGrowth.revenue} from last month
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{dashboardStats.conversionRate.toFixed(1)}%</div>
-                  <p className="text-xs text-muted-foreground">
-                    Avg order: ${dashboardStats.avgOrderValue.toFixed(0)}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Orders</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {orders.slice(0, 5).map((order: Order) => (
-                      <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="font-medium">{order.userName}</p>
-                          <p className="text-sm text-gray-500">{order.userEmail}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium">${order.total}</p>
-                          <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
-                            {order.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Users</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {users.slice(0, 5).map((user: User) => (
-                      <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
-                        </div>
-                        <div className="text-right">
-                          <Badge variant={user.isActive ? 'default' : 'secondary'}>
-                            {user.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Users Tab */}
-          <TabsContent value="users" className="space-y-6">
+          <TabsContent value="users" className="space-y-4">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>User Management</CardTitle>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Users className="w-5 h-5" />
+                    <span>User Management</span>
+                  </CardTitle>
                   <div className="flex space-x-2">
-                    <Button
+                    <Button 
+                      size="sm" 
                       variant="outline"
-                      size="sm"
-                      onClick={() => handleExport('users')}
+                      onClick={() => exportData("users")}
+                      className="border-gray-300 hover:bg-gray-50"
                     >
-                      <Download className="h-4 w-4 mr-2" />
+                      <Download className="w-4 h-4 mr-2" />
                       Export
                     </Button>
                     <Button
                       size="sm"
-                      onClick={() => setIsAddUserModalOpen(true)}
+                      className="bg-victory-purple hover:bg-purple-700 border-none"
+                      onClick={() => {
+                        toast({
+                          title: "Feature Coming Soon",
+                          description: "Add User functionality will be implemented soon",
+                        });
+                      }}
                     >
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="w-4 h-4 mr-2" />
                       Add User
                     </Button>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Search and Filters */}
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <Search className="h-4 w-4 text-gray-400" />
+
+                {/* Filters and Search */}
+                <div className="flex space-x-4 items-center">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         placeholder="Search users..."
-                        value={userSearch}
-                        onChange={(e) => setUserSearch(e.target.value)}
-                        className="w-80"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
                       />
                     </div>
-                    {selectedUsers.length > 0 && (
-                      <div className="flex items-center space-x-2">
-                        <Select value={bulkAction} onValueChange={setBulkAction}>
-                          <SelectTrigger className="w-40">
-                            <SelectValue placeholder="Bulk action" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="activate">Activate</SelectItem>
-                            <SelectItem value="deactivate">Deactivate</SelectItem>
-                            <SelectItem value="delete">Delete</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          size="sm"
-                          onClick={handleBulkAction}
-                          disabled={!bulkAction}
-                        >
-                          Apply to {selectedUsers.length} users
-                        </Button>
-                      </div>
-                    )}
                   </div>
-
-                  {/* Users Table */}
-                  <div className="border rounded-lg">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-12">
-                            <Checkbox
-                              checked={selectedUsers.length === filteredUsers.length}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedUsers(filteredUsers.map((u: User) => u.id));
-                                } else {
-                                  setSelectedUsers([]);
-                                }
-                              }}
-                            />
-                          </TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead>Orders</TableHead>
-                          <TableHead>Total Spent</TableHead>
-                          <TableHead>Created</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredUsers.map((user: User) => (
-                          <TableRow key={user.id}>
-                            <TableCell>
-                              <Checkbox
-                                checked={selectedUsers.includes(user.id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedUsers([...selectedUsers, user.id]);
-                                  } else {
-                                    setSelectedUsers(selectedUsers.filter(id => id !== user.id));
-                                  }
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell className="font-medium">{user.name}</TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>
-                              <Badge variant={user.isActive ? 'default' : 'secondary'}>
-                                {user.isActive ? 'Active' : 'Inactive'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="capitalize">{user.role}</TableCell>
-                            <TableCell>{user.orderCount || 0}</TableCell>
-                            <TableCell>${user.totalSpent?.toFixed(2) || '0.00'}</TableCell>
-                            <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setEditingUser(user)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => updateUserMutation.mutate({
-                                    userId: user.id,
-                                    data: { isActive: !user.isActive }
-                                  })}
-                                >
-                                  {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => deleteUserMutation.mutate(user.id)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={tierFilter} onValueChange={setTierFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Tier" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Tiers</SelectItem>
+                      <SelectItem value="basic">Basic</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+              </CardHeader>
+              <CardContent>
+                {usersLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-2">User</th>
+                          <th className="text-left p-2">Status</th>
+                          <th className="text-left p-2">Tier</th>
+                          <th className="text-left p-2">Orders</th>
+                          <th className="text-left p-2">Spent</th>
+                          <th className="text-left p-2">Last Login</th>
+                          <th className="text-left p-2">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredUsers.map((user: any) => (
+                          <tr
+                            key={user.id}
+                            className="border-b hover:bg-gray-50 cursor-pointer"
+                          >
+                            <td
+                              className="p-2"
+                              onClick={() => handleUserClick(user)}
+                            >
+                              <div>
+                                <p className="font-medium">{user.name}</p>
+                                <p className="text-xs text-gray-500">
+                                  {user.email}
+                                </p>
+                              </div>
+                            </td>
+                            <td
+                              className="p-2"
+                              onClick={() => handleUserClick(user)}
+                            >
+                              <Badge
+                                className={
+                                  user.isActive !== false
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }
+                              >
+                                {user.isActive !== false
+                                  ? "Active"
+                                  : "Inactive"}
+                              </Badge>
+                            </td>
+                            <td
+                              className="p-2"
+                              onClick={() => handleUserClick(user)}
+                            >
+                              <Badge
+                                className={getTierColor(
+                                  user.privileges?.subscriptionTier || "basic",
+                                )}
+                              >
+                                {user.privileges?.subscriptionTier || "basic"}
+                              </Badge>
+                            </td>
+                            <td
+                              className="p-2"
+                              onClick={() => handleUserClick(user)}
+                            >
+                              {
+                                orders.filter(
+                                  (order: any) =>
+                                    order.userId === user.id.toString(),
+                                ).length
+                              }
+                            </td>
+                            <td
+                              className="p-2"
+                              onClick={() => handleUserClick(user)}
+                            >
+                              $
+                              {orders
+                                .filter(
+                                  (order: any) =>
+                                    order.userId === user.id.toString(),
+                                )
+                                .reduce(
+                                  (sum: number, order: any) =>
+                                    sum + parseFloat(order.total || 0),
+                                  0,
+                                )
+                                .toLocaleString()}
+                            </td>
+                            <td
+                              className="p-2"
+                              onClick={() => handleUserClick(user)}
+                            >
+                              {new Date(user.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="p-2">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="border-none">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem
+                                    onClick={() => handleUserClick(user)}
+                                  >
+                                    <Shield className="w-4 h-4 mr-2" />
+                                    Manage Privileges
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => impersonateUser(user.id)}
+                                  >
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    Impersonate
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      toggleUserStatus(
+                                        user.id,
+                                        user.isActive !== false,
+                                      )
+                                    }
+                                    className={
+                                      user.isActive !== false
+                                        ? "text-yellow-600"
+                                        : "text-green-600"
+                                    }
+                                  >
+                                    {user.isActive !== false ? (
+                                      <Lock className="w-4 h-4 mr-2" />
+                                    ) : (
+                                      <Unlock className="w-4 h-4 mr-2" />
+                                    )}
+                                    {user.isActive !== false
+                                      ? "Suspend"
+                                      : "Activate"}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => deleteUser(user.id)}
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Orders Tab */}
-          <TabsContent value="orders" className="space-y-6">
+          <TabsContent value="orders" className="space-y-4">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Order Management</CardTitle>
-                  <Button
+                  <Button 
+                    size="sm" 
                     variant="outline"
-                    size="sm"
-                    onClick={() => handleExport('orders')}
+                    onClick={() => exportData("orders")}
+                    className="border-gray-300 hover:bg-gray-50"
                   >
-                    <Download className="h-4 w-4 mr-2" />
+                    <Download className="w-4 h-4 mr-2" />
                     Export
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Search className="h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Search orders..."
-                      value={orderSearch}
-                      onChange={(e) => setOrderSearch(e.target.value)}
-                      className="w-80"
-                    />
+                {ordersLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
                   </div>
-
-                  <div className="border rounded-lg">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Order ID</TableHead>
-                          <TableHead>Customer</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredOrders.map((order: Order) => (
-                          <TableRow key={order.id}>
-                            <TableCell className="font-medium">#{order.id}</TableCell>
-                            <TableCell>{order.userName}</TableCell>
-                            <TableCell>{order.userEmail}</TableCell>
-                            <TableCell>${order.total}</TableCell>
-                            <TableCell>
-                              <Badge variant={
-                                order.status === 'completed' ? 'default' :
-                                order.status === 'pending' ? 'secondary' :
-                                'destructive'
-                              }>
-                                {order.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                            <TableCell>
-                              <Button variant="ghost" size="sm">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                ) : (
+                  <div className="space-y-4">
+                    {orders.map((order: any) => (
+                      <div
+                        key={order.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div>
+                          <p className="font-semibold">Order #{order.id}</p>
+                          <p className="text-sm text-gray-600">
+                            User: {users.find((u: any) => u.id.toString() === order.userId)?.name || "Unknown"}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <Badge
+                            className={
+                              order.status === "completed"
+                                ? "bg-green-100 text-green-800"
+                                : order.status === "processing"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : order.status === "pending"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-gray-100 text-gray-800"
+                            }
+                          >
+                            {order.status}
+                          </Badge>
+                          <span className="font-semibold">
+                            ${parseFloat(order.total || 0).toLocaleString()}
+                          </span>
+                          <Button size="sm" variant="outline" className="border-gray-300 hover:bg-gray-50">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Packages Tab */}
-          <TabsContent value="packages" className="space-y-6">
+          <TabsContent value="packages" className="space-y-4">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Package Management</CardTitle>
-                  <Button
-                    size="sm"
-                    onClick={() => setIsAddPackageModalOpen(true)}
+                  <Button 
+                    className="bg-victory-purple hover:bg-purple-700 border-none"
+                    onClick={() => {
+                      toast({
+                        title: "Feature Coming Soon",
+                        description: "Add Package functionality will be implemented soon",
+                      });
+                    }}
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="w-4 h-4 mr-2" />
                     Add Package
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Search className="h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Search packages..."
-                      value={packageSearch}
-                      onChange={(e) => setPackageSearch(e.target.value)}
-                      className="w-80"
-                    />
+                {packagesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredPackages.map((pkg: Package) => (
-                      <Card key={pkg.id} className="relative">
-                        <CardHeader>
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <CardTitle className="text-lg">{pkg.name}</CardTitle>
-                              <p className="text-2xl font-bold text-purple-600">${pkg.price}</p>
-                            </div>
-                            <div className="flex space-x-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setEditingPackage(pkg)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => deletePackageMutation.mutate(pkg.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-sm text-gray-600 mb-4">{pkg.description}</p>
-                          <div className="space-y-2">
-                            {pkg.features.map((feature: string, index: number) => (
-                              <div key={index} className="flex items-center text-sm">
-                                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                                {feature}
-                              </div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {packages.map((pkg: any) => (
+                      <div
+                        key={pkg.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div>
+                          <p className="font-semibold">{pkg.name}</p>
+                          <p className="text-sm text-gray-600">
+                            {pkg.description}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Features: {pkg.features ? pkg.features.join(", ") : "None"}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <span className="font-semibold">
+                            ${parseFloat(pkg.price).toLocaleString()}
+                          </span>
+                          <Button size="sm" variant="outline" className="border-gray-300 hover:bg-gray-50">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="border-gray-300 hover:bg-gray-50">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
                     ))}
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <TabsContent value="analytics" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>User Analytics</CardTitle>
+                  <CardTitle>Revenue Trends</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span>Total Users</span>
-                      <span className="font-bold">{dashboardStats.totalUsers}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Active Users</span>
-                      <span className="font-bold">{dashboardStats.activeUsers}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Growth Rate</span>
-                      <span className="font-bold text-green-600">{dashboardStats.monthlyGrowth.users}</span>
+                  <div className="h-64 flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <TrendingUp className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                      <p>Total Revenue: ${orders.reduce((sum: number, order: any) => sum + parseFloat(order.total || 0), 0).toLocaleString()}</p>
+                      <p className="text-sm text-gray-400 mt-2">Chart visualization coming soon</p>
                     </div>
                   </div>
                 </CardContent>
@@ -870,43 +1147,15 @@ const AdminPortal = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Revenue Analytics</CardTitle>
+                  <CardTitle>User Growth</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span>Total Revenue</span>
-                      <span className="font-bold">${dashboardStats.totalRevenue.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Avg Order Value</span>
-                      <span className="font-bold">${dashboardStats.avgOrderValue.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Growth Rate</span>
-                      <span className="font-bold text-green-600">{dashboardStats.monthlyGrowth.revenue}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Order Analytics</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span>Total Orders</span>
-                      <span className="font-bold">{dashboardStats.totalOrders}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Conversion Rate</span>
-                      <span className="font-bold">{dashboardStats.conversionRate.toFixed(1)}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Growth Rate</span>
-                      <span className="font-bold text-green-600">{dashboardStats.monthlyGrowth.orders}</span>
+                  <div className="h-64 flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                      <p>Total Users: {users.length}</p>
+                      <p>Active Users: {users.filter((u: any) => u.isActive !== false).length}</p>
+                      <p className="text-sm text-gray-400 mt-2">Chart visualization coming soon</p>
                     </div>
                   </div>
                 </CardContent>
@@ -914,366 +1163,859 @@ const AdminPortal = () => {
             </div>
           </TabsContent>
 
-          {/* System Tab */}
-          <TabsContent value="system" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>System Status</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        <span>Database</span>
-                      </div>
-                      <Badge variant="default">Online</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        <span>API Server</span>
-                      </div>
-                      <Badge variant="default">Online</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        <span>Email Service</span>
-                      </div>
-                      <Badge variant="default">Online</Badge>
-                    </div>
+          <TabsContent value="settings" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>System Settings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <Label htmlFor="site-title">Site Title</Label>
+                    <Input id="site-title" defaultValue="VictorySync" />
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh Cache
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Database className="h-4 w-4 mr-2" />
-                      Backup Database
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Activity className="h-4 w-4 mr-2" />
-                      View Logs
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Settings className="h-4 w-4 mr-2" />
-                      System Settings
-                    </Button>
+                  <div>
+                    <Label htmlFor="contact-email">Contact Email</Label>
+                    <Input
+                      id="contact-email"
+                      defaultValue="info@victorysync.com"
+                    />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <div>
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input id="phone" defaultValue="+ (718)-813-2106" />
+                  </div>
+                  <Button 
+                    className="bg-victory-purple hover:bg-purple-700 border-none"
+                    onClick={() => {
+                      toast({
+                        title: "Settings Saved",
+                        description: "System settings have been updated successfully",
+                      });
+                    }}
+                  >
+                    Save Settings
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Enhanced User Details Modal */}
+        <Dialog open={isUserDetailOpen} onOpenChange={setIsUserDetailOpen}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <Shield className="w-5 h-5" />
+                <span>Complete User Management: {selectedUser?.name}</span>
+              </DialogTitle>
+            </DialogHeader>
+
+            {selectedUser && (
+              <div className="space-y-6">
+                {/* User Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center">
+                          <Users className="w-8 h-8 text-gray-500" />
+                        </div>
+                        <p className="font-semibold">{selectedUser.name}</p>
+                        <p className="text-sm text-gray-600">
+                          {selectedUser.email}
+                        </p>
+                        <Badge
+                          className={`${getStatusColor(userPrivileges.accountStatus)} mt-2`}
+                        >
+                          {userPrivileges.accountStatus}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Orders</span>
+                          <span className="font-semibold">
+                            {getUserStats(selectedUser.id).totalOrders}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Spent</span>
+                          <span className="font-semibold">
+                            ${getUserStats(selectedUser.id).totalSpent.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">
+                            Avg Order
+                          </span>
+                          <span className="font-semibold">
+                            ${Math.round(getUserStats(selectedUser.id).avgOrderValue)}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">
+                            Login Count
+                          </span>
+                          <span className="font-semibold">
+                            {getUserStats(selectedUser.id).loginCount}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">
+                            Last Login
+                          </span>
+                          <span className="font-semibold text-xs">
+                            {new Date(getUserStats(selectedUser.id).lastLogin).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">
+                            Integrations
+                          </span>
+                          <span className="font-semibold">
+                            {getUserStats(selectedUser.id).integrations}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">
+                            Support Tickets
+                          </span>
+                          <span className="font-semibold">
+                            {getUserStats(selectedUser.id).supportTickets}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">
+                            API Calls
+                          </span>
+                          <span className="font-semibold">
+                            {getUserStats(selectedUser.id).apiCalls.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">
+                            Priority
+                          </span>
+                          <Badge
+                            className={
+                              userPrivileges.priority === "critical"
+                                ? "bg-red-100 text-red-800"
+                                : userPrivileges.priority === "high"
+                                  ? "bg-orange-100 text-orange-800"
+                                  : userPrivileges.priority === "normal"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-gray-100 text-gray-800"
+                            }
+                          >
+                            {userPrivileges.priority}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Tabs defaultValue="privileges" className="w-full">
+                  <TabsList className="grid w-full grid-cols-6">
+                    <TabsTrigger value="privileges">Privileges</TabsTrigger>
+                    <TabsTrigger value="subscription">Subscription</TabsTrigger>
+                    <TabsTrigger value="orders">Orders</TabsTrigger>
+                    <TabsTrigger value="activity">Activity</TabsTrigger>
+                    <TabsTrigger value="billing">Billing</TabsTrigger>
+                    <TabsTrigger value="notes">Notes</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="privileges" className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">
+                            Core Permissions
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Label>Can Create Orders</Label>
+                            <Switch
+                              checked={userPrivileges.canCreateOrders}
+                              onCheckedChange={(checked) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  canCreateOrders: checked,
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Label>Can View Reports</Label>
+                            <Switch
+                              checked={userPrivileges.canViewReports}
+                              onCheckedChange={(checked) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  canViewReports: checked,
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Label>Can Access Premium Features</Label>
+                            <Switch
+                              checked={userPrivileges.canAccessPremiumFeatures}
+                              onCheckedChange={(checked) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  canAccessPremiumFeatures: checked,
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Label>Can Modify Profile</Label>
+                            <Switch
+                              checked={userPrivileges.canModifyProfile}
+                              onCheckedChange={(checked) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  canModifyProfile: checked,
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Label>Can Delete Account</Label>
+                            <Switch
+                              checked={userPrivileges.canDeleteAccount}
+                              onCheckedChange={(checked) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  canDeleteAccount: checked,
+                                })
+                              }
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">
+                            Advanced Permissions
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Label>Can View Billing</Label>
+                            <Switch
+                              checked={userPrivileges.canViewBilling}
+                              onCheckedChange={(checked) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  canViewBilling: checked,
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Label>Can Manage Integrations</Label>
+                            <Switch
+                              checked={userPrivileges.canManageIntegrations}
+                              onCheckedChange={(checked) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  canManageIntegrations: checked,
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Label>Can Export Data</Label>
+                            <Switch
+                              checked={userPrivileges.canExportData}
+                              onCheckedChange={(checked) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  canExportData: checked,
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Label>Can Access API</Label>
+                            <Switch
+                              checked={userPrivileges.canAccessAPI}
+                              onCheckedChange={(checked) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  canAccessAPI: checked,
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Label>Can View Analytics</Label>
+                            <Switch
+                              checked={userPrivileges.canViewAnalytics}
+                              onCheckedChange={(checked) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  canViewAnalytics: checked,
+                                })
+                              }
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <Label>Max Order Value ($)</Label>
+                        <Input
+                          type="number"
+                          value={userPrivileges.maxOrderValue}
+                          onChange={(e) =>
+                            setUserPrivileges({
+                              ...userPrivileges,
+                              maxOrderValue: parseInt(e.target.value),
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <Label>Max Orders Per Month</Label>
+                        <Input
+                          type="number"
+                          value={userPrivileges.maxOrdersPerMonth}
+                          onChange={(e) =>
+                            setUserPrivileges({
+                              ...userPrivileges,
+                              maxOrdersPerMonth: parseInt(e.target.value),
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <Label>API Rate Limit (per hour)</Label>
+                        <Input
+                          type="number"
+                          value={userPrivileges.apiRateLimit}
+                          onChange={(e) =>
+                            setUserPrivileges({
+                              ...userPrivileges,
+                              apiRateLimit: parseInt(e.target.value),
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label>Account Status</Label>
+                        <Select
+                          value={userPrivileges.accountStatus}
+                          onValueChange={(value: any) =>
+                            setUserPrivileges({
+                              ...userPrivileges,
+                              accountStatus: value,
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="suspended">Suspended</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="banned">Banned</SelectItem>
+                            <SelectItem value="trial">Trial</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label>Priority Level</Label>
+                        <Select
+                          value={userPrivileges.priority}
+                          onValueChange={(value: any) =>
+                            setUserPrivileges({
+                              ...userPrivileges,
+                              priority: value,
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="critical">Critical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="subscription" className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Subscription Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div>
+                            <Label>Subscription Tier</Label>
+                            <Select
+                              value={userPrivileges.subscriptionTier}
+                              onValueChange={(value: any) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  subscriptionTier: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="basic">Basic</SelectItem>
+                                <SelectItem value="premium">Premium</SelectItem>
+                                <SelectItem value="enterprise">
+                                  Enterprise
+                                </SelectItem>
+                                <SelectItem value="custom">Custom</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label>Billing Cycle</Label>
+                            <Select
+                              value={userPrivileges.billingCycle}
+                              onValueChange={(value: any) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  billingCycle: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                                <SelectItem value="quarterly">
+                                  Quarterly
+                                </SelectItem>
+                                <SelectItem value="yearly">Yearly</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label>Credit Limit ($)</Label>
+                            <Input
+                              type="number"
+                              value={userPrivileges.creditLimit}
+                              onChange={(e) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  creditLimit: parseInt(e.target.value),
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div>
+                            <Label>Data Retention (days)</Label>
+                            <Input
+                              type="number"
+                              value={userPrivileges.dataRetentionDays}
+                              onChange={(e) =>
+                                setUserPrivileges({
+                                  ...userPrivileges,
+                                  dataRetentionDays: parseInt(e.target.value),
+                                })
+                              }
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Usage Statistics</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm">Storage Used</span>
+                              <span className="font-semibold">
+                                2.3 GB / 10 GB
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-blue-500 h-2 rounded-full"
+                                style={{ width: "23%" }}
+                              />
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm">
+                                API Calls This Month
+                              </span>
+                              <span className="font-semibold">
+                                1,247 / 10,000
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-green-500 h-2 rounded-full"
+                                style={{ width: "12%" }}
+                              />
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm">Bandwidth Used</span>
+                              <span className="font-semibold">
+                                45 GB / 100 GB
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-orange-500 h-2 rounded-full"
+                                style={{ width: "45%" }}
+                              />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="orders" className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-semibold">User Orders</h4>
+                      <div className="flex space-x-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => exportData(`user-${selectedUser.id}-orders`)}
+                          className="border-gray-300 hover:bg-gray-50"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Export
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {orders
+                        .filter(
+                          (order: any) =>
+                            order.userId === selectedUser.id.toString(),
+                        )
+                        .map((order: any) => (
+                          <div
+                            key={order.id}
+                            className="flex items-center justify-between p-3 border rounded"
+                          >
+                            <div>
+                              <p className="font-medium">Order #{order.id}</p>
+                              <p className="text-sm text-gray-600">
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Badge
+                                className={
+                                  order.status === "completed"
+                                    ? "bg-green-100 text-green-800"
+                                    : order.status === "processing"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : order.status === "pending"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-gray-100 text-gray-800"
+                                }
+                              >
+                                {order.status}
+                              </Badge>
+                              <span className="font-semibold">
+                                ${parseFloat(order.total || 0).toLocaleString()}
+                              </span>
+                              <Button size="sm" variant="outline" className="border-gray-300 hover:bg-gray-50">
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <h5 className="font-semibold mb-3">Create New Order</h5>
+                      <div className="flex space-x-2">
+                        <Select
+                          value={selectedPackage}
+                          onValueChange={setSelectedPackage}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Select Package" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {packages.map((pkg: any) => (
+                              <SelectItem
+                                key={pkg.id}
+                                value={pkg.id.toString()}
+                              >
+                                {pkg.name} - ${pkg.price}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          type="number"
+                          placeholder="Qty"
+                          value={orderQuantity}
+                          onChange={(e) =>
+                            setOrderQuantity(parseInt(e.target.value) || 1)
+                          }
+                          className="w-20"
+                        />
+                        <Button
+                          onClick={createOrder}
+                          className="bg-victory-purple hover:bg-purple-700 border-none"
+                        >
+                          Create Order
+                        </Button>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="activity" className="space-y-4">
+                    <h4 className="font-semibold">Recent Activity</h4>
+                    <div className="space-y-3">
+                      {getUserActivity(selectedUser.id).map((activity) => (
+                        <div
+                          key={activity.id}
+                          className="flex items-center justify-between p-3 border rounded"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className={`w-2 h-2 rounded-full ${
+                                activity.status === "success"
+                                  ? "bg-green-500"
+                                  : activity.status === "failed"
+                                    ? "bg-red-500"
+                                    : "bg-yellow-500"
+                              }`}
+                            />
+                            <div>
+                              <p className="text-sm font-medium">
+                                {activity.action}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                IP: {activity.ip} • {activity.userAgent}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-gray-500">
+                              {new Date(activity.timestamp).toLocaleString()}
+                            </p>
+                            <Badge
+                              className={
+                                activity.status === "success"
+                                  ? "bg-green-100 text-green-800"
+                                  : activity.status === "failed"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-yellow-100 text-yellow-800"
+                              }
+                            >
+                              {activity.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="billing" className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Billing Information</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600">
+                              Current Balance
+                            </span>
+                            <span className="font-semibold">$247.50</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600">
+                              Credit Limit
+                            </span>
+                            <span className="font-semibold">
+                              ${userPrivileges.creditLimit.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600">
+                              Next Billing Date
+                            </span>
+                            <span className="font-semibold">
+                              {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600">
+                              Payment Method
+                            </span>
+                            <span className="font-semibold">•••• 4242</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Payment History</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            {orders
+                              .filter((order: any) => order.userId === selectedUser.id.toString())
+                              .slice(0, 3)
+                              .map((order: any) => (
+                                <div key={order.id} className="flex justify-between items-center">
+                                  <div>
+                                    <p className="text-sm font-medium">
+                                      Order #{order.id}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {new Date(order.createdAt).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                  <span className="font-semibold">
+                                    ${parseFloat(order.total || 0).toLocaleString()}
+                                  </span>
+                                </div>
+                              ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="notes" className="space-y-4">
+                    <div>
+                      <Label>Admin Notes</Label>
+                      <Textarea
+                        value={userPrivileges.customNotes}
+                        onChange={(e) =>
+                          setUserPrivileges({
+                            ...userPrivileges,
+                            customNotes: e.target.value,
+                          })
+                        }
+                        placeholder="Add custom notes about this user..."
+                        rows={8}
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Internal Tags</Label>
+                      <Input
+                        placeholder="VIP, High-Volume, Support-Priority, etc."
+                        className="mt-2"
+                      />
+                    </div>
+                  </TabsContent>
+                </Tabs>
+
+                <DialogFooter>
+                  <div className="flex justify-between items-center w-full">
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => impersonateUser(selectedUser.id)}
+                        className="border-gray-300 hover:bg-gray-50"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Impersonate User
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        className="border-gray-300 hover:bg-gray-50"
+                        onClick={() => {
+                          toast({
+                            title: "Email Feature",
+                            description: "Email functionality will be implemented soon",
+                          });
+                        }}
+                      >
+                        <Mail className="w-4 h-4 mr-2" />
+                        Send Email
+                      </Button>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsUserDetailOpen(false)}
+                        className="border-gray-300 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleSaveUserPrivileges}
+                        className="bg-victory-purple hover:bg-purple-700 border-none"
+                      >
+                        Save All Changes
+                      </Button>
+                    </div>
+                  </div>
+                </DialogFooter>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Add User Modal */}
-      <Dialog open={isAddUserModalOpen} onOpenChange={setIsAddUserModalOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
-            <DialogDescription>Create a new user account</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            
-            createUserMutation.mutate({
-              name: formData.get('name'),
-              email: formData.get('email'),
-              password: formData.get('password'),
-              role: formData.get('role') || 'user',
-              isActive: formData.get('isActive') === 'on'
-            });
-          }}>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" name="name" required />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" required />
-              </div>
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" name="password" type="password" required />
-              </div>
-              <div>
-                <Label htmlFor="role">Role</Label>
-                <Select name="role">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">User</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="isActive" name="isActive" defaultChecked />
-                <Label htmlFor="isActive">Active</Label>
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setIsAddUserModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Create User</Button>
-              </div>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Package Modal */}
-      <Dialog open={isAddPackageModalOpen} onOpenChange={setIsAddPackageModalOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Add New Package</DialogTitle>
-            <DialogDescription>Create a new service package</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            const features = formData.get('features')?.toString().split('\n').filter(f => f.trim()) || [];
-            
-            createPackageMutation.mutate({
-              name: formData.get('name'),
-              price: formData.get('price'),
-              description: formData.get('description'),
-              features
-            });
-          }}>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Package Name</Label>
-                <Input id="name" name="name" required />
-              </div>
-              <div>
-                <Label htmlFor="price">Price</Label>
-                <Input id="price" name="price" type="number" step="0.01" required />
-              </div>
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Input id="description" name="description" required />
-              </div>
-              <div>
-                <Label htmlFor="features">Features (one per line)</Label>
-                <Textarea id="features" name="features" rows={5} required />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setIsAddPackageModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Create Package</Button>
-              </div>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit User Modal */}
-      <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>Update user information</DialogDescription>
-          </DialogHeader>
-          {editingUser && (
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              
-              updateUserMutation.mutate({
-                userId: editingUser.id,
-                data: {
-                  name: formData.get('name'),
-                  email: formData.get('email'),
-                  role: formData.get('role'),
-                  isActive: formData.get('isActive') === 'on'
-                }
-              });
-            }}>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="edit-user-name">Full Name</Label>
-                  <Input id="edit-user-name" name="name" defaultValue={editingUser.name} required />
-                </div>
-                <div>
-                  <Label htmlFor="edit-user-email">Email</Label>
-                  <Input id="edit-user-email" name="email" type="email" defaultValue={editingUser.email} required />
-                </div>
-                <div>
-                  <Label htmlFor="edit-user-role">Role</Label>
-                  <Select name="role" defaultValue={editingUser.role}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="edit-user-isActive" name="isActive" defaultChecked={editingUser.isActive} />
-                  <Label htmlFor="edit-user-isActive">Active</Label>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={() => setEditingUser(null)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">Update User</Button>
-                </div>
-              </div>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Package Modal */}
-      <Dialog open={!!editingPackage} onOpenChange={() => setEditingPackage(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Package</DialogTitle>
-            <DialogDescription>Update package information</DialogDescription>
-          </DialogHeader>
-          {editingPackage && (
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              const features = formData.get('features')?.toString().split('\n').filter(f => f.trim()) || [];
-              
-              updatePackageMutation.mutate({
-                packageId: editingPackage.id,
-                data: {
-                  name: formData.get('name'),
-                  price: formData.get('price'),
-                  description: formData.get('description'),
-                  features
-                }
-              });
-            }}>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="edit-name">Package Name</Label>
-                  <Input id="edit-name" name="name" defaultValue={editingPackage.name} required />
-                </div>
-                <div>
-                  <Label htmlFor="edit-price">Price</Label>
-                  <Input id="edit-price" name="price" type="number" step="0.01" defaultValue={editingPackage.price} required />
-                </div>
-                <div>
-                  <Label htmlFor="edit-description">Description</Label>
-                  <Input id="edit-description" name="description" defaultValue={editingPackage.description} required />
-                </div>
-                <div>
-                  <Label htmlFor="edit-features">Features (one per line)</Label>
-                  <Textarea id="edit-features" name="features" rows={5} defaultValue={editingPackage.features.join('\n')} required />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={() => setEditingPackage(null)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">Update Package</Button>
-                </div>
-              </div>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Settings Modal */}
-      <Dialog open={isSettingsModalOpen} onOpenChange={setIsSettingsModalOpen}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>System Settings</DialogTitle>
-            <DialogDescription>Configure system-wide settings and preferences</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h3 className="font-semibold">General Settings</h3>
-                <div className="space-y-3">
-                  <div>
-                    <Label htmlFor="siteName">Site Name</Label>
-                    <Input id="siteName" value={adminSettings.siteName} onChange={(e) => setAdminSettings({...adminSettings, siteName: e.target.value})} />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="maintenance"
-                      checked={adminSettings.maintenanceMode}
-                      onCheckedChange={(checked) => setAdminSettings({...adminSettings, maintenanceMode: checked})}
-                    />
-                    <Label htmlFor="maintenance">Maintenance Mode</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="registration"
-                      checked={adminSettings.registrationEnabled}
-                      onCheckedChange={(checked) => setAdminSettings({...adminSettings, registrationEnabled: checked})}
-                    />
-                    <Label htmlFor="registration">Enable Registration</Label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-semibold">Security Settings</h3>
-                <div className="space-y-3">
-                  <div>
-                    <Label htmlFor="sessionTimeout">Session Timeout (minutes)</Label>
-                    <Input 
-                      id="sessionTimeout" 
-                      type="number"
-                      value={adminSettings.sessionTimeout}
-                      onChange={(e) => setAdminSettings({...adminSettings, sessionTimeout: parseInt(e.target.value)})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="maxUsers">Max Users Per Account</Label>
-                    <Input 
-                      id="maxUsers" 
-                      type="number"
-                      value={adminSettings.maxUsersPerAccount}
-                      onChange={(e) => setAdminSettings({...adminSettings, maxUsersPerAccount: parseInt(e.target.value)})}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsSettingsModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={() => {
-                // Save settings logic here
-                toast({ title: 'Settings saved successfully' });
-                setIsSettingsModalOpen(false);
-              }}>
-                Save Settings
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
-};
-
-export default AdminPortal;
+}

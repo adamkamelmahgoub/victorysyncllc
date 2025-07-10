@@ -21,7 +21,7 @@ export default function HelpCenter() {
       },
       {
         question: "What services does VictorySync offer?",
-        answer: "We provide comprehensive contact center solutions including 24/7 inbound customer support, outbound sales and lead generation, AI-powered automation, and digital marketing services. Our solutions are designed to reduce your customer service costs by up to 60%."
+        answer: "We provide comprehensive call center solutions including 24/7 inbound customer support, outbound sales and lead generation, AI-powered automation, and digital marketing services. Our solutions are designed to reduce your customer service costs by up to 60%."
       },
       {
         question: "How long does implementation take?",

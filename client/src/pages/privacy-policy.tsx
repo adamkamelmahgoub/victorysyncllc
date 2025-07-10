@@ -360,11 +360,11 @@ export default function PrivacyPolicy() {
                 <p className="text-gray-600">
                   <strong>Privacy Officer</strong>
                   <br />
-                  Email: info@victorysync.com
+                  Email: privacy@victorysync.com
                   <br />
                   Phone: + (718)-813-2106
                   <br />
-                  Address: New Jersey, United States
+                  Address: 11 Brookside Rd, Millstone, New Jersey, 08510
                 </p>
               </div>
 
@@ -491,7 +491,7 @@ export default function PrivacyPolicy() {
                 Our services are not intended for people under years 18 of age.
                 We do not knowingly collect personal information from people
                 under 18. If we discover that we have collected information from
-                a person under 18, we will delete it immediately.
+                a child under 13, we will delete it immediately.
               </p>
 
               <p className="text-gray-600 mb-4">
@@ -548,7 +548,7 @@ export default function PrivacyPolicy() {
                   <br />
                   <strong>Data Protection Officer</strong>
                   <br />
-                  Email: info@victorysync.com
+                  Email: dpo@victorysync.com
                   <br />
                   <br />
                   <strong>Business Hours:</strong> Monday - Friday, 9 AM - 5 PM
