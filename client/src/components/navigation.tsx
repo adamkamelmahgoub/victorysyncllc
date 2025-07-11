@@ -1,40 +1,3 @@
-import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/hooks/useCart';
-import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/Logo';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ShoppingCart, LogOut, Settings, User as UserIcon } from 'lucide-react';
-import { CartModal } from '@/components/cart-modal';
-import { useState } from 'react';
-
-interface User {
-  id: number;
-  name?: string;
-  email: string;
-}
-
-export function Navigation() {
-  const { user, logout } = useAuth();
-  const { items } = useCart();
-  const [isCartOpen, setIsCartOpen] = useState(false);
-
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-
-  const getUserInitials = (user: User | null) => {
-    if (!user) return 'U';
-    if (user.name) {
-      return user.name.split(' ').map(n => n[0]).join('').toUpperCase();
-    }
-    return user.email?.charAt(0).toUpperCase() || 'U';
-  };
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -42,6 +5,7 @@ import { Menu, X, ShoppingCart, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { Logo } from "./Logo";
+import type { PublicUser } from "../../../shared/schema";
 
 interface NavigationProps {
   onCartClick: () => void;
@@ -126,7 +90,11 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     Sign In
                   </Button>
                 </Link>
-
+                <Link href="/register">
+                  <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+                    Get Started
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
@@ -208,7 +176,13 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     >
                       Sign In
                     </Button>
-
+                    <Button
+                      size="sm"
+                      className="w-full justify-start bg-purple-600 hover:bg-purple-700 text-white"
+                      onClick={() => (window.location.href = "/register")}
+                    >
+                      Get Started
+                    </Button>
                   </div>
                 )}
               </div>
