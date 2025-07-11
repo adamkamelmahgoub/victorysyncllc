@@ -1,3 +1,40 @@
+import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/hooks/useCart';
+import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/Logo';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ShoppingCart, LogOut, Settings, User as UserIcon } from 'lucide-react';
+import { CartModal } from '@/components/cart-modal';
+import { useState } from 'react';
+
+interface User {
+  id: number;
+  name?: string;
+  email: string;
+}
+
+export function Navigation() {
+  const { user, logout } = useAuth();
+  const { items } = useCart();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+
+  const getUserInitials = (user: User | null) => {
+    if (!user) return 'U';
+    if (user.name) {
+      return user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
+    return user.email?.charAt(0).toUpperCase() || 'U';
+  };
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";

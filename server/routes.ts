@@ -67,14 +67,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/integrations/available", authenticateJWT as any, async (req: any, res: any) => {
     try {
-      // const { getAllConnectors } = await import('./integrations/registry');  //TODO: Fix
-      // const availableConnectors = getAllConnectors().map(connector => ({
-      //   type: connector.type,
-      //   name: connector.name
-      // }));
+      const { getAllConnectors } = await import('./integrations/registry');
+      const availableConnectors = getAllConnectors().map(connector => ({
+        type: connector.type,
+        name: connector.name
+      }));
 
-      // res.json(availableConnectors);
-      res.json([]); // Returning empty array for now since the import is not working
+      res.json(availableConnectors);
     } catch (error) {
       console.error("Error fetching available integrations:", error);
       res.status(500).json({ error: "Failed to fetch available integrations" });
@@ -86,16 +85,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { type } = req.params;
       const userId = req.user!.id.toString();
 
-      // const { getConnector } = await import('./integrations/registry'); //TODO: Fix
-      // const connector = getConnector(type);
+      const { getConnector } = await import('./integrations/registry');
+      const connector = getConnector(type);
 
-      // if (!connector) {
-      //   return res.status(404).json({ error: "Integration type not found" });
-      // }
+      if (!connector) {
+        return res.status(404).json({ error: "Integration type not found" });
+      }
 
-      // const oauthUrl = connector.getOAuthUrl(userId);
-      // res.json({ url: oauthUrl });
-      res.json({ url: "" }); // Returning empty url for now since import is not working
+      const oauthUrl = connector.getOAuthUrl(userId);
+      res.json({ url: oauthUrl });
     } catch (error) {
       console.error("Error generating OAuth URL:", error);
       res.status(500).json({ error: "Failed to generate OAuth URL" });
@@ -111,31 +109,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Missing code or customer ID" });
       }
 
-      // const { getConnector } = await import('./integrations/registry'); //TODO: Fix
-      // const connector = getConnector(type);
+      const { getConnector } = await import('./integrations/registry');
+      const connector = getConnector(type);
 
-      // if (!connector) {
-      //   return res.status(404).json({ error: "Integration type not found" });
-      // }
+      if (!connector) {
+        return res.status(404).json({ error: "Integration type not found" });
+      }
 
-      // const tokens = await connector.handleOAuthCallback(code as string, customerId as string);
+      const tokens = await connector.handleOAuthCallback(code as string, customerId as string);
 
-      // // Store integration in database
-      // await db.insert(integrations).values({
-      //   customer_id: customerId as string,
-      //   type,
-      //   access_token: tokens.accessToken,
-      //   refresh_token: tokens.refreshToken,
-      //   is_active: true
-      // }).onConflictDoUpdate({
-      //   target: [integrations.customer_id, integrations.type],
-      //   set: {
-      //     access_token: tokens.accessToken,
-      //     refresh_token: tokens.refreshToken,
-      //     is_active: true,
-      //     updated_at: new Date()
-      //   }
-      // });
+      // Store integration in database
+      await db.insert(integrations).values({
+        customer_id: customerId as string,
+        type,
+        access_token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+        is_active: true
+      }).onConflictDoUpdate({
+        target: [integrations.customer_id, integrations.type],
+        set: {
+          access_token: tokens.accessToken,
+          refresh_token: tokens.refreshToken,
+          is_active: true,
+          updated_at: new Date()
+        }
+      });
 
       res.redirect('/dashboard?integration_added=true');
     } catch (error) {
@@ -163,20 +161,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // const { getConnector } = await import('./integrations/registry'); //TODO: Fix
+      const { getConnector } = await import('./integrations/registry');
       const allMetrics = [];
 
       // Fetch metrics from each configured integration
       for (const integration of userIntegrations) {
         try {
-          // const connector = getConnector(integration.type);
-          // if (connector) {
-          //   const metrics = await connector.fetchKPIs(userId, integration.access_token);
-          //   allMetrics.push(...metrics.map(metric => ({
-          //     ...metric,
-          //     source: connector.name
-          //   })));
-          // }
+          const connector = getConnector(integration.type);
+          if (connector) {
+            const metrics = await connector.fetchKPIs(userId, integration.access_token);
+            allMetrics.push(...metrics.map(metric => ({
+              ...metric,
+              source: connector.name
+            })));
+          }
         } catch (error) {
           console.error(`Error fetching metrics from ${integration.type}:`, error);
           // Continue with other integrations even if one fails
