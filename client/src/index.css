@@ -140,54 +140,54 @@ button {
   }
 
   .victory-blue {
-    color: var(--victory-blue);
+    color: hsl(var(--victory-blue));
   }
 
   .victory-light-purple {
-    color: var(--victory-light-purple);
+    color: hsl(var(--victory-light-purple));
   }
 
   .victory-dark {
-    color: var(--victory-dark);
+    color: hsl(var(--victory-dark));
   }
 
   .victory-gray {
-    color: var(--victory-gray);
+    color: hsl(var(--victory-gray));
   }
 
   .bg-victory-purple {
-    background-color: var(--victory-purple);
+    background-color: hsl(var(--victory-purple));
   }
 
   .bg-victory-blue {
-    background-color: var(--victory-blue);
+    background-color: hsl(var(--victory-blue));
   }
 
   .bg-victory-light-purple {
-    background-color: var(--victory-light-purple);
+    background-color: hsl(var(--victory-light-purple));
   }
 
   .bg-victory-dark {
-    background-color: var(--victory-dark);
+    background-color: hsl(var(--victory-dark));
   }
 
   .bg-victory-gray {
-    background-color: var(--victory-gray);
+    background-color: hsl(var(--victory-gray));
   }
 
   .border-victory-purple {
-    border-color: var(--victory-purple);
+    border-color: hsl(var(--victory-purple));
   }
 
   .hover\:bg-victory-purple:hover {
-    background-color: var(--victory-purple);
+    background-color: hsl(var(--victory-purple));
   }
 
   .hover\:text-victory-purple:hover {
-    color: var(--victory-purple);
+    color: hsl(var(--victory-purple));
   }
 
   .gradient-victory {
-    background: linear-gradient(135deg, var(--victory-purple) 0%, var(--victory-blue) 100%);
+    background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
   }
 }
