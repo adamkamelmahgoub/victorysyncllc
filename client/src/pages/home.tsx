@@ -19,12 +19,12 @@ export default function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/pricing">
-                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-semibold">
+                  <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#5d5df2]">
                     View Pricing
                   </Button>
                 </Link>
                 <Link href="/contact">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-purple-600 font-semibold">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#506bf4]">
                     Schedule Demo
                   </Button>
                 </Link>
@@ -36,14 +36,14 @@ export default function Home() {
                 alt="Modern call center workspace with professional agents" 
                 className="rounded-2xl shadow-2xl w-full" 
               />
-              <div className="absolute -bottom-6 -left-6 p-4 rounded-xl shadow-lg bg-white text-gray-800">
+              <div className="absolute -bottom-6 -left-6 p-4 rounded-xl shadow-lg text-victory-dark bg-[#5d5df2]">
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                     <Check className="text-green-600 w-6 h-6" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-800">93% Cost Savings</p>
-                    <p className="text-sm text-gray-600">vs US-based agents</p>
+                    <p className="font-semibold">93% Cost Savings</p>
+                    <p className="text-sm text-victory-gray">vs US-based agents</p>
                   </div>
                 </div>
               </div>
@@ -253,12 +253,12 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-semibold">
+              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6950f0]">
                 Schedule Demo
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-purple-600 font-semibold">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
                 View Pricing
               </Button>
             </Link>

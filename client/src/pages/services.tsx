@@ -8,89 +8,73 @@ export default function Services() {
     {
       icon: Phone,
       title: "Inbound Call Center",
+      description: "Professional customer support with multilingual capabilities",
       features: [
-        "24/7 Multilingual Customer Support with native English speakers and fluency in Spanish, French, and Arabic",
-        "Advanced Technical Help Desk with tier-1, tier-2, and tier-3 escalation protocols",
-        "Complete Order Processing & Billing management with payment gateway integrations",
-        "Real-time Live Chat Support with instant response capabilities and chatbot handoffs",
-        "Comprehensive Email Support Management with ticketing systems and automated routing",
-        "Professional Complaint Resolution with empathy training and satisfaction tracking",
-        "Call recording and quality monitoring with performance analytics",
-        "CRM integration with Salesforce, HubSpot, and custom systems"
+        "24/7 Customer Support",
+        "Technical Help Desk",
+        "Order Processing & Billing",
+        "Live Chat Support",
+        "Email Support Management",
+        "Complaint Resolution"
       ],
       benefits: [
-        "Reduce average response times by 80% with intelligent call routing",
-        "Improve customer satisfaction scores by 45% through empathetic support",
-        "Handle peak volumes effortlessly with scalable agent deployment",
-        "Decrease operational costs by 60% compared to in-house teams",
-        "Increase first-call resolution rates by 35% with proper training",
-        "Maintain 99.9% uptime with redundant systems and backup protocols"
+        "Reduce response times by 80%",
+        "Improve customer satisfaction scores",
+        "Handle peak volumes effortlessly"
       ]
     },
     {
       icon: Megaphone,
       title: "Outbound Sales & Marketing",
+      description: "Drive revenue growth with targeted outreach campaigns",
       features: [
-        "Advanced Lead Generation & Qualification using AI-powered prospect identification",
-        "Professional Appointment Setting with calendar integration and automated confirmations",
-        "Strategic Cold Calling Campaigns with personalized scripts and objection handling",
-        "Automated Follow-up Sequences with drip campaigns and nurture tracks",
-        "Comprehensive Market Research including competitor analysis and demographic studies",
-        "Detailed Customer Surveys with statistical analysis and reporting",
-        "Multi-channel outreach including phone, email, and LinkedIn campaigns",
-        "Real-time CRM updates with lead scoring and pipeline management"
+        "Lead Generation & Qualification",
+        "Appointment Setting",
+        "Cold Calling Campaigns",
+        "Follow-up Sequences",
+        "Market Research",
+        "Customer Surveys"
       ],
       benefits: [
-        "Increase qualified leads by 150% through targeted prospecting",
-        "Boost conversion rates by 65% with proven sales methodologies",
-        "Expand market reach by 200% with multi-channel approaches",
-        "Reduce sales cycle length by 40% through effective nurturing",
-        "Improve lead quality scores by 80% with advanced qualification",
-        "Generate 300% ROI on marketing spend with optimized campaigns"
+        "Increase qualified leads by 150%",
+        "Boost conversion rates",
+        "Expand market reach"
       ]
     },
     {
       icon: Bot,
       title: "AI Automation",
+      description: "Intelligent solutions to streamline your operations",
       features: [
-        "Intelligent AI-Powered Chatbots with natural language processing and machine learning",
-        "Custom Automated Workflows with business rule engines and process optimization",
-        "Advanced Call Summary Generation with sentiment analysis and action item extraction",
-        "Real-time Sentiment Analysis for customer mood detection and response adjustment",
-        "Predictive Analytics with forecasting models and trend identification",
-        "Sophisticated Voice Recognition with accent adaptation and language detection",
-        "Seamless integration with existing systems through robust APIs",
-        "24/7 automated operations with human oversight and intervention capabilities"
+        "AI-Powered Chatbots",
+        "Automated Workflows",
+        "Call Summary Generation",
+        "Sentiment Analysis",
+        "Predictive Analytics",
+        "Voice Recognition"
       ],
       benefits: [
-        "Handle 60% more inquiries simultaneously without increasing staff",
-        "Reduce operational costs by 70% through intelligent automation",
-        "Improve data accuracy by 95% with automated data entry and validation",
-        "Decrease response times by 90% with instant AI-powered responses",
-        "Increase customer engagement by 120% with personalized interactions",
-        "Achieve 24/7 availability with no downtime or breaks required"
+        "Handle 60% more inquiries",
+        "Reduce operational costs",
+        "Improve data accuracy"
       ]
     },
     {
       icon: BarChart3,
       title: "Digital Marketing",
+      description: "Complete digital marketing solutions to grow your brand",
       features: [
-        "Full-Service Social Media Management across all major platforms with content calendars",
-        "Professional Content Creation including copywriting, graphic design, and video production",
-        "Advanced SEO Optimization with keyword research, on-page and off-page strategies",
-        "Targeted Email Marketing Campaigns with segmentation and automation workflows",
-        "Strategic Pay-Per-Click Advertising on Google, Facebook, and LinkedIn platforms",
-        "Comprehensive Analytics & Reporting with ROI tracking and performance insights",
-        "Brand strategy development with positioning and messaging frameworks",
-        "Conversion rate optimization with A/B testing and user experience improvements"
+        "Social Media Management",
+        "Content Creation",
+        "SEO Optimization",
+        "Email Marketing Campaigns",
+        "Pay-Per-Click Advertising",
+        "Analytics & Reporting"
       ],
       benefits: [
-        "Increase brand visibility by 250% across all digital channels",
-        "Generate 300% more qualified leads through optimized campaigns",
-        "Improve ROI tracking accuracy by 90% with advanced analytics",
-        "Boost website traffic by 180% through SEO and content marketing",
-        "Increase social media engagement by 400% with strategic content",
-        "Achieve 85% email open rates with personalized campaigns"
+        "Increase brand visibility",
+        "Generate more qualified leads",
+        "Improve ROI tracking"
       ]
     }
   ];
@@ -128,7 +112,8 @@ export default function Services() {
                     <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
                       <IconComponent className="victory-purple w-8 h-8" />
                     </div>
-                    <h2 className="text-3xl font-bold victory-dark mb-6">{service.title}</h2>
+                    <h2 className="text-3xl font-bold victory-dark mb-4">{service.title}</h2>
+                    <p className="text-lg victory-gray mb-6">{service.description}</p>
                     
                     <div className="mb-8">
                       <h3 className="font-semibold victory-dark mb-4">Key Features:</h3>

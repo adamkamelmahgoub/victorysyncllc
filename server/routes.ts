@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
-import { registerUser, loginUser, getCurrentUser, authenticateJWT, generateJWT, type AuthenticatedRequest } from "./publicAuth";
+import { registerUser, loginUser, getCurrentUser, authenticateJWT, type AuthenticatedRequest } from "./publicAuth";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
@@ -16,22 +16,13 @@ if (process.env.STRIPE_SECRET_KEY) {
   });
 }
 
-// Admin middleware
-const requireAdmin = (req: any, res: any, next: any) => {
-  // Simple admin check - in production this should be more robust
-  if (req.headers['x-admin-auth'] !== 'admin123') {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-  next();
-};
-
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint - must be first to avoid being caught by other routes
   app.get('/health', async (_req, res) => {
     try {
       // Test database connection
       const dbConnected = await testDatabaseConnection();
-
+      
       const healthStatus = {
         status: dbConnected ? 'healthy' : 'unhealthy',
         timestamp: new Date().toISOString(),
@@ -42,7 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         memory: process.memoryUsage(),
         version: process.version
       };
-
+      
       const statusCode = dbConnected ? 200 : 503;
       res.status(statusCode).json(healthStatus);
     } catch (error) {
@@ -104,13 +95,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertContactSubmissionSchema.parse(req.body);
       const submission = await storage.createContactSubmission(validatedData);
-
+      
       // Send email notification for new contact form submission
       await sendEmail({
         subject: "New Contact Form Submission",
         text: `Name: ${validatedData.firstName} ${validatedData.lastName}\nEmail: ${validatedData.email}\nMessage:\n${validatedData.message}`
       });
-
+      
       res.json(submission);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -131,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { items } = req.body;
-
+      
       if (!items || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ message: "Items are required" });
       }
@@ -167,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id.toString();
       const { items, total, stripePaymentIntentId } = req.body;
-
+      
       // Create order
       const order = await storage.createOrder({
         userId,
@@ -208,7 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const orderId = parseInt(req.params.id);
       const userId = req.user!.id.toString();
-
+      
       const order = await storage.getOrder(orderId);
       if (!order || order.userId !== userId) {
         return res.status(404).json({ message: "Order not found" });
@@ -219,205 +210,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching order:", error);
       res.status(500).json({ message: "Failed to fetch order" });
-    }
-  });
-
-  // Admin routes - protected by authentication
-  app.get("/api/admin/users", requireAdmin, async (req: any, res: any) => {
-    try {
-      const users = await storage.getAllPublicUsers();
-      res.json(users);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      res.status(500).json({ message: "Failed to fetch users" });
-    }
-  });
-
-  app.get("/api/admin/orders", requireAdmin, async (req: any, res: any) => {
-    try {
-      const orders = await storage.getAllOrders();
-      res.json(orders);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      res.status(500).json({ message: "Failed to fetch orders" });
-    }
-  });
-
-  app.get("/api/admin/packages", requireAdmin, async (req: any, res: any) => {
-    try {
-      const packages = await storage.getPackages();
-      res.json(packages);
-    } catch (error) {
-      console.error("Error fetching packages:", error);
-      res.status(500).json({ message: "Failed to fetch packages" });
-    }
-  });
-
-  app.patch('/api/admin/users/:id', requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { isActive } = req.body;
-
-      const user = await storage.updateUserStatus(userId, isActive);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json(user);
-    } catch (error) {
-      console.error("Error updating user status:", error);
-      res.status(500).json({ message: "Failed to update user status" });
-    }
-  });
-
-  app.delete('/api/admin/users/:id', requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-
-      const success = await storage.deleteUser(userId);
-      if (!success) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json({ message: "User deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      res.status(500).json({ message: "Failed to delete user" });
-    }
-  });
-
-  app.put('/api/admin/users/:id/status', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { isActive } = req.body;
-
-      const user = await storage.updateUserStatus(userId, isActive);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json(user);
-    } catch (error) {
-      console.error("Error updating user status:", error);
-      res.status(500).json({ message: "Failed to update user status" });
-    }
-  });
-
-  app.delete('/api/admin/users/:id', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-
-      const success = await storage.deleteUser(userId);
-      if (!success) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json({ message: "User deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      res.status(500).json({ message: "Failed to delete user" });
-    }
-  });
-
-  app.post('/api/admin/users/:id/orders', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = req.params.id;
-      const { packageId, quantity } = req.body;
-
-      const pkg = await storage.getPackage(packageId);
-      if (!pkg) {
-        return res.status(400).json({ message: "Package not found" });
-      }
-
-      const total = parseFloat(pkg.price) * quantity;
-
-      const order = await storage.createOrder({
-        userId,
-        total: total.toString(),
-        status: 'admin_created',
-      });
-
-      await storage.createOrderItem({
-        orderId: order.id,
-        packageId,
-        quantity,
-        price: pkg.price,
-      });
-
-      res.json(order);
-    } catch (error) {
-      console.error("Error creating order for user:", error);
-      res.status(500).json({ message: "Failed to create order" });
-    }
-  });
-
-  app.put('/api/admin/users/:id/privileges', requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { privileges } = req.body;
-
-      const user = await storage.updateUserPrivileges(userId, privileges);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json(user);
-    } catch (error) {
-      console.error("Error updating user privileges:", error);
-      res.status(500).json({ message: "Failed to update user privileges" });
-    }
-  });
-
-  app.post('/api/admin/users/:id/impersonate', requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const user = await storage.getPublicUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Generate JWT token for impersonation
-      const token = generateJWT(user);
-      res.json({ token, user });
-    } catch (error) {
-      console.error("Error impersonating user:", error);
-      res.status(500).json({ message: "Failed to impersonate user" });
-    }
-  });
-
-  app.get('/api/admin/export/:type', requireAdmin, async (req: any, res: any) => {
-    try {
-      const { type } = req.params;
-      let data = [];
-      let filename = '';
-
-      switch (type) {
-        case 'users':
-          data = await storage.getAllPublicUsers();
-          filename = 'users-export.csv';
-          break;
-        case 'orders':
-          data = await storage.getAllOrders();
-          filename = 'orders-export.csv';
-          break;
-        default:
-          return res.status(400).json({ message: 'Invalid export type' });
-      }
-
-      // Simple CSV generation
-      const headers = Object.keys(data[0] || {});
-      const csvContent = [
-        headers.join(','),
-        ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
-      ].join('\n');
-
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.send(csvContent);
-    } catch (error) {
-      console.error("Error exporting data:", error);
-      res.status(500).json({ message: "Failed to export data" });
     }
   });
 
@@ -435,7 +227,7 @@ async function initializePackages() {
     console.log('📦 Initializing default packages...');
     const existingPackages = await storage.getPackages();
     console.log(`Found ${existingPackages.length} existing packages`);
-
+    
     if (existingPackages.length === 0) {
       console.log('Creating default packages...');
       // Create default packages
