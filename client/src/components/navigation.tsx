@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart } from "lucide-react";
+import { Menu, X, ShoppingCart, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import logoVs3d from "@/assets/logo-vs-3d.png";
