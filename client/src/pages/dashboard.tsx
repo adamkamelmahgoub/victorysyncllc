@@ -1,140 +1,65 @@
-
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import { ConnectIntegrationModal } from '@/components/ConnectIntegrationModal';
+import { TrendingUp, TrendingDown, Plus, ExternalLink } from 'lucide-react';
 
-interface KPIData {
-  totalCalls: number;
-  activeAgents: number;
-  avgWaitTime: number;
-  customerSatisfaction: number;
-  conversionRate: number;
-  revenue: number;
-}
-
-interface CustomerData {
-  id: string;
+interface KPIMetric {
   name: string;
-  email: string;
-  plan: string;
-  status: string;
-  joinDate: string;
+  value: number | string;
+  change?: number;
+  changeType?: 'increase' | 'decrease' | 'neutral';
+  unit?: string;
+  description?: string;
+  source?: string;
 }
 
-const Dashboard: React.FC = () => {
-  const { user, loading: authLoading } = useAuth();
-  const [, setLocation] = useLocation();
-  const [kpiData, setKpiData] = useState<KPIData | null>(null);
-  const [customerData, setCustomerData] = useState<CustomerData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface DashboardMetrics {
+  metrics: KPIMetric[];
+  message?: string;
+}
 
+export default function Dashboard() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+  const [connectModalOpen, setConnectModalOpen] = useState(false);
+
+  // Redirect to login if not authenticated
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!isLoading && !isAuthenticated) {
       setLocation('/login');
       return;
     }
-    
-    if (user) {
-      fetchDashboardData();
-    }
-  }, [user, authLoading, setLocation]);
+  }, [isAuthenticated, isLoading, setLocation]);
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch KPI data from multiple sources
-      const [kpiResponse, customerResponse] = await Promise.all([
-        fetchKPIData(),
-        fetchCustomerData()
-      ]);
+  const { data: dashboardData, isLoading: metricsLoading, error } = useQuery<DashboardMetrics>({
+    queryKey: ['/api/dashboard/metrics'],
+    enabled: isAuthenticated,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
 
-      setKpiData(kpiResponse);
-      setCustomerData(customerResponse);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: integrations = [] } = useQuery<any[]>({
+    queryKey: ['/api/integrations'],
+    enabled: isAuthenticated,
+  });
 
-  const fetchKPIData = async (): Promise<KPIData> => {
-    // Fetch from HubSpot API
-    const hubspotData = await fetchHubSpotMetrics();
-    
-    // Fetch from Five9 API
-    const five9Data = await fetchFive9Metrics();
-    
-    // Combine and return KPI data
-    return {
-      totalCalls: five9Data.totalCalls || 0,
-      activeAgents: five9Data.activeAgents || 0,
-      avgWaitTime: five9Data.avgWaitTime || 0,
-      customerSatisfaction: hubspotData.satisfaction || 0,
-      conversionRate: hubspotData.conversionRate || 0,
-      revenue: hubspotData.revenue || 0
-    };
-  };
-
-  const fetchHubSpotMetrics = async () => {
-    const response = await fetch('/api/integrations/hubspot/metrics', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch HubSpot metrics');
-    }
-    
-    return response.json();
-  };
-
-  const fetchFive9Metrics = async () => {
-    const response = await fetch('/api/integrations/five9/metrics', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch Five9 metrics');
-    }
-    
-    return response.json();
-  };
-
-  const fetchCustomerData = async (): Promise<CustomerData[]> => {
-    const response = await fetch('/api/customers', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch customer data');
-    }
-    
-    return response.json();
-  };
-
-  if (authLoading || loading) {
+  if (isLoading || metricsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-8">Dashboard</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="bg-white/10 backdrop-blur-sm border-white/20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <Card key={i} className="bg-white/10 border-white/20">
                 <CardHeader>
-                  <Skeleton className="h-4 w-32 bg-white/20" />
-                  <Skeleton className="h-8 w-24 bg-white/20" />
+                  <Skeleton className="h-4 w-24 bg-white/20" />
+                  <Skeleton className="h-6 w-16 bg-white/20" />
                 </CardHeader>
                 <CardContent>
-                  <Skeleton className="h-16 w-full bg-white/20" />
+                  <Skeleton className="h-4 w-20 bg-white/20" />
                 </CardContent>
               </Card>
             ))}
@@ -150,134 +75,131 @@ const Dashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center text-white">
             <h1 className="text-3xl font-bold mb-4">Dashboard Error</h1>
-            <p className="text-red-300">{error}</p>
-            <button 
-              onClick={fetchDashboardData}
-              className="mt-4 px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
+            <p className="text-red-300">Failed to load dashboard data</p>
+            <Button 
+              onClick={() => window.location.reload()}
+              className="mt-4"
             >
               Retry
-            </button>
+            </Button>
           </div>
         </div>
       </div>
     );
   }
 
+  const metrics = dashboardData?.metrics || [];
+  const hasIntegrations = integrations.filter(i => i.is_active).length > 0;
+
+  const renderMetricCard = (metric: KPIMetric, index: number) => (
+    <Card key={index} className="bg-white/10 border-white/20 backdrop-blur-sm">
+      <CardHeader className="pb-3">
+        <CardDescription className="text-white/70 text-xs">
+          {metric.source && `${metric.source} • `}{metric.description}
+        </CardDescription>
+        <CardTitle className="text-white text-lg">{metric.name}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between">
+          <span className="text-2xl font-bold text-white">
+            {metric.value}
+            {metric.unit && <span className="text-sm text-white/70 ml-1">{metric.unit}</span>}
+          </span>
+          {metric.change !== undefined && (
+            <div className={`flex items-center space-x-1 text-sm ${
+              metric.changeType === 'increase' ? 'text-green-400' :
+              metric.changeType === 'decrease' ? 'text-red-400' : 'text-white/70'
+            }`}>
+              {metric.changeType === 'increase' && <TrendingUp className="w-4 h-4" />}
+              {metric.changeType === 'decrease' && <TrendingDown className="w-4 h-4" />}
+              <span>{Math.abs(metric.change)}%</span>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-          <div className="text-white/70">
-            Welcome back, {user?.name || user?.email}
+          <div>
+            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+            <p className="text-white/70">
+              Welcome back, {user?.name || user?.email}
+            </p>
           </div>
+          <Button
+            onClick={() => setConnectModalOpen(true)}
+            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Integration
+          </Button>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white">Total Calls Today</CardTitle>
-              <CardDescription className="text-white/70">Active call volume</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{kpiData?.totalCalls.toLocaleString() || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white">Active Agents</CardTitle>
-              <CardDescription className="text-white/70">Currently online</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{kpiData?.activeAgents || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white">Avg Wait Time</CardTitle>
-              <CardDescription className="text-white/70">In seconds</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{kpiData?.avgWaitTime || 0}s</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white">Customer Satisfaction</CardTitle>
-              <CardDescription className="text-white/70">Average rating</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{(kpiData?.customerSatisfaction || 0).toFixed(1)}/5</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white">Conversion Rate</CardTitle>
-              <CardDescription className="text-white/70">This month</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{(kpiData?.conversionRate || 0).toFixed(1)}%</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white">Revenue</CardTitle>
-              <CardDescription className="text-white/70">This month</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">${(kpiData?.revenue || 0).toLocaleString()}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Customer Data Table */}
-        <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-          <CardHeader>
-            <CardTitle className="text-white">Recent Customers</CardTitle>
-            <CardDescription className="text-white/70">Latest customer activity</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-white">
-                <thead>
-                  <tr className="border-b border-white/20">
-                    <th className="text-left p-2">Name</th>
-                    <th className="text-left p-2">Email</th>
-                    <th className="text-left p-2">Plan</th>
-                    <th className="text-left p-2">Status</th>
-                    <th className="text-left p-2">Join Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {customerData.slice(0, 10).map((customer) => (
-                    <tr key={customer.id} className="border-b border-white/10">
-                      <td className="p-2">{customer.name}</td>
-                      <td className="p-2">{customer.email}</td>
-                      <td className="p-2">{customer.plan}</td>
-                      <td className="p-2">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          customer.status === 'active' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
-                        }`}>
-                          {customer.status}
-                        </span>
-                      </td>
-                      <td className="p-2">{new Date(customer.joinDate).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {!hasIntegrations ? (
+          <div className="text-center py-12">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 max-w-md mx-auto">
+              <h2 className="text-2xl font-bold text-white mb-4">No Integrations Connected</h2>
+              <p className="text-white/70 mb-6">
+                Connect your CRM or dialer tools to see live KPIs and performance metrics.
+              </p>
+              <Button
+                onClick={() => setConnectModalOpen(true)}
+                className="bg-white text-purple-900 hover:bg-white/90"
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Connect Your First Integration
+              </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        ) : metrics.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 max-w-md mx-auto">
+              <h2 className="text-2xl font-bold text-white mb-4">Loading Metrics</h2>
+              <p className="text-white/70 mb-6">
+                Your integrations are connected. Fetching live data...
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {metrics.map((metric, index) => renderMetricCard(metric, index))}
+          </div>
+        )}
+
+        {hasIntegrations && (
+          <div className="mt-8">
+            <Card className="bg-white/5 border-white/10">
+              <CardHeader>
+                <CardTitle className="text-white">Connected Integrations</CardTitle>
+                <CardDescription className="text-white/70">
+                  Manage your connected CRM and dialer tools
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  {integrations.filter(i => i.is_active).map((integration) => (
+                    <div key={integration.id} className="bg-white/10 rounded-lg px-3 py-2">
+                      <span className="text-white font-medium capitalize">
+                        {integration.type}
+                      </span>
+                      <span className="text-green-400 ml-2">●</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
+
+      <ConnectIntegrationModal
+        open={connectModalOpen}
+        onClose={() => setConnectModalOpen(false)}
+      />
     </div>
   );
-};
-
-export default Dashboard;
+}

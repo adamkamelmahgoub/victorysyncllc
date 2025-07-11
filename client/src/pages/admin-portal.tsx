@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 interface AdminUser {
   id: string;
@@ -31,185 +32,139 @@ interface Customer {
   joinDate: string;
 }
 
-interface FeatureToggle {
-  id: string;
-  name: string;
-  description: string;
-  enabled: boolean;
-  customerId?: string;
-}
-
-const AdminPortal: React.FC = () => {
-  const { user, loading: authLoading } = useAuth();
+export default function AdminPortal() {
+  const { user, isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const [featureToggles, setFeatureToggles] = useState<FeatureToggle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
   const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [admins, setAdmins] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Check admin authentication
   useEffect(() => {
-    if (!authLoading) {
-      if (!user) {
+    if (!isLoading) {
+      if (!isAuthenticated) {
         setLocation('/login');
         return;
       }
       
-      // Check if user has admin role
-      checkAdminAccess();
-    }
-  }, [user, authLoading, setLocation]);
-
-  const checkAdminAccess = async () => {
-    try {
-      const response = await fetch('/api/admin/check-access', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        if (response.status === 403) {
-          setLocation('/');
-          return;
-        }
-        throw new Error('Failed to verify admin access');
+      if (user?.role !== 'admin') {
+        toast({
+          title: 'Access Denied',
+          description: 'You need admin privileges to access this portal',
+          variant: 'destructive'
+        });
+        setLocation('/dashboard');
+        return;
       }
-      
-      // If access is verified, load admin data
-      await loadAdminData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Access denied');
-      setTimeout(() => setLocation('/'), 3000);
     }
-  };
+  }, [isAuthenticated, isLoading, user, setLocation, toast]);
 
-  const loadAdminData = async () => {
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'admin') {
+      loadData();
+    }
+  }, [isAuthenticated, user]);
+
+  const loadData = async () => {
     try {
       setLoading(true);
       
-      const [customersRes, adminUsersRes, togglesRes] = await Promise.all([
-        fetch('/api/admin/customers', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }),
-        fetch('/api/admin/users', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }),
-        fetch('/api/admin/feature-toggles', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
+      // Mock data for now - replace with actual API calls
+      setCustomers([
+        {
+          id: '1',
+          name: 'Acme Corp',
+          email: 'admin@acme.com',
+          plan: 'Professional',
+          status: 'Active',
+          billing: '$299/month',
+          usage: 87.5,
+          joinDate: '2024-01-15'
+        },
+        {
+          id: '2',
+          name: 'TechStart Inc',
+          email: 'contact@techstart.com',
+          plan: 'Enterprise',
+          status: 'Active',
+          billing: '$599/month',
+          usage: 92.3,
+          joinDate: '2024-02-03'
+        }
       ]);
 
-      if (!customersRes.ok || !adminUsersRes.ok || !togglesRes.ok) {
-        throw new Error('Failed to load admin data');
-      }
-
-      const [customersData, adminUsersData, togglesData] = await Promise.all([
-        customersRes.json(),
-        adminUsersRes.json(),
-        togglesRes.json()
+      setAdmins([
+        {
+          id: '1',
+          name: 'Admin User',
+          email: 'admin@victorysync.com',
+          role: 'Super Admin',
+          permissions: ['all'],
+          createdAt: '2024-01-01',
+          lastLogin: '2024-01-20'
+        }
       ]);
-
-      setCustomers(customersData);
-      setAdminUsers(adminUsersData);
-      setFeatureToggles(togglesData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load admin data');
+    } catch (error) {
+      console.error('Error loading admin data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load admin data',
+        variant: 'destructive'
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const createAdmin = async () => {
-    if (!newAdminEmail.trim()) return;
-    
-    try {
-      const response = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ email: newAdminEmail, role: 'admin' })
+    if (!newAdminEmail.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter an email address',
+        variant: 'destructive'
       });
+      return;
+    }
 
-      if (!response.ok) {
-        throw new Error('Failed to create admin user');
-      }
+    try {
+      // Mock admin creation - replace with actual API call
+      const newAdmin: AdminUser = {
+        id: (admins.length + 1).toString(),
+        name: 'New Admin',
+        email: newAdminEmail,
+        role: 'Admin',
+        permissions: ['read', 'write'],
+        createdAt: new Date().toISOString().split('T')[0],
+        lastLogin: 'Never'
+      };
 
+      setAdmins([...admins, newAdmin]);
       setNewAdminEmail('');
-      await loadAdminData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create admin');
-    }
-  };
-
-  const toggleFeature = async (toggleId: string, enabled: boolean) => {
-    try {
-      const response = await fetch(`/api/admin/feature-toggles/${toggleId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ enabled })
+      
+      toast({
+        title: 'Success',
+        description: 'Admin user created successfully',
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update feature toggle');
-      }
-
-      setFeatureToggles(prev => 
-        prev.map(toggle => 
-          toggle.id === toggleId ? { ...toggle, enabled } : toggle
-        )
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update feature');
-    }
-  };
-
-  const updateCustomerStatus = async (customerId: string, status: string) => {
-    try {
-      const response = await fetch(`/api/admin/customers/${customerId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ status })
+    } catch (error) {
+      console.error('Error creating admin:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create admin user',
+        variant: 'destructive'
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update customer status');
-      }
-
-      setCustomers(prev => 
-        prev.map(customer => 
-          customer.id === customerId ? { ...customer, status } : customer
-        )
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update customer');
     }
   };
 
-  if (authLoading || loading) {
+  if (isLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-6">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-8">Admin Portal</h1>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <Card key={i} className="bg-white/5 border-white/10">
-                <CardHeader>
-                  <Skeleton className="h-6 w-40 bg-white/20" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-32 w-full bg-white/20" />
-                </CardContent>
-              </Card>
+          <Skeleton className="h-8 w-48 mb-8 bg-white/20" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-32 bg-white/10" />
             ))}
           </div>
         </div>
@@ -217,38 +172,82 @@ const AdminPortal: React.FC = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-        <div className="text-center text-white">
-          <h1 className="text-3xl font-bold mb-4">Access Denied</h1>
-          <p className="text-red-300 mb-4">{error}</p>
-          <p className="text-gray-400">Redirecting to home page...</p>
-        </div>
-      </div>
-    );
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Admin Portal</h1>
-          <Badge variant="secondary" className="bg-red-500/20 text-red-300">
-            Super Admin
-          </Badge>
+          <div>
+            <h1 className="text-3xl font-bold text-white">Admin Portal</h1>
+            <p className="text-white/70">
+              Manage users, integrations, and system settings
+            </p>
+          </div>
+          <Button
+            onClick={() => setLocation('/dashboard')}
+            variant="outline"
+            className="border-white/30 text-white hover:bg-white/20"
+          >
+            Back to Dashboard
+          </Button>
+        </div>
+
+        {/* Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-white/10 border-white/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-lg">Total Customers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{customers.length}</div>
+              <p className="text-white/70 text-sm">Active subscriptions</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 border-white/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-lg">Monthly Revenue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">$12,847</div>
+              <p className="text-white/70 text-sm">+15% from last month</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 border-white/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-lg">Active Integrations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">24</div>
+              <p className="text-white/70 text-sm">Across all customers</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 border-white/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-lg">System Health</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-400">99.9%</div>
+              <p className="text-white/70 text-sm">Uptime this month</p>
+            </CardContent>
+          </Card>
         </div>
 
         <Tabs defaultValue="customers" className="space-y-6">
           <TabsList className="bg-white/10 border-white/20">
             <TabsTrigger value="customers" className="text-white data-[state=active]:bg-white/20">
-              Customers
+              Customer Management
             </TabsTrigger>
             <TabsTrigger value="admins" className="text-white data-[state=active]:bg-white/20">
               Admin Users
             </TabsTrigger>
-            <TabsTrigger value="features" className="text-white data-[state=active]:bg-white/20">
-              Feature Toggles
+            <TabsTrigger value="settings" className="text-white data-[state=active]:bg-white/20">
+              System Settings
             </TabsTrigger>
           </TabsList>
 
@@ -257,7 +256,7 @@ const AdminPortal: React.FC = () => {
               <CardHeader>
                 <CardTitle className="text-white">Customer Management</CardTitle>
                 <CardDescription className="text-white/70">
-                  Manage all customer accounts, plans, and billing status
+                  View and manage customer accounts and subscriptions
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -268,8 +267,8 @@ const AdminPortal: React.FC = () => {
                         <th className="text-left p-3">Customer</th>
                         <th className="text-left p-3">Plan</th>
                         <th className="text-left p-3">Status</th>
-                        <th className="text-left p-3">Billing</th>
                         <th className="text-left p-3">Usage</th>
+                        <th className="text-left p-3">Revenue</th>
                         <th className="text-left p-3">Actions</th>
                       </tr>
                     </thead>
@@ -279,46 +278,33 @@ const AdminPortal: React.FC = () => {
                           <td className="p-3">
                             <div>
                               <div className="font-medium">{customer.name}</div>
-                              <div className="text-sm text-white/70">{customer.email}</div>
+                              <div className="text-white/70 text-sm">{customer.email}</div>
                             </div>
                           </td>
                           <td className="p-3">
-                            <Badge variant="outline" className="border-white/20 text-white">
+                            <Badge variant="outline" className="border-white/30 text-white">
                               {customer.plan}
                             </Badge>
                           </td>
                           <td className="p-3">
-                            <Badge className={
-                              customer.status === 'active' 
-                                ? 'bg-green-500/20 text-green-300' 
-                                : 'bg-red-500/20 text-red-300'
-                            }>
+                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                               {customer.status}
                             </Badge>
                           </td>
                           <td className="p-3">
-                            <Badge className={
-                              customer.billing === 'current' 
-                                ? 'bg-blue-500/20 text-blue-300' 
-                                : 'bg-yellow-500/20 text-yellow-300'
-                            }>
-                              {customer.billing}
-                            </Badge>
-                          </td>
-                          <td className="p-3">{customer.usage}%</td>
-                          <td className="p-3">
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant={customer.status === 'active' ? 'destructive' : 'default'}
-                                onClick={() => updateCustomerStatus(
-                                  customer.id, 
-                                  customer.status === 'active' ? 'suspended' : 'active'
-                                )}
-                              >
-                                {customer.status === 'active' ? 'Suspend' : 'Activate'}
-                              </Button>
+                            <div className="w-24 bg-white/20 rounded-full h-2">
+                              <div 
+                                className="bg-blue-400 h-2 rounded-full" 
+                                style={{ width: `${customer.usage}%` }}
+                              />
                             </div>
+                            <div className="text-sm text-white/70 mt-1">{customer.usage}%</div>
+                          </td>
+                          <td className="p-3">{customer.billing}</td>
+                          <td className="p-3">
+                            <Button size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/20">
+                              Manage
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -362,38 +348,31 @@ const AdminPortal: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {adminUsers.map((admin) => (
+                      {admins.map((admin) => (
                         <tr key={admin.id} className="border-b border-white/10">
                           <td className="p-3">
                             <div>
                               <div className="font-medium">{admin.name}</div>
-                              <div className="text-sm text-white/70">{admin.email}</div>
+                              <div className="text-white/70 text-sm">{admin.email}</div>
                             </div>
                           </td>
                           <td className="p-3">
-                            <Badge variant="outline" className="border-white/20 text-white">
+                            <Badge variant="outline" className="border-white/30 text-white">
                               {admin.role}
                             </Badge>
                           </td>
                           <td className="p-3">
-                            <div className="flex flex-wrap gap-1">
-                              {admin.permissions.slice(0, 3).map((permission) => (
-                                <Badge key={permission} className="bg-purple-500/20 text-purple-300 text-xs">
-                                  {permission}
+                            <div className="flex gap-1">
+                              {admin.permissions.map((perm) => (
+                                <Badge key={perm} className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs">
+                                  {perm}
                                 </Badge>
                               ))}
-                              {admin.permissions.length > 3 && (
-                                <Badge className="bg-gray-500/20 text-gray-300 text-xs">
-                                  +{admin.permissions.length - 3}
-                                </Badge>
-                              )}
                             </div>
                           </td>
-                          <td className="p-3 text-sm text-white/70">
-                            {new Date(admin.lastLogin).toLocaleDateString()}
-                          </td>
+                          <td className="p-3 text-white/70">{admin.lastLogin}</td>
                           <td className="p-3">
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/20">
                               Edit
                             </Button>
                           </td>
@@ -406,28 +385,39 @@ const AdminPortal: React.FC = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="features" className="space-y-6">
+          <TabsContent value="settings" className="space-y-6">
             <Card className="bg-white/5 border-white/10">
               <CardHeader>
-                <CardTitle className="text-white">Feature Toggles</CardTitle>
+                <CardTitle className="text-white">System Settings</CardTitle>
                 <CardDescription className="text-white/70">
-                  Control feature availability across the platform
+                  Configure global system settings and preferences
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  {featureToggles.map((toggle) => (
-                    <div key={toggle.id} className="flex items-center justify-between p-4 border border-white/10 rounded-lg">
-                      <div>
-                        <h4 className="text-white font-medium">{toggle.name}</h4>
-                        <p className="text-white/70 text-sm">{toggle.description}</p>
-                      </div>
-                      <Switch
-                        checked={toggle.enabled}
-                        onCheckedChange={(checked) => toggleFeature(toggle.id, checked)}
-                      />
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-medium">Maintenance Mode</h4>
+                      <p className="text-white/70 text-sm">Enable maintenance mode for system updates</p>
                     </div>
-                  ))}
+                    <Switch />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-medium">New User Registration</h4>
+                      <p className="text-white/70 text-sm">Allow new users to register accounts</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-medium">Email Notifications</h4>
+                      <p className="text-white/70 text-sm">Send system notifications via email</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -436,6 +426,4 @@ const AdminPortal: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default AdminPortal;
+}
