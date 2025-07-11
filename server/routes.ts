@@ -22,7 +22,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Test database connection
       const dbConnected = await testDatabaseConnection();
-      
+
       const healthStatus = {
         status: dbConnected ? 'healthy' : 'unhealthy',
         timestamp: new Date().toISOString(),
@@ -33,7 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         memory: process.memoryUsage(),
         version: process.version
       };
-      
+
       const statusCode = dbConnected ? 200 : 503;
       res.status(statusCode).json(healthStatus);
     } catch (error) {
@@ -95,13 +95,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertContactSubmissionSchema.parse(req.body);
       const submission = await storage.createContactSubmission(validatedData);
-      
+
       // Send email notification for new contact form submission
       await sendEmail({
         subject: "New Contact Form Submission",
         text: `Name: ${validatedData.firstName} ${validatedData.lastName}\nEmail: ${validatedData.email}\nMessage:\n${validatedData.message}`
       });
-      
+
       res.json(submission);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -122,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { items } = req.body;
-      
+
       if (!items || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ message: "Items are required" });
       }
@@ -158,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id.toString();
       const { items, total, stripePaymentIntentId } = req.body;
-      
+
       // Create order
       const order = await storage.createOrder({
         userId,
@@ -199,7 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const orderId = parseInt(req.params.id);
       const userId = req.user!.id.toString();
-      
+
       const order = await storage.getOrder(orderId);
       if (!order || order.userId !== userId) {
         return res.status(404).json({ message: "Order not found" });
@@ -227,7 +227,7 @@ async function initializePackages() {
     console.log('📦 Initializing default packages...');
     const existingPackages = await storage.getPackages();
     console.log(`Found ${existingPackages.length} existing packages`);
-    
+
     if (existingPackages.length === 0) {
       console.log('Creating default packages...');
       // Create default packages

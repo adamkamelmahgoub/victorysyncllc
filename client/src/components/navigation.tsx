@@ -1,9 +1,10 @@
-import { Link, useLocation } from "wouter";
-import { ShoppingCart, User, Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
+import { Link, useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Menu, X, ShoppingCart } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
+import logoVs3d from "@/assets/logo-vs-3d.png";
 
 interface NavigationProps {
   onCartClick: () => void;
@@ -30,17 +31,8 @@ export default function Navigation({ onCartClick }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/">
-            <div className="flex items-center space-x-3 cursor-pointer">
-              <img
-                src="/vs_favicon_32.png"
-                alt="VictorySync Logo"
-                className="w-8 h-8 rounded-lg"
-              />
-              <span className="text-xl brand-font victory-dark">
-                VictorySync
-              </span>
-            </div>
+          <Link href="/" className="flex items-center space-x-2">
+            <img src={logoVs3d} alt="Victory Sync" className="h-8 w-auto" />
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -97,7 +89,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     Sign In
                   </Button>
                 </Link>
-                
+
               </div>
             )}
           </div>
@@ -179,7 +171,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     >
                       Sign In
                     </Button>
-                    
+
                   </div>
                 )}
               </div>
