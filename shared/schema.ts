@@ -101,17 +101,6 @@ export const packagesRelations = relations(packages, ({ many }) => ({
   orderItems: many(orderItems),
 }));
 
-export const publicUsers = pgTable('public_users', {
-  id: serial('id').primaryKey(),
-  name: varchar('name').notNull(),
-  email: varchar('email').unique().notNull(),
-  passwordHash: varchar('password_hash'),
-  provider: varchar('provider').default('local'), // local, google, facebook, apple
-  providerId: varchar('provider_id'),
-  socialAccounts: jsonb('social_accounts').default([]), // Array of connected providers
-  createdAt: timestamp('created_at').defaultNow(),
-});
-
 export const integrations = pgTable('integrations', {
   id: serial('id').primaryKey(),
   customer_id: text('customer_id').notNull(),
