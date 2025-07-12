@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,7 +63,7 @@ export default function CustomerDashboard() {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setOrders(data);
@@ -84,7 +83,7 @@ export default function CustomerDashboard() {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setKPIData(data);
@@ -336,3 +335,5 @@ export default function CustomerDashboard() {
     </div>
   );
 }
+
+export default CustomerDashboard;

@@ -138,12 +138,7 @@ export class DatabaseStorage implements IStorage {
   async updateUserPrivileges(userId: number, privileges: any): Promise<PublicUser | null> {
     const [user] = await db
       .update(publicUsers)
-      .set({ 
-        socialAccounts: [
-          ...(await this.getPublicUserById(userId))?.socialAccounts || [],
-          { type: 'privileges', data: privileges }
-        ]
-      })
+      .set({ privileges })
       .where(eq(publicUsers.id, userId))
       .returning();
 
