@@ -62,11 +62,11 @@ function Router() {
           <Route path="/checkout" component={Checkout} />
           <Route path="/dashboard" component={CustomerDashboard} />
           <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/admin" component={lazy(() => import('./pages/admin-portal'))} />
+          <Route path="/admin" component={AdminPortal} />
           <Route path="/login" component={Login} />
           <Route path="/register" component={Register} />
           <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/admin-portal" component={() => import('./pages/admin-portal')} />
+          <Route path="/admin-portal" component={AdminPortal} />
 
           {/* Footer Pages */}
           <Route path="/about-us" component={AboutUs} />

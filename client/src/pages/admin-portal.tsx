@@ -22,7 +22,14 @@ import {
   Unlock, 
   Trash2, 
   Plus, 
-  Edit 
+  Edit,
+  CheckCircle,
+  Activity,
+  CreditCard,
+  BarChart3,
+  UserPlus,
+  Search,
+  AlertTriangle
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -55,505 +62,6 @@ interface Package {
   features: string[];
 }
 
-export default function AdminPortal() {
-  const [, setLocation] = useLocation();
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isUserDetailOpen, setIsUserDetailOpen] = useState(false);
-  const [tierFilter, setTierFilter] = useState<string>('all');
-  const queryClient = useQueryClient();
-
-  // Check admin authentication
-  useEffect(() => {
-    const adminAuth = localStorage.getItem('adminAuth');
-    if (adminAuth !== 'admin123') {
-      setLocation('/admin');
-    }
-  }, [setLocation]);
-
-  // Fetch users
-  const { data: users = [], isLoading: usersLoading } = useQuery({
-    queryKey: ['/api/admin/users'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/users', {
-        headers: {
-          'x-admin-auth': 'admin123'
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch users');
-      return response.json();
-    }
-  });
-
-  // Fetch orders
-  const { data: orders = [] } = useQuery({
-    queryKey: ['/api/admin/orders'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/orders', {
-        headers: {
-          'x-admin-auth': 'admin123'
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch orders');
-      return response.json();
-    }
-  });
-
-  // Fetch packages
-  const { data: packages = [] } = useQuery({
-    queryKey: ['/api/packages']
-  });
-
-  // Filter users based on tier
-  const filteredUsers = users.filter((user: User) => {
-    if (tierFilter === 'all') return true;
-    return user.privileges?.subscriptionTier === tierFilter;
-  });
-
-  const handleUserClick = (user: User) => {
-    setSelectedUser(user);
-    setIsUserDetailOpen(true);
-  };
-
-  const getTierColor = (tier: string) => {
-    switch (tier) {
-      case 'enterprise': return 'bg-purple-100 text-purple-800';
-      case 'premium': return 'bg-blue-100 text-blue-800';
-      case 'basic': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'suspended': return 'bg-red-100 text-red-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const toggleUserStatus = async (userId: number, currentStatus: boolean) => {
-    try {
-      await apiRequest({
-        url: `/api/admin/users/${userId}/status`,
-        method: 'PUT',
-        body: { isActive: !currentStatus }
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-    } catch (error) {
-      console.error('Error updating user status:', error);
-    }
-  };
-
-  const deleteUser = async (userId: number) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        await apiRequest({
-          url: `/api/admin/users/${userId}`,
-          method: 'DELETE'
-        });
-        queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      } catch (error) {
-        console.error('Error deleting user:', error);
-      }
-    }
-  };
-
-  const impersonateUser = (userId: number) => {
-    console.log('Impersonating user:', userId);
-    // Implement impersonation logic
-  };
-
-  // Calculate stats
-  const totalRevenue = orders.reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0);
-  const activeUsers = users.filter((user: User) => user.isActive !== false).length;
-  const totalOrders = orders.length;
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Portal</h1>
-          <p className="text-gray-600">Manage users, orders, and system settings</p>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{users.length}</div>
-              <p className="text-xs text-muted-foreground">{activeUsers} active</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalOrders}</div>
-              <p className="text-xs text-muted-foreground">All time</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Total revenue</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Packages</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{packages.length}</div>
-              <p className="text-xs text-muted-foreground">Available services</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="packages">Packages</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
-
-          {/* Users Tab */}
-          <TabsContent value="users" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>User Management</CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <Select value={tierFilter} onValueChange={setTierFilter}>
-                      <SelectTrigger className="w-40">
-                        <SelectValue placeholder="Filter by tier" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Tiers</SelectItem>
-                        <SelectItem value="basic">Basic</SelectItem>
-                        <SelectItem value="premium">Premium</SelectItem>
-                        <SelectItem value="enterprise">Enterprise</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {usersLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left p-2">User</th>
-                          <th className="text-left p-2">Status</th>
-                          <th className="text-left p-2">Tier</th>
-                          <th className="text-left p-2">Orders</th>
-                          <th className="text-left p-2">Spent</th>
-                          <th className="text-left p-2">Last Login</th>
-                          <th className="text-left p-2">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredUsers.map((user: User) => (
-                          <tr key={user.id} className="border-b hover:bg-gray-50 cursor-pointer">
-                            <td className="p-2" onClick={() => handleUserClick(user)}>
-                              <div>
-                                <p className="font-medium">{user.name}</p>
-                                <p className="text-xs text-gray-500">{user.email}</p>
-                              </div>
-                            </td>
-                            <td className="p-2" onClick={() => handleUserClick(user)}>
-                              <Badge className={user.isActive !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                                {user.isActive !== false ? "Active" : "Inactive"}
-                              </Badge>
-                            </td>
-                            <td className="p-2" onClick={() => handleUserClick(user)}>
-                              <Badge className={getTierColor(user.privileges?.subscriptionTier || 'basic')}>
-                                {user.privileges?.subscriptionTier || 'basic'}
-                              </Badge>
-                            </td>
-                            <td className="p-2" onClick={() => handleUserClick(user)}>
-                              {orders.filter((order: Order) => order.userId === user.id.toString()).length}
-                            </td>
-                            <td className="p-2" onClick={() => handleUserClick(user)}>
-                              ${orders.filter((order: Order) => order.userId === user.id.toString())
-                                .reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0)
-                                .toLocaleString()}
-                            </td>
-                            <td className="p-2" onClick={() => handleUserClick(user)}>
-                              {new Date(user.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="p-2">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreVertical className="w-4 h-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem onClick={() => handleUserClick(user)}>
-                                    <Shield className="w-4 h-4 mr-2" />
-                                    Manage Privileges
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => impersonateUser(user.id)}>
-                                    <Eye className="w-4 h-4 mr-2" />
-                                    Impersonate
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem 
-                                    onClick={() => toggleUserStatus(user.id, user.isActive !== false)}
-                                    className={user.isActive !== false ? "text-yellow-600" : "text-green-600"}
-                                  >
-                                    {user.isActive !== false ? <Lock className="w-4 h-4 mr-2" /> : <Unlock className="w-4 h-4 mr-2" />}
-                                    {user.isActive !== false ? "Suspend" : "Activate"}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => deleteUser(user.id)}
-                                    className="text-red-600"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Orders Tab */}
-          <TabsContent value="orders" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {orders.map((order: Order) => (
-                    <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="font-semibold">Order #{order.id}</p>
-                        <p className="text-sm text-gray-600">
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <Badge className={
-                          order.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                          order.status === 'processing' ? 'bg-blue-100 text-blue-800' : 
-                          'bg-yellow-100 text-yellow-800'
-                        }>
-                          {order.status}
-                        </Badge>
-                        <span className="font-semibold">${parseFloat(order.total || '0').toLocaleString()}</span>
-                        <Button size="sm" variant="outline">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Packages Tab */}
-          <TabsContent value="packages" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Package Management</CardTitle>
-                  <Button className="bg-purple-600 hover:bg-purple-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Package
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {packages.map((pkg: Package) => (
-                    <div key={pkg.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="font-semibold">{pkg.name}</p>
-                        <p className="text-sm text-gray-600">{pkg.description}</p>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <span className="font-semibold">${parseFloat(pkg.price).toLocaleString()}</span>
-                        <Button size="sm" variant="outline">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Settings Tab */}
-          <TabsContent value="settings" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>System Settings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div>
-                    <Label htmlFor="site-title">Site Title</Label>
-                    <Input id="site-title" defaultValue="VictorySync" />
-                  </div>
-                  <div>
-                    <Label htmlFor="contact-email">Contact Email</Label>
-                    <Input id="contact-email" defaultValue="info@victorysync.com" />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" defaultValue="+ (718)-813-2106" />
-                  </div>
-                  <Button className="bg-purple-600 hover:bg-purple-700">
-                    Save Settings
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* User Details Modal */}
-        <Dialog open={isUserDetailOpen} onOpenChange={setIsUserDetailOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center space-x-2">
-                <Shield className="w-5 h-5" />
-                <span>User Management: {selectedUser?.name}</span>
-              </DialogTitle>
-            </DialogHeader>
-            
-            {selectedUser && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Email</span>
-                          <span className="font-semibold">{selectedUser.email}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Status</span>
-                          <Badge className={getStatusColor(selectedUser.privileges?.accountStatus || 'active')}>
-                            {selectedUser.privileges?.accountStatus || 'active'}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Tier</span>
-                          <Badge className={getTierColor(selectedUser.privileges?.subscriptionTier || 'basic')}>
-                            {selectedUser.privileges?.subscriptionTier || 'basic'}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Joined</span>
-                          <span className="font-semibold">{new Date(selectedUser.createdAt).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Orders</span>
-                          <span className="font-semibold">
-                            {orders.filter((order: Order) => order.userId === selectedUser.id.toString()).length}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Total Spent</span>
-                          <span className="font-semibold">
-                            ${orders.filter((order: Order) => order.userId === selectedUser.id.toString())
-                              .reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0)
-                              .toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-      </div>
-    </div>
-  );
-}
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { 
-  Users, 
-  BarChart3, 
-  Settings, 
-  Shield, 
-  Eye,
-  UserPlus,
-  CreditCard,
-  Activity,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Search,
-  Download,
-  Filter,
-  MoreVertical
-} from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-interface AdminUser {
-  id: number;
-  name: string;
-  email: string;
-  status: 'active' | 'inactive' | 'suspended';
-  plan: string;
-  seats: number;
-  lastLogin: string;
-  totalSpent: number;
-}
-
 interface AdminStats {
   totalUsers: number;
   activeUsers: number;
@@ -564,6 +72,10 @@ interface AdminStats {
 }
 
 export default function AdminPortal() {
+  const [, setLocation] = useLocation();
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isUserDetailOpen, setIsUserDetailOpen] = useState(false);
+  const [tierFilter, setTierFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState("overview");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
@@ -571,18 +83,22 @@ export default function AdminPortal() {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const queryClient = useQueryClient();
 
-  // Authentication check
+  // Check admin authentication
   useEffect(() => {
+    const adminAuth = localStorage.getItem('adminAuth');
     const adminToken = localStorage.getItem('adminToken');
-    if (adminToken) {
+    if (adminAuth === 'admin123' || adminToken) {
       setIsAuthenticated(true);
+    } else {
+      setLocation('/admin');
     }
-  }, []);
+  }, [setLocation]);
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (credentials.username === 'kimo8723' && credentials.password === 'Mshmsh7184365700!') {
       localStorage.setItem('adminToken', 'admin-authenticated');
+      localStorage.setItem('adminAuth', 'admin123');
       setIsAuthenticated(true);
     } else {
       alert('Invalid credentials');
@@ -591,6 +107,7 @@ export default function AdminPortal() {
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminAuth');
     setIsAuthenticated(false);
     setCredentials({ username: '', password: '' });
   };
@@ -601,15 +118,15 @@ export default function AdminPortal() {
       method,
       headers: {
         'Content-Type': 'application/json',
-        'x-admin-auth': 'admin123', // Simple admin auth
+        'x-admin-auth': 'admin123',
       },
       body: data ? JSON.stringify(data) : undefined,
     });
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     return response.json();
   };
 
@@ -628,18 +145,44 @@ export default function AdminPortal() {
     }
   });
 
-  const { data: users = [] } = useQuery<AdminUser[]>({
-    queryKey: ['admin-users'],
-    queryFn: () => adminRequest('GET', '/api/admin/users'),
-    enabled: isAuthenticated,
-    initialData: []
+  const { data: users = [], isLoading: usersLoading } = useQuery({
+    queryKey: ['/api/admin/users'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/users', {
+        headers: {
+          'x-admin-auth': 'admin123'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
+    },
+    enabled: isAuthenticated
+  });
+
+  const { data: orders = [] } = useQuery({
+    queryKey: ['/api/admin/orders'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/orders', {
+        headers: {
+          'x-admin-auth': 'admin123'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      return response.json();
+    },
+    enabled: isAuthenticated
+  });
+
+  const { data: packages = [] } = useQuery({
+    queryKey: ['/api/packages'],
+    enabled: isAuthenticated
   });
 
   const { data: systemHealth } = useQuery({
     queryKey: ['system-health'],
     queryFn: () => adminRequest('GET', '/api/admin/health'),
     enabled: isAuthenticated,
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 30000
   });
 
   // Mutations
@@ -647,14 +190,14 @@ export default function AdminPortal() {
     mutationFn: ({ userId, data }: { userId: number; data: any }) =>
       adminRequest('PATCH', `/api/admin/users/${userId}`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     },
   });
 
   const deleteUserMutation = useMutation({
     mutationFn: (userId: number) => adminRequest('DELETE', `/api/admin/users/${userId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     },
   });
 
@@ -700,10 +243,69 @@ export default function AdminPortal() {
     );
   }
 
-  const filteredUsers = users.filter(user =>
+  // Filter users based on tier
+  const filteredUsers = users.filter((user: User) => {
+    if (tierFilter === 'all') return true;
+    return user.privileges?.subscriptionTier === tierFilter;
+  });
+
+  const searchFilteredUsers = filteredUsers.filter((user: User) =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleUserClick = (user: User) => {
+    setSelectedUser(user);
+    setIsUserDetailOpen(true);
+  };
+
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case 'enterprise': return 'bg-purple-100 text-purple-800';
+      case 'premium': return 'bg-blue-100 text-blue-800';
+      case 'basic': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'suspended': return 'bg-red-100 text-red-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const toggleUserStatus = async (userId: number, currentStatus: boolean) => {
+    try {
+      await apiRequest('PUT', `/api/admin/users/${userId}/status`, { isActive: !currentStatus });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
+  };
+
+  const deleteUser = async (userId: number) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await apiRequest('DELETE', `/api/admin/users/${userId}`);
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      } catch (error) {
+        console.error('Error deleting user:', error);
+      }
+    }
+  };
+
+  const impersonateUser = (userId: number) => {
+    console.log('Impersonating user:', userId);
+    // Implement impersonation logic
+  };
+
+  // Calculate stats
+  const totalRevenue = orders.reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0);
+  const activeUsers = users.filter((user: User) => user.isActive !== false).length;
+  const totalOrders = orders.length;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -798,14 +400,14 @@ export default function AdminPortal() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {users.slice(0, 5).map(user => (
+                    {users.slice(0, 5).map((user: User) => (
                       <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div>
                           <p className="font-medium text-sm">{user.name}</p>
-                          <p className="text-xs text-gray-500">Last login: {user.lastLogin}</p>
+                          <p className="text-xs text-gray-500">Joined: {new Date(user.createdAt).toLocaleDateString()}</p>
                         </div>
-                        <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
-                          {user.status}
+                        <Badge variant={user.isActive !== false ? 'default' : 'secondary'}>
+                          {user.isActive !== false ? 'Active' : 'Inactive'}
                         </Badge>
                       </div>
                     ))}
@@ -867,6 +469,17 @@ export default function AdminPortal() {
                     className="pl-10 w-64"
                   />
                 </div>
+                <Select value={tierFilter} onValueChange={setTierFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Filter by tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Tiers</SelectItem>
+                    <SelectItem value="basic">Basic</SelectItem>
+                    <SelectItem value="premium">Premium</SelectItem>
+                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button>
                   <UserPlus className="w-4 h-4 mr-2" />
                   Add User
@@ -877,57 +490,95 @@ export default function AdminPortal() {
             {/* Users Table */}
             <Card>
               <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 border-b">
-                      <tr>
-                        <th className="text-left p-4 font-medium text-gray-900">User</th>
-                        <th className="text-left p-4 font-medium text-gray-900">Plan</th>
-                        <th className="text-left p-4 font-medium text-gray-900">Status</th>
-                        <th className="text-left p-4 font-medium text-gray-900">Seats</th>
-                        <th className="text-left p-4 font-medium text-gray-900">Last Login</th>
-                        <th className="text-left p-4 font-medium text-gray-900">Total Spent</th>
-                        <th className="text-left p-4 font-medium text-gray-900">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredUsers.map((user) => (
-                        <tr key={user.id} className="border-b hover:bg-gray-50">
-                          <td className="p-4">
-                            <div>
-                              <p className="font-medium text-gray-900">{user.name}</p>
-                              <p className="text-sm text-gray-500">{user.email}</p>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <Badge variant="outline">{user.plan}</Badge>
-                          </td>
-                          <td className="p-4">
-                            <Badge 
-                              variant={user.status === 'active' ? 'default' : 'secondary'}
-                              className={user.status === 'active' ? 'bg-green-100 text-green-800' : ''}
-                            >
-                              {user.status}
-                            </Badge>
-                          </td>
-                          <td className="p-4">{user.seats}</td>
-                          <td className="p-4 text-sm text-gray-600">{user.lastLogin}</td>
-                          <td className="p-4 font-medium">${user.totalSpent.toLocaleString()}</td>
-                          <td className="p-4">
-                            <div className="flex items-center space-x-2">
-                              <Button variant="outline" size="sm">
-                                <Eye className="w-3 h-3" />
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <MoreVertical className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </td>
+                {usersLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b">
+                        <tr>
+                          <th className="text-left p-4 font-medium text-gray-900">User</th>
+                          <th className="text-left p-4 font-medium text-gray-900">Status</th>
+                          <th className="text-left p-4 font-medium text-gray-900">Tier</th>
+                          <th className="text-left p-4 font-medium text-gray-900">Orders</th>
+                          <th className="text-left p-4 font-medium text-gray-900">Spent</th>
+                          <th className="text-left p-4 font-medium text-gray-900">Joined</th>
+                          <th className="text-left p-4 font-medium text-gray-900">Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {searchFilteredUsers.map((user: User) => (
+                          <tr key={user.id} className="border-b hover:bg-gray-50 cursor-pointer">
+                            <td className="p-4" onClick={() => handleUserClick(user)}>
+                              <div>
+                                <p className="font-medium">{user.name}</p>
+                                <p className="text-xs text-gray-500">{user.email}</p>
+                              </div>
+                            </td>
+                            <td className="p-4" onClick={() => handleUserClick(user)}>
+                              <Badge className={user.isActive !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                                {user.isActive !== false ? "Active" : "Inactive"}
+                              </Badge>
+                            </td>
+                            <td className="p-4" onClick={() => handleUserClick(user)}>
+                              <Badge className={getTierColor(user.privileges?.subscriptionTier || 'basic')}>
+                                {user.privileges?.subscriptionTier || 'basic'}
+                              </Badge>
+                            </td>
+                            <td className="p-4" onClick={() => handleUserClick(user)}>
+                              {orders.filter((order: Order) => order.userId === user.id.toString()).length}
+                            </td>
+                            <td className="p-4" onClick={() => handleUserClick(user)}>
+                              ${orders.filter((order: Order) => order.userId === user.id.toString())
+                                .reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0)
+                                .toLocaleString()}
+                            </td>
+                            <td className="p-4" onClick={() => handleUserClick(user)}>
+                              {new Date(user.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="p-4">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem onClick={() => handleUserClick(user)}>
+                                    <Shield className="w-4 h-4 mr-2" />
+                                    Manage Privileges
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => impersonateUser(user.id)}>
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    Impersonate
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem 
+                                    onClick={() => toggleUserStatus(user.id, user.isActive !== false)}
+                                    className={user.isActive !== false ? "text-yellow-600" : "text-green-600"}
+                                  >
+                                    {user.isActive !== false ? <Lock className="w-4 h-4 mr-2" /> : <Unlock className="w-4 h-4 mr-2" />}
+                                    {user.isActive !== false ? "Suspend" : "Activate"}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => deleteUser(user.id)}
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -950,7 +601,7 @@ export default function AdminPortal() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Average Revenue Per User</span>
-                      <span className="font-bold">${Math.round(adminStats.totalRevenue / adminStats.totalUsers)}</span>
+                      <span className="font-bold">${adminStats.totalUsers > 0 ? Math.round(adminStats.totalRevenue / adminStats.totalUsers) : 0}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -995,7 +646,7 @@ export default function AdminPortal() {
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div className="bg-green-600 h-2 rounded-full w-[45%]" />
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
                       <span>Memory Usage</span>
                       <span className="font-medium">67%</span>
@@ -1003,7 +654,7 @@ export default function AdminPortal() {
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div className="bg-yellow-600 h-2 rounded-full w-[67%]" />
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
                       <span>Storage Usage</span>
                       <span className="font-medium">34%</span>
@@ -1082,6 +733,72 @@ export default function AdminPortal() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* User Details Modal */}
+        <Dialog open={isUserDetailOpen} onOpenChange={setIsUserDetailOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <Shield className="w-5 h-5" />
+                <span>User Management: {selectedUser?.name}</span>
+              </DialogTitle>
+            </DialogHeader>
+
+            {selectedUser && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Email</span>
+                          <span className="font-semibold">{selectedUser.email}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Status</span>
+                          <Badge className={getStatusColor(selectedUser.privileges?.accountStatus || 'active')}>
+                            {selectedUser.privileges?.accountStatus || 'active'}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Tier</span>
+                          <Badge className={getTierColor(selectedUser.privileges?.subscriptionTier || 'basic')}>
+                            {selectedUser.privileges?.subscriptionTier || 'basic'}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Joined</span>
+                          <span className="font-semibold">{new Date(selectedUser.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Orders</span>
+                          <span className="font-semibold">
+                            {orders.filter((order: Order) => order.userId === selectedUser.id.toString()).length}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Total Spent</span>
+                          <span className="font-semibold">
+                            ${orders.filter((order: Order) => order.userId === selectedUser.id.toString())
+                              .reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0)
+                              .toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

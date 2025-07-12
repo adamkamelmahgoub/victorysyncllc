@@ -35,6 +35,7 @@
 
 #### Runtime Errors
 - **Fixed React Promise Rendering**: Resolved "[object Promise]" error in customer dashboard
+- **Fixed Duplicate Function Declaration**: Resolved Babel/gensync crash caused by duplicate AdminPortal function in admin-portal.tsx
 - **Async Component Loading**: Proper Suspense and error boundary implementation
 - **Route Protection**: Enhanced authentication guards and redirects
 
