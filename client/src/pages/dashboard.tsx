@@ -1,205 +1,150 @@
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useLocation } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
-import { ConnectIntegrationModal } from '@/components/ConnectIntegrationModal';
-import { TrendingUp, TrendingDown, Plus, ExternalLink } from 'lucide-react';
-
-interface KPIMetric {
-  name: string;
-  value: number | string;
-  change?: number;
-  changeType?: 'increase' | 'decrease' | 'neutral';
-  unit?: string;
-  description?: string;
-  source?: string;
-}
-
-interface DashboardMetrics {
-  metrics: KPIMetric[];
-  message?: string;
-}
+import { useFeatures } from '@/hooks/useFeatures';
+import { DashboardLayout } from '@/layouts/DashboardLayout';
+import { QuickActions } from '@/components/QuickActions';
+import { KPITracker } from '@/components/KPITracker';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { 
+  CreditCard, 
+  Users, 
+  MessageSquare, 
+  Settings,
+  Calendar,
+  FileText,
+  Shield
+} from 'lucide-react';
 
 export default function Dashboard() {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  const [, setLocation] = useLocation();
-  const [connectModalOpen, setConnectModalOpen] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+  const { data: enabledFeatures = [], isLoading: featuresLoading } = useFeatures(user?.id);
+  const [kpiTrackerOpen, setKpiTrackerOpen] = useState(false);
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      setLocation('/login');
-      return;
+  if (!isAuthenticated) {
+    window.location.href = '/login';
+    return null;
+  }
+
+  const isFeatureEnabled = (feature: string) => enabledFeatures.includes(feature);
+
+  const accountActions = [
+    {
+      title: 'Billing & Subscription',
+      description: 'Manage your plan, payment methods, and billing history',
+      icon: CreditCard,
+      href: '/dashboard/billing',
+      enabled: isFeatureEnabled('billing')
+    },
+    {
+      title: 'Team Members',
+      description: 'Invite team members and manage permissions',
+      icon: Users,
+      href: '/dashboard/team',
+      enabled: isFeatureEnabled('team_members')
+    },
+    {
+      title: 'Support Tickets',
+      description: 'View and manage your support requests',
+      icon: MessageSquare,
+      href: '/dashboard/support',
+      enabled: isFeatureEnabled('support_tickets')
+    },
+    {
+      title: 'Account Settings',
+      description: 'Update your profile and account preferences',
+      icon: Settings,
+      href: '/dashboard/settings',
+      enabled: true
+    },
+    {
+      title: 'Scheduled Reports',
+      description: 'Configure automated reports and notifications',
+      icon: Calendar,
+      href: '/dashboard/reports',
+      enabled: isFeatureEnabled('scheduled_reports')
+    },
+    {
+      title: 'API Documentation',
+      description: 'Access API keys and integration documentation',
+      icon: FileText,
+      href: '/dashboard/api',
+      enabled: isFeatureEnabled('api_access')
+    },
+    {
+      title: 'Security Settings',
+      description: 'Manage two-factor authentication and security',
+      icon: Shield,
+      href: '/dashboard/security',
+      enabled: isFeatureEnabled('security_settings')
     }
-  }, [isAuthenticated, isLoading, setLocation]);
+  ];
 
-  const { data: dashboardData, isLoading: metricsLoading, error } = useQuery<DashboardMetrics>({
-    queryKey: ['/api/dashboard/metrics'],
-    enabled: isAuthenticated,
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
-
-  const { data: integrations = [] } = useQuery<any[]>({
-    queryKey: ['/api/integrations'],
-    enabled: isAuthenticated,
-  });
-
-  if (isLoading || metricsLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <Card key={i} className="bg-white/10 border-white/20">
-                <CardHeader>
-                  <Skeleton className="h-4 w-24 bg-white/20" />
-                  <Skeleton className="h-6 w-16 bg-white/20" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-4 w-20 bg-white/20" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center text-white">
-            <h1 className="text-3xl font-bold mb-4">Dashboard Error</h1>
-            <p className="text-red-300">Failed to load dashboard data</p>
-            <Button 
-              onClick={() => window.location.reload()}
-              className="mt-4"
-            >
-              Retry
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const metrics = dashboardData?.metrics || [];
-  const hasIntegrations = integrations.filter(i => i.is_active).length > 0;
-
-  const renderMetricCard = (metric: KPIMetric, index: number) => (
-    <Card key={index} className="bg-white/10 border-white/20 backdrop-blur-sm">
-      <CardHeader className="pb-3">
-        <CardDescription className="text-white/70 text-xs">
-          {metric.source && `${metric.source} • `}{metric.description}
-        </CardDescription>
-        <CardTitle className="text-white text-lg">{metric.name}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between">
-          <span className="text-2xl font-bold text-white">
-            {metric.value}
-            {metric.unit && <span className="text-sm text-white/70 ml-1">{metric.unit}</span>}
-          </span>
-          {metric.change !== undefined && (
-            <div className={`flex items-center space-x-1 text-sm ${
-              metric.changeType === 'increase' ? 'text-green-400' :
-              metric.changeType === 'decrease' ? 'text-red-400' : 'text-white/70'
-            }`}>
-              {metric.changeType === 'increase' && <TrendingUp className="w-4 h-4" />}
-              {metric.changeType === 'decrease' && <TrendingDown className="w-4 h-4" />}
-              <span>{Math.abs(metric.change)}%</span>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
+  const enabledActions = accountActions.filter(action => action.enabled);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-            <p className="text-white/70">
-              Welcome back, {user?.name || user?.email}
-            </p>
-          </div>
-          <Button
-            onClick={() => setConnectModalOpen(true)}
-            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Integration
-          </Button>
+    <DashboardLayout 
+      sidebar={
+        !featuresLoading && (
+          <QuickActions 
+            enabledFeatures={enabledFeatures}
+            onKPITrackerOpen={() => setKpiTrackerOpen(true)}
+          />
+        )
+      }
+    >
+      <div className="space-y-8">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Welcome back, {user?.name || 'there'}!
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Manage your VictorySync account and services from your dashboard.
+          </p>
         </div>
 
-        {!hasIntegrations ? (
-          <div className="text-center py-12">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 max-w-md mx-auto">
-              <h2 className="text-2xl font-bold text-white mb-4">No Integrations Connected</h2>
-              <p className="text-white/70 mb-6">
-                Connect your CRM or dialer tools to see live KPIs and performance metrics.
-              </p>
-              <Button
-                onClick={() => setConnectModalOpen(true)}
-                className="bg-white text-purple-900 hover:bg-white/90"
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Connect Your First Integration
-              </Button>
-            </div>
-          </div>
-        ) : metrics.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 max-w-md mx-auto">
-              <h2 className="text-2xl font-bold text-white mb-4">Loading Metrics</h2>
-              <p className="text-white/70 mb-6">
-                Your integrations are connected. Fetching live data...
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {metrics.map((metric, index) => renderMetricCard(metric, index))}
-          </div>
-        )}
-
-        {hasIntegrations && (
-          <div className="mt-8">
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">Connected Integrations</CardTitle>
-                <CardDescription className="text-white/70">
-                  Manage your connected CRM and dialer tools
-                </CardDescription>
+        {/* Account Management Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {enabledActions.map((action, index) => (
+            <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center text-lg font-semibold text-gray-900">
+                  <action.icon className="w-5 h-5 mr-3 text-purple-600" />
+                  {action.title}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  {integrations.filter(i => i.is_active).map((integration) => (
-                    <div key={integration.id} className="bg-white/10 rounded-lg px-3 py-2">
-                      <span className="text-white font-medium capitalize">
-                        {integration.type}
-                      </span>
-                      <span className="text-green-400 ml-2">●</span>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-gray-600 mb-4">{action.description}</p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => window.location.href = action.href}
+                >
+                  Manage
+                </Button>
               </CardContent>
             </Card>
-          </div>
-        )}
+          ))}
+        </div>
+
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-gray-500 text-center py-8">
+              No recent activity to display
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <ConnectIntegrationModal
-        open={connectModalOpen}
-        onClose={() => setConnectModalOpen(false)}
+      <KPITracker 
+        isOpen={kpiTrackerOpen}
+        onClose={() => setKpiTrackerOpen(false)}
       />
-    </div>
+    </DashboardLayout>
   );
 }

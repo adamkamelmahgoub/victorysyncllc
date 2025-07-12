@@ -10,6 +10,13 @@ import { sendEmail } from "./utils/sendEmail";
 import { db } from "./db";
 import { users, orders, integrations } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { requireAuth } from "./middleware/auth";
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
 
 let stripe: Stripe | null = null;
 
@@ -46,6 +53,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: 'Health check failed',
         environment: process.env.NODE_ENV || 'development'
       });
+    }
+  });
+
+  // Features management routes
+  app.get("/api/features", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const customerId = req.query.customer_id || req.user?.id;
+
+      const features = await db.execute(sql`
+        SELECT feature_key 
+        FROM features_enabled 
+        WHERE customer_id = ${customerId} AND enabled = true
+      `);
+
+      const featureKeys = features.map((f: any) => f[0].feature_key);
+      res.json({ features: featureKeys });
+    } catch (error) {
+      console.error('Error fetching features:', error);
+      res.status(500).json({ error: 'Failed to fetch features' });
+    }
+  });
+
+  // Admin authentication routes
+  app.post("/api/admin/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      const results = await db.execute(sql`
+        SELECT * FROM users WHERE email = ${email} AND role = 'admin'
+      `);
+
+       const users = results.rows;
+
+      if (users.length === 0) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+
+      const user = users[0];
+       // Assuming the password in the database is stored in the 'password' column
+      const isValid = await bcrypt.compare(password, user.password);
+
+      if (!isValid) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+
+      const token = jwt.sign(
+        { userId: user.id, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
+  app.get("/api/admin/auth/me", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+      }
+
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      if (decoded.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const results = await db.execute(sql`
+        SELECT id, name, email, role FROM users WHERE id = ${decoded.userId} AND role = 'admin'
+      `);
+
+      const users = results.rows;
+
+      if (users.length === 0) {
+        return res.status(404).json({ error: 'Admin user not found' });
+      }
+
+      res.json({ user: users[0] });
+    } catch (error) {
+      console.error('Admin auth check error:', error);
+      res.status(401).json({ error: 'Invalid token' });
+    }
+  });
+
+  app.get("/api/admin/stats", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+      }
+
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      if (decoded.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const [customerCountResult] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM users WHERE role = 'customer'
+      `);
+       const customerCount = customerCountResult.rows[0].count;
+
+      const [integrationCountResult] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM integrations
+      `);
+      const integrationCount = integrationCountResult.rows[0].count;
+
+
+      res.json({
+        totalCustomers: customerCount,
+        totalIntegrations: integrationCount,
+        monthlyRevenue: '12,847'
+      });
+    } catch (error) {
+      console.error('Admin stats error:', error);
+      res.status(500).json({ error: 'Failed to fetch stats' });
     }
   });
 

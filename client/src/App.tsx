@@ -53,7 +53,7 @@ function Router() {
     <div className="min-h-screen flex flex-col">
       <ScrollToTop />
       <Navigation onCartClick={openCartModal} />
-      
+
       <main className="flex-1">
         <Switch>
           <Route path="/" component={Home} />
@@ -63,12 +63,13 @@ function Router() {
           <Route path="/contact" component={Contact} />
           <Route path="/checkout" component={Checkout} />
           <Route path="/dashboard" component={Dashboard} />
-          <Route path="/customer-dashboard" component={CustomerDashboard} />
+          <Route path="/dashboard/settings/integrations" component={() => import('./pages/dashboard/Settings/Integrations')} />
+          <Route path="/admin/login" component={() => import('./pages/admin/Login')} />
           <Route path="/admin" component={AdminPortal} />
           <Route path="/register" component={Register} />
           <Route path="/signup" component={Register} />
           <Route path="/login" component={Login} />
-          
+
           {/* Footer Pages */}
           <Route path="/about-us" component={AboutUs} />
           <Route path="/careers" component={Careers} />
@@ -77,13 +78,13 @@ function Router() {
           <Route path="/docs" component={Documentation} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route path="/terms" component={TermsOfService} />
-          
+
           <Route component={NotFound} />
         </Switch>
       </main>
 
       <Footer />
-      
+
       <CartModal 
         isOpen={cartModalOpen} 
         onClose={closeCartModal} 
