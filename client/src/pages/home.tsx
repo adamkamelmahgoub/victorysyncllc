@@ -3,10 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, Megaphone, Bot, Check, Star } from 'lucide-react';
 
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
 export default function Home() {
   return (
     <div className="min-h-screen">
@@ -19,16 +15,16 @@ export default function Home() {
                 Reduce Customer Service Costs by <span className="text-yellow-300">60%</span>
               </h1>
               <p className="text-xl mb-8 text-purple-100">
-                Professional contact center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
+                Professional call center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/pricing">
-                  <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#5d5df2]" onClick={scrollToTop}>
+                  <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#5d5df2]">
                     View Pricing
                   </Button>
                 </Link>
                 <Link href="/contact">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#506bf4]" onClick={scrollToTop}>
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#506bf4]">
                     Schedule Demo
                   </Button>
                 </Link>
@@ -97,7 +93,7 @@ export default function Home() {
                 <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
                   <Phone className="victory-purple w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold mb-4">Inbound Contact Center</h3>
+                <h3 className="text-xl font-bold mb-4">Inbound Call Center</h3>
                 <p className="victory-gray mb-6">
                   Professional customer support, technical assistance, and order processing with multilingual capabilities.
                 </p>
@@ -257,12 +253,12 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6950f0]" onClick={scrollToTop}>
+              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6950f0]">
                 Schedule Demo
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]" onClick={scrollToTop}>
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
                 View Pricing
               </Button>
             </Link>

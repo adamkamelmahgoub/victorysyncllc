@@ -87,13 +87,6 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     Dashboard
                   </Button>
                 </Link>
-                {user && ['admin', 'super_admin', 'billing', 'crm_manager'].includes(user.role) && (
-                  <Link href="/admin">
-                    <Button variant="ghost" size="sm">
-                      Admin Portal
-                    </Button>
-                  </Link>
-                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -172,17 +165,6 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                         Dashboard
                       </Button>
                     </Link>
-                    {user && ['admin', 'super_admin', 'billing', 'crm_manager'].includes(user.role) && (
-                      <Link href="/admin">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start"
-                        >
-                          Admin Portal
-                        </Button>
-                      </Link>
-                    )}
                     <Button
                       variant="ghost"
                       size="sm"

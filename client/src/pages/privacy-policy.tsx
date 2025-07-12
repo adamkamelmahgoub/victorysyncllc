@@ -548,7 +548,7 @@ export default function PrivacyPolicy() {
                   <br />
                   <strong>Data Protection Officer</strong>
                   <br />
-                  Email: info@victorysync.com
+                  Email: dpo@victorysync.com
                   <br />
                   <br />
                   <strong>Business Hours:</strong> Monday - Friday, 9 AM - 5 PM
