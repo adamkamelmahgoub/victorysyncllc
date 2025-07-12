@@ -16,8 +16,7 @@ export async function runMigrations() {
     // Read and execute migrations
     const migrations = [
       '001_create_integrations_table.sql',
-      '002_create_features_table.sql',
-      '003_create_team_members_table.sql'
+      '002_create_features_table.sql'
     ];
     
     for (const migration of migrations) {

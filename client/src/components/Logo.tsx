@@ -1,25 +1,23 @@
-import logoImage from '../assets/logo-vs-3d.png';
+
+import logoVs3d from "@/assets/logo-vs-3d.png";
 
 interface LogoProps {
-  size?: number;
-  showText?: boolean;
+  className?: string;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-export function Logo({ size = 32, showText = true }: LogoProps) {
+export function Logo({ className = "", size = 'md' }: LogoProps) {
+  const sizeClasses = {
+    sm: 'h-6 w-auto',
+    md: 'h-8 w-auto',
+    lg: 'h-12 w-auto'
+  };
+
   return (
-    <div className="flex items-center space-x-2">
-      <img 
-        src={logoImage} 
-        alt="VictorySync" 
-        className={`h-${Math.floor(size/4)} w-auto`}
-        style={{ height: `${size}px` }}
-      />
-      {showText && (
-        <span className="text-xl font-bold brand-font">
-          <span className="victory-purple">Victory</span>
-          <span className="victory-blue">Sync</span>
-        </span>
-      )}
-    </div>
+    <img 
+      src={logoVs3d} 
+      alt="Victory Sync" 
+      className={`${sizeClasses[size]} ${className}`}
+    />
   );
 }

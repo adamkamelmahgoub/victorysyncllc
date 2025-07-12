@@ -8,7 +8,7 @@ import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
 import { db } from "./db";
-import { publicUsers, orders, integrations } from "@shared/schema";
+import { users, orders, integrations } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import bcrypt from 'bcryptjs';
@@ -81,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { email, password } = req.body;
 
       const results = await db.execute(sql`
-        SELECT * FROM public_users WHERE email = ${email}
+        SELECT * FROM users WHERE email = ${email} AND role = 'admin'
       `);
 
        const users = results.rows;
@@ -91,23 +91,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const user = users[0];
-       // Check if user has password hash for admin access
-      if (!user.password_hash) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-      const isValid = await bcrypt.compare(password, user.password_hash);
+       // Assuming the password in the database is stored in the 'password' column
+      const isValid = await bcrypt.compare(password, user.password);
 
       if (!isValid) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
       const token = jwt.sign(
-        { userId: user.id, email: user.email },
+        { userId: user.id, role: user.role },
         JWT_SECRET,
         { expiresIn: '24h' }
       );
 
-      res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+      res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
     } catch (error) {
       console.error('Admin login error:', error);
       res.status(500).json({ error: 'Login failed' });
@@ -122,11 +119,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const decoded = jwt.verify(token, JWT_SECRET) as any;
-      // For now, any authenticated user can access admin endpoints
-      // You can add role-based access control later
+      if (decoded.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
 
       const results = await db.execute(sql`
-        SELECT id, name, email FROM public_users WHERE id = ${decoded.userId}
+        SELECT id, name, email, role FROM users WHERE id = ${decoded.userId} AND role = 'admin'
       `);
 
       const users = results.rows;
@@ -150,11 +148,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const decoded = jwt.verify(token, JWT_SECRET) as any;
-      // For now, any authenticated user can access admin endpoints
-      // You can add role-based access control later
+      if (decoded.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
 
       const [customerCountResult] = await db.execute(sql`
-        SELECT COUNT(*) as count FROM public_users
+        SELECT COUNT(*) as count FROM users WHERE role = 'customer'
       `);
        const customerCount = customerCountResult.rows[0].count;
 
@@ -172,129 +171,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Admin stats error:', error);
       res.status(500).json({ error: 'Failed to fetch stats' });
-    }
-  });
-
-  app.get("/api/admin/customers", async (req, res) => {
-    try {
-      const token = req.headers.authorization?.replace('Bearer ', '');
-      if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-      }
-
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
-
-      const customers = await db.execute(sql`
-        SELECT id, name, email, created_at FROM public_users ORDER BY created_at DESC
-      `);
-
-      res.json(customers.rows);
-    } catch (error) {
-      console.error('Admin customers error:', error);
-      res.status(500).json({ error: 'Failed to fetch customers' });
-    }
-  });
-
-  // Team management routes
-  app.get("/api/team-members", requireAuth, async (req: AuthenticatedRequest, res) => {
-    try {
-      const customerId = req.user?.id;
-
-      const members = await db.execute(sql`
-        SELECT * FROM team_members 
-        WHERE customer_id = ${customerId} 
-        ORDER BY created_at DESC
-      `);
-
-      res.json(members.rows);
-    } catch (error) {
-      console.error('Error fetching team members:', error);
-      res.status(500).json({ error: 'Failed to fetch team members' });
-    }
-  });
-
-  app.post("/api/team-members", requireAuth, async (req: AuthenticatedRequest, res) => {
-    try {
-      const customerId = req.user?.id;
-      const { email, role } = req.body;
-
-      if (!email || !role) {
-        return res.status(400).json({ error: 'Email and role are required' });
-      }
-
-      // Check if member already exists
-      const existingMember = await db.execute(sql`
-        SELECT id FROM team_members 
-        WHERE customer_id = ${customerId} AND email = ${email}
-      `);
-
-      if (existingMember.rows.length > 0) {
-        return res.status(400).json({ error: 'User is already a team member' });
-      }
-
-      // Insert new team member
-      const newMember = await db.execute(sql`
-        INSERT INTO team_members (customer_id, email, role)
-        VALUES (${customerId}, ${email}, ${role})
-        RETURNING *
-      `);
-
-      res.json(newMember.rows[0]);
-    } catch (error) {
-      console.error('Error adding team member:', error);
-      res.status(500).json({ error: 'Failed to add team member' });
-    }
-  });
-
-  app.delete("/api/team-members/:id", requireAuth, async (req: AuthenticatedRequest, res) => {
-    try {
-      const customerId = req.user?.id;
-      const memberId = req.params.id;
-
-      await db.execute(sql`
-        DELETE FROM team_members 
-        WHERE id = ${memberId} AND customer_id = ${customerId}
-      `);
-
-      res.json({ success: true });
-    } catch (error) {
-      console.error('Error removing team member:', error);
-      res.status(500).json({ error: 'Failed to remove team member' });
-    }
-  });
-
-  // Dashboard stats
-  app.get("/api/dashboard/stats", requireAuth, async (req: AuthenticatedRequest, res) => {
-    try {
-      const customerId = req.user?.id;
-
-      const [teamCount] = await db.execute(sql`
-        SELECT COUNT(*) as count FROM team_members WHERE customer_id = ${customerId}
-      `);
-
-      const [integrationCount] = await db.execute(sql`
-        SELECT COUNT(*) as count FROM integrations WHERE customer_id = ${customerId} AND is_active = true
-      `);
-
-      res.json({
-        teamMembers: teamCount.rows[0].count,
-        integrations: integrationCount.rows[0].count,
-        monthlyKpis: 142,
-        plan: 'Starter'
-      });
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-      res.status(500).json({ error: 'Failed to fetch dashboard stats' });
-    }
-  });
-
-  app.get("/api/dashboard/activity", requireAuth, async (req: AuthenticatedRequest, res) => {
-    try {
-      // For now, return empty array - can be expanded later
-      res.json([]);
-    } catch (error) {
-      console.error('Error fetching dashboard activity:', error);
-      res.status(500).json({ error: 'Failed to fetch dashboard activity' });
     }
   });
 

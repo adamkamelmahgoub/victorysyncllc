@@ -1,10 +1,9 @@
-import React, { useState, Suspense } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { AdminRoutes } from './admin/AdminRoutes';
 import { 
   Users, 
   Settings, 
@@ -12,9 +11,7 @@ import {
   Zap,
   DollarSign,
   Activity,
-  LogOut,
-  UserCog,
-  Shield
+  LogOut
 } from 'lucide-react';
 
 interface AdminUser {
@@ -84,18 +81,6 @@ export default function AdminPortal() {
     window.location.href = '/admin/login';
   };
 
-  const [location] = useLocation();
-  
-  const sidebarItems = [
-    { href: '/admin', label: 'Overview', icon: BarChart3 },
-    { href: '/admin/customers', label: 'Customers', icon: Users },
-    { href: '/admin/users', label: 'Users', icon: UserCog },
-    { href: '/admin/features', label: 'Features', icon: Settings },
-    { href: '/admin/integrations', label: 'Integrations', icon: Zap },
-    { href: '/admin/billing', label: 'Billing', icon: DollarSign },
-    { href: '/admin/settings', label: 'Settings', icon: Shield },
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       {/* Header */}
@@ -115,113 +100,142 @@ export default function AdminPortal() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/10 rounded-lg p-4">
-              <nav className="space-y-2">
-                {sidebarItems.map((item) => (
-                  <Link key={item.href} href={item.href}>
-                    <div
-                      className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors cursor-pointer ${
-                        location === item.href
-                          ? 'bg-white/20 text-white'
-                          : 'text-white/70 hover:bg-white/10 hover:text-white'
-                      }`}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.label}</span>
-                    </div>
-                  </Link>
-                ))}
-              </nav>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-5 mb-8">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="customers">Customers</TabsTrigger>
+            <TabsTrigger value="features">Features</TabsTrigger>
+            <TabsTrigger value="integrations">Integrations</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="bg-white/10 border-white/20">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-white text-lg flex items-center">
+                    <Users className="w-5 h-5 mr-2" />
+                    Total Customers
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-white">
+                    {stats?.totalCustomers || 0}
+                  </div>
+                  <p className="text-white/70 text-sm">Active accounts</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/10 border-white/20">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-white text-lg flex items-center">
+                    <DollarSign className="w-5 h-5 mr-2" />
+                    Monthly Revenue
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-white">
+                    ${stats?.monthlyRevenue || '0'}
+                  </div>
+                  <p className="text-white/70 text-sm">+15% from last month</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/10 border-white/20">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-white text-lg flex items-center">
+                    <Zap className="w-5 h-5 mr-2" />
+                    Active Integrations
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-white">
+                    {stats?.totalIntegrations || 0}
+                  </div>
+                  <p className="text-white/70 text-sm">Across all customers</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/10 border-white/20">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-white text-lg flex items-center">
+                    <Activity className="w-5 h-5 mr-2" />
+                    System Health
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-green-400">99.9%</div>
+                  <p className="text-white/70 text-sm">Uptime this month</p>
+                </CardContent>
+              </Card>
             </div>
-          </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-4">
-            {location === '/admin' ? (
-              <div className="space-y-6">
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <Card className="bg-white/10 border-white/20">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-white text-lg flex items-center">
-                        <Users className="w-5 h-5 mr-2" />
-                        Total Customers
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-white">
-                        {stats?.totalCustomers || 0}
-                      </div>
-                      <p className="text-white/70 text-sm">Active accounts</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-white/10 border-white/20">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-white text-lg flex items-center">
-                        <DollarSign className="w-5 h-5 mr-2" />
-                        Monthly Revenue
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-white">
-                        ${stats?.monthlyRevenue || '0'}
-                      </div>
-                      <p className="text-white/70 text-sm">+15% from last month</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-white/10 border-white/20">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-white text-lg flex items-center">
-                        <Zap className="w-5 h-5 mr-2" />
-                        Active Integrations
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-white">
-                        {stats?.totalIntegrations || 0}
-                      </div>
-                      <p className="text-white/70 text-sm">Across all customers</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-white/10 border-white/20">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-white text-lg flex items-center">
-                        <Activity className="w-5 h-5 mr-2" />
-                        System Health
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-green-400">99.9%</div>
-                      <p className="text-white/70 text-sm">Uptime this month</p>
-                    </CardContent>
-                  </Card>
+            {/* Recent Activity */}
+            <Card className="bg-white/10 border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white">Recent Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-white/70 text-center py-8">
+                  No recent activity to display
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                {/* Recent Activity */}
-                <Card className="bg-white/10 border-white/20">
-                  <CardHeader>
-                    <CardTitle className="text-white">Recent Activity</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-white/70 text-center py-8">
-                      No recent activity to display
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            ) : (
-              <Suspense fallback={<div className="text-white text-center py-8">Loading...</div>}>
-                <AdminRoutes />
-              </Suspense>
-            )}
-          </div>
-        </div>
+          <TabsContent value="customers">
+            <Card className="bg-white/10 border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white">Customer Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-white/70 text-center py-8">
+                  Customer management interface coming soon
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="features">
+            <Card className="bg-white/10 border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white">Feature Flags</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-white/70 text-center py-8">
+                  Feature flag management interface coming soon
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="integrations">
+            <Card className="bg-white/10 border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white">Integration Overview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-white/70 text-center py-8">
+                  Integration management interface coming soon
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card className="bg-white/10 border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white">System Settings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-white/70 text-center py-8">
+                  System settings interface coming soon
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
