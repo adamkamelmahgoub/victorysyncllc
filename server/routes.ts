@@ -175,6 +175,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/customers", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+      }
+
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+
+      const customers = await db.execute(sql`
+        SELECT id, name, email, created_at FROM public_users ORDER BY created_at DESC
+      `);
+
+      res.json(customers.rows);
+    } catch (error) {
+      console.error('Admin customers error:', error);
+      res.status(500).json({ error: 'Failed to fetch customers' });
+    }
+  });
+
+  // Team management routes
+  app.get("/api/team-members", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const customerId = req.user?.id;
+
+      const members = await db.execute(sql`
+        SELECT * FROM team_members 
+        WHERE customer_id = ${customerId} 
+        ORDER BY created_at DESC
+      `);
+
+      res.json(members.rows);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      res.status(500).json({ error: 'Failed to fetch team members' });
+    }
+  });
+
+  app.post("/api/team-members", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const customerId = req.user?.id;
+      const { email, role } = req.body;
+
+      if (!email || !role) {
+        return res.status(400).json({ error: 'Email and role are required' });
+      }
+
+      // Check if member already exists
+      const existingMember = await db.execute(sql`
+        SELECT id FROM team_members 
+        WHERE customer_id = ${customerId} AND email = ${email}
+      `);
+
+      if (existingMember.rows.length > 0) {
+        return res.status(400).json({ error: 'User is already a team member' });
+      }
+
+      // Insert new team member
+      const newMember = await db.execute(sql`
+        INSERT INTO team_members (customer_id, email, role)
+        VALUES (${customerId}, ${email}, ${role})
+        RETURNING *
+      `);
+
+      res.json(newMember.rows[0]);
+    } catch (error) {
+      console.error('Error adding team member:', error);
+      res.status(500).json({ error: 'Failed to add team member' });
+    }
+  });
+
+  app.delete("/api/team-members/:id", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const customerId = req.user?.id;
+      const memberId = req.params.id;
+
+      await db.execute(sql`
+        DELETE FROM team_members 
+        WHERE id = ${memberId} AND customer_id = ${customerId}
+      `);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error removing team member:', error);
+      res.status(500).json({ error: 'Failed to remove team member' });
+    }
+  });
+
+  // Dashboard stats
+  app.get("/api/dashboard/stats", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const customerId = req.user?.id;
+
+      const [teamCount] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM team_members WHERE customer_id = ${customerId}
+      `);
+
+      const [integrationCount] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM integrations WHERE customer_id = ${customerId} AND is_active = true
+      `);
+
+      res.json({
+        teamMembers: teamCount.rows[0].count,
+        integrations: integrationCount.rows[0].count,
+        monthlyKpis: 142,
+        plan: 'Starter'
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+    }
+  });
+
+  app.get("/api/dashboard/activity", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      // For now, return empty array - can be expanded later
+      res.json([]);
+    } catch (error) {
+      console.error('Error fetching dashboard activity:', error);
+      res.status(500).json({ error: 'Failed to fetch dashboard activity' });
+    }
+  });
+
   // Integration management routes
   app.get("/api/integrations", authenticateJWT as any, async (req: any, res: any) => {
     try {

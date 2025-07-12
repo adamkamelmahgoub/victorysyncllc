@@ -4,11 +4,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 
 // Layout Components
-import Navigation from "@/components/navigation";
-import Footer from "@/components/footer";
+import { SiteLayout } from "@/layouts/SiteLayout";
 import CartModal from "@/components/cart-modal";
 import ScrollToTop from "@/components/ScrollToTop";
 
@@ -35,6 +34,10 @@ import Documentation from "@/pages/docs";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms";
 
+// Lazy load admin components
+const AdminLogin = lazy(() => import('./pages/admin/Login'));
+const IntegrationsSettings = lazy(() => import('./pages/dashboard/Settings/Integrations'));
+
 // Import Google Fonts
 import "@fontsource/inter/300.css";
 import "@fontsource/inter/400.css";
@@ -52,38 +55,59 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <ScrollToTop />
-      <Navigation onCartClick={openCartModal} />
+      
+      <Switch>
+        {/* Admin routes without main layout */}
+        <Route path="/admin/login">
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <AdminLogin />
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin*" component={AdminPortal} />
+        
+        {/* Dashboard routes without cart */}
+        <Route path="/dashboard*">
+          <SiteLayout showCart={false}>
+            <Switch>
+              <Route path="/dashboard" component={Dashboard} />
+              <Route path="/dashboard/settings/integrations">
+                <Suspense fallback={<div className="text-center py-8">Loading...</div>}>
+                  <IntegrationsSettings />
+                </Suspense>
+              </Route>
+            </Switch>
+          </SiteLayout>
+        </Route>
 
-      <main className="flex-1">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/services" component={Services} />
-          <Route path="/pricing" component={Pricing} />
-          <Route path="/about" component={About} />
-          <Route path="/contact" component={Contact} />
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/dashboard/settings/integrations" component={() => import('./pages/dashboard/Settings/Integrations')} />
-          <Route path="/admin/login" component={() => import('./pages/admin/Login')} />
-          <Route path="/admin" component={AdminPortal} />
-          <Route path="/register" component={Register} />
-          <Route path="/signup" component={Register} />
-          <Route path="/login" component={Login} />
+        {/* Main site routes with cart */}
+        <Route>
+          <SiteLayout onCartClick={openCartModal}>
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/services" component={Services} />
+              <Route path="/pricing" component={Pricing} />
+              <Route path="/about" component={About} />
+              <Route path="/contact" component={Contact} />
+              <Route path="/checkout" component={Checkout} />
+              <Route path="/register" component={Register} />
+              <Route path="/signup" component={Register} />
+              <Route path="/login" component={Login} />
 
-          {/* Footer Pages */}
-          <Route path="/about-us" component={AboutUs} />
-          <Route path="/careers" component={Careers} />
-          <Route path="/blog" component={Blog} />
-          <Route path="/help-center" component={HelpCenter} />
-          <Route path="/docs" component={Documentation} />
-          <Route path="/privacy-policy" component={PrivacyPolicy} />
-          <Route path="/terms" component={TermsOfService} />
+              {/* Footer Pages */}
+              <Route path="/about-us" component={AboutUs} />
+              <Route path="/careers" component={Careers} />
+              <Route path="/blog" component={Blog} />
+              <Route path="/help-center" component={HelpCenter} />
+              <Route path="/docs" component={Documentation} />
+              <Route path="/privacy-policy" component={PrivacyPolicy} />
+              <Route path="/terms" component={TermsOfService} />
 
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-
-      <Footer />
+              <Route component={NotFound} />
+            </Switch>
+          </SiteLayout>
+        </Route>
+      </Switch>
 
       <CartModal 
         isOpen={cartModalOpen} 
