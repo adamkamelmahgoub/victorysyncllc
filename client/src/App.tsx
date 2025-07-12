@@ -10,7 +10,6 @@ import { useState } from "react";
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 import CartModal from "@/components/cart-modal";
-import ScrollToTop from "@/components/ScrollToTop";
 
 // Pages
 import Home from "@/pages/home";
@@ -20,11 +19,10 @@ import About from "@/pages/about";
 import Contact from "@/pages/contact";
 import Checkout from "@/pages/checkout";
 import CustomerDashboard from "@/pages/customer-dashboard";
-import Dashboard from "@/pages/dashboard";
-import AdminPortal from "@/pages/admin-portal";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
+import AdminPortal from "@/pages/admin-portal";
 
 // Footer Pages
 import AboutUs from "@/pages/about-us";
@@ -51,9 +49,8 @@ function Router() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <ScrollToTop />
       <Navigation onCartClick={openCartModal} />
-      
+
       <main className="flex-1">
         <Switch>
           <Route path="/" component={Home} />
@@ -62,13 +59,13 @@ function Router() {
           <Route path="/about" component={About} />
           <Route path="/contact" component={Contact} />
           <Route path="/checkout" component={Checkout} />
-          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/dashboard" component={CustomerDashboard} />
           <Route path="/customer-dashboard" component={CustomerDashboard} />
           <Route path="/admin" component={AdminPortal} />
           <Route path="/register" component={Register} />
           <Route path="/signup" component={Register} />
           <Route path="/login" component={Login} />
-          
+
           {/* Footer Pages */}
           <Route path="/about-us" component={AboutUs} />
           <Route path="/careers" component={Careers} />
@@ -77,13 +74,13 @@ function Router() {
           <Route path="/docs" component={Documentation} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route path="/terms" component={TermsOfService} />
-          
+          <Route path="/admin" component={AdminPortal} />
           <Route component={NotFound} />
         </Switch>
       </main>
 
       <Footer />
-      
+
       <CartModal 
         isOpen={cartModalOpen} 
         onClose={closeCartModal} 

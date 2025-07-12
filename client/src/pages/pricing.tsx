@@ -1,10 +1,15 @@
-import { Link } from "wouter";
 import { Check, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/hooks/useCart';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'wouter';
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 export default function Pricing() {
   const { addItem } = useCart();
 
@@ -70,7 +75,7 @@ export default function Pricing() {
                         </div>
                         <p className="victory-gray">{pkg.description}</p>
                       </div>
-                      
+
                       <ul className="space-y-4 mb-8">
                         {pkg.features.map((feature: string, idx: number) => (
                           <li key={idx} className="flex items-center">
@@ -79,7 +84,7 @@ export default function Pricing() {
                           </li>
                         ))}
                       </ul>
-                      
+
                       <Button 
                         onClick={() => handleAddToCart(pkg)}
                         className={`w-full ${isPopular ? 'bg-victory-purple hover:bg-purple-700' : 'bg-victory-purple hover:bg-purple-700'} text-white`}
@@ -107,7 +112,7 @@ export default function Pricing() {
               Cost Comparison: VictorySync vs. Traditional Solutions
             </h2>
             <p className="text-xl victory-gray">
-              See how much you can save with our New Jersey-based team
+              See how much you can save with our Egypt-based team
             </p>
           </div>
 
@@ -128,15 +133,15 @@ export default function Pricing() {
             <Card className="border-green-200">
               <CardContent className="p-8 text-center">
                 <h3 className="text-2xl font-bold text-green-600 mb-4">VictorySync (Egypt)</h3>
-                <div className="text-4xl font-bold text-green-600 mb-4">~$1.20/hour</div>
+                <div className="text-4xl font-bold text-green-600 mb-4">~$6.25/hour</div>
                 <div className="space-y-2 text-sm text-gray-600">
-                  <p>• 93% cost savings</p>
+                  <p>• 66% cost savings</p>
                   <p>• 24/7 availability</p>
                   <p>• English fluency</p>
                   <p>• Professional quality</p>
                 </div>
                 <div className="mt-4 bg-green-100 text-green-800 px-4 py-2 rounded-lg font-semibold">
-                  Save $17+ per hour!
+                  Save $12+ per hour!
                 </div>
               </CardContent>
             </Card>
@@ -164,7 +169,7 @@ export default function Pricing() {
               <h3 className="font-semibold victory-dark mb-2">Quality Assurance</h3>
               <p className="text-sm victory-gray">Continuous monitoring and quality control</p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star className="victory-blue w-8 h-8" />
@@ -172,7 +177,7 @@ export default function Pricing() {
               <h3 className="font-semibold victory-dark mb-2">Dedicated Manager</h3>
               <p className="text-sm victory-gray">Personal account manager for all plans</p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Check className="text-green-600 w-8 h-8" />
@@ -180,7 +185,7 @@ export default function Pricing() {
               <h3 className="font-semibold victory-dark mb-2">Security & Compliance</h3>
               <p className="text-sm victory-gray">Enterprise-grade security standards</p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Check className="victory-purple w-8 h-8" />
@@ -244,12 +249,12 @@ export default function Pricing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#f6a4df]">
+              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6a4def]" onClick={scrollToTop}>
                 Schedule Free Demo
               </Button>
             </Link>
             <Link href="/contact">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]" onClick={scrollToTop}>
                 Contact Sales
               </Button>
             </Link>
@@ -259,4 +264,3 @@ export default function Pricing() {
     </div>
   );
 }
-
