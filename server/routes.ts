@@ -7,6 +7,8 @@ import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
+import kpiRoutes from "./routes/kpi";
+import adminRoutes from "./routes/admin";
 
 let stripe: Stripe | null = null;
 
@@ -372,6 +374,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/*', (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
   });
+
+  app.use("/api/kpi", kpiRoutes);
+  app.use("/api/admin", adminRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

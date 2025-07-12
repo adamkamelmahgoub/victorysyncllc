@@ -1460,3 +1460,701 @@ export default function AdminPortal() {
     </div>
   );
 }
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { 
+  Users, 
+  ShoppingCart, 
+  Settings, 
+  BarChart3, 
+  Shield, 
+  Edit, 
+  Trash2, 
+  Plus,
+  Eye,
+  Mail,
+  Phone,
+  Calendar,
+  DollarSign,
+  UserCheck,
+  UserX,
+  Crown
+} from 'lucide-react';
+import { useLocation } from 'wouter';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  isActive: boolean;
+  createdAt: string;
+  provider: string;
+  socialAccounts?: any[];
+}
+
+interface Order {
+  id: number;
+  userId: string;
+  status: string;
+  total: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface AdminUser {
+  id: number;
+  username: string;
+  email: string;
+  role: 'super_admin' | 'admin' | 'moderator';
+  isActive: boolean;
+  lastLogin: string;
+}
+
+interface ContactSubmission {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  company?: string;
+  message: string;
+  status: string;
+  createdAt: string;
+}
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+export default function AdminPortal() {
+  const [, setLocation] = useLocation();
+  const [users, setUsers] = useState<User[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  const [contactSubmissions, setContactSubmissions] = useState<ContactSubmission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [newAdminUser, setNewAdminUser] = useState({
+    username: '',
+    email: '',
+    password: '',
+    role: 'admin' as const
+  });
+
+  useEffect(() => {
+    scrollToTop();
+    checkAdminAuth();
+    fetchData();
+  }, []);
+
+  const checkAdminAuth = () => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      setLocation('/admin/login');
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
+      const [usersRes, ordersRes, contactRes] = await Promise.all([
+        fetch('/api/admin/users', { headers }),
+        fetch('/api/admin/orders', { headers }),
+        fetch('/api/admin/contact-submissions', { headers })
+      ]);
+
+      if (usersRes.ok) {
+        const usersData = await usersRes.json();
+        setUsers(usersData);
+      }
+
+      if (ordersRes.ok) {
+        const ordersData = await ordersRes.json();
+        setOrders(ordersData);
+      }
+
+      if (contactRes.ok) {
+        const contactData = await contactRes.json();
+        setContactSubmissions(contactData);
+      }
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    setLocation('/admin/login');
+  };
+
+  const updateUserStatus = async (userId: number, isActive: boolean) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`/api/admin/users/${userId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isActive })
+      });
+
+      if (response.ok) {
+        setUsers(users.map(user => 
+          user.id === userId ? { ...user, isActive } : user
+        ));
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
+  };
+
+  const deleteUser = async (userId: number) => {
+    if (!confirm('Are you sure you want to delete this user?')) return;
+    
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setUsers(users.filter(user => user.id !== userId));
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
+  };
+
+  const createAdminUser = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch('/api/admin/users/admin', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newAdminUser)
+      });
+
+      if (response.ok) {
+        const adminUser = await response.json();
+        setAdminUsers([...adminUsers, adminUser]);
+        setNewAdminUser({ username: '', email: '', password: '', role: 'admin' });
+      }
+    } catch (error) {
+      console.error('Error creating admin user:', error);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'inactive': return 'bg-red-100 text-red-800';
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'processing': return 'bg-blue-100 text-blue-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      case 'new': return 'bg-blue-100 text-blue-800';
+      case 'contacted': return 'bg-orange-100 text-orange-800';
+      case 'resolved': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'super_admin': return <Crown className="h-4 w-4" />;
+      case 'admin': return <Shield className="h-4 w-4" />;
+      case 'moderator': return <UserCheck className="h-4 w-4" />;
+      default: return <UserCheck className="h-4 w-4" />;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading admin portal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <Shield className="h-8 w-8 text-blue-600" />
+                Admin Portal
+              </h1>
+              <p className="text-gray-600">Manage your VictorySync platform</p>
+            </div>
+            <Button onClick={handleLogout} variant="outline">
+              Sign Out
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{users.length}</div>
+              <p className="text-xs text-muted-foreground">
+                {users.filter(u => u.isActive).length} active
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{orders.length}</div>
+              <p className="text-xs text-muted-foreground">
+                ${orders.reduce((sum, order) => sum + parseFloat(order.total), 0).toFixed(2)} total value
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Contact Submissions</CardTitle>
+              <Mail className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{contactSubmissions.length}</div>
+              <p className="text-xs text-muted-foreground">
+                {contactSubmissions.filter(c => c.status === 'new').length} pending
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ${orders.reduce((sum, order) => sum + parseFloat(order.total), 0).toFixed(2)}
+              </div>
+              <p className="text-xs text-muted-foreground">Total generated</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="users" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="contacts">Contacts</TabsTrigger>
+            <TabsTrigger value="admins">Admin Users</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+
+          {/* Users Tab */}
+          <TabsContent value="users" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>Manage all registered users and their permissions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Provider</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{user.name}</div>
+                            <div className="text-sm text-gray-600">{user.email}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{user.provider}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(user.isActive ? 'active' : 'inactive')}>
+                            {user.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedUser(user)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateUserStatus(user.id, !user.isActive)}
+                            >
+                              {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => deleteUser(user.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Orders Tab */}
+          <TabsContent value="orders" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Management</CardTitle>
+                <CardDescription>View and manage all customer orders</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Order ID</TableHead>
+                      <TableHead>User ID</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {orders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">#{order.id}</TableCell>
+                        <TableCell>{order.userId}</TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(order.status)}>
+                            {order.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>${order.total}</TableCell>
+                        <TableCell>
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Contacts Tab */}
+          <TabsContent value="contacts" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Submissions</CardTitle>
+                <CardDescription>Manage contact form submissions and inquiries</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {contactSubmissions.map((contact) => (
+                      <TableRow key={contact.id}>
+                        <TableCell>
+                          {contact.firstName} {contact.lastName}
+                        </TableCell>
+                        <TableCell>{contact.email}</TableCell>
+                        <TableCell>{contact.company || 'N/A'}</TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(contact.status)}>
+                            {contact.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(contact.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Admin Users Tab */}
+          <TabsContent value="admins" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Admin User Management</CardTitle>
+                    <CardDescription>Manage admin users and their permissions</CardDescription>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Admin
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create Admin User</DialogTitle>
+                        <DialogDescription>
+                          Add a new administrator with specific role permissions
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="username">Username</Label>
+                          <Input
+                            id="username"
+                            value={newAdminUser.username}
+                            onChange={(e) => setNewAdminUser(prev => ({ ...prev, username: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={newAdminUser.email}
+                            onChange={(e) => setNewAdminUser(prev => ({ ...prev, email: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="password">Password</Label>
+                          <Input
+                            id="password"
+                            type="password"
+                            value={newAdminUser.password}
+                            onChange={(e) => setNewAdminUser(prev => ({ ...prev, password: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="role">Role</Label>
+                          <Select value={newAdminUser.role} onValueChange={(value: any) => setNewAdminUser(prev => ({ ...prev, role: value }))}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="super_admin">Super Admin</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="moderator">Moderator</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button onClick={createAdminUser} className="w-full">
+                          Create Admin User
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Admin user management coming soon</p>
+                  <p className="text-sm text-gray-500">Feature will be available in next update</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>System Settings</CardTitle>
+                <CardDescription>Configure system-wide settings and preferences</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">General Settings</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="site-name">Site Name</Label>
+                      <Input id="site-name" defaultValue="VictorySync" />
+                    </div>
+                    <div>
+                      <Label htmlFor="support-email">Support Email</Label>
+                      <Input id="support-email" defaultValue="support@victorysync.com" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Security Settings</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Two-Factor Authentication</Label>
+                        <p className="text-sm text-gray-600">Require 2FA for admin accounts</p>
+                      </div>
+                      <Switch />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Session Timeout</Label>
+                        <p className="text-sm text-gray-600">Auto-logout after inactivity</p>
+                      </div>
+                      <Switch />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Notification Settings</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Email Notifications</Label>
+                        <p className="text-sm text-gray-600">Send admin notifications via email</p>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Order Alerts</Label>
+                        <p className="text-sm text-gray-600">Alert on new orders</p>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                  </div>
+                </div>
+
+                <Button>Save Settings</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* User Detail Modal */}
+        {selectedUser && (
+          <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>User Details</DialogTitle>
+                <DialogDescription>
+                  View and manage user information and permissions
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Name</Label>
+                    <p className="font-semibold">{selectedUser.name}</p>
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <p className="font-semibold">{selectedUser.email}</p>
+                  </div>
+                  <div>
+                    <Label>Provider</Label>
+                    <Badge variant="outline">{selectedUser.provider}</Badge>
+                  </div>
+                  <div>
+                    <Label>Status</Label>
+                    <Badge className={getStatusColor(selectedUser.isActive ? 'active' : 'inactive')}>
+                      {selectedUser.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label>Member Since</Label>
+                    <p>{new Date(selectedUser.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => updateUserStatus(selectedUser.id, !selectedUser.isActive)}
+                    variant={selectedUser.isActive ? "destructive" : "default"}
+                  >
+                    {selectedUser.isActive ? 'Deactivate' : 'Activate'} User
+                  </Button>
+                  <Button
+                    onClick={() => deleteUser(selectedUser.id)}
+                    variant="destructive"
+                  >
+                    Delete User
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+    </div>
+  );
+}
