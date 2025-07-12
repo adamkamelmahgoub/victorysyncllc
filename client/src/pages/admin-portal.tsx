@@ -1,10 +1,247 @@
-<>
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { 
+  Users, 
+  Package, 
+  TrendingUp, 
+  DollarSign, 
+  MoreVertical, 
+  Shield, 
+  Eye, 
+  Lock, 
+  Unlock, 
+  Trash2, 
+  Plus, 
+  Edit 
+} from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  isActive: boolean;
+  createdAt: string;
+  privileges?: {
+    subscriptionTier?: string;
+    accountStatus?: string;
+    priority?: string;
+  };
+}
+
+interface Order {
+  id: number;
+  userId: string;
+  status: string;
+  total: string;
+  createdAt: string;
+}
+
+interface Package {
+  id: number;
+  name: string;
+  description: string;
+  price: string;
+  features: string[];
+}
+
+export default function AdminPortal() {
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isUserDetailOpen, setIsUserDetailOpen] = useState(false);
+  const [tierFilter, setTierFilter] = useState<string>('all');
+  const queryClient = useQueryClient();
+
+  // Fetch users
+  const { data: users = [], isLoading: usersLoading } = useQuery({
+    queryKey: ['/api/admin/users'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/users', {
+        headers: {
+          'x-admin-auth': 'admin123'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
+    }
+  });
+
+  // Fetch orders
+  const { data: orders = [] } = useQuery({
+    queryKey: ['/api/admin/orders'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/orders', {
+        headers: {
+          'x-admin-auth': 'admin123'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      return response.json();
+    }
+  });
+
+  // Fetch packages
+  const { data: packages = [] } = useQuery({
+    queryKey: ['/api/packages']
+  });
+
+  // Filter users based on tier
+  const filteredUsers = users.filter((user: User) => {
+    if (tierFilter === 'all') return true;
+    return user.privileges?.subscriptionTier === tierFilter;
+  });
+
+  const handleUserClick = (user: User) => {
+    setSelectedUser(user);
+    setIsUserDetailOpen(true);
+  };
+
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case 'enterprise': return 'bg-purple-100 text-purple-800';
+      case 'premium': return 'bg-blue-100 text-blue-800';
+      case 'basic': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'suspended': return 'bg-red-100 text-red-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const toggleUserStatus = async (userId: number, currentStatus: boolean) => {
+    try {
+      await apiRequest({
+        url: `/api/admin/users/${userId}/status`,
+        method: 'PUT',
+        body: { isActive: !currentStatus }
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
+  };
+
+  const deleteUser = async (userId: number) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await apiRequest({
+          url: `/api/admin/users/${userId}`,
+          method: 'DELETE'
+        });
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      } catch (error) {
+        console.error('Error deleting user:', error);
+      }
+    }
+  };
+
+  const impersonateUser = (userId: number) => {
+    console.log('Impersonating user:', userId);
+    // Implement impersonation logic
+  };
+
+  // Calculate stats
+  const totalRevenue = orders.reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0);
+  const activeUsers = users.filter((user: User) => user.isActive !== false).length;
+  const totalOrders = orders.length;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Admin Portal</h1>
+          <p className="text-gray-600">Manage users, orders, and system settings</p>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{users.length}</div>
+              <p className="text-xs text-muted-foreground">{activeUsers} active</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalOrders}</div>
+              <p className="text-xs text-muted-foreground">All time</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">Total revenue</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Packages</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{packages.length}</div>
+              <p className="text-xs text-muted-foreground">Available services</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="users" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="packages">Packages</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+
+          {/* Users Tab */}
+          <TabsContent value="users" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>User Management</CardTitle>
+                  <div className="flex items-center space-x-2">
+                    <Select value={tierFilter} onValueChange={setTierFilter}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Filter by tier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Tiers</SelectItem>
                         <SelectItem value="basic">Basic</SelectItem>
                         <SelectItem value="premium">Premium</SelectItem>
                         <SelectItem value="enterprise">Enterprise</SelectItem>
-                      </>
-                    </SelectContent>
-                  </Select>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -27,7 +264,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredUsers.map((user: any) => (
+                        {filteredUsers.map((user: User) => (
                           <tr key={user.id} className="border-b hover:bg-gray-50 cursor-pointer">
                             <td className="p-2" onClick={() => handleUserClick(user)}>
                               <div>
@@ -46,11 +283,11 @@
                               </Badge>
                             </td>
                             <td className="p-2" onClick={() => handleUserClick(user)}>
-                              {ordersData.filter((order: any) => order.userId === user.id.toString()).length}
+                              {orders.filter((order: Order) => order.userId === user.id.toString()).length}
                             </td>
                             <td className="p-2" onClick={() => handleUserClick(user)}>
-                              ${ordersData.filter((order: any) => order.userId === user.id.toString())
-                                .reduce((sum: number, order: any) => sum + parseFloat(order.total || 0), 0)
+                              ${orders.filter((order: Order) => order.userId === user.id.toString())
+                                .reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0)
                                 .toLocaleString()}
                             </td>
                             <td className="p-2" onClick={() => handleUserClick(user)}>
@@ -82,7 +319,7 @@
                                     {user.isActive !== false ? "Suspend" : "Activate"}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
-                                    onClick={() => deleteUserOld(user.id)}
+                                    onClick={() => deleteUser(user.id)}
                                     className="text-red-600"
                                   >
                                     <Trash2 className="w-4 h-4 mr-2" />
@@ -101,6 +338,7 @@
             </Card>
           </TabsContent>
 
+          {/* Orders Tab */}
           <TabsContent value="orders" className="space-y-4">
             <Card>
               <CardHeader>
@@ -108,7 +346,7 @@
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {ordersData.map((order: any) => (
+                  {orders.map((order: Order) => (
                     <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <p className="font-semibold">Order #{order.id}</p>
@@ -124,7 +362,7 @@
                         }>
                           {order.status}
                         </Badge>
-                        <span className="font-semibold">${parseFloat(order.total || 0).toLocaleString()}</span>
+                        <span className="font-semibold">${parseFloat(order.total || '0').toLocaleString()}</span>
                         <Button size="sm" variant="outline">
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -136,12 +374,13 @@
             </Card>
           </TabsContent>
 
+          {/* Packages Tab */}
           <TabsContent value="packages" className="space-y-4">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Package Management</CardTitle>
-                  <Button className="bg-victory-purple hover:bg-purple-700">
+                  <Button className="bg-purple-600 hover:bg-purple-700">
                     <Plus className="w-4 h-4 mr-2" />
                     Add Package
                   </Button>
@@ -149,7 +388,7 @@
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {packages.map((pkg: any) => (
+                  {packages.map((pkg: Package) => (
                     <div key={pkg.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <p className="font-semibold">{pkg.name}</p>
@@ -171,32 +410,7 @@
             </Card>
           </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Revenue Trends</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 flex items-center justify-center text-gray-500">
-                    Revenue chart would go here
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>User Growth</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 flex items-center justify-center text-gray-500">
-                    User growth chart would go here
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
+          {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-4">
             <Card>
               <CardHeader>
@@ -216,7 +430,7 @@
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input id="phone" defaultValue="+ (718)-813-2106" />
                   </div>
-                  <Button className="bg-victory-purple hover:bg-purple-700">
+                  <Button className="bg-purple-600 hover:bg-purple-700">
                     Save Settings
                   </Button>
                 </div>
@@ -225,31 +439,42 @@
           </TabsContent>
         </Tabs>
 
-        {/* Enhanced User Details Modal */}
+        {/* User Details Modal */}
         <Dialog open={isUserDetailOpen} onOpenChange={setIsUserDetailOpen}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center space-x-2">
                 <Shield className="w-5 h-5" />
-                <span>Complete User Management: {selectedUser?.name}</span>
+                <span>User Management: {selectedUser?.name}</span>
               </DialogTitle>
             </DialogHeader>
             
             {selectedUser && (
               <div className="space-y-6">
-                {/* User Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card>
                     <CardContent className="p-4">
-                      <div className="text-center">
-                        <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center">
-                          <Users className="w-8 h-8 text-gray-500" />
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Email</span>
+                          <span className="font-semibold">{selectedUser.email}</span>
                         </div>
-                        <p className="font-semibold">{selectedUser.name}</p>
-                        <p className="text-sm text-gray-600">{selectedUser.email}</p>
-                        <Badge className={getStatusColor(userPrivileges.accountStatus)} className="mt-2">
-                          {userPrivileges.accountStatus}
-                        </Badge>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Status</span>
+                          <Badge className={getStatusColor(selectedUser.privileges?.accountStatus || 'active')}>
+                            {selectedUser.privileges?.accountStatus || 'active'}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Tier</span>
+                          <Badge className={getTierColor(selectedUser.privileges?.subscriptionTier || 'basic')}>
+                            {selectedUser.privileges?.subscriptionTier || 'basic'}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Joined</span>
+                          <span className="font-semibold">{new Date(selectedUser.createdAt).toLocaleDateString()}</span>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -259,523 +484,22 @@
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-600">Orders</span>
-                          <span className="font-semibold">{userStats.totalOrders}</span>
+                          <span className="font-semibold">
+                            {orders.filter((order: Order) => order.userId === selectedUser.id.toString()).length}
+                          </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Spent</span>
-                          <span className="font-semibold">${userStats.totalSpent.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Avg Order</span>
-                          <span className="font-semibold">${userStats.avgOrderValue}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Login Count</span>
-                          <span className="font-semibold">{userStats.loginCount}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Last Login</span>
-                          <span className="font-semibold text-xs">{new Date(userStats.lastLogin).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Integrations</span>
-                          <span className="font-semibold">{userStats.integrations}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Support Tickets</span>
-                          <span className="font-semibold">{userStats.supportTickets}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">API Calls</span>
-                          <span className="font-semibold">{userStats.apiCalls.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Priority</span>
-                          <Badge className={
-                            userPrivileges.priority === 'critical' ? 'bg-red-100 text-red-800' :
-                            userPrivileges.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                            userPrivileges.priority === 'normal' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
-                          }>
-                            {userPrivileges.priority}
-                          </Badge>
+                          <span className="text-sm text-gray-600">Total Spent</span>
+                          <span className="font-semibold">
+                            ${orders.filter((order: Order) => order.userId === selectedUser.id.toString())
+                              .reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0)
+                              .toLocaleString()}
+                          </span>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
-
-                <Tabs defaultValue="privileges" className="w-full">
-                  <TabsList className="grid w-full grid-cols-6">
-                    <TabsTrigger value="privileges">Privileges</TabsTrigger>
-                    <TabsTrigger value="subscription">Subscription</TabsTrigger>
-                    <TabsTrigger value="orders">Orders</TabsTrigger>
-                    <TabsTrigger value="activity">Activity</TabsTrigger>
-                    <TabsTrigger value="billing">Billing</TabsTrigger>
-                    <TabsTrigger value="notes">Notes</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="privileges" className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-lg">Core Permissions</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <Label>Can Create Orders</Label>
-                            <Switch 
-                              checked={userPrivileges.canCreateOrders} 
-                              onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canCreateOrders: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <Label>Can View Reports</Label>
-                            <Switch 
-                              checked={userPrivileges.canViewReports} 
-                              onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canViewReports: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <Label>Can Access Premium Features</Label>
-                            <Switch 
-                              checked={userPrivileges.canAccessPremiumFeatures} 
-                              onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canAccessPremiumFeatures: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <Label>Can Modify Profile</Label>
-                            <Switch 
-                              checked={userPrivileges.canModifyProfile} 
-                              onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canModifyProfile: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <Label>Can Delete Account</Label>
-                            <Switch 
-                              checked={userPrivileges.canDeleteAccount} 
-                              onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canDeleteAccount: checked})}
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-lg">Advanced Permissions</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <Label>Can View Billing</Label>
-                            <Switch 
-                              checked={userPrivileges.canViewBilling} 
-                              onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canViewBilling: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <Label>Can Manage Integrations</Label>
-                            <Switch 
-                              checked={userPrivileges.canManageIntegrations} 
-                              onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canManageIntegrations: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <Label>Can Export Data</Label>
-                            <Switch 
-                              checked={userPrivileges.canExportData} 
-                              onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canExportData: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <Label>Can Access API</Label>
-                            <Switch 
-                              checked={userPrivileges.canAccessAPI} 
-                              onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canAccessAPI: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <Label>Can View Analytics</Label>
-                            <Switch 
-                              checked={userPrivileges.canViewAnalytics} 
-                              onCheckedChange={(checked) => setUserPrivileges({...userPrivileges, canViewAnalytics: checked})}
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div>
-                        <Label>Max Order Value ($)</Label>
-                        <Input 
-                          type="number" 
-                          value={userPrivileges.maxOrderValue}
-                          onChange={(e) => setUserPrivileges({...userPrivileges, maxOrderValue: parseInt(e.target.value)})}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label>Max Orders Per Month</Label>
-                        <Input 
-                          type="number" 
-                          value={userPrivileges.maxOrdersPerMonth}
-                          onChange={(e) => setUserPrivileges({...userPrivileges, maxOrdersPerMonth: parseInt(e.target.value)})}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label>API Rate Limit (per hour)</Label>
-                        <Input 
-                          type="number" 
-                          value={userPrivileges.apiRateLimit}
-                          onChange={(e) => setUserPrivileges({...userPrivileges, apiRateLimit: parseInt(e.target.value)})}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <Label>Account Status</Label>
-                        <Select value={userPrivileges.accountStatus} onValueChange={(value: any) => setUserPrivileges({...userPrivileges, accountStatus: value})}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="suspended">Suspended</SelectItem>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="banned">Banned</SelectItem>
-                            <SelectItem value="trial">Trial</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <Label>Priority Level</Label>
-                        <Select value={userPrivileges.priority} onValueChange={(value: any) => setUserPrivileges({...userPrivileges, priority: value})}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="low">Low</SelectItem>
-                            <SelectItem value="normal">Normal</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="critical">Critical</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="subscription" className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Subscription Details</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div>
-                            <Label>Subscription Tier</Label>
-                            <Select value={userPrivileges.subscriptionTier} onValueChange={(value: any) => setUserPrivileges({...userPrivileges, subscriptionTier: value})}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="basic">Basic</SelectItem>
-                                <SelectItem value="premium">Premium</SelectItem>
-                                <SelectItem value="enterprise">Enterprise</SelectItem>
-                                <SelectItem value="custom">Custom</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          
-                          <div>
-                            <Label>Billing Cycle</Label>
-                            <Select value={userPrivileges.billingCycle} onValueChange={(value: any) => setUserPrivileges({...userPrivileges, billingCycle: value})}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="quarterly">Quarterly</SelectItem>
-                                <SelectItem value="yearly">Yearly</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          
-                          <div>
-                            <Label>Credit Limit ($)</Label>
-                            <Input 
-                              type="number" 
-                              value={userPrivileges.creditLimit}
-                              onChange={(e) => setUserPrivileges({...userPrivileges, creditLimit: parseInt(e.target.value)})}
-                            />
-                          </div>
-                          
-                          <div>
-                            <Label>Data Retention (days)</Label>
-                            <Input 
-                              type="number" 
-                              value={userPrivileges.dataRetentionDays}
-                              onChange={(e) => setUserPrivileges({...userPrivileges, dataRetentionDays: parseInt(e.target.value)})}
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Usage Statistics</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm">Storage Used</span>
-                              <span className="font-semibold">2.3 GB / 10 GB</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div className="bg-blue-500 h-2 rounded-full" style={{ width: '23%' }} />
-                            </div>
-                            
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm">API Calls This Month</span>
-                              <span className="font-semibold">1,247 / 10,000</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div className="bg-green-500 h-2 rounded-full" style={{ width: '12%' }} />
-                            </div>
-                            
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm">Bandwidth Used</span>
-                              <span className="font-semibold">45 GB / 100 GB</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div className="bg-orange-500 h-2 rounded-full" style={{ width: '45%' }} />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="orders" className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h4 className="font-semibold">User Orders</h4>
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          <Download className="w-4 h-4 mr-2" />
-                          Export
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      {ordersData.filter((order: any) => order.userId === selectedUser.id.toString()).map((order: any) => (
-                        <div key={order.id} className="flex items-center justify-between p-3 border rounded">
-                          <div>
-                            <p className="font-medium">Order #{order.id}</p>
-                            <p className="text-sm text-gray-600">{new Date(order.createdAt).toLocaleDateString()}</p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge className={
-                              order.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                              order.status === 'processing' ? 'bg-blue-100 text-blue-800' : 
-                              'bg-yellow-100 text-yellow-800'
-                            }>
-                              {order.status}
-                            </Badge>
-                            <span className="font-semibold">${parseFloat(order.total || 0).toLocaleString()}</span>
-                            <Button size="sm" variant="outline">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <div className="pt-4 border-t">
-                      <h5 className="font-semibold mb-3">Create New Order</h5>
-                      <div className="flex space-x-2">
-                        <Select value={selectedPackage} onValueChange={setSelectedPackage}>
-                          <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Select Package" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {packages.map((pkg: any) => (
-                              <SelectItem key={pkg.id} value={pkg.id.toString()}>
-                                {pkg.name} - ${pkg.price}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input 
-                          type="number" 
-                          placeholder="Qty" 
-                          value={orderQuantity}
-                          onChange={(e) => setOrderQuantity(parseInt(e.target.value))}
-                          className="w-20"
-                        />
-                        <Button onClick={createOrder} className="bg-victory-purple hover:bg-purple-700">
-                          Create Order
-                        </Button>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="activity" className="space-y-4">
-                    <h4 className="font-semibold">Recent Activity</h4>
-                    <div className="space-y-3">
-                      {userActivity.map((activity) => (
-                        <div key={activity.id} className="flex items-center justify-between p-3 border rounded">
-                          <div className="flex items-center space-x-3">
-                            <div className={`w-2 h-2 rounded-full ${
-                              activity.status === 'success' ? 'bg-green-500' :
-                              activity.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500'
-                            }`} />
-                            <div>
-                              <p className="text-sm font-medium">{activity.action}</p>
-                              <p className="text-xs text-gray-500">IP: {activity.ip} • {activity.userAgent}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-gray-500">{new Date(activity.timestamp).toLocaleString()}</p>
-                            <Badge className={
-                              activity.status === 'success' ? 'bg-green-100 text-green-800' :
-                              activity.status === 'failed' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
-                            }>
-                              {activity.status}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="billing" className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Billing Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Current Balance</span>
-                            <span className="font-semibold">$247.50</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Credit Limit</span>
-                            <span className="font-semibold">${userPrivileges.creditLimit.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Next Billing Date</span>
-                            <span className="font-semibold">Dec 15, 2024</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Payment Method</span>
-                            <span className="font-semibold">•••• 4242</span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Payment History</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="text-sm font-medium">Nov 2024 Payment</p>
-                                <p className="text-xs text-gray-500">Nov 15, 2024</p>
-                              </div>
-                              <span className="font-semibold">$299.00</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="text-sm font-medium">Oct 2024 Payment</p>
-                                <p className="text-xs text-gray-500">Oct 15, 2024</p>
-                              </div>
-                              <span className="font-semibold">$299.00</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="text-sm font-medium">Sep 2024 Payment</p>
-                                <p className="text-xs text-gray-500">Sep 15, 2024</p>
-                              </div>
-                              <span className="font-semibold">$299.00</span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="notes" className="space-y-4">
-                    <div>
-                      <Label>Admin Notes</Label>
-                      <Textarea 
-                        value={userPrivileges.customNotes}
-                        onChange={(e) => setUserPrivileges({...userPrivileges, customNotes: e.target.value})}
-                        placeholder="Add custom notes about this user..."
-                        rows={8}
-                        className="mt-2"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label>Internal Tags</Label>
-                      <Input 
-                        placeholder="VIP, High-Volume, Support-Priority, etc."
-                        className="mt-2"
-                      />
-                    </div>
-                  </TabsContent>
-                </Tabs>
-
-                <DialogFooter>
-                  <div className="flex justify-between items-center w-full">
-                    <div className="flex space-x-2">
-                      <Button variant="outline" onClick={() => impersonateUser(selectedUser.id)}>
-                        <Eye className="w-4 h-4 mr-2" />
-                        Impersonate User
-                      </Button>
-                      <Button variant="outline">
-                        <Mail className="w-4 h-4 mr-2" />
-                        Send Email
-                      </Button>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" onClick={() => setIsUserDetailOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button onClick={handleSaveUserPrivileges} className="bg-victory-purple hover:bg-purple-700">
-                        Save All Changes
-                      </Button>
-                    </div>
-                  </div>
-                </DialogFooter>
               </div>
             )}
           </DialogContent>

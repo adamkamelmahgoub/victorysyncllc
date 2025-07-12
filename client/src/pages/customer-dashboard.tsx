@@ -336,4 +336,3 @@ export default function CustomerDashboard() {
   );
 }
 
-export default CustomerDashboard;
