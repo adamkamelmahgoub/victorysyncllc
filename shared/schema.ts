@@ -34,6 +34,8 @@ export const publicUsers = pgTable("public_users", {
   provider: varchar("provider").default("local"), // local, google, facebook, apple
   providerId: varchar("provider_id"),
   socialAccounts: jsonb("social_accounts").default([]), // Array of connected providers
+  privileges: jsonb("privileges"), // User privileges and permissions
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -99,49 +101,6 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 
 export const packagesRelations = relations(packages, ({ many }) => ({
   orderItems: many(orderItems),
-}));
-
-export const integrations = pgTable('integrations', {
-  id: serial('id').primaryKey(),
-  customer_id: text('customer_id').notNull(),
-  type: text('type').notNull(), // 'hubspot', 'salesforce', 'five9', etc.
-  access_token: text('access_token').notNull(),
-  refresh_token: text('refresh_token'),
-  is_active: boolean('is_active').default(true),
-  created_at: timestamp('created_at').defaultNow(),
-  updated_at: timestamp('updated_at').defaultNow(),
-});
-
-// Features table for feature flags
-export const featuresEnabled = pgTable('features_enabled', {
-  id: serial('id').primaryKey(),
-  customer_id: integer('customer_id').notNull().references(() => publicUsers.id, { onDelete: 'cascade' }),
-  feature_key: varchar('feature_key', { length: 100 }).notNull(),
-  enabled: boolean('enabled').default(false),
-  updated_at: timestamp('updated_at').defaultNow(),
-}, (table) => ({
-  uniqueCustomerFeature: index('unique_customer_feature').on(table.customer_id, table.feature_key),
-  customerIdIdx: index('idx_features_customer_id').on(table.customer_id),
-  featureKeyIdx: index('idx_features_feature_key').on(table.feature_key),
-}));
-
-// Team members table for seat-based billing
-export const teamMembers = pgTable('team_members', {
-  id: serial('id').primaryKey(),
-  customer_id: integer('customer_id').notNull().references(() => publicUsers.id, { onDelete: 'cascade' }),
-  email: varchar('email', { length: 255 }).notNull(),
-  role: varchar('role', { length: 50 }).default('member').notNull(),
-  status: varchar('status', { length: 50 }).default('pending').notNull(),
-  invited_at: timestamp('invited_at').defaultNow(),
-  accepted_at: timestamp('accepted_at'),
-  stripe_subscription_item_id: varchar('stripe_subscription_item_id', { length: 255 }),
-  created_at: timestamp('created_at').defaultNow(),
-  updated_at: timestamp('updated_at').defaultNow(),
-}, (table) => ({
-  uniqueCustomerEmail: index('unique_customer_email').on(table.customer_id, table.email),
-  customerIdIdx: index('idx_team_members_customer_id').on(table.customer_id),
-  emailIdx: index('idx_team_members_email').on(table.email),
-  statusIdx: index('idx_team_members_status').on(table.status),
 }));
 
 // Types

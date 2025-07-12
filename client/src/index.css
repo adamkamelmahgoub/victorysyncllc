@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Add white outline to all buttons */
+button {
+  outline: 2px solid white !important;
+  outline-offset: 2px !important;
+}
+
 :root {
   --background: hsl(210, 40%, 98%);
   --foreground: hsl(222.2, 84%, 4.9%);
