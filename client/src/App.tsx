@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
-import { useState } from "react";
+import { useState, lazy } from "react";
 
 // Layout Components
 import Navigation from "@/components/navigation";
@@ -62,10 +62,10 @@ function Router() {
           <Route path="/checkout" component={Checkout} />
           <Route path="/dashboard" component={CustomerDashboard} />
           <Route path="/customer-dashboard" component={CustomerDashboard} />
+          <Route path="/admin" component={lazy(() => import('./pages/admin-portal'))} />
           <Route path="/login" component={Login} />
           <Route path="/register" component={Register} />
           <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/admin" component={() => import('./pages/admin-login')} />
           <Route path="/admin-portal" component={() => import('./pages/admin-portal')} />
 
           {/* Footer Pages */}
@@ -77,7 +77,6 @@ function Router() {
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route path="/terms" component={TermsOfService} />
           <Route path="/admin/login" component={AdminLogin} />
-          <Route path="/admin" component={AdminPortal} />
           <Route component={NotFound} />
         </Switch>
       </main>

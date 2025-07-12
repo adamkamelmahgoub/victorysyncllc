@@ -518,3 +518,571 @@ export default function AdminPortal() {
     </div>
   );
 }
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { 
+  Users, 
+  BarChart3, 
+  Settings, 
+  Shield, 
+  Eye,
+  UserPlus,
+  CreditCard,
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Search,
+  Download,
+  Filter,
+  MoreVertical
+} from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  status: 'active' | 'inactive' | 'suspended';
+  plan: string;
+  seats: number;
+  lastLogin: string;
+  totalSpent: number;
+}
+
+interface AdminStats {
+  totalUsers: number;
+  activeUsers: number;
+  totalRevenue: number;
+  monthlyGrowth: number;
+  totalCalls: number;
+  avgSatisfaction: number;
+}
+
+export default function AdminPortal() {
+  const [activeTab, setActiveTab] = useState("overview");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const queryClient = useQueryClient();
+
+  // Authentication check
+  useEffect(() => {
+    const adminToken = localStorage.getItem('adminToken');
+    if (adminToken) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (credentials.username === 'kimo8723' && credentials.password === 'Mshmsh7184365700!') {
+      localStorage.setItem('adminToken', 'admin-authenticated');
+      setIsAuthenticated(true);
+    } else {
+      alert('Invalid credentials');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    setIsAuthenticated(false);
+    setCredentials({ username: '', password: '' });
+  };
+
+  // API calls with admin headers
+  const adminRequest = async (method: string, url: string, data?: any) => {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-auth': 'admin123', // Simple admin auth
+      },
+      body: data ? JSON.stringify(data) : undefined,
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return response.json();
+  };
+
+  // Queries
+  const { data: adminStats } = useQuery<AdminStats>({
+    queryKey: ['admin-stats'],
+    queryFn: () => adminRequest('GET', '/api/admin/stats'),
+    enabled: isAuthenticated,
+    initialData: {
+      totalUsers: 0,
+      activeUsers: 0,
+      totalRevenue: 0,
+      monthlyGrowth: 0,
+      totalCalls: 0,
+      avgSatisfaction: 0
+    }
+  });
+
+  const { data: users = [] } = useQuery<AdminUser[]>({
+    queryKey: ['admin-users'],
+    queryFn: () => adminRequest('GET', '/api/admin/users'),
+    enabled: isAuthenticated,
+    initialData: []
+  });
+
+  const { data: systemHealth } = useQuery({
+    queryKey: ['system-health'],
+    queryFn: () => adminRequest('GET', '/api/admin/health'),
+    enabled: isAuthenticated,
+    refetchInterval: 30000 // Refresh every 30 seconds
+  });
+
+  // Mutations
+  const updateUserMutation = useMutation({
+    mutationFn: ({ userId, data }: { userId: number; data: any }) =>
+      adminRequest('PATCH', `/api/admin/users/${userId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (userId: number) => adminRequest('DELETE', `/api/admin/users/${userId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
+  });
+
+  // Login screen
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <img src="/LOGO_VS.png" alt="VictorySync" className="w-12 h-12 mx-auto mb-4" />
+            <CardTitle className="text-2xl">VictorySync Admin</CardTitle>
+            <p className="text-gray-600">Enter your admin credentials</p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAdminLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Username</label>
+                <Input
+                  type="text"
+                  value={credentials.username}
+                  onChange={(e) => setCredentials(prev => ({ ...prev, username: e.target.value }))}
+                  placeholder="Enter username"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Password</label>
+                <Input
+                  type="password"
+                  value={credentials.password}
+                  onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
+                  placeholder="Enter password"
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+                Sign In
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <img src="/LOGO_VS.png" alt="VictorySync" className="w-8 h-8" />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">VictorySync Admin</h1>
+                <p className="text-sm text-gray-600">System Administration Portal</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Badge variant="default" className="bg-green-100 text-green-800">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                All Systems Online
+              </Badge>
+              <Button onClick={handleLogout} variant="outline" size="sm">
+                <Shield className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="system">System</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            {/* Admin Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="border-l-4 border-l-blue-500">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <Users className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{adminStats.totalUsers}</div>
+                  <p className="text-xs text-gray-600">+{adminStats.monthlyGrowth}% this month</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-green-500">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+                  <Activity className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{adminStats.activeUsers}</div>
+                  <p className="text-xs text-gray-600">Last 30 days</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-purple-500">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                  <CreditCard className="h-4 w-4 text-purple-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${adminStats.totalRevenue.toLocaleString()}</div>
+                  <p className="text-xs text-gray-600">Monthly recurring</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-yellow-500">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Avg Satisfaction</CardTitle>
+                  <BarChart3 className="h-4 w-4 text-yellow-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{adminStats.avgSatisfaction}%</div>
+                  <p className="text-xs text-gray-600">Across all clients</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Activity & System Status */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent User Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {users.slice(0, 5).map(user => (
+                      <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="font-medium text-sm">{user.name}</p>
+                          <p className="text-xs text-gray-500">Last login: {user.lastLogin}</p>
+                        </div>
+                        <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
+                          {user.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>System Health</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Database Connection</span>
+                      <Badge className="bg-green-100 text-green-800">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Healthy
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">API Response Time</span>
+                      <Badge className="bg-green-100 text-green-800">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Fast
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Integration Status</span>
+                      <Badge className="bg-yellow-100 text-yellow-800">
+                        <AlertTriangle className="w-3 h-3 mr-1" />
+                        2 Warning
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Storage Usage</span>
+                      <span className="text-sm font-medium">67% of 1TB</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="users" className="space-y-6">
+            {/* User Management Header */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+                <p className="text-gray-600">Manage customer accounts and subscriptions</p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search users..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-64"
+                  />
+                </div>
+                <Button>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Add User
+                </Button>
+              </div>
+            </div>
+
+            {/* Users Table */}
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="text-left p-4 font-medium text-gray-900">User</th>
+                        <th className="text-left p-4 font-medium text-gray-900">Plan</th>
+                        <th className="text-left p-4 font-medium text-gray-900">Status</th>
+                        <th className="text-left p-4 font-medium text-gray-900">Seats</th>
+                        <th className="text-left p-4 font-medium text-gray-900">Last Login</th>
+                        <th className="text-left p-4 font-medium text-gray-900">Total Spent</th>
+                        <th className="text-left p-4 font-medium text-gray-900">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.map((user) => (
+                        <tr key={user.id} className="border-b hover:bg-gray-50">
+                          <td className="p-4">
+                            <div>
+                              <p className="font-medium text-gray-900">{user.name}</p>
+                              <p className="text-sm text-gray-500">{user.email}</p>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <Badge variant="outline">{user.plan}</Badge>
+                          </td>
+                          <td className="p-4">
+                            <Badge 
+                              variant={user.status === 'active' ? 'default' : 'secondary'}
+                              className={user.status === 'active' ? 'bg-green-100 text-green-800' : ''}
+                            >
+                              {user.status}
+                            </Badge>
+                          </td>
+                          <td className="p-4">{user.seats}</td>
+                          <td className="p-4 text-sm text-gray-600">{user.lastLogin}</td>
+                          <td className="p-4 font-medium">${user.totalSpent.toLocaleString()}</td>
+                          <td className="p-4">
+                            <div className="flex items-center space-x-2">
+                              <Button variant="outline" size="sm">
+                                <Eye className="w-3 h-3" />
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <MoreVertical className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenue Analytics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span>Monthly Recurring Revenue</span>
+                      <span className="font-bold text-lg">${adminStats.totalRevenue.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Growth Rate</span>
+                      <span className="font-bold text-green-600">+{adminStats.monthlyGrowth}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Average Revenue Per User</span>
+                      <span className="font-bold">${Math.round(adminStats.totalRevenue / adminStats.totalUsers)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Usage Analytics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span>Total Calls This Month</span>
+                      <span className="font-bold text-lg">{adminStats.totalCalls.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Active Integrations</span>
+                      <span className="font-bold">47</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Avg Satisfaction Score</span>
+                      <span className="font-bold text-green-600">{adminStats.avgSatisfaction}%</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="system" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>System Performance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span>CPU Usage</span>
+                      <span className="font-medium">45%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-green-600 h-2 rounded-full w-[45%]" />
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span>Memory Usage</span>
+                      <span className="font-medium">67%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-yellow-600 h-2 rounded-full w-[67%]" />
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span>Storage Usage</span>
+                      <span className="font-medium">34%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-blue-600 h-2 rounded-full w-[34%]" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Logs</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm font-mono">
+                    <div className="text-green-600">[INFO] Database backup completed</div>
+                    <div className="text-blue-600">[INFO] New user registration: john@example.com</div>
+                    <div className="text-yellow-600">[WARN] High API usage detected</div>
+                    <div className="text-green-600">[INFO] Integration sync successful</div>
+                    <div className="text-red-600">[ERROR] Failed to send email notification</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Admin Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h3 className="font-medium mb-4">Security Settings</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Require 2FA for admin access</span>
+                      <input type="checkbox" className="rounded" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Auto-logout after inactivity</span>
+                      <input type="checkbox" defaultChecked className="rounded" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Log all admin actions</span>
+                      <input type="checkbox" defaultChecked className="rounded" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-medium mb-4">Notification Settings</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Email alerts for new users</span>
+                      <input type="checkbox" defaultChecked className="rounded" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">SMS alerts for system issues</span>
+                      <input type="checkbox" className="rounded" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Weekly analytics reports</span>
+                      <input type="checkbox" defaultChecked className="rounded" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <Button>Save Settings</Button>
+                  <Button variant="outline">Export Data</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
