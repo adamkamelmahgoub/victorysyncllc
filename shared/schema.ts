@@ -101,17 +101,6 @@ export const packagesRelations = relations(packages, ({ many }) => ({
   orderItems: many(orderItems),
 }));
 
-export const integrations = pgTable('integrations', {
-  id: serial('id').primaryKey(),
-  customer_id: text('customer_id').notNull(),
-  type: text('type').notNull(), // 'hubspot', 'salesforce', 'five9', etc.
-  access_token: text('access_token').notNull(),
-  refresh_token: text('refresh_token'),
-  is_active: boolean('is_active').default(true),
-  created_at: timestamp('created_at').defaultNow(),
-  updated_at: timestamp('updated_at').defaultNow(),
-});
-
 // Types
 export type InsertPublicUser = typeof publicUsers.$inferInsert;
 export type PublicUser = typeof publicUsers.$inferSelect;

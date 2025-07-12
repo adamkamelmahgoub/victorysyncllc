@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, User } from "lucide-react";
+import { Menu, X, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
-import { Logo } from "./Logo";
-import type { PublicUser } from "../../../shared/schema";
+import logoVs3d from "@/assets/logo-vs-3d.png";
 
 interface NavigationProps {
   onCartClick: () => void;
@@ -33,7 +32,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Logo />
+            <img src={logoVs3d} alt="Victory Sync" className="h-8 w-auto" />
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -90,11 +89,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/register">
-                  <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
-                    Get Started
-                  </Button>
-                </Link>
+
               </div>
             )}
           </div>
@@ -176,13 +171,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     >
                       Sign In
                     </Button>
-                    <Button
-                      size="sm"
-                      className="w-full justify-start bg-purple-600 hover:bg-purple-700 text-white"
-                      onClick={() => (window.location.href = "/register")}
-                    >
-                      Get Started
-                    </Button>
+
                   </div>
                 )}
               </div>

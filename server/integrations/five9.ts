@@ -1,76 +1,67 @@
 
-import type { Connector, KPIMetrics } from './types';
+import { Request, Response } from 'express';
 
-export class Five9Connector implements Connector {
-  name = 'Five9';
-  type = 'five9';
-
-  async isConfigured(customerId: string): Promise<boolean> {
-    const { db } = await import('../db');
-    const integration = await db.query.integrations.findFirst({
-      where: (integrations, { eq, and }) => and(
-        eq(integrations.customer_id, customerId),
-        eq(integrations.type, 'five9'),
-        eq(integrations.is_active, true)
-      )
-    });
-    return !!integration;
-  }
-
-  async fetchKPIs(customerId: string, accessToken: string): Promise<KPIMetrics[]> {
-    try {
-      // Five9 API calls would go here
-      // For now, return mock data
-      return [
-        {
-          name: 'Total Calls Today',
-          value: 247,
-          change: 12,
-          changeType: 'increase',
-          unit: 'calls',
-          description: 'Total calls handled today'
-        },
-        {
-          name: 'Average Wait Time',
-          value: '2:34',
-          change: -15,
-          changeType: 'decrease',
-          unit: 'minutes',
-          description: 'Average customer wait time'
-        },
-        {
-          name: 'Active Agents',
-          value: 18,
-          unit: 'agents',
-          description: 'Currently available agents'
-        },
-        {
-          name: 'Call Resolution Rate',
-          value: '94.2%',
-          change: 2.1,
-          changeType: 'increase',
-          unit: 'percentage',
-          description: 'First call resolution rate'
-        }
-      ];
-    } catch (error) {
-      console.error('Five9 KPI fetch error:', error);
-      return [];
+export const getFive9Metrics = async (req: Request, res: Response) => {
+  try {
+    const username = process.env.FIVE9_USERNAME;
+    const password = process.env.FIVE9_PASSWORD;
+    
+    if (!username || !password) {
+      return res.status(500).json({ error: 'Five9 credentials not configured' });
     }
-  }
 
-  getOAuthUrl(customerId: string): string {
-    // Five9 OAuth implementation
-    return `/api/integrations/five9/connect?customer_id=${customerId}`;
-  }
+    const auth = Buffer.from(`${username}:${password}`).toString('base64');
+    
+    // Fetch real-time call statistics
+    const callStatsResponse = await fetch('https://api.five9.com/appsvcs/rs/svc/supervisors/real_time_stats/call_counters', {
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-  async handleOAuthCallback(code: string, customerId: string): Promise<{ accessToken: string; refreshToken?: string }> {
-    // Five9 token exchange implementation
-    return {
-      accessToken: 'five9_mock_token_' + customerId,
-      refreshToken: 'five9_refresh_' + customerId
+    // Fetch agent statistics
+    const agentStatsResponse = await fetch('https://api.five9.com/appsvcs/rs/svc/supervisors/real_time_stats/agent_statistics', {
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!callStatsResponse.ok || !agentStatsResponse.ok) {
+      throw new Error('Failed to fetch Five9 data');
+    }
+
+    const [callStatsData, agentStatsData] = await Promise.all([
+      callStatsResponse.json(),
+      agentStatsResponse.json()
+    ]);
+
+    // Process metrics
+    const metrics = {
+      totalCalls: calculateTotalCalls(callStatsData),
+      activeAgents: calculateActiveAgents(agentStatsData),
+      avgWaitTime: calculateAvgWaitTime(callStatsData)
     };
+
+    res.json(metrics);
+  } catch (error) {
+    console.error('Five9 API error:', error);
+    res.status(500).json({ error: 'Failed to fetch Five9 metrics' });
   }
+};
+
+function calculateTotalCalls(data: any): number {
+  // Implementation to calculate total calls from Five9 response
+  return Math.floor(Math.random() * 1000) + 500; // Placeholder: returns 500-1500 calls
 }
 
-export const five9Connector = new Five9Connector();
+function calculateActiveAgents(data: any): number {
+  // Implementation to count active agents from Five9 response
+  return Math.floor(Math.random() * 20) + 10; // Placeholder: returns 10-30 agents
+}
+
+function calculateAvgWaitTime(data: any): number {
+  // Implementation to calculate average wait time from Five9 response
+  return Math.floor(Math.random() * 60) + 15; // Placeholder: returns 15-75 seconds
+}
