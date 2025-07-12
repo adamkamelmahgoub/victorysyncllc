@@ -1,4 +1,3 @@
-
 # Changelog
 
 ## [2.0.0] - 2025-01-15
@@ -194,5 +193,16 @@
 - OAuth tokens are encrypted at rest
 
 ---
+
+## [Unreleased]
+
+### Fixed
+- **CRITICAL**: Fixed server startup crash caused by CommonJS require() in ESM environment
+  - Converted require() calls to dynamic import() statements in server/routes.ts
+  - Added proper default exports to billing.ts and integrations.ts route modules
+  - Root cause: Mixed CommonJS/ESM module usage in Node.js 18.x with "type": "module"
+- Fixed React component rendering errors in admin portal and customer dashboard
+- Resolved Promise rendering issues in React components
+- Fixed routing and component export issues
 
 **VictorySync ✅ All systems go**

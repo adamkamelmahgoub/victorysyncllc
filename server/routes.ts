@@ -384,9 +384,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(404).json({ error: 'API endpoint not found' });
   });
 
-  // Import new route modules
-  const integrationsRoutes = require('./routes/integrations').default;
-  const billingRoutes = require('./routes/billing').default;
+  // Import new route modules using dynamic imports
+  const { default: integrationsRoutes } = await import('./routes/integrations.js');
+  const { default: billingRoutes } = await import('./routes/billing.js');
 
   // Mount route modules
   app.use("/api/kpi", kpiRoutes);

@@ -6,6 +6,21 @@ import Stripe from 'stripe';
 
 const router = Router();
 
+// Placeholder billing routes
+router.get('/subscriptions', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    // TODO: Implement subscription management
+    res.json({ subscriptions: [] });
+  } catch (error) {
+    console.error('Error fetching subscriptions:', error);
+    res.status(500).json({ error: 'Failed to fetch subscriptions' });
+  }
+});
+
+export default router;
+
+const router = Router();
+
 let stripe: Stripe | null = null;
 
 if (process.env.STRIPE_SECRET_KEY) {
