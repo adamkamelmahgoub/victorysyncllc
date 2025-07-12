@@ -1,0 +1,23 @@
+Prompt for Claude Sonnet 4 on Replit
+Hi Claude, I'm encountering an error in my Replit project called VictorySync. The application has crashed, and the error message is displayed in the "Console" tab of the Replit interface. Here is the detailed error log and stack trace:
+YOUR APP CRASHED
+at /home/runner/workspace/node_modules/gensync/index.js:273:3
+at async_call_result_err (/home/runner/workspace/node_modules/gensync/index.js:223:11)
+at /home/runner/workspace/node_modules/gensync/index.js:189:28
+at anonymous> (/home/runner/workspace/node_modules/@babel/core/lib/gensync-utils/async.js:98:7)
+at /home/runner/workspace/node_modules/gensync/index.js:113:33
+at step (/home/runner/workspace/node_modules/gensync/index.js:287:14)
+at /home/runner/workspace/node_modules/gensync/index.js:273:13
+at async_call_result_err (/home/runner/workspace/node_modules/gensync/index.js:223:11)
+
+The project is hosted on Replit under the username "kimo8723" with the project name "VictorySync." It uses Node.js and includes dependencies like Babel. The error appears to originate in the gensync module, a part of Babel, and is likely related to asynchronous operations, as indicated by the reference to @babel/core/lib/gensync-utils/async.js. I suspect the issue stems from how Babel is being used or configured in the index.js file of the VictorySync project.
+Can you help me with the following?
+
+Analyze the Error: Review the stack trace and error message to determine the root cause of the crash.
+Investigate the Code: Examine the index.js file in the VictorySync project to identify any Babel-related code (e.g., imports, configurations, or function calls) that might be causing the issue.
+Check Dependencies: Verify the versions of Babel and its dependencies (e.g., @babel/core, gensync) for compatibility and check for known issues or version mismatches.
+Provide a Solution: Suggest a fix for the error, which could involve correcting Babel usage, updating dependencies, or adjusting configurations.
+Verify the Fix: Provide clear steps to test the application after implementing the fix, ensuring the error is resolved and the application runs without crashing.
+Add Error Handling (Optional): If applicable, suggest adding error handling and logging to the code to catch and log similar issues in the future.
+
+Thank you!
