@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { authenticateToken, AuthRequest } from '../publicAuth';
+import { authenticateJWT, AuthenticatedRequest } from '../publicAuth';
 
 const router = Router();
 
@@ -16,7 +16,7 @@ interface CRMData {
 }
 
 // Real-time KPI data endpoint
-router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
+router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     // This would integrate with actual CRM APIs like Salesforce, HubSpot, etc.
     // For now, providing dynamic data that changes based on time
@@ -43,7 +43,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
 });
 
 // Real-time call volume endpoint
-router.get('/call-volume', authenticateToken, async (req: AuthRequest, res: Response) => {
+router.get('/call-volume', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const now = new Date();
     const hour = now.getHours();
@@ -63,7 +63,7 @@ router.get('/call-volume', authenticateToken, async (req: AuthRequest, res: Resp
 });
 
 // Agent performance endpoint
-router.get('/agents', authenticateToken, async (req: AuthRequest, res: Response) => {
+router.get('/agents', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const agents = [
       { id: 1, name: 'Ahmed Hassan', status: 'active', callsToday: 45, avgHandleTime: 180, satisfaction: 92 },
