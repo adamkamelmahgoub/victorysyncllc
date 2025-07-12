@@ -5,7 +5,7 @@ import { Menu, X, ShoppingCart, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { Logo } from "./Logo";
-import type { PublicUser } from "../../../shared/schema";
+
 
 interface NavigationProps {
   onCartClick: () => void;

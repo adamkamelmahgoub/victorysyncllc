@@ -3,7 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
 import passport from "./auth/passport";
-import { runMigrations } from "./migrations/migrate";
+
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -69,8 +69,17 @@ app.use((req, res, next) => {
       throw new Error('Database connection failed - cannot start server');
     }
 
-    // Run database migrations
-    await runMigrations();
+    // Push schema to database (instead of raw SQL migrations)
+    console.log(`🔄 Pushing database schema...`);
+    try {
+      // Import and run drizzle-kit push programmatically
+      const { execSync } = await import('child_process');
+      execSync('npm run db:push', { stdio: 'inherit' });
+      console.log(`✅ Database schema synchronized successfully`);
+    } catch (error) {
+      console.warn(`⚠️  Schema push failed, continuing with existing schema:`, error);
+      // Continue anyway - in development, schema might already be up to date
+    }
 
     const server = await registerRoutes(app);
     console.log(`✅ Routes registered successfully`);
