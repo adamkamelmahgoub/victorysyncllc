@@ -62,9 +62,11 @@ function Router() {
           <Route path="/checkout" component={Checkout} />
           <Route path="/dashboard" component={CustomerDashboard} />
           <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/register" component={Register} />
-          <Route path="/signup" component={Register} />
           <Route path="/login" component={Login} />
+          <Route path="/register" component={Register} />
+          <Route path="/customer-dashboard" component={CustomerDashboard} />
+          <Route path="/admin" component={() => import('./pages/admin-login')} />
+          <Route path="/admin-portal" component={() => import('./pages/admin-portal')} />
 
           {/* Footer Pages */}
           <Route path="/about-us" component={AboutUs} />

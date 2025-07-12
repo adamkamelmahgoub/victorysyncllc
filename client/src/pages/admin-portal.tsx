@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -55,10 +56,19 @@ interface Package {
 }
 
 export default function AdminPortal() {
+  const [, setLocation] = useLocation();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isUserDetailOpen, setIsUserDetailOpen] = useState(false);
   const [tierFilter, setTierFilter] = useState<string>('all');
   const queryClient = useQueryClient();
+
+  // Check admin authentication
+  useEffect(() => {
+    const adminAuth = localStorage.getItem('adminAuth');
+    if (adminAuth !== 'admin123') {
+      setLocation('/admin');
+    }
+  }, [setLocation]);
 
   // Fetch users
   const { data: users = [], isLoading: usersLoading } = useQuery({

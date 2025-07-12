@@ -1,151 +1,82 @@
+import { Router, Request, Response } from 'express';
+import { authenticateToken, AuthRequest } from '../publicAuth';
 
-import express from "express";
-import { authenticateJWT } from "../publicAuth";
+const router = Router();
 
-const router = express.Router();
-
-// Interface for CRM integrations
-interface CRMIntegration {
-  name: string;
-  apiKey?: string;
-  baseUrl?: string;
-  isActive: boolean;
+// Mock CRM integration - replace with actual API calls
+interface CRMData {
+  totalCalls: number;
+  averageResponseTime: number;
+  customerSatisfaction: number;
+  activeAgents: number;
+  callsToday: number;
+  callsThisWeek: number;
+  callsThisMonth: number;
+  conversionRate: number;
 }
 
-// Mock CRM connectors - replace with actual API calls
-class CRMConnector {
-  private integrations: Map<string, CRMIntegration> = new Map([
-    ['salesforce', { name: 'Salesforce', isActive: false }],
-    ['hubspot', { name: 'HubSpot', isActive: false }],
-    ['zendesk', { name: 'Zendesk', isActive: false }],
-    ['pipedrive', { name: 'Pipedrive', isActive: false }],
-  ]);
-
-  async fetchSalesforceData() {
-    // Replace with actual Salesforce API call
-    return {
-      totalCalls: Math.floor(Math.random() * 1000) + 500,
-      activeAgents: Math.floor(Math.random() * 50) + 20,
-      conversionRate: Math.floor(Math.random() * 30) + 15,
-      avgResponseTime: Math.floor(Math.random() * 60) + 30
-    };
-  }
-
-  async fetchHubSpotData() {
-    // Replace with actual HubSpot API call
-    return {
-      totalLeads: Math.floor(Math.random() * 200) + 100,
-      qualifiedLeads: Math.floor(Math.random() * 50) + 25,
-      customerSatisfaction: Math.floor(Math.random() * 20) + 80,
-      dealsClosed: Math.floor(Math.random() * 20) + 10
-    };
-  }
-
-  async fetchZendeskData() {
-    // Replace with actual Zendesk API call
-    return {
-      ticketsResolved: Math.floor(Math.random() * 100) + 50,
-      avgResolutionTime: Math.floor(Math.random() * 120) + 60,
-      customerSatisfaction: Math.floor(Math.random() * 15) + 85,
-      agentProductivity: Math.floor(Math.random() * 20) + 75
-    };
-  }
-
-  async fetchPipedriveData() {
-    // Replace with actual Pipedrive API call
-    return {
-      dealsInPipeline: Math.floor(Math.random() * 150) + 75,
-      expectedRevenue: Math.floor(Math.random() * 100000) + 50000,
-      winRate: Math.floor(Math.random() * 25) + 20,
-      avgDealSize: Math.floor(Math.random() * 5000) + 2500
-    };
-  }
-
-  async getAggregatedData() {
-    const [salesforce, hubspot, zendesk, pipedrive] = await Promise.all([
-      this.fetchSalesforceData(),
-      this.fetchHubSpotData(),
-      this.fetchZendeskData(),
-      this.fetchPipedriveData()
-    ]);
-
-    return {
-      totalCalls: salesforce.totalCalls,
-      averageResponseTime: salesforce.avgResponseTime,
-      customerSatisfaction: Math.floor((hubspot.customerSatisfaction + zendesk.customerSatisfaction) / 2),
-      activeAgents: salesforce.activeAgents,
-      callsToday: Math.floor(salesforce.totalCalls * 0.1),
-      callsThisWeek: Math.floor(salesforce.totalCalls * 0.4),
-      callsThisMonth: salesforce.totalCalls,
-      conversionRate: salesforce.conversionRate,
-      totalLeads: hubspot.totalLeads,
-      qualifiedLeads: hubspot.qualifiedLeads,
-      ticketsResolved: zendesk.ticketsResolved,
-      avgResolutionTime: zendesk.avgResolutionTime,
-      dealsInPipeline: pipedrive.dealsInPipeline,
-      expectedRevenue: pipedrive.expectedRevenue,
-      winRate: pipedrive.winRate,
-      avgDealSize: pipedrive.avgDealSize,
-      lastUpdated: new Date().toISOString()
-    };
-  }
-}
-
-const crmConnector = new CRMConnector();
-
-// Get real-time KPI data
-router.get("/", authenticateJWT, async (req, res) => {
+// Real-time KPI data endpoint
+router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const kpiData = await crmConnector.getAggregatedData();
+    // This would integrate with actual CRM APIs like Salesforce, HubSpot, etc.
+    // For now, providing dynamic data that changes based on time
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+
+    const kpiData: CRMData = {
+      totalCalls: 1250 + (hour * 15) + Math.floor(minute / 2),
+      averageResponseTime: Math.max(15, 45 - hour + Math.random() * 10),
+      customerSatisfaction: Math.min(100, 85 + Math.random() * 15),
+      activeAgents: Math.max(1, 25 - Math.floor(hour / 3) + Math.floor(Math.random() * 5)),
+      callsToday: 150 + (hour * 8) + Math.floor(minute / 3),
+      callsThisWeek: 950 + (hour * 45),
+      callsThisMonth: 3200 + (hour * 120),
+      conversionRate: Math.min(100, 15 + Math.random() * 25)
+    };
+
     res.json(kpiData);
   } catch (error) {
-    console.error("Error fetching KPI data:", error);
-    res.status(500).json({ error: "Failed to fetch KPI data" });
+    console.error('Error fetching KPI data:', error);
+    res.status(500).json({ error: 'Failed to fetch KPI data' });
   }
 });
 
-// Configure CRM integrations
-router.post("/integrations", authenticateJWT, async (req, res) => {
+// Real-time call volume endpoint
+router.get('/call-volume', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const { crm, apiKey, baseUrl } = req.body;
-    
-    // Validate and store CRM configuration
-    // In production, encrypt and store in database
-    
-    res.json({ message: `${crm} integration configured successfully` });
+    const now = new Date();
+    const hour = now.getHours();
+
+    const callVolumeData = {
+      currentHour: 20 + Math.floor(Math.random() * 15),
+      lastHour: 18 + Math.floor(Math.random() * 12),
+      peakHour: hour >= 9 && hour <= 17 ? 'Yes' : 'No',
+      averageWaitTime: Math.max(30, 120 - (hour * 3) + Math.random() * 60)
+    };
+
+    res.json(callVolumeData);
   } catch (error) {
-    console.error("Error configuring CRM integration:", error);
-    res.status(500).json({ error: "Failed to configure integration" });
+    console.error('Error fetching call volume data:', error);
+    res.status(500).json({ error: 'Failed to fetch call volume data' });
   }
 });
 
-// Test CRM connection
-router.post("/test-connection", authenticateJWT, async (req, res) => {
+// Agent performance endpoint
+router.get('/agents', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const { crm } = req.body;
-    
-    // Test connection to specified CRM
-    let testResult = false;
-    
-    switch (crm) {
-      case 'salesforce':
-        testResult = true; // Replace with actual test
-        break;
-      case 'hubspot':
-        testResult = true; // Replace with actual test
-        break;
-      case 'zendesk':
-        testResult = true; // Replace with actual test
-        break;
-      case 'pipedrive':
-        testResult = true; // Replace with actual test
-        break;
-    }
-    
-    res.json({ success: testResult, crm });
+    const agents = [
+      { id: 1, name: 'Ahmed Hassan', status: 'active', callsToday: 45, avgHandleTime: 180, satisfaction: 92 },
+      { id: 2, name: 'Fatima Ali', status: 'active', callsToday: 38, avgHandleTime: 165, satisfaction: 94 },
+      { id: 3, name: 'Mohamed Salah', status: 'break', callsToday: 33, avgHandleTime: 145, satisfaction: 89 },
+      { id: 4, name: 'Yasmin Ahmed', status: 'active', callsToday: 42, avgHandleTime: 172, satisfaction: 91 },
+      { id: 5, name: 'Omar Ibrahim', status: 'offline', callsToday: 28, avgHandleTime: 158, satisfaction: 88 }
+    ];
+
+    res.json(agents);
   } catch (error) {
-    console.error("Error testing CRM connection:", error);
-    res.status(500).json({ error: "Failed to test connection" });
+    console.error('Error fetching agent data:', error);
+    res.status(500).json({ error: 'Failed to fetch agent data' });
   }
 });
 
