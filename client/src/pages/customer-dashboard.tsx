@@ -87,6 +87,8 @@ export default function CustomerDashboard() {
       if (response.ok) {
         const data = await response.json();
         setKPIData(data);
+      } else {
+        console.error('Failed to fetch KPI data:', response.status);
       }
     } catch (error) {
       console.error('Error fetching KPI data:', error);
@@ -180,7 +182,7 @@ export default function CustomerDashboard() {
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{kpiData.customerSatisfaction}%</div>
+                  <div className="text-2xl font-bold">{Math.round(kpiData.customerSatisfaction)}%</div>
                   <p className="text-xs text-muted-foreground">Customer rating</p>
                 </CardContent>
               </Card>
@@ -201,23 +203,23 @@ export default function CustomerDashboard() {
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span>Average Response Time</span>
-                      <span>{kpiData.averageResponseTime}s</span>
+                      <span>{Math.round(kpiData.averageResponseTime)}s</span>
                     </div>
-                    <Progress value={(120 - kpiData.averageResponseTime) / 120 * 100} />
+                    <Progress value={Math.max(0, Math.min(100, (120 - kpiData.averageResponseTime) / 120 * 100))} />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span>Conversion Rate</span>
-                      <span>{kpiData.conversionRate}%</span>
+                      <span>{Math.round(kpiData.conversionRate)}%</span>
                     </div>
-                    <Progress value={kpiData.conversionRate} />
+                    <Progress value={Math.max(0, Math.min(100, kpiData.conversionRate))} />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span>Customer Satisfaction</span>
-                      <span>{kpiData.customerSatisfaction}%</span>
+                      <span>{Math.round(kpiData.customerSatisfaction)}%</span>
                     </div>
-                    <Progress value={kpiData.customerSatisfaction} />
+                    <Progress value={Math.max(0, Math.min(100, kpiData.customerSatisfaction))} />
                   </div>
                 </CardContent>
               </Card>
