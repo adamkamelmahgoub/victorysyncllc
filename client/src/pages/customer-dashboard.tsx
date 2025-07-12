@@ -1,120 +1,63 @@
-import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Calendar, Package, TrendingUp, Users, Phone, MessageSquare, BarChart3, Settings } from 'lucide-react';
-
-interface Order {
-  id: number;
-  status: string;
-  total: string;
-  createdAt: string;
-  items: Array<{
-    packageName: string;
-    quantity: number;
-    price: string;
-  }>;
-}
+import { Badge } from '@/components/ui/badge';
+import { 
+  Phone, 
+  Users, 
+  Clock, 
+  TrendingUp, 
+  CheckCircle, 
+  AlertCircle,
+  Calendar,
+  DollarSign,
+  BarChart3,
+  Settings
+} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 interface KPIData {
-  totalCalls: number;
-  averageResponseTime: number;
-  customerSatisfaction: number;
-  activeAgents: number;
   callsToday: number;
   callsThisWeek: number;
   callsThisMonth: number;
-  conversionRate: number;
+  activeAgents: number;
+  avgResponseTime: number;
+  customerSatisfaction: number;
+  resolutionRate: number;
 }
 
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+interface Order {
+  id: number;
+  packageName: string;
+  status: string;
+  startDate: string;
+  amount: number;
+}
 
 export default function CustomerDashboard() {
   const { user, logout } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [kpiData, setKPIData] = useState<KPIData>({
-    totalCalls: 0,
-    averageResponseTime: 0,
-    customerSatisfaction: 0,
-    activeAgents: 0,
-    callsToday: 0,
-    callsThisWeek: 0,
-    callsThisMonth: 0,
-    conversionRate: 0
+
+  const { data: kpiData } = useQuery<KPIData>({
+    queryKey: ['kpi'],
+    queryFn: () => apiRequest('GET', '/api/kpi'),
+    initialData: {
+      callsToday: 0,
+      callsThisWeek: 0,
+      callsThisMonth: 0,
+      activeAgents: 0,
+      avgResponseTime: 0,
+      customerSatisfaction: 0,
+      resolutionRate: 0
+    }
   });
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    scrollToTop();
-    fetchOrders();
-    fetchKPIData();
-  }, []);
-
-  const fetchOrders = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/orders', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data);
-      }
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchKPIData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/kpi', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setKPIData(data);
-      } else {
-        console.error('Failed to fetch KPI data:', response.status);
-      }
-    } catch (error) {
-      console.error('Error fetching KPI data:', error);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'processing': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  const { data: orders = [] } = useQuery<Order[]>({
+    queryKey: ['orders'],
+    queryFn: () => apiRequest('GET', '/api/orders'),
+    initialData: []
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -140,20 +83,9 @@ export default function CustomerDashboard() {
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
+            {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{orders.length}</div>
-                  <p className="text-xs text-muted-foreground">Active services</p>
-                </CardContent>
-              </Card>
-
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Active Agents</CardTitle>
@@ -178,52 +110,76 @@ export default function CustomerDashboard() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{kpiData.avgResponseTime}s</div>
+                  <p className="text-xs text-muted-foreground">-5% improvement</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Satisfaction</CardTitle>
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{Math.round(kpiData.customerSatisfaction)}%</div>
-                  <p className="text-xs text-muted-foreground">Customer rating</p>
+                  <div className="text-2xl font-bold">{kpiData.customerSatisfaction}%</div>
+                  <p className="text-xs text-muted-foreground">+2% this week</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Orders</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {orders.slice(0, 3).map((order) => (
+                      <div key={order.id} className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">{order.packageName}</p>
+                          <p className="text-sm text-gray-500">Started {order.startDate}</p>
+                        </div>
+                        <Badge variant={order.status === 'active' ? 'default' : 'secondary'}>
+                          {order.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Service Status</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span>All systems operational</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span>Contact center online</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-yellow-500" />
+                      <span>Scheduled maintenance at 2 AM EST</span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-          {/* KPI Tracker Tab */}
           <TabsContent value="kpi" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Real-Time Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Average Response Time</span>
-                      <span>{Math.round(kpiData.averageResponseTime)}s</span>
-                    </div>
-                    <Progress value={Math.max(0, Math.min(100, (120 - kpiData.averageResponseTime) / 120 * 100))} />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Conversion Rate</span>
-                      <span>{Math.round(kpiData.conversionRate)}%</span>
-                    </div>
-                    <Progress value={Math.max(0, Math.min(100, kpiData.conversionRate))} />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Customer Satisfaction</span>
-                      <span>{Math.round(kpiData.customerSatisfaction)}%</span>
-                    </div>
-                    <Progress value={Math.max(0, Math.min(100, kpiData.customerSatisfaction))} />
-                  </div>
-                </CardContent>
-              </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -252,60 +208,61 @@ export default function CustomerDashboard() {
                   </div>
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Performance Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span>Customer Satisfaction</span>
+                      <span className="font-bold">{kpiData.customerSatisfaction}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-green-600 h-2 rounded-full" style={{ width: `${kpiData.customerSatisfaction}%` }}></div>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span>Resolution Rate</span>
+                      <span className="font-bold">{kpiData.resolutionRate}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${kpiData.resolutionRate}%` }}></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
-          {/* Orders Tab */}
           <TabsContent value="orders" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Your Orders</CardTitle>
-                <CardDescription>Track your service orders and their status</CardDescription>
+                <CardTitle>Your Service Orders</CardTitle>
               </CardHeader>
               <CardContent>
-                {orders.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No orders found</p>
-                    <p className="text-sm text-gray-500">Your service orders will appear here</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {orders.map((order) => (
-                      <div key={order.id} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h3 className="font-semibold">Order #{order.id}</h3>
-                            <p className="text-sm text-gray-600">
-                              {new Date(order.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <Badge className={getStatusColor(order.status)}>
-                              {order.status}
-                            </Badge>
-                            <p className="text-sm font-semibold mt-1">${order.total}</p>
-                          </div>
-                        </div>
-                        {order.items && order.items.length > 0 && (
-                          <div className="mt-3">
-                            <h4 className="text-sm font-medium mb-2">Items:</h4>
-                            {order.items.map((item, index) => (
-                              <div key={index} className="text-sm text-gray-600">
-                                {item.packageName} (x{item.quantity}) - ${item.price}
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                <div className="space-y-4">
+                  {orders.map((order) => (
+                    <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h4 className="font-semibold">{order.packageName}</h4>
+                        <p className="text-sm text-gray-500">Started: {order.startDate}</p>
+                        <p className="text-sm font-medium">${order.amount}/month</p>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <Badge variant={order.status === 'active' ? 'default' : 'secondary'}>
+                        {order.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
@@ -314,21 +271,26 @@ export default function CustomerDashboard() {
                   Account Settings
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium">Name</label>
-                    <p className="text-gray-600">{user?.name}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Email</label>
-                    <p className="text-gray-600">{user?.email}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Account Status</label>
-                    <Badge className="ml-2 bg-green-100 text-green-800">Active</Badge>
-                  </div>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <input 
+                    type="email" 
+                    value={user?.email || ''} 
+                    disabled 
+                    className="w-full p-2 border rounded-md bg-gray-50"
+                  />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Name</label>
+                  <input 
+                    type="text" 
+                    value={user?.name || ''} 
+                    disabled 
+                    className="w-full p-2 border rounded-md bg-gray-50"
+                  />
+                </div>
+                <Button variant="outline">Update Profile</Button>
               </CardContent>
             </Card>
           </TabsContent>

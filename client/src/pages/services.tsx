@@ -7,7 +7,7 @@ export default function Services() {
   const services = [
     {
       icon: Phone,
-      title: "Inbound Call Center",
+      title: "Inbound Contact Center",
       features: [
         "24/7 Multilingual Customer Support with native English speakers and fluency in Spanish, French, and Arabic",
         "Advanced Technical Help Desk with tier-1, tier-2, and tier-3 escalation protocols",
