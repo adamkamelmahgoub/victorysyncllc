@@ -1,6 +1,8 @@
-<SelectItem value="basic">Basic</SelectItem>
-                      <SelectItem value="premium">Premium</SelectItem>
-                      <SelectItem value="enterprise">Enterprise</SelectItem>
+<>
+                        <SelectItem value="basic">Basic</SelectItem>
+                        <SelectItem value="premium">Premium</SelectItem>
+                        <SelectItem value="enterprise">Enterprise</SelectItem>
+                      </>
                     </SelectContent>
                   </Select>
                 </div>
