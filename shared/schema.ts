@@ -34,8 +34,6 @@ export const publicUsers = pgTable("public_users", {
   provider: varchar("provider").default("local"), // local, google, facebook, apple
   providerId: varchar("provider_id"),
   socialAccounts: jsonb("social_accounts").default([]), // Array of connected providers
-  privileges: jsonb("privileges"), // User privileges and permissions
-  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -102,6 +100,17 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 export const packagesRelations = relations(packages, ({ many }) => ({
   orderItems: many(orderItems),
 }));
+
+export const integrations = pgTable('integrations', {
+  id: serial('id').primaryKey(),
+  customer_id: text('customer_id').notNull(),
+  type: text('type').notNull(), // 'hubspot', 'salesforce', 'five9', etc.
+  access_token: text('access_token').notNull(),
+  refresh_token: text('refresh_token'),
+  is_active: boolean('is_active').default(true),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+});
 
 // Types
 export type InsertPublicUser = typeof publicUsers.$inferInsert;

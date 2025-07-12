@@ -31,28 +31,33 @@ export const verifyJWT = (token: string): any => {
   return jwt.verify(token, JWT_SECRET);
 };
 
-export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
+export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
 
-  if (!token) {
-    return res.status(401).json({ error: 'Access token required' });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
-    if (err) {
-      console.error('JWT verification error:', err.message);
-      return res.status(403).json({ error: 'Invalid or expired token' });
+    if (!token) {
+      return res.status(401).json({ error: "Access token required" });
     }
+
+    const decoded = verifyJWT(token);
+    const user = await storage.getPublicUserById(decoded.id);
+    
+    if (!user) {
+      return res.status(401).json({ error: "Invalid token - user not found" });
+    }
+
     req.user = user;
     next();
-  });
+  } catch (error) {
+    return res.status(403).json({ error: "Invalid or expired token" });
+  }
 };
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const validatedData = registerUserSchema.parse(req.body);
-
+    
     // Check if user already exists
     const existingUser = await storage.getPublicUserByEmail(validatedData.email);
     if (existingUser) {
@@ -61,7 +66,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     // Hash password
     const passwordHash = await hashPassword(validatedData.password);
-
+    
     // Create user
     const newUser = await storage.createPublicUser({
       name: validatedData.name,
@@ -81,7 +86,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     // Return user data without password hash
     const { passwordHash: _, ...userWithoutPassword } = newUser;
-
+    
     res.status(201).json({
       token,
       user: userWithoutPassword,
@@ -98,7 +103,7 @@ export const registerUser = async (req: Request, res: Response) => {
 export const loginUser = async (req: Request, res: Response) => {
   try {
     const validatedData = loginSchema.parse(req.body);
-
+    
     // Find user by email
     const user = await storage.getPublicUserByEmail(validatedData.email);
     if (!user) {
@@ -109,7 +114,7 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!user.passwordHash) {
       return res.status(401).json({ error: "Please use social login for this account" });
     }
-
+    
     const isValidPassword = await comparePassword(validatedData.password, user.passwordHash);
     if (!isValidPassword) {
       return res.status(401).json({ error: "Invalid email or password" });
@@ -120,7 +125,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
     // Return user data without password hash
     const { passwordHash: _, ...userWithoutPassword } = user;
-
+    
     res.json({
       token,
       user: userWithoutPassword,

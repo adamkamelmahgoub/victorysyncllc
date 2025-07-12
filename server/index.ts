@@ -3,17 +3,18 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
 import passport from "./auth/passport";
+import { runMigrations } from "./migrations/migrate";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
   const requiredEnvVars = ['DATABASE_URL'];
   const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
-  
+
   if (missing.length > 0) {
     console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
     process.exit(1);
   }
-  
+
   console.log(`✅ All required environment variables are set`);
 }
 
@@ -58,23 +59,26 @@ app.use((req, res, next) => {
   try {
     console.log(`🚀 Starting VictorySync application...`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    
+
     // Validate environment variables
     validateEnvironment();
-    
+
     // Test database connection
     const dbConnected = await testDatabaseConnection();
     if (!dbConnected) {
       throw new Error('Database connection failed - cannot start server');
     }
-    
+
+    // Run database migrations
+    await runMigrations();
+
     const server = await registerRoutes(app);
     console.log(`✅ Routes registered successfully`);
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
-      
+
       console.error(`❌ Application error: ${message}`, err);
       res.status(status).json({ message });
     });
@@ -129,7 +133,7 @@ app.use((req, res, next) => {
         process.exit(0);
       });
     });
-    
+
   } catch (error) {
     console.error(`❌ Failed to start server:`, error);
     process.exit(1);

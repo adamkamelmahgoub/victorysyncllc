@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Add white outline to all buttons */
-button {
-  outline: 2px solid white !important;
-  outline-offset: 2px !important;
-}
-
 :root {
   --background: hsl(210, 40%, 98%);
   --foreground: hsl(222.2, 84%, 4.9%);
@@ -34,7 +28,7 @@ button {
   --chart-3: hsl(197, 37%, 24%);
   --chart-4: hsl(43, 74%, 66%);
   --chart-5: hsl(27, 87%, 67%);
-
+  
   /* Victory Sync Brand Colors */
   --victory-purple: hsl(262.1, 83.3%, 57.8%);
   --victory-blue: hsl(217.2, 91.2%, 59.8%);
@@ -68,7 +62,7 @@ button {
   --chart-3: hsl(30, 80%, 55%);
   --chart-4: hsl(280, 65%, 60%);
   --chart-5: hsl(340, 75%, 55%);
-
+  
   /* Victory Sync Brand Colors - Dark Mode */
   --victory-purple: hsl(262.1, 83.3%, 57.8%);
   --victory-blue: hsl(217.2, 91.2%, 59.8%);
@@ -90,7 +84,7 @@ button {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   }
-
+  
   .brand-font {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: 700;
@@ -102,80 +96,56 @@ button {
   .victory-purple {
     color: var(--victory-purple);
   }
-
+  
   .victory-blue {
     color: var(--victory-blue);
   }
-
+  
   .victory-light-purple {
     color: var(--victory-light-purple);
   }
-
+  
   .victory-dark {
     color: var(--victory-dark);
   }
-
+  
   .victory-gray {
     color: var(--victory-gray);
   }
-
+  
   .bg-victory-purple {
     background-color: var(--victory-purple);
   }
-
+  
   .bg-victory-blue {
     background-color: var(--victory-blue);
   }
-
+  
   .bg-victory-light-purple {
     background-color: var(--victory-light-purple);
   }
-
+  
   .bg-victory-dark {
     background-color: var(--victory-dark);
   }
-
+  
   .bg-victory-gray {
     background-color: var(--victory-gray);
   }
-
+  
   .border-victory-purple {
     border-color: var(--victory-purple);
   }
-
+  
   .hover\:bg-victory-purple:hover {
     background-color: var(--victory-purple);
   }
-
+  
   .hover\:text-victory-purple:hover {
     color: var(--victory-purple);
   }
-
+  
   .gradient-victory {
     background: linear-gradient(135deg, var(--victory-purple) 0%, var(--victory-blue) 100%);
   }
-}
-
-/* Custom button styles */
-.victory-button {
-  @apply bg-victory-purple hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors border-2 border-white/20;
-}
-
-/* Global button outline styling */
-button, .btn {
-  border: 2px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-button:hover, .btn:hover {
-  border-color: rgba(255, 255, 255, 0.4) !important;
-}
-
-/* Ensure admin portal buttons have white outlines */
-.admin-portal button {
-  border: 2px solid rgba(255, 255, 255, 0.3) !important;
-}
-
-/* Customer dashboard button styling */
-.customer-dashboard button {
-  border: 2px solid rgba(255, 255, 255, 0.2) !important;
 }

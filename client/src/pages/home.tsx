@@ -15,7 +15,7 @@ export default function Home() {
                 Reduce Customer Service Costs by <span className="text-yellow-300">60%</span>
               </h1>
               <p className="text-xl mb-8 text-purple-100">
-                Professional contact center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
+                Professional call center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/pricing">
@@ -93,7 +93,7 @@ export default function Home() {
                 <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
                   <Phone className="victory-purple w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold mb-4">Inbound Contact Center</h3>
+                <h3 className="text-xl font-bold mb-4">Inbound Call Center</h3>
                 <p className="victory-gray mb-6">
                   Professional customer support, technical assistance, and order processing with multilingual capabilities.
                 </p>
