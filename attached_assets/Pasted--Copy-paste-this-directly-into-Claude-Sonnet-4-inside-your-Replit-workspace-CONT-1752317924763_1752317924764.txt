@@ -1,0 +1,94 @@
+**Copy & paste this directly into Claude Sonnet 4 inside your Replit workspace**
+
+```
+### 📋 CONTEXT
+You’re operating in an existing Replit monorepo called **VictorySync**.  
+Key stacks & configs:
+
+- Front-end: React + Vite + TailwindCSS (see `client/src`)  
+- Back-end: Node.js (Express) + Drizzle-Kit + Neon/Postgres (`server/`)  
+- Shared Types: `shared/` folder  
+- TypeScript strict mode (`tsconfig.json` already included)  
+- Package manager: npm  
+- Build command: `vite build` (client) and bundled `esbuild` output for server  
+- Replit preview is throwing a **runtime overlay**:  
+
+```
+
+\[plugin\:runtime-error-plugin] Objects are not valid as a React child
+(found: \[object Promise]).
+If you meant to render a collection of children, use an array instead.
+
+```
+
+### 🛠️ OBJECTIVES
+1. **Fix all runtime & build errors**  
+ • Trace the `[object Promise]` render issue (likely async component / hook misuse).  
+ • Resolve any additional TypeScript, Vite, or React warnings that appear.  
+ • Push a passing `npm run check` & hot-reload without overlay.
+
+2. **Customer Dashboard – “Mission Control”**  
+ Build a white-background, ZenDesk-level UX that includes every feature a client may need:  
+ - **Realtime KPI Tracker** in the sidebar Quick-Actions  
+   ▸ Pulls *live* metrics (calls answered, avg handle time, CSAT, SLA, agent occupancy) from connected CRMs/dialers—**no demo data**.  
+ - **Integrations Center** under Settings → lets customers connect/revoke: HubSpot, Salesforce, Zoho, Pipedrive, Twilio Flex, Five9, RingCentral, Aircall, Talkdesk, etc.  
+ - **User Management** → customers can add seats at **$125 USD / seat / month** (Stripe or Paddle checkout).  
+ - **Ticketing & Knowledge-Base** embed (iframe or API).  
+ - **Usage & Billing** with downloadable invoices.  
+ - Responsive, WCAG AA compliant; dark-mode ready.
+
+3. **Admin Portal – “VictorySync Command”**  
+ Must provide *full* CRUD & oversight over the entire platform:  
+ - Customer, subscription, and seat management (+ role & permission matrix).  
+ - KPI dashboards aggregated across tenants (filters: date, client, queue).  
+ - Audit log, impersonate-user, API-key issuance/rotation.  
+ - Email/SMS notifications for critical events (new integration added, over-usage, failed invoice).  
+ - Multi-admin support with future RBAC.  
+ - Secure login (passport-jwt + BCrypt) – initial super-admin credentials:  
+   • **username:** `kimo8723`  
+   • **password:** `Mshmsh7184365700!` (rotate to ENV secret after first sign-in).  
+
+4. **Data Layer & Integrations**  
+ - Create **`services/integrations/`** with per-platform adapters (OAuth2 where possible, API keys fallback).  
+ - Use **webhooks / polling** to push live stats into Postgres → Drizzle models.  
+ - Expose typed hooks (`useKpiMetrics()`, `useCustomerInfo()`) to the front-end.  
+
+5. **Deliverables**  
+ - Updated & *working* repo; all code committed with clear messages.  
+ - CHANGELOG.md summarising fixes & new modules.  
+ - Short README “Getting Started” section for future devs.  
+ - Confirm “Preview” pane in Replit loads `/admin` **and** `/dashboard` without redirects or auth loops.
+
+### ⚙️ IMPLEMENTATION HINTS
+- Likely culprit: trying to render a Promise returned by an async component function → convert to `useEffect` or `Suspense` / data-fetching hook.  
+- Centralise API error handling in `server/middleware/errorHandler.ts`.  
+- Use **Recoil** or **Zustand** for global state (lighter than Redux).  
+- For charts, use **Recharts**; for tables, **@tanstack/react-table**.  
+- Guard all env secrets with Replit’s Secrets Manager (`process.env.DB_URL`, `process.env.STRIPE_KEY`, etc.).
+
+### ✅ DEFINITION OF DONE
+- `npm run dev` hot-reloads both client & server without errors.  
+- Visiting `/admin` stays in admin portal; `/dashboard` stays in customer area.  
+- Adding a fake HubSpot sandbox key instantly surfaces real KPIs (no placeholders).  
+- New seat purchase charges $125/seat and updates billing table.  
+- Push to Replit Git shows passing CI (type-check + vitest minimal test suite).
+
+Please provide:
+1. A file-diff view or code blocks for every file you create/modify.  
+2. Any new schema migrations (Drizzle Kit).  
+3. A one-liner in the console confirming success: `echo "VictorySync ✅ All systems go"`.
+
+Execute the fixes & build out the dashboards now.
+```
+
+---
+
+**What Changed & Why**
+
+* **Granular role & stack context** so Claude knows exactly where it’s coding.
+* **Explicit error snippet** drives targeted debugging of the `[object Promise]` issue.
+* **Bullet-proof feature list** (KPI tracker, live integrations, seat billing) gives a clear “definition of done.”
+* **Security & pricing details** baked in to avoid later rewrites.
+* **Implementation hints & deliverables** speed Claude’s reasoning and ensure you receive a fully working repo, not just fragments.
+
+Feel free to tweak any wording, but this prompt is ready to drop into Claude Sonnet 4 and should guide it to deliver a clean, production-grade solution inside Replit.
