@@ -15,7 +15,7 @@ import {
   type ContactSubmission,
   type InsertContactSubmission,
 } from "@shared/schema";
-import { db } from "./db";
+import { db } from "./server/db";
 import { eq } from "drizzle-orm";
 
 export interface IStorage {
@@ -140,7 +140,7 @@ export class DatabaseStorage implements IStorage {
       .update(publicUsers)
       .set({ 
         socialAccounts: [
-          ...(await this.getPublicUserById(userId))?.socialAccounts || [],
+          ...((await this.getPublicUserById(userId))?.socialAccounts as any[]) || [],
           { type: 'privileges', data: privileges }
         ]
       })

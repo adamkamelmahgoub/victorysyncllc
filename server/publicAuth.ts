@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { registerUserSchema, loginSchema, type PublicUser } from "@shared/schema";
-import { storage } from "./storage";
+import { storage } from "../storage";
 import { sendEmail } from "./utils/sendEmail";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";

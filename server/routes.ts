@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
-import { storage } from "./storage";
+import { storage } from "../storage";
 import { registerUser, loginUser, getCurrentUser, authenticateJWT, generateJWT, type AuthenticatedRequest } from "./publicAuth";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
@@ -12,7 +12,7 @@ let stripe: Stripe | null = null;
 
 if (process.env.STRIPE_SECRET_KEY) {
   stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2025-05-28.basil",
+    apiVersion: "2025-06-30.basil",
   });
 }
 
@@ -371,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/users/:id/impersonate', requireAdmin, async (req: any, res: any) => {
     try {
       const userId = parseInt(req.params.id);
-      const userToImpersonate = await storage.getUserById(userId);
+      const userToImpersonate = await storage.getPublicUserById(userId);
 
       if (!userToImpersonate) {
         return res.status(404).json({ message: "User not found" });
@@ -409,7 +409,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const headers = Object.keys(data[0] || {});
       const csvContent = [
         headers.join(','),
-        ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+        ...data.map(row => headers.map(header => `"${(row as any)[header] || ''}"`).join(','))
       ].join('\n');
 
       res.setHeader('Content-Type', 'text/csv');
