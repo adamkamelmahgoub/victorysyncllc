@@ -56,6 +56,8 @@ function App() {
                   <Route path="/privacy" component={PrivacyPolicyPage} />
                   <Route path="/terms" component={TermsPage} />
                   <Route path="/checkout" component={CheckoutPage} />
+                  <Route path="/__health" component={() => <div style={{padding:24}}>UI OK</div>} />
+                  <Route path="*" component={() => <div style={{padding:24}}>Page not found</div>} />
                   <Route path="/" component={HomePage} />
                 </main>
                 <Footer />

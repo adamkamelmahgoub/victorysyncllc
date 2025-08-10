@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1899,7 +1898,7 @@ export default function AdminPortal() {
   // Load data on tab change
   useEffect(() => {
     setLoading(true);
-    
+
     const loadData = async () => {
       switch (activeTab) {
         case 'overview':
