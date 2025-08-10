@@ -53,7 +53,7 @@ app.use('/api/billing', billingRouter)
 app.use('/api/webhooks', webhookRouter)
 
 const isProd = process.env.NODE_ENV === 'production'
-const PORT = Number(process.env.PORT) || 3000
+const PORT = Number(process.env.PORT) || 5000
 const HOST = '0.0.0.0'
 
 async function start() {
