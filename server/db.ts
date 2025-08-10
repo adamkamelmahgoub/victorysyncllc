@@ -1,47 +1,43 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
-import * as schema from "@shared/schema";
 
-neonConfig.webSocketConstructor = ws;
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from '@shared/schema';
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+  console.error('❌ DATABASE_URL environment variable is required');
+  process.exit(1);
 }
 
-console.log(`🔗 Connecting to database...`);
-
-// Create pool with better error handling
-export const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
+// Create postgres connection
+const sql = postgres(DATABASE_URL, {
   max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  idle_timeout: 20,
+  connect_timeout: 10,
 });
 
-// Test database connection
-pool.on('connect', () => {
-  console.log('✅ Database connection established');
-});
+// Create drizzle instance
+export const db = drizzle(sql, { schema });
 
-pool.on('error', (err) => {
-  console.error('❌ Database connection error:', err);
-});
-
-export const db = drizzle({ client: pool, schema });
-
-// Test the database connection on startup
-export async function testDatabaseConnection() {
+// Health check function
+export async function healthCheck(): Promise<{ ok: boolean; db: boolean }> {
   try {
-    const client = await pool.connect();
-    await client.query('SELECT 1');
-    client.release();
-    console.log('✅ Database connection test successful');
-    return true;
+    await sql`SELECT 1`;
+    return { ok: true, db: true };
   } catch (error) {
-    console.error('❌ Database connection test failed:', error);
-    return false;
+    console.error('Database health check failed:', error);
+    return { ok: false, db: false };
   }
 }
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  await sql.end();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  await sql.end();
+  process.exit(0);
+});
