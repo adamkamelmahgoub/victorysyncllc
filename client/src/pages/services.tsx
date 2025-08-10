@@ -1,312 +1,299 @@
-import {
-  Phone,
-  Megaphone,
-  Bot,
-  BarChart3,
-  Check,
-  ArrowRight,
-} from "lucide-react";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Clock, 
+  DollarSign, 
+  Brain, 
+  Phone, 
+  Users, 
+  BarChart3, 
+  Shield, 
+  Zap,
+  Check,
+  Star
+} from "lucide-react";
 import { Link } from "wouter";
 
 export default function Services() {
+  const benefits = [
+    {
+      icon: <Clock className="w-12 h-12 text-blue-500" />,
+      title: "24/7 Coverage",
+      description: "Round-the-clock customer support with AI-powered assistance and human oversight",
+      features: ["24/7 availability", "Multi-timezone support", "Emergency escalation", "Weekend coverage"]
+    },
+    {
+      icon: <DollarSign className="w-12 h-12 text-green-500" />,
+      title: "60% Cost Savings",
+      description: "Reduce operational costs while maintaining high-quality customer service",
+      features: ["Lower staffing costs", "Reduced training time", "Automated workflows", "Efficient routing"]
+    },
+    {
+      icon: <Brain className="w-12 h-12 text-purple-500" />,
+      title: "AI-Powered Insights",
+      description: "Advanced analytics and machine learning to optimize customer interactions",
+      features: ["Predictive analytics", "Sentiment analysis", "Performance optimization", "Real-time insights"]
+    }
+  ];
+
   const services = [
     {
-      icon: Phone,
-      title: "Inbound Contact Center",
-      features: [
-        "24/7 Multilingual Customer Support with native English speakers",
-        "Advanced Technical Help Desk with tier-1, tier-2, and tier-3 escalation protocols",
-        "Complete Order Processing & Billing management with payment gateway integrations",
-        "Real-time Live Chat Support with instant response capabilities and chatbot handoffs",
-        "Comprehensive Email Support Management with ticketing systems and automated routing",
-        "Professional Complaint Resolution with empathy training and satisfaction tracking",
-        "Call recording and quality monitoring with performance analytics",
-        "CRM integration with Salesforce, HubSpot, and custom systems",
-      ],
-      benefits: [
-        "Reduce average response times by 80% with intelligent call routing",
-        "Improve customer satisfaction scores by 45% through empathetic support",
-        "Handle peak volumes effortlessly with scalable agent deployment",
-        "Decrease operational costs by 60% compared to in-house teams",
-        "Increase first-call resolution rates by 35% with proper training",
-        "Maintain 99.9% uptime with redundant systems and backup protocols",
-      ],
+      icon: <Phone className="w-8 h-8 text-blue-500" />,
+      title: "Inbound Call Management",
+      description: "Professional handling of all incoming customer calls with intelligent routing and priority management."
     },
     {
-      icon: Megaphone,
-      title: "Outbound Sales & Marketing",
-      features: [
-        "Advanced Lead Generation & Qualification using AI-powered prospect identification",
-        "Professional Appointment Setting with calendar integration and automated confirmations",
-        "Strategic Cold Calling Campaigns with personalized scripts and objection handling",
-        "Automated Follow-up Sequences with drip campaigns and nurture tracks",
-        "Comprehensive Market Research including competitor analysis and demographic studies",
-        "Detailed Customer Surveys with statistical analysis and reporting",
-        "Multi-channel outreach including phone, email, and LinkedIn campaigns",
-        "Real-time CRM updates with lead scoring and pipeline management",
-      ],
-      benefits: [
-        "Increase qualified leads by 150% through targeted prospecting",
-        "Boost conversion rates by 65% with proven sales methodologies",
-        "Expand market reach by 200% with multi-channel approaches",
-        "Reduce sales cycle length by 40% through effective nurturing",
-        "Improve lead quality scores by 80% with advanced qualification",
-        "Generate 300% ROI on marketing spend with optimized campaigns",
-      ],
+      icon: <Users className="w-8 h-8 text-green-500" />,
+      title: "Customer Support",
+      description: "Comprehensive customer support across multiple channels including phone, email, and chat."
     },
     {
-      icon: Bot,
-      title: "AI Automation",
-      features: [
-        "Intelligent AI-Powered Chatbots with natural language processing and machine learning",
-        "Custom Automated Workflows with business rule engines and process optimization",
-        "Advanced Call Summary Generation with sentiment analysis and action item extraction",
-        "Real-time Sentiment Analysis for customer mood detection and response adjustment",
-        "Predictive Analytics with forecasting models and trend identification",
-        "Sophisticated Voice Recognition with accent adaptation and language detection",
-        "Seamless integration with existing systems through robust APIs",
-        "24/7 automated operations with human oversight and intervention capabilities",
-      ],
-      benefits: [
-        "Handle 60% more inquiries simultaneously without increasing staff",
-        "Reduce operational costs by 70% through intelligent automation",
-        "Improve data accuracy by 95% with automated data entry and validation",
-        "Decrease response times by 90% with instant AI-powered responses",
-        "Increase customer engagement by 120% with personalized interactions",
-        "Achieve 24/7 availability with no downtime or breaks required",
-      ],
+      icon: <BarChart3 className="w-8 h-8 text-purple-500" />,
+      title: "Performance Analytics",
+      description: "Detailed reporting and analytics to track performance metrics and optimize operations."
     },
     {
-      icon: BarChart3,
-      title: "Digital Marketing",
-      features: [
-        "Full-Service Social Media Management across all major platforms with content calendars",
-        "Professional Content Creation including copywriting, graphic design, and video production",
-        "Advanced SEO Optimization with keyword research, on-page and off-page strategies",
-        "Targeted Email Marketing Campaigns with segmentation and automation workflows",
-        "Strategic Pay-Per-Click Advertising on Google, Facebook, and LinkedIn platforms",
-        "Comprehensive Analytics & Reporting with ROI tracking and performance insights",
-        "Brand strategy development with positioning and messaging frameworks",
-        "Conversion rate optimization with A/B testing and user experience improvements",
-      ],
-      benefits: [
-        "Increase brand visibility by 250% across all digital channels",
-        "Generate 300% more qualified leads through optimized campaigns",
-        "Improve ROI tracking accuracy by 90% with advanced analytics",
-        "Boost website traffic by 180% through SEO and content marketing",
-        "Increase social media engagement by 400% with strategic content",
-        "Achieve 85% email open rates with personalized campaigns",
-      ],
+      icon: <Shield className="w-8 h-8 text-orange-500" />,
+      title: "Quality Assurance",
+      description: "Rigorous quality control processes to ensure consistent, high-quality customer interactions."
     },
+    {
+      icon: <Zap className="w-8 h-8 text-yellow-500" />,
+      title: "Workflow Automation",
+      description: "Automated processes and intelligent routing to maximize efficiency and reduce response times."
+    },
+    {
+      icon: <Brain className="w-8 h-8 text-indigo-500" />,
+      title: "AI Integration",
+      description: "Advanced AI tools for sentiment analysis, predictive insights, and enhanced customer experience."
+    }
+  ];
+
+  const pricingPlans = [
+    {
+      name: "Starter",
+      price: "$99",
+      period: "/month",
+      description: "Perfect for small businesses getting started",
+      features: [
+        "Up to 500 calls/month",
+        "Basic analytics",
+        "Email support",
+        "CRM integration",
+        "Standard business hours"
+      ],
+      popular: false
+    },
+    {
+      name: "Professional",
+      price: "$299",
+      period: "/month",
+      description: "Ideal for growing businesses",
+      features: [
+        "Up to 2,000 calls/month",
+        "Advanced analytics",
+        "Priority support",
+        "Multiple CRM integrations",
+        "24/7 coverage",
+        "Custom workflows",
+        "Quality assurance"
+      ],
+      popular: true
+    },
+    {
+      name: "Enterprise",
+      price: "$599",
+      period: "/month",
+      description: "For large organizations with complex needs",
+      features: [
+        "Unlimited calls",
+        "Full analytics suite",
+        "Dedicated account manager",
+        "Custom integrations",
+        "24/7 premium support",
+        "Advanced AI features",
+        "SLA guarantees",
+        "White-label options"
+      ],
+      popular: false
+    }
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Hero Section */}
-      <section className="gradient-victory py-20 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Complete Business Solutions
+      <section className="py-20 px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          <h1 className="text-5xl font-bold text-gray-900 mb-6">
+            Transform Your Customer Service
           </h1>
-          <p className="text-xl text-purple-100 max-w-3xl mx-auto mb-8">
-            From customer support to sales growth, we provide end-to-end
-            services that help your business thrive while reducing costs by up
-            to 60%.
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            VictorySync combines AI-powered automation with human expertise to deliver 
+            exceptional customer service that scales with your business.
           </p>
-          <Link href="/pricing">
-            <Button
-              size="lg"
-              className="text-victory-purple hover:bg-gray-100 bg-[#6750f0]"
-            >
-              View Our Packages
-            </Button>
-          </Link>
+          <div className="flex justify-center gap-4">
+            <Link href="/pricing">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                Get Started Today
+              </Button>
+            </Link>
+            <Link href="/contact">
+              <Button size="lg" variant="outline">
+                Schedule Demo
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Key Benefits */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Why Choose VictorySync?
+            </h2>
+            <p className="text-xl text-gray-600">
+              Proven benefits that drive real business results
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {benefits.map((benefit, index) => (
+              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                <CardHeader className="text-center pb-4">
+                  <div className="flex justify-center mb-4">
+                    {benefit.icon}
+                  </div>
+                  <CardTitle className="text-2xl font-bold">{benefit.title}</CardTitle>
+                  <CardDescription className="text-lg">
+                    {benefit.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {benefit.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center">
+                        <Check className="w-5 h-5 text-green-500 mr-3" />
+                        <span className="text-gray-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Services Grid */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-20">
-            {services.map((service, index) => {
-              const IconComponent = service.icon;
-              const isEven = index % 2 === 0;
+      <section className="py-20 px-4 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Comprehensive Service Portfolio
+            </h2>
+            <p className="text-xl text-gray-600">
+              Everything you need to deliver exceptional customer experiences
+            </p>
+          </div>
 
-              return (
-                <div
-                  key={service.title}
-                  className={`grid md:grid-cols-2 gap-12 items-center ${!isEven ? "md:flex-row-reverse" : ""}`}
-                >
-                  <div className={isEven ? "order-1" : "order-2"}>
-                    <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
-                      <IconComponent className="victory-purple w-8 h-8" />
-                    </div>
-                    <h2 className="text-3xl font-bold victory-dark mb-6">
-                      {service.title}
-                    </h2>
-
-                    <div className="mb-8">
-                      <h3 className="font-semibold victory-dark mb-4">
-                        Key Features:
-                      </h3>
-                      <div className="grid grid-cols-1 gap-2">
-                        {service.features.map((feature, idx) => (
-                          <div key={idx} className="flex items-center">
-                            <Check className="text-green-500 w-4 h-4 mr-3 flex-shrink-0" />
-                            <span className="text-sm victory-gray">
-                              {feature}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mb-8">
-                      <h3 className="font-semibold victory-dark mb-4">
-                        Benefits:
-                      </h3>
-                      <div className="space-y-2">
-                        {service.benefits.map((benefit, idx) => (
-                          <div key={idx} className="flex items-center">
-                            <ArrowRight className="victory-purple w-4 h-4 mr-3 flex-shrink-0" />
-                            <span className="text-sm font-medium victory-dark">
-                              {benefit}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Link href="/contact">
-                      <Button className="bg-victory-purple hover:bg-purple-700 text-white">
-                        Learn More
-                      </Button>
-                    </Link>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services.map((service, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-center mb-4">
+                    {service.icon}
+                    <CardTitle className="text-xl ml-3">{service.title}</CardTitle>
                   </div>
-
-                  <div className={isEven ? "order-2" : "order-1"}>
-                    <Card className="p-8 shadow-lg">
-                      <CardContent className="text-center">
-                        <IconComponent className="victory-purple w-20 h-20 mx-auto mb-6" />
-                        <h3 className="text-2xl font-bold victory-dark mb-4">
-                          Ready to Get Started?
-                        </h3>
-                        <p className="victory-gray mb-6">
-                          Discover how our {service.title.toLowerCase()}{" "}
-                          services can transform your business operations.
-                        </p>
-                        <div className="space-y-3">
-                          <Link href="/pricing">
-                            <Button className="w-full bg-victory-purple hover:bg-purple-700 text-white">
-                              View Pricing Plans
-                            </Button>
-                          </Link>
-                          <Link href="/contact">
-                            <Button variant="outline" className="w-full">
-                              Schedule Consultation
-                            </Button>
-                          </Link>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              );
-            })}
+                  <CardDescription className="text-gray-600">
+                    {service.description}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="bg-slate-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Pricing Table */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
-              Why Choose VictorySync?
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Simple, Transparent Pricing
             </h2>
-            <p className="text-xl victory-gray max-w-3xl mx-auto">
-              We combine Egyptian talent with cutting-edge technology to deliver
-              exceptional results
+            <p className="text-xl text-gray-600">
+              Choose the plan that fits your business needs
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card>
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Check className="text-green-600 w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold victory-dark mb-4">
-                  Proven Results
-                </h3>
-                <p className="victory-gray">
-                  Our clients see an average of 60% cost reduction and 40%
-                  improvement in customer satisfaction scores.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Bot className="victory-blue w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold victory-dark mb-4">
-                  Advanced Technology
-                </h3>
-                <p className="victory-gray">
-                  We leverage the latest AI and automation tools to maximize
-                  efficiency and deliver superior results.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Phone className="victory-purple w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold victory-dark mb-4">
-                  24/7 Support
-                </h3>
-                <p className="victory-gray">
-                  Round-the-clock availability ensures your customers are always
-                  taken care of, no matter the time zone.
-                </p>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {pricingPlans.map((plan, index) => (
+              <Card key={index} className={`relative ${plan.popular ? 'border-blue-500 border-2 shadow-xl' : 'shadow-lg'}`}>
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-blue-500 text-white px-4 py-2">
+                      <Star className="w-4 h-4 mr-1" />
+                      Most Popular
+                    </Badge>
+                  </div>
+                )}
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                  <div className="flex items-baseline justify-center">
+                    <span className="text-5xl font-bold text-blue-600">{plan.price}</span>
+                    <span className="text-xl text-gray-500 ml-1">{plan.period}</span>
+                  </div>
+                  <CardDescription className="text-lg mt-2">
+                    {plan.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3 mb-8">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center">
+                        <Check className="w-5 h-5 text-green-500 mr-3" />
+                        <span className="text-gray-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/register">
+                    <Button 
+                      className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+                      variant={plan.popular ? 'default' : 'outline'}
+                    >
+                      Get Started
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="gradient-victory py-20 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Transform Your Business?
+      <section className="py-20 px-4 bg-blue-600">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-white mb-6">
+            Ready to Transform Your Customer Service?
           </h2>
-          <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
-            Let's discuss how our services can help you reduce costs, improve
-            efficiency, and drive growth.
+          <p className="text-xl text-blue-100 mb-8">
+            Join hundreds of businesses already saving 60% on customer service costs 
+            while improving customer satisfaction.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact">
-              <Button
-                size="lg"
-                className="text-victory-purple hover:bg-gray-100 bg-[#7046ee]"
-              >
-                Get Free Consultation
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/register">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+                Start Free Trial
               </Button>
             </Link>
-            <Link href="/pricing">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#7147ef]"
-              >
-                View Pricing
+            <Link href="/contact">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+                Schedule Consultation
               </Button>
             </Link>
           </div>
