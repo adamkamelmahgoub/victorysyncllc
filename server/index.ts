@@ -1,6 +1,7 @@
 
 import express from 'express';
 import helmet from 'helmet';
+import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { setupVite, log } from './vite';
 import { createServer } from 'http';
@@ -25,6 +26,8 @@ const missingEnv = requiredEnv.filter(key => !process.env[key]);
 
 if (missingEnv.length > 0) {
   console.error(`❌ Missing required environment variables: ${missingEnv.join(', ')}`);
+  console.log('💡 Set these in Replit Secrets:');
+  missingEnv.forEach(env => console.log(`   - ${env}`));
   process.exit(1);
 }
 
@@ -35,22 +38,19 @@ app.use(helmet({
 }));
 
 // CORS middleware
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (process.env.NODE_ENV === 'development' || 
-      (origin && (origin.includes('replit.') || origin.includes('localhost')))) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization');
-  
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || process.env.NODE_ENV === 'development' || 
+        (origin && (origin.includes('replit.') || origin.includes('localhost')))) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
+}));
 
 // Request parsing
 app.use('/api/webhooks', webhookRoutes); // Raw body for webhooks

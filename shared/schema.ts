@@ -1,4 +1,3 @@
-
 import {
   pgTable,
   text,
@@ -252,15 +251,10 @@ export const apiKeys = pgTable("api_keys", {
 
 // Sessions for refresh tokens
 export const sessions = pgTable("sessions", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  refreshTokenHash: varchar("refresh_token_hash", { length: 255 }).notNull(),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => [
-  index("sessions_user_idx").on(table.userId),
-  index("sessions_expires_idx").on(table.expiresAt),
-]);
+  sid: varchar("sid", { length: 255 }).primaryKey(),
+  sess: jsonb("sess").notNull(),
+  expire: timestamp("expire").notNull(),
+});
 
 // Relations
 export const organizationsRelations = relations(organizations, ({ many, one }) => ({
