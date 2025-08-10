@@ -8,13 +8,8 @@ import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
 
-let stripe: Stripe | null = null;
-
-if (process.env.STRIPE_SECRET_KEY) {
-  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2025-06-30.basil",
-  });
-}
+// Initialize Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET || '', { apiVersion: '2024-12-18.acacia' });
 
 // Admin middleware
 const requireAdmin = (req: any, res: any, next: any) => {
@@ -125,8 +120,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/create-payment-intent", authenticateJWT as any, async (req: any, res: any) => {
     try {
       if (!stripe) {
-        return res.status(503).json({ 
-          message: "Payment processing is currently unavailable. Please contact support." 
+        return res.status(503).json({
+          message: "Payment processing is currently unavailable. Please contact support."
         });
       }
 
