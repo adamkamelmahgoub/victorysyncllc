@@ -1,0 +1,217 @@
+Here’s a drop-in **MASTER PROMPT** for Claude (Sonnet) in **Replit** to fix the “The app is running, but the preview isn’t ready” problem and make your project reliably boot in Replit. It tells Claude exactly what files to touch and what to put in them so Replit sees a single HTTP server on `0.0.0.0:$PORT` (one exposed port only), with Vite integrated in middleware during dev and static build in prod.
+
+---
+
+````plaintext
+You are a 10,000× senior full-stack engineer working in Replit on a Vite (React+TS) + Node/Express + Drizzle project named VictorySync.
+
+**Goal:** Fix “The app is running, but the preview isn’t ready” in Replit by ensuring the app exposes a SINGLE HTTP server on `0.0.0.0:${process.env.PORT}`. In dev, serve the React app via Vite middleware on the SAME Express port; in prod, serve the built client from `client/dist`. Keep existing UI, logic, and routes. Do not change the navbar or colors.
+
+### REQUIRED CHANGES — DO EXACTLY THESE
+
+1) PACKAGE SCRIPTS
+Open `package.json` and replace/add scripts so dev and prod behaviors are correct in Replit:
+
+```json
+{
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development ts-node-esm --transpile-only server/index.ts",
+    "build:client": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build": "npm run build:client && npm run build:server",
+    "start": "cross-env NODE_ENV=production node dist/server/index.js",
+    "typecheck": "tsc --noEmit",
+    "preview": "cross-env NODE_ENV=production node dist/server/index.js"
+  },
+  "type": "module"
+}
+````
+
+* Use ESM everywhere (`"type": "module"`).
+* We will compile server TS into `dist/server`.
+
+2. SERVER TS CONFIG
+   Create `tsconfig.server.json` at project root:
+
+```json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/server",
+    "rootDir": "server",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2020",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["server/**/*"]
+}
+```
+
+3. VITE CONFIG (client)
+   Open `client/vite.config.ts` and ensure:
+
+```ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    host: true,              // allow 0.0.0.0
+    strictPort: false,       // we won’t rely on 5173 being exposed
+    hmr: { port: 24678 }     // avoid clashes
+  },
+  preview: { host: true },
+  build: {
+    outDir: 'dist',
+    sourcemap: false
+  }
+})
+```
+
+4. EXPRESS ENTRY (single port, vite in middleware)
+   Create/replace `server/index.ts` with this structure (adjust imports to our project):
+
+```ts
+import 'dotenv/config'
+import express from 'express'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const app = express()
+
+// Basic hardening & json
+app.disable('x-powered-by')
+app.use(express.json({ limit: '1mb' }))
+app.use(express.urlencoded({ extended: true }))
+
+// Health check for Replit
+app.get('/health', (_req, res) => {
+  res.json({ ok: true, env: process.env.NODE_ENV || 'development' })
+})
+
+// Mount your existing API routes BEFORE SPA handler
+// import { router as authRouter } from './routes/auth.js'
+// app.use('/api/auth', authRouter)
+// ... mount other routes
+// (IMPORTANT: ensure these imports are valid paths; fix any broken imports)
+
+const isProd = process.env.NODE_ENV === 'production'
+const PORT = Number(process.env.PORT) || 3000
+const HOST = '0.0.0.0'
+
+async function start() {
+  if (!isProd) {
+    // DEV: Use Vite in middleware mode on SAME Express port
+    const { createServer: createViteServer } = await import('vite')
+    const vite = await createViteServer({
+      root: path.resolve(__dirname, '../..', 'client'),
+      server: {
+        middlewareMode: true,
+        hmr: { port: 24678 },
+        watch: { usePolling: true, interval: 150 }
+      },
+      appType: 'custom'
+    })
+
+    app.use(vite.middlewares)
+
+    // Let Vite handle index.html and route fallback
+    app.use('*', async (req, res) => {
+      try {
+        const url = req.originalUrl
+        const template = await vite.transformIndexHtml(url, '')
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template)
+      } catch (e: any) {
+        vite.ssrFixStacktrace(e)
+        console.error(e)
+        res.status(500).end(e.message)
+      }
+    })
+  } else {
+    // PROD: serve built client
+    const clientDist = path.resolve(__dirname, '../../client/dist')
+    app.use(express.static(clientDist))
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(clientDist, 'index.html'))
+    })
+  }
+
+  app.listen(PORT, HOST, () => {
+    console.log(`✅ Server ready on http://${HOST}:${PORT} (NODE_ENV=${process.env.NODE_ENV})`)
+  })
+}
+
+start().catch((err) => {
+  console.error('Failed to start server:', err)
+  process.exit(1)
+})
+```
+
+5. .REPLIT & NIX (if present)
+   Open `.replit` (create if missing):
+
+```
+run = "npm run dev"
+```
+
+* We use one server process only. Replit will preview the port printed by Express.
+* If Replit still auto-detects the wrong command, open “Shell” and run `npm run dev` once — it will pick it up.
+
+6. ENV & PORT SAFETY
+
+* Ensure ANY legacy server code that previously used hard-coded port (e.g., 5000/5173) is removed or replaced with `process.env.PORT`.
+* Ensure server binds to `'0.0.0.0'` not `'localhost'`.
+
+7. KILL DUPLICATE WATCHERS / ADDRESS IN USE
+
+* If you previously started background processes (e.g., separate Vite), kill them:
+
+  * In Replit “Shell”: run `kill -9 $(lsof -t -i:$PORT) 2>/dev/null || true`
+* Remove any `concurrently vite` or separate dev server. We only run `npm run dev` now.
+
+8. QUICK SMOKE TEST
+
+* Replit Console should show: `✅ Server ready on http://0.0.0.0:<port>`
+* Open `/health` in the preview; it must return `{ ok: true }`.
+* Navigate to `/` (SPA should render). No “preview isn’t ready” message should appear now.
+
+9. OPTIONAL: BUILD & START (production simulation)
+
+* Shell:
+
+  * `npm run build`
+  * `npm run start`
+* Confirm preview still works (serving `client/dist`).
+
+10. DO NOT CHANGE APP FEATURES
+
+* Do not modify UI features or nav for this task.
+* Only fix boot/run configuration, ports, host binding, and dev/prod serving to satisfy Replit’s single-port requirement.
+
+### DELIVERABLES
+
+* Updated `package.json`, `tsconfig.server.json`, `client/vite.config.ts`, `server/index.ts`, `.replit`.
+* Console shows server binding to `0.0.0.0:$PORT`.
+* Replit Preview loads the app (no “preview isn’t ready”).
+* `/health` responds OK.
+
+When complete, reply with:
+
+* The files you changed (path + a one-line summary).
+* The exact command Replit should run.
+* The preview URL that now works.
+
+```
+
+---
+
+If Claude hits any TypeScript import path issues while wiring your existing API routes into `server/index.ts`, tell it to fix the import paths (ESM with `"type":"module"`) and to prefer **relative imports from `server/`** (no broken aliases) so the build can emit to `dist/server` cleanly.
+::contentReference[oaicite:0]{index=0}
+```

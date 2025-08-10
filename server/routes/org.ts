@@ -1,4 +1,3 @@
-
 import express from 'express';
 import { z } from 'zod';
 import { not, sql } from 'drizzle-orm';
@@ -536,7 +535,7 @@ router.get('/billing', requirePermissions('billing:view'), async (req: Authentic
   try {
     const orgId = req.user!.orgId!;
 
-    const [subscription, recentInvoices] = await Promise.all([
+    const [ subscription, recentInvoices ] = await Promise.all([
       db.query.subscriptions.findFirst({
         where: eq(subscriptions.orgId, orgId),
         orderBy: desc(subscriptions.createdAt),
@@ -645,4 +644,4 @@ router.post('/api-keys', requirePermissions('api:keys:manage'), async (req: Auth
   }
 });
 
-export default router;
+export { router };

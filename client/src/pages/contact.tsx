@@ -14,6 +14,13 @@ import { z } from 'zod';
 
 type ContactFormData = z.infer<typeof insertContactSubmissionSchema>;
 
+const subjects = [
+  { value: 'sales', label: 'Sales Inquiry' },
+  { value: 'support', label: 'Support Request' },
+  { value: 'feedback', label: 'Feedback' },
+  { value: 'other', label: 'Other' },
+];
+
 export default function Contact() {
   const { toast } = useToast();
 
@@ -98,7 +105,7 @@ export default function Contact() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="company">Company (Optional)</Label>
                     <Input
@@ -107,7 +114,7 @@ export default function Contact() {
                       placeholder="Your Company"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -121,7 +128,26 @@ export default function Contact() {
                       <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
                     )}
                   </div>
-                  
+
+                  <div>
+                    <Label htmlFor="subject">Subject</Label>
+                    <select
+                      id="subject"
+                      {...register('subject')}
+                      className={`w-full p-2 border rounded-md ${errors.subject ? 'border-red-500' : ''}`}
+                    >
+                      <option value="">Select a subject</option>
+                      {subjects.map((subject) => (
+                        <option key={String(subject.value)} value={String(subject.value)}>
+                          {String(subject.label)}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.subject && (
+                      <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>
+                    )}
+                  </div>
+
                   <div>
                     <Label htmlFor="message">Message</Label>
                     <Textarea
@@ -135,9 +161,9 @@ export default function Contact() {
                       <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
                     )}
                   </div>
-                  
-                  <Button 
-                    type="submit" 
+
+                  <Button
+                    type="submit"
                     className="w-full bg-victory-purple hover:bg-purple-700 text-white"
                     disabled={contactMutation.isPending}
                   >
@@ -214,7 +240,7 @@ export default function Contact() {
                   <p className="mb-4 text-purple-100">
                     Join our next webinar to learn how other businesses are cutting costs while improving service.
                   </p>
-                  <Button className="text-victory-purple hover:bg-gray-100 bg-[#5268f3]">
+                  <Button className="text-victory-purple hover:bg-gray-100 bg-[#526863]">
                     Register for Webinar
                   </Button>
                 </CardContent>
@@ -292,7 +318,7 @@ export default function Contact() {
           <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
             Ready to reduce costs and improve customer satisfaction? We're here to help make it happen.
           </p>
-          
+
         </div>
       </section>
     </div>
