@@ -1,20 +1,18 @@
 
 import express from 'express';
-import helmet from 'helmet';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
 import { setupVite, log } from './vite';
 import { createServer } from 'http';
 import { healthCheck } from './db';
 
 // Import routes
-import healthRoutes from './routes/health';
-import authRoutes from './routes/auth';
-import adminRoutes from './routes/admin';
-import orgRoutes from './routes/org';
-import integrationRoutes from './routes/integrations';
-import billingRoutes from './routes/billing';
-import webhookRoutes from './routes/webhooks';
+import healthRoutes from './routes/health.js';
+import authRoutes from './routes/auth.js';
+import adminRoutes from './routes/admin.js';
+import orgRoutes from './routes/org.js';
+import integrationRoutes from './routes/integrations.js';
+import billingRoutes from './routes/billing.js';
+import webhookRoutes from './routes/webhooks.js';
 
 const app = express();
 const server = createServer(app);
@@ -30,12 +28,6 @@ if (missingEnv.length > 0) {
   missingEnv.forEach(env => console.log(`   - ${env}`));
   process.exit(1);
 }
-
-// Security middleware
-app.use(helmet({
-  contentSecurityPolicy: false, // Let Vite handle CSP in dev
-  crossOriginEmbedderPolicy: false,
-}));
 
 // CORS middleware
 app.use(cors({
@@ -56,7 +48,6 @@ app.use(cors({
 app.use('/api/webhooks', webhookRoutes); // Raw body for webhooks
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 // API routes
 app.use('/health', healthRoutes);

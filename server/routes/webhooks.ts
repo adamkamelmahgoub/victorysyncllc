@@ -73,11 +73,6 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
   }
 });
 
-export default router;
-import express from 'express';
-
-const router = express.Router();
-
 router.post('/', (req, res) => {
   res.json({ message: 'Webhooks routes coming soon' });
 });
