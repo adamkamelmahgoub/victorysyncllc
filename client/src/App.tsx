@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Route, Router } from "wouter";
 import { CartProvider } from "./contexts/CartContext";
 import { Toaster } from "@/components/ui/toaster";
-import { ErrorBoundary } from "./components/error-boundary";
 import Navigation from "./components/navigation";
 import Footer from "./components/footer";
 import { AuthProvider } from "./hooks/useAuth";
@@ -57,8 +56,8 @@ function App() {
                   <Route path="/terms" component={TermsPage} />
                   <Route path="/checkout" component={CheckoutPage} />
                   <Route path="/__health" component={() => <div style={{padding:24}}>UI OK</div>} />
-                  <Route path="*" component={() => <div style={{padding:24}}>Page not found</div>} />
                   <Route path="/" component={HomePage} />
+                  <Route path="*" component={() => <div style={{padding:24}}>Page not found</div>} />
                 </main>
                 <Footer />
               </div>
