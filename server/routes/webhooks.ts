@@ -77,4 +77,4 @@ router.post('/', (req, res) => {
   res.json({ message: 'Webhooks routes coming soon' });
 });
 
-export default router;
+export { router };

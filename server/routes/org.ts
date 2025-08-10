@@ -644,4 +644,4 @@ router.post('/api-keys', requirePermissions('api:keys:manage'), async (req: Auth
   }
 });
 
-export default router;
+export { router };

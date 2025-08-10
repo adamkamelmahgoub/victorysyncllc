@@ -598,4 +598,4 @@ router.post('/disable-2fa', authenticateToken, async (req: AuthRequest, res) => 
   }
 });
 
-export default router;
+export { router };
