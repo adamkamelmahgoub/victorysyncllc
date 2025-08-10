@@ -104,3 +104,12 @@ router.get('/', requirePermissions('billing:view'), async (req: AuthenticatedReq
 });
 
 export default router;
+import express from 'express';
+
+const router = express.Router();
+
+router.get('/', (req, res) => {
+  res.json({ message: 'Billing routes coming soon' });
+});
+
+export default router;

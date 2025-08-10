@@ -836,3 +836,12 @@ router.get('/export/:type', async (req: AuthenticatedRequest, res) => {
 });
 
 export default router;
+import express from 'express';
+
+const router = express.Router();
+
+router.get('/', (req, res) => {
+  res.json({ message: 'Admin routes coming soon' });
+});
+
+export default router;

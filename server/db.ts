@@ -41,3 +41,24 @@ process.on('SIGINT', async () => {
   await sql.end();
   process.exit(0);
 });
+import { drizzle } from 'drizzle-orm/neon-http';
+import { neon } from '@neondatabase/serverless';
+
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
+
+const sql = neon(connectionString);
+export const db = drizzle(sql);
+
+export async function healthCheck() {
+  try {
+    await sql`SELECT 1`;
+    return { db: true };
+  } catch (error) {
+    console.error('Database health check failed:', error);
+    return { db: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}

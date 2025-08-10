@@ -646,3 +646,12 @@ router.post('/api-keys', requirePermissions('api:keys:manage'), async (req: Auth
 });
 
 export default router;
+import express from 'express';
+
+const router = express.Router();
+
+router.get('/', (req, res) => {
+  res.json({ message: 'Org routes coming soon' });
+});
+
+export default router;

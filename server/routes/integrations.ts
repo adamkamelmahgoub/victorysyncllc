@@ -352,3 +352,12 @@ async function testConnection(provider: string, authType: string, credentials: a
 }
 
 export default router;
+import express from 'express';
+
+const router = express.Router();
+
+router.get('/', (req, res) => {
+  res.json({ message: 'Integrations routes coming soon' });
+});
+
+export default router;
