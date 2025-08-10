@@ -1,3 +1,4 @@
+
 import {
   pgTable,
   text,
@@ -9,141 +10,423 @@ import {
   integer,
   decimal,
   boolean,
+  pgEnum,
+  primaryKey,
+  unique,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
-// Session storage table (keeping for potential future use)
-export const sessions = pgTable(
-  "sessions",
-  {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull(),
-  },
-  (table) => [index("IDX_session_expire").on(table.expire)],
-);
+// Enums
+export const orgStatusEnum = pgEnum("org_status", ["active", "suspended"]);
+export const accessCodeStatusEnum = pgEnum("access_code_status", ["active", "used", "revoked", "expired"]);
+export const providerEnum = pgEnum("provider", [
+  "hubspot", "salesforce", "zoho", "pipedrive", 
+  "five9", "ringcentral", "twilio", "aircall",
+  "zendesk", "freshdesk", "intercom", "helpscout"
+]);
+export const authTypeEnum = pgEnum("auth_type", ["oauth", "apikey"]);
+export const planEnum = pgEnum("plan", ["basic", "growth", "scale"]);
+export const subscriptionStatusEnum = pgEnum("subscription_status", ["active", "past_due", "canceled", "unpaid"]);
+export const ticketStatusEnum = pgEnum("ticket_status", ["open", "in_progress", "resolved", "closed"]);
+export const ticketPriorityEnum = pgEnum("ticket_priority", ["low", "medium", "high", "urgent"]);
+export const orderStatusEnum = pgEnum("order_status", ["pending", "processing", "completed", "cancelled"]);
 
-// Public users table for the new authentication system
-export const publicUsers = pgTable("public_users", {
+// Organizations
+export const organizations = pgTable("organizations", {
   id: serial("id").primaryKey(),
-  name: varchar("name").notNull(),
-  email: varchar("email").unique().notNull(),
-  passwordHash: varchar("password_hash"),
-  provider: varchar("provider").default("local"), // local, google, facebook, apple
-  providerId: varchar("provider_id"),
-  socialAccounts: jsonb("social_accounts").default([]), // Array of connected providers
-  privileges: jsonb("privileges"), // User privileges and permissions
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 100 }).unique().notNull(),
+  status: orgStatusEnum("status").default("active").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Service packages
-export const packages = pgTable("packages", {
+// Users (enhanced with 2FA and org relationship)
+export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  name: varchar("name").notNull(),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  orgId: integer("org_id").references(() => organizations.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).unique().notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }),
+  twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
+  twoFactorSecret: text("two_factor_secret"), // encrypted
+  isSuperAdmin: boolean("is_super_admin").default(false).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  emailVerificationToken: varchar("email_verification_token"),
+  passwordResetToken: varchar("password_reset_token"),
+  passwordResetExpires: timestamp("password_reset_expires"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  lastLoginAt: timestamp("last_login_at"),
+});
+
+// Roles
+export const roles = pgTable("roles", {
+  id: serial("id").primaryKey(),
+  orgId: integer("org_id").references(() => organizations.id), // nullable for global roles
+  name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
-  features: jsonb("features").notNull(),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
+  isSystem: boolean("is_system").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Permissions
+export const permissions = pgTable("permissions", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 100 }).unique().notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Role Permissions
+export const rolePermissions = pgTable("role_permissions", {
+  roleId: integer("role_id").references(() => roles.id).notNull(),
+  permissionId: integer("permission_id").references(() => permissions.id).notNull(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.roleId, table.permissionId] }),
+}));
+
+// User Roles
+export const userRoles = pgTable("user_roles", {
+  userId: integer("user_id").references(() => users.id).notNull(),
+  roleId: integer("role_id").references(() => roles.id).notNull(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.userId, table.roleId] }),
+}));
+
+// Access Codes
+export const accessCodes = pgTable("access_codes", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 50 }).unique().notNull(),
+  orgId: integer("org_id").references(() => organizations.id),
+  issuedByUserId: integer("issued_by_user_id").references(() => users.id).notNull(),
+  status: accessCodeStatusEnum("status").default("active").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  consumedByUserId: integer("consumed_by_user_id").references(() => users.id),
+  consumedAt: timestamp("consumed_at"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// API Credentials
+export const apiCredentials = pgTable("api_credentials", {
+  id: serial("id").primaryKey(),
+  orgId: integer("org_id").references(() => organizations.id).notNull(),
+  provider: providerEnum("provider").notNull(),
+  authType: authTypeEnum("auth_type").notNull(),
+  data: text("data").notNull(), // encrypted JSON
+  status: varchar("status", { length: 50 }).default("active").notNull(),
+  lastSyncAt: timestamp("last_sync_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Audit Logs
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  orgId: integer("org_id").references(() => organizations.id), // nullable for global actions
+  actorUserId: integer("actor_user_id").references(() => users.id), // nullable for system actions
+  action: varchar("action", { length: 100 }).notNull(),
+  entityType: varchar("entity_type", { length: 50 }).notNull(),
+  entityId: varchar("entity_id", { length: 50 }),
+  meta: jsonb("meta"),
+  ip: varchar("ip", { length: 45 }),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("audit_logs_org_created_idx").on(table.orgId, table.createdAt),
+  index("audit_logs_actor_idx").on(table.actorUserId),
+]);
+
+// Subscriptions
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  orgId: integer("org_id").references(() => organizations.id).notNull(),
+  plan: planEnum("plan").notNull(),
+  status: subscriptionStatusEnum("status").notNull(),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 100 }),
+  stripeSubId: varchar("stripe_sub_id", { length: 100 }),
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Invoices
+export const invoices = pgTable("invoices", {
+  id: serial("id").primaryKey(),
+  orgId: integer("org_id").references(() => organizations.id).notNull(),
+  stripeInvoiceId: varchar("stripe_invoice_id", { length: 100 }).unique().notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("usd").notNull(),
+  status: varchar("status", { length: 50 }).notNull(),
+  hostedInvoiceUrl: text("hosted_invoice_url"),
+  invoicePdf: text("invoice_pdf"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Tickets
+export const tickets = pgTable("tickets", {
+  id: serial("id").primaryKey(),
+  orgId: integer("org_id").references(() => organizations.id).notNull(),
+  createdByUserId: integer("created_by_user_id").references(() => users.id).notNull(),
+  assignedToUserId: integer("assigned_to_user_id").references(() => users.id),
+  subject: varchar("subject", { length: 255 }).notNull(),
+  description: text("description"),
+  status: ticketStatusEnum("status").default("open").notNull(),
+  priority: ticketPriorityEnum("priority").default("medium").notNull(),
+  externalId: varchar("external_id", { length: 100 }), // for integration sync
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Orders
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id"),
-  status: varchar("status").default("pending"), // pending, processing, completed, cancelled
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
-  stripePaymentIntentId: varchar("stripe_payment_intent_id"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  orgId: integer("org_id").references(() => organizations.id).notNull(),
+  externalId: varchar("external_id", { length: 100 }),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("usd").notNull(),
+  status: orderStatusEnum("status").default("pending").notNull(),
+  customerName: varchar("customer_name", { length: 255 }),
+  customerEmail: varchar("customer_email", { length: 255 }),
+  source: varchar("source", { length: 50 }), // which integration
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Order items
-export const orderItems = pgTable("order_items", {
+// KPI Daily Metrics
+export const kpisDaily = pgTable("kpis_daily", {
   id: serial("id").primaryKey(),
-  orderId: integer("order_id").references(() => orders.id),
-  packageId: integer("package_id").references(() => packages.id),
-  quantity: integer("quantity").notNull().default(1),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+  orgId: integer("org_id").references(() => organizations.id).notNull(),
+  date: timestamp("date").notNull(),
+  calls: integer("calls").default(0).notNull(),
+  avgResponseSec: integer("avg_response_sec").default(0).notNull(),
+  csat: decimal("csat", { precision: 3, scale: 2 }).default("0").notNull(),
+  ahtSec: integer("aht_sec").default(0).notNull(), // average handle time
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("kpis_daily_org_date_idx").on(table.orgId, table.date),
+  unique("kpis_daily_org_date_unique").on(table.orgId, table.date),
+]);
+
+// Rate Limits
+export const rateLimits = pgTable("rate_limits", {
+  id: serial("id").primaryKey(),
+  orgId: integer("org_id").references(() => organizations.id),
+  key: varchar("key", { length: 100 }).notNull(),
+  count: integer("count").default(0).notNull(),
+  windowExpiresAt: timestamp("window_expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("rate_limits_key_idx").on(table.key, table.windowExpiresAt),
+]);
+
+// Feature Flags
+export const featureFlags = pgTable("feature_flags", {
+  id: serial("id").primaryKey(),
+  orgId: integer("org_id").references(() => organizations.id), // nullable for global flags
+  key: varchar("key", { length: 100 }).notNull(),
+  enabled: boolean("enabled").default(false).notNull(),
+  value: jsonb("value"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Contact form submissions
-export const contactSubmissions = pgTable("contact_submissions", {
+// API Keys (Personal Access Tokens)
+export const apiKeys = pgTable("api_keys", {
   id: serial("id").primaryKey(),
-  firstName: varchar("first_name").notNull(),
-  lastName: varchar("last_name").notNull(),
-  email: varchar("email").notNull(),
-  company: varchar("company"),
-  message: text("message").notNull(),
-  status: varchar("status").default("new"), // new, contacted, resolved
-  createdAt: timestamp("created_at").defaultNow(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  orgId: integer("org_id").references(() => organizations.id).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  keyHash: varchar("key_hash", { length: 255 }).notNull(),
+  lastFour: varchar("last_four", { length: 4 }).notNull(),
+  expiresAt: timestamp("expires_at"),
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Sessions for refresh tokens
+export const sessions = pgTable("sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  refreshTokenHash: varchar("refresh_token_hash", { length: 255 }).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("sessions_user_idx").on(table.userId),
+  index("sessions_expires_idx").on(table.expiresAt),
+]);
 
 // Relations
-export const ordersRelations = relations(orders, ({ many }) => ({
-  items: many(orderItems),
+export const organizationsRelations = relations(organizations, ({ many, one }) => ({
+  users: many(users),
+  roles: many(roles),
+  accessCodes: many(accessCodes),
+  apiCredentials: many(apiCredentials),
+  subscriptions: many(subscriptions),
+  invoices: many(invoices),
+  tickets: many(tickets),
+  orders: many(orders),
+  kpisDaily: many(kpisDaily),
+  rateLimits: many(rateLimits),
+  featureFlags: many(featureFlags),
+  apiKeys: many(apiKeys),
 }));
 
-export const orderItemsRelations = relations(orderItems, ({ one }) => ({
-  order: one(orders, {
-    fields: [orderItems.orderId],
-    references: [orders.id],
+export const usersRelations = relations(users, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [users.orgId],
+    references: [organizations.id],
   }),
-  package: one(packages, {
-    fields: [orderItems.packageId],
-    references: [packages.id],
+  userRoles: many(userRoles),
+  issuedAccessCodes: many(accessCodes, {
+    relationName: "issuedAccessCodes",
+  }),
+  consumedAccessCodes: many(accessCodes, {
+    relationName: "consumedAccessCodes", 
+  }),
+  createdTickets: many(tickets, {
+    relationName: "createdTickets",
+  }),
+  assignedTickets: many(tickets, {
+    relationName: "assignedTickets",
+  }),
+  apiKeys: many(apiKeys),
+  sessions: many(sessions),
+}));
+
+export const rolesRelations = relations(roles, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [roles.orgId],
+    references: [organizations.id],
+  }),
+  rolePermissions: many(rolePermissions),
+  userRoles: many(userRoles),
+}));
+
+export const permissionsRelations = relations(permissions, ({ many }) => ({
+  rolePermissions: many(rolePermissions),
+}));
+
+export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
+  role: one(roles, {
+    fields: [rolePermissions.roleId],
+    references: [roles.id],
+  }),
+  permission: one(permissions, {
+    fields: [rolePermissions.permissionId],
+    references: [permissions.id],
   }),
 }));
 
-export const packagesRelations = relations(packages, ({ many }) => ({
-  orderItems: many(orderItems),
+export const userRolesRelations = relations(userRoles, ({ one }) => ({
+  user: one(users, {
+    fields: [userRoles.userId],
+    references: [users.id],
+  }),
+  role: one(roles, {
+    fields: [userRoles.roleId],
+    references: [roles.id],
+  }),
 }));
 
 // Types
-export type InsertPublicUser = typeof publicUsers.$inferInsert;
-export type PublicUser = typeof publicUsers.$inferSelect;
-
-export type InsertPackage = typeof packages.$inferInsert;
-export type Package = typeof packages.$inferSelect;
-
-export type InsertOrder = typeof orders.$inferInsert;
+export type Organization = typeof organizations.$inferSelect;
+export type InsertOrganization = typeof organizations.$inferInsert;
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
+export type Role = typeof roles.$inferSelect;
+export type InsertRole = typeof roles.$inferInsert;
+export type Permission = typeof permissions.$inferSelect;
+export type InsertPermission = typeof permissions.$inferInsert;
+export type AccessCode = typeof accessCodes.$inferSelect;
+export type InsertAccessCode = typeof accessCodes.$inferInsert;
+export type ApiCredential = typeof apiCredentials.$inferSelect;
+export type InsertApiCredential = typeof apiCredentials.$inferInsert;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = typeof subscriptions.$inferInsert;
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = typeof invoices.$inferInsert;
+export type Ticket = typeof tickets.$inferSelect;
+export type InsertTicket = typeof tickets.$inferInsert;
 export type Order = typeof orders.$inferSelect;
+export type InsertOrder = typeof orders.$inferInsert;
+export type KpiDaily = typeof kpisDaily.$inferSelect;
+export type InsertKpiDaily = typeof kpisDaily.$inferInsert;
+export type RateLimit = typeof rateLimits.$inferSelect;
+export type InsertRateLimit = typeof rateLimits.$inferInsert;
+export type FeatureFlag = typeof featureFlags.$inferSelect;
+export type InsertFeatureFlag = typeof featureFlags.$inferInsert;
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertApiKey = typeof apiKeys.$inferInsert;
+export type Session = typeof sessions.$inferSelect;
+export type InsertSession = typeof sessions.$inferInsert;
 
-export type InsertOrderItem = typeof orderItems.$inferInsert;
-export type OrderItem = typeof orderItems.$inferSelect;
-
-export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
-export type ContactSubmission = typeof contactSubmissions.$inferSelect;
-
-// Schemas
-export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
-  id: true,
-  status: true,
-  createdAt: true,
+// Validation Schemas
+export const createOrgSchema = z.object({
+  name: z.string().min(1).max(255),
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
 });
 
-export const insertOrderSchema = createInsertSchema(orders).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+export const registerWithCodeSchema = z.object({
+  name: z.string().min(1).max(255),
+  email: z.string().email(),
+  password: z.string().min(8).regex(/(?=.*\d)/, "Password must contain at least one number"),
+  accessCode: z.string().min(1),
 });
 
-export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
-  id: true,
-  createdAt: true,
+export const createAccessCodeSchema = z.object({
+  orgName: z.string().optional(),
+  expiresAt: z.string().datetime(),
+  notes: z.string().optional(),
 });
 
-export const registerUserSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters").regex(/\d/, "Password must contain at least one number"),
+export const createRoleSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().optional(),
+  permissions: z.array(z.string()),
+});
+
+export const inviteUserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1).max(255),
+  roleIds: z.array(z.number()).min(1),
+});
+
+export const createTicketSchema = z.object({
+  subject: z.string().min(1).max(255),
+  description: z.string().optional(),
+  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
+});
+
+export const kpiFilterSchema = z.object({
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime(),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+export const verify2faSchema = z.object({
+  token: z.string().length(6).regex(/^\d{6}$/),
+});
+
+export const enroll2faSchema = z.object({
+  token: z.string().length(6).regex(/^\d{6}$/),
+  secret: z.string(),
+});
+
+export const connectIntegrationSchema = z.object({
+  provider: z.enum(["hubspot", "salesforce", "zoho", "pipedrive", "five9", "ringcentral", "twilio", "aircall", "zendesk", "freshdesk", "intercom", "helpscout"]),
+  authType: z.enum(["oauth", "apikey"]),
+  credentials: z.record(z.string()),
 });
