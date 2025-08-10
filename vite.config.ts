@@ -1,34 +1,37 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-/**
- * Permanent Replit-safe Vite config:
- *  - host:true allows binding to 0.0.0.0
- *  - allowedHosts:true disables the hostname check (works for any random *.replit.dev)
- *  - HMR over WSS on 443 avoids blocked mixed-content/socket issues
- *  - usePolling helps in sandboxes
- */
 export default defineConfig({
-  plugins: [react()],
-  server: {
-    host: true,               // bind 0.0.0.0
-    allowedHosts: true,       // <- key fix: allow any host (covers all *.replit.dev/*.repl.co)
-    strictPort: false,
-    cors: true,
-    watch: { usePolling: true, interval: 150 },
-    hmr: {
-      protocol: 'wss',
-      clientPort: 443
-      // (no host set -> uses current origin; works across dynamic Replit subdomains)
-    }
+  plugins: [
+    react(),
+    runtimeErrorOverlay(),
+    ...(process.env.NODE_ENV !== "production" &&
+    process.env.REPL_ID !== undefined
+      ? [
+          await import("@replit/vite-plugin-cartographer").then((m) =>
+            m.cartographer(),
+          ),
+        ]
+      : []),
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "client", "src"),
+      "@shared": path.resolve(import.meta.dirname, "shared"),
+      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+    },
   },
-  preview: {
-    host: true,               // allow preview to bind 0.0.0.0
-    strictPort: false
-  },
+  root: path.resolve(import.meta.dirname, "client"),
   build: {
-    outDir: 'dist',
-    sourcemap: false
-  }
-})
+    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    emptyOutDir: true,
+  },
+  server: {
+    fs: {
+      strict: true,
+      deny: ["**/.*"],
+    },
+  },
+});
