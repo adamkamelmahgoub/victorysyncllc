@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Route, Router } from "wouter";
 import { CartProvider } from "./contexts/CartContext";
 import { Toaster } from "@/components/ui/toaster";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import Navigation from "./components/navigation";
 import Footer from "./components/footer";
 import { AuthProvider } from "./hooks/useAuth";

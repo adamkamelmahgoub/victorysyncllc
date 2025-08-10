@@ -43,6 +43,11 @@ import {
   MoreVertical,
   FileText,
   Ban,
+  RefreshCw,
+  LogOut,
+  BarChart,
+  Building2,
+  Key,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -70,6 +75,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useAuth } from '../hooks/useAuth';
 
 interface UserPrivileges {
   canCreateOrders: boolean;
@@ -116,7 +123,59 @@ interface UserStats {
   apiCalls: number;
 }
 
-export default function AdminPortal() {
+// Interfaces for the second AdminPortal component
+interface Organization {
+  id: number;
+  name: string;
+  slug: string;
+  status: string;
+  userCount: number;
+  currentPlan: string | null;
+  subscriptionStatus: string | null;
+  createdAt: string;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  isActive: boolean;
+  twoFactorEnabled: boolean;
+  emailVerified: boolean;
+  lastLoginAt: string | null;
+  organization: { name: string; slug: string } | null;
+  roles: string[];
+  createdAt: string;
+  isSuperAdmin?: boolean; // Added for the second AdminPortal
+}
+
+interface AccessCode {
+  id: number;
+  code: string;
+  status: string;
+  expiresAt: string;
+  notes: string | null;
+  issuedByUser: { name: string; email: string };
+  consumedByUser: { name: string; email: string } | null;
+  organization: { name: string; slug: string } | null;
+  consumedAt: string | null;
+  createdAt: string;
+}
+
+interface AuditLog {
+  id: number;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  meta: any;
+  ip: string | null;
+  actorUser: { name: string; email: string } | null;
+  organization: { name: string; slug: string } | null;
+  createdAt: string;
+}
+
+// First AdminPortal component (from the original code)
+function AdminPortalFirst() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -620,7 +679,7 @@ export default function AdminPortal() {
 
   const handleDeletePackage = (packageId: number) => {
     toast({
-      title: "Feature Coming Soon", 
+      title: "Feature Coming Soon",
       description: "Delete package functionality will be implemented soon",
     });
   };
@@ -673,8 +732,8 @@ export default function AdminPortal() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <Button 
-            onClick={() => setIsAuthenticated(false)} 
+          <Button
+            onClick={() => setIsAuthenticated(false)}
             variant="outline"
             className="border-gray-300 hover:bg-gray-50"
           >
@@ -794,8 +853,8 @@ export default function AdminPortal() {
                     <span>User Management</span>
                   </CardTitle>
                   <div className="flex space-x-2">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => exportData("users")}
                       className="border-gray-300 hover:bg-gray-50"
@@ -1019,8 +1078,8 @@ export default function AdminPortal() {
                     <span>Package Management</span>
                   </CardTitle>
                   <div className="flex space-x-2">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => exportData("packages")}
                       className="border-gray-300 hover:bg-gray-50"
@@ -1119,8 +1178,8 @@ export default function AdminPortal() {
                     <ShoppingCart className="w-5 h-5" />
                     <span>Order Management</span>
                   </CardTitle>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="outline"
                     onClick={() => exportData("orders")}
                     className="border-gray-300 hover:bg-gray-50"
@@ -1254,9 +1313,9 @@ export default function AdminPortal() {
                       <div className="space-y-3">
                         <div>
                           <Label>Account Status</Label>
-                          <Select 
-                            value={userPrivileges.accountStatus} 
-                            onValueChange={(value: "active" | "suspended" | "pending" | "banned" | "trial") => 
+                          <Select
+                            value={userPrivileges.accountStatus}
+                            onValueChange={(value: "active" | "suspended" | "pending" | "banned" | "trial") =>
                               setUserPrivileges(prev => ({ ...prev, accountStatus: value }))
                             }
                           >
@@ -1274,9 +1333,9 @@ export default function AdminPortal() {
                         </div>
                         <div>
                           <Label>Subscription Tier</Label>
-                          <Select 
-                            value={userPrivileges.subscriptionTier} 
-                            onValueChange={(value: "basic" | "premium" | "enterprise" | "custom") => 
+                          <Select
+                            value={userPrivileges.subscriptionTier}
+                            onValueChange={(value: "basic" | "premium" | "enterprise" | "custom") =>
                               setUserPrivileges(prev => ({ ...prev, subscriptionTier: value }))
                             }
                           >
@@ -1305,7 +1364,7 @@ export default function AdminPortal() {
                         <Switch
                           id="canCreateOrders"
                           checked={userPrivileges.canCreateOrders}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setUserPrivileges(prev => ({ ...prev, canCreateOrders: checked }))
                           }
                         />
@@ -1315,7 +1374,7 @@ export default function AdminPortal() {
                         <Switch
                           id="canViewReports"
                           checked={userPrivileges.canViewReports}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setUserPrivileges(prev => ({ ...prev, canViewReports: checked }))
                           }
                         />
@@ -1325,7 +1384,7 @@ export default function AdminPortal() {
                         <Switch
                           id="canAccessPremiumFeatures"
                           checked={userPrivileges.canAccessPremiumFeatures}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setUserPrivileges(prev => ({ ...prev, canAccessPremiumFeatures: checked }))
                           }
                         />
@@ -1335,7 +1394,7 @@ export default function AdminPortal() {
                         <Switch
                           id="canModifyProfile"
                           checked={userPrivileges.canModifyProfile}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setUserPrivileges(prev => ({ ...prev, canModifyProfile: checked }))
                           }
                         />
@@ -1345,7 +1404,7 @@ export default function AdminPortal() {
                         <Switch
                           id="canDeleteAccount"
                           checked={userPrivileges.canDeleteAccount}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setUserPrivileges(prev => ({ ...prev, canDeleteAccount: checked }))
                           }
                         />
@@ -1357,7 +1416,7 @@ export default function AdminPortal() {
                         <Switch
                           id="canViewBilling"
                           checked={userPrivileges.canViewBilling}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setUserPrivileges(prev => ({ ...prev, canViewBilling: checked }))
                           }
                         />
@@ -1367,7 +1426,7 @@ export default function AdminPortal() {
                         <Switch
                           id="canManageIntegrations"
                           checked={userPrivileges.canManageIntegrations}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setUserPrivileges(prev => ({ ...prev, canManageIntegrations: checked }))
                           }
                         />
@@ -1377,7 +1436,7 @@ export default function AdminPortal() {
                         <Switch
                           id="canExportData"
                           checked={userPrivileges.canExportData}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setUserPrivileges(prev => ({ ...prev, canExportData: checked }))
                           }
                         />
@@ -1387,7 +1446,7 @@ export default function AdminPortal() {
                         <Switch
                           id="canAccessAPI"
                           checked={userPrivileges.canAccessAPI}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setUserPrivileges(prev => ({ ...prev, canAccessAPI: checked }))
                           }
                         />
@@ -1397,7 +1456,7 @@ export default function AdminPortal() {
                         <Switch
                           id="canViewAnalytics"
                           checked={userPrivileges.canViewAnalytics}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setUserPrivileges(prev => ({ ...prev, canViewAnalytics: checked }))
                           }
                         />
@@ -1414,7 +1473,7 @@ export default function AdminPortal() {
                         <Label htmlFor="maxOrderValue">Max Order Value: ${userPrivileges.maxOrderValue.toLocaleString()}</Label>
                         <Slider
                           value={[userPrivileges.maxOrderValue]}
-                          onValueChange={(value) => 
+                          onValueChange={(value) =>
                             setUserPrivileges(prev => ({ ...prev, maxOrderValue: value[0] }))
                           }
                           max={100000}
@@ -1427,7 +1486,7 @@ export default function AdminPortal() {
                         <Label htmlFor="maxOrdersPerMonth">Max Orders Per Month: {userPrivileges.maxOrdersPerMonth}</Label>
                         <Slider
                           value={[userPrivileges.maxOrdersPerMonth]}
-                          onValueChange={(value) => 
+                          onValueChange={(value) =>
                             setUserPrivileges(prev => ({ ...prev, maxOrdersPerMonth: value[0] }))
                           }
                           max={500}
@@ -1440,7 +1499,7 @@ export default function AdminPortal() {
                         <Label htmlFor="creditLimit">Credit Limit: ${userPrivileges.creditLimit.toLocaleString()}</Label>
                         <Slider
                           value={[userPrivileges.creditLimit]}
-                          onValueChange={(value) => 
+                          onValueChange={(value) =>
                             setUserPrivileges(prev => ({ ...prev, creditLimit: value[0] }))
                           }
                           max={50000}
@@ -1455,7 +1514,7 @@ export default function AdminPortal() {
                         <Label htmlFor="apiRateLimit">API Rate Limit: {userPrivileges.apiRateLimit}/hour</Label>
                         <Slider
                           value={[userPrivileges.apiRateLimit]}
-                          onValueChange={(value) => 
+                          onValueChange={(value) =>
                             setUserPrivileges(prev => ({ ...prev, apiRateLimit: value[0] }))
                           }
                           max={10000}
@@ -1468,7 +1527,7 @@ export default function AdminPortal() {
                         <Label htmlFor="dataRetentionDays">Data Retention: {userPrivileges.dataRetentionDays} days</Label>
                         <Slider
                           value={[userPrivileges.dataRetentionDays]}
-                          onValueChange={(value) => 
+                          onValueChange={(value) =>
                             setUserPrivileges(prev => ({ ...prev, dataRetentionDays: value[0] }))
                           }
                           max={2555}
@@ -1479,9 +1538,9 @@ export default function AdminPortal() {
                       </div>
                       <div>
                         <Label>Priority Level</Label>
-                        <Select 
-                          value={userPrivileges.priority} 
-                          onValueChange={(value: "low" | "normal" | "high" | "critical") => 
+                        <Select
+                          value={userPrivileges.priority}
+                          onValueChange={(value: "low" | "normal" | "high" | "critical") =>
                             setUserPrivileges(prev => ({ ...prev, priority: value }))
                           }
                         >
@@ -1505,7 +1564,7 @@ export default function AdminPortal() {
                   <Textarea
                     id="customNotes"
                     value={userPrivileges.customNotes}
-                    onChange={(e) => 
+                    onChange={(e) =>
                       setUserPrivileges(prev => ({ ...prev, customNotes: e.target.value }))
                     }
                     placeholder="Add any custom notes about this user..."
@@ -1519,7 +1578,7 @@ export default function AdminPortal() {
                     {getUserActivity(selectedUser.id).map((activity) => (
                       <div key={activity.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded">
                         <div className={`w-2 h-2 rounded-full ${
-                          activity.status === 'success' ? 'bg-green-500' : 
+                          activity.status === 'success' ? 'bg-green-500' :
                           activity.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500'
                         }`} />
                         <div className="flex-1">
@@ -1548,86 +1607,9 @@ export default function AdminPortal() {
     </div>
   );
 }
-import { useEffect, useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../components/ui/alert-dialog';
-import { toast } from '../hooks/use-toast';
-import { 
-  Users, 
-  Building2, 
-  Key, 
-  FileText, 
-  Settings, 
-  TrendingUp, 
-  DollarSign, 
-  AlertTriangle, 
-  Download,
-  Eye,
-  UserX,
-  RefreshCw,
-  Shield,
-  Plus
-} from 'lucide-react';
 
-interface Organization {
-  id: number;
-  name: string;
-  slug: string;
-  status: string;
-  userCount: number;
-  currentPlan: string | null;
-  subscriptionStatus: string | null;
-  createdAt: string;
-}
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  isActive: boolean;
-  twoFactorEnabled: boolean;
-  emailVerified: boolean;
-  lastLoginAt: string | null;
-  organization: { name: string; slug: string } | null;
-  roles: string[];
-  createdAt: string;
-}
-
-interface AccessCode {
-  id: number;
-  code: string;
-  status: string;
-  expiresAt: string;
-  notes: string | null;
-  issuedByUser: { name: string; email: string };
-  consumedByUser: { name: string; email: string } | null;
-  organization: { name: string; slug: string } | null;
-  consumedAt: string | null;
-  createdAt: string;
-}
-
-interface AuditLog {
-  id: number;
-  action: string;
-  entityType: string;
-  entityId: string | null;
-  meta: any;
-  ip: string | null;
-  actorUser: { name: string; email: string } | null;
-  organization: { name: string; slug: string } | null;
-  createdAt: string;
-}
-
-export default function AdminPortal() {
+// Second AdminPortal component (from the original code)
+function AdminPortal() {
   const { user, requireSuperAdmin } = useAuth();
   const [overview, setOverview] = useState<any>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -1818,9 +1800,9 @@ export default function AdminPortal() {
 
       const data = await response.json();
       if (data.ok) {
-        toast({ 
-          title: 'Success', 
-          description: `User ${!isActive ? 'activated' : 'deactivated'}` 
+        toast({
+          title: 'Success',
+          description: `User ${!isActive ? 'activated' : 'deactivated'}`
         });
         fetchUsers();
       } else {
@@ -2278,8 +2260,8 @@ export default function AdminPortal() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {user.lastLoginAt 
-                          ? new Date(user.lastLoginAt).toLocaleDateString() 
+                        {user.lastLoginAt
+                          ? new Date(user.lastLoginAt).toLocaleDateString()
                           : 'Never'
                         }
                       </TableCell>
