@@ -1,6 +1,5 @@
 
 import express from 'express';
-import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { setupVite, log } from './vite';
@@ -8,6 +7,7 @@ import { createServer } from 'http';
 import { healthCheck } from './db';
 
 // Import routes
+import healthRoutes from './routes/health';
 import authRoutes from './routes/auth';
 import adminRoutes from './routes/admin';
 import orgRoutes from './routes/org';
@@ -34,10 +34,23 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? false : true,
-  credentials: true,
-}));
+// CORS middleware
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (process.env.NODE_ENV === 'development' || 
+      (origin && (origin.includes('replit.') || origin.includes('localhost')))) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
 // Request parsing
 app.use('/api/webhooks', webhookRoutes); // Raw body for webhooks
@@ -45,28 +58,8 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Health check endpoint
-app.get('/health', async (req, res) => {
-  try {
-    const health = await healthCheck();
-    const status = health.ok ? 200 : 503;
-    
-    res.status(status).json({
-      ok: health.ok,
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      ...health,
-    });
-  } catch (error) {
-    res.status(503).json({
-      ok: false,
-      error: 'Health check failed',
-      timestamp: new Date().toISOString(),
-    });
-  }
-});
-
 // API routes
+app.use('/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/org', orgRoutes);

@@ -20,6 +20,7 @@ export default function Register() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false); // Added loading state
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerUserSchema),
@@ -27,6 +28,7 @@ export default function Register() {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "", // Assuming confirmPassword is part of schema
     },
   });
 
@@ -37,25 +39,26 @@ export default function Register() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Registration failed');
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
       // Store the JWT token
       localStorage.setItem('auth_token', data.token);
-      
+
       toast({
         title: "Account created successfully!",
         description: "Welcome to VictorySync. You can now access all features.",
       });
-      
+
       // Redirect to dashboard or home
       setLocation('/customer-dashboard');
+      setLoading(false); // Reset loading on success
     },
     onError: (error: any) => {
       console.error('Registration error:', error);
@@ -64,11 +67,19 @@ export default function Register() {
         description: error.message || "Please try again.",
         variant: "destructive",
       });
+      setLoading(false); // Reset loading on error
     },
   });
 
   const onSubmit = (data: RegisterFormData) => {
+    setLoading(true); // Set loading to true when submitting
+    // The validation for password confirmation is handled by Zod schema
     registerMutation.mutate(data);
+  };
+
+  // Function to handle password confirmation check if not handled by Zod
+  const setError = (message: string) => {
+    form.setError("confirmPassword", { message });
   };
 
   return (
@@ -82,7 +93,7 @@ export default function Register() {
             Join VictorySync and start saving on customer service costs
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
@@ -139,6 +150,20 @@ export default function Register() {
               </p>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type={showPassword ? "text" : "password"} // Reusing showPassword state for consistency if desired
+                placeholder="Confirm your password"
+                {...form.register("confirmPassword")}
+                className={form.formState.errors.confirmPassword ? "border-red-500" : ""}
+              />
+              {form.formState.errors.confirmPassword && (
+                <p className="text-sm text-red-500">{form.formState.errors.confirmPassword.message}</p>
+              )}
+            </div>
+
             {registerMutation.error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -148,16 +173,14 @@ export default function Register() {
               </Alert>
             )}
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full bg-[#6950f0] hover:bg-[#5d4cdb] text-white"
-              disabled={registerMutation.isPending}
+              disabled={registerMutation.isPending || loading}
             >
-              {registerMutation.isPending ? "Creating Account..." : "Create Account"}
+              {registerMutation.isPending || loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
-
-
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">

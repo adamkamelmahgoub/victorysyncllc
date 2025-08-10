@@ -1,8 +1,7 @@
-
 import express from 'express';
 import Stripe from 'stripe';
 import { db } from '../db';
-import { subscriptions, invoices } from '@shared/schema';
+import { subscriptions, invoices } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 
 const router = express.Router();
