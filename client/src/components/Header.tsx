@@ -1,200 +1,182 @@
 
-import { useState } from "react";
-import { Link, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, User } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { useCart } from "@/hooks/useCart";
-import { Logo } from "./Logo";
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, ChevronDown } from 'lucide-react';
+import Logo from './Logo';
+import { useAuth } from '../hooks/useAuth';
 
 interface HeaderProps {
   onCartClick?: () => void;
+  cartItemCount?: number;
   showCart?: boolean;
 }
 
-export function Header({ onCartClick, showCart = true }: HeaderProps) {
-  const [location] = useLocation();
-  const { getItemCount } = useCart();
-  const { user, isAuthenticated, logout } = useAuth();
+const Header: React.FC<HeaderProps> = ({ onCartClick, cartItemCount = 0, showCart = false }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const { user, isAuthenticated } = useAuth();
 
-  const cartItemCount = getItemCount();
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
 
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/services", label: "Services" },
-    { href: "/pricing", label: "Pricing" },
-    { href: "/about-us", label: "About" },
-    { href: "/contact", label: "Contact" },
+    { href: '/services', label: 'Services' },
+    { href: '/pricing', label: 'Pricing' },
+    { href: '/about', label: 'About' },
+    { href: '/contact', label: 'Contact' },
   ];
 
-  return (
-    <nav className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <Logo size={32} />
-          </Link>
+  const isActiveLink = (href: string) => {
+    return location.pathname === href;
+  };
 
-          {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
-                <span
-                  className={`font-medium transition-colors cursor-pointer ${
-                    location === link.href
-                      ? "victory-purple"
-                      : "victory-gray hover:victory-purple"
+  const handleLinkClick = () => {
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <>
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+          scrolled 
+            ? 'bg-white/95 backdrop-blur-md shadow-victory-card border-b border-gray-100' 
+            : 'bg-white/80 backdrop-blur-sm'
+        }`}
+      >
+        <div className="victory-container">
+          <div className="flex items-center justify-between h-16 lg:h-18">
+            {/* Logo */}
+            <Link to="/" onClick={handleLinkClick} className="flex items-center">
+              <Logo className="h-8 w-auto" />
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-8">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  onClick={handleLinkClick}
+                  className={`font-medium transition-colors duration-200 ${
+                    isActiveLink(link.href)
+                      ? 'text-victory-purple font-semibold'
+                      : 'text-victory-gray hover:text-victory-purple'
                   }`}
                 >
                   {link.label}
-                </span>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </nav>
 
-          {/* Desktop CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            {showCart && onCartClick && (
-              <button
-                onClick={onCartClick}
-                className="relative p-2 victory-gray hover:victory-purple transition-colors"
-              >
-                <ShoppingCart className="w-5 h-5" />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-victory-purple text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cartItemCount}
-                  </span>
-                )}
-              </button>
-            )}
-
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-2">
-                <Link href="/dashboard">
-                  <Button variant="ghost" size="sm">
-                    <User className="w-4 h-4 mr-2" />
+            {/* Desktop CTA Buttons */}
+            <div className="hidden lg:flex items-center space-x-4">
+              {isAuthenticated ? (
+                <Link to="/dashboard" onClick={handleLinkClick}>
+                  <button className="victory-btn-primary">
                     Dashboard
-                  </Button>
+                  </button>
                 </Link>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={logout}
-                >
-                  Sign Out
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
-                    Get Started
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </div>
+              ) : (
+                <>
+                  <Link to="/login" onClick={handleLinkClick}>
+                    <button className="victory-btn-outline">
+                      Sign In
+                    </button>
+                  </Link>
+                  <Link to="/register" onClick={handleLinkClick}>
+                    <button className="victory-btn-primary">
+                      Get Started
+                    </button>
+                  </Link>
+                </>
+              )}
+            </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-2">
-            {showCart && onCartClick && (
-              <button
-                onClick={onCartClick}
-                className="relative p-2 victory-gray hover:victory-purple transition-colors"
-              >
-                <ShoppingCart className="w-5 h-5" />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-victory-purple text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cartItemCount}
-                  </span>
-                )}
-              </button>
-            )}
+            {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 victory-gray hover:victory-purple transition-colors"
+              className="lg:hidden p-2 text-victory-gray hover:text-victory-purple transition-colors"
+              aria-label="Toggle mobile menu"
             >
               {mobileMenuOpen ? (
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               ) : (
-                <Menu className="w-5 h-5" />
+                <Menu className="w-6 h-6" />
               )}
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-slate-200">
-            <div className="flex flex-col space-y-4">
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setMobileMenuOpen(false)} />
+          <div className="fixed top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-victory-lg">
+            <div className="px-4 py-6 space-y-4">
               {navLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
-                  <span
-                    className={`font-medium transition-colors cursor-pointer block py-2 ${
-                      location === link.href
-                        ? "victory-purple"
-                        : "victory-gray hover:victory-purple"
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </span>
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  onClick={handleLinkClick}
+                  className={`block py-3 px-4 rounded-lg font-medium transition-colors ${
+                    isActiveLink(link.href)
+                      ? 'text-victory-purple bg-victory-light-gray font-semibold'
+                      : 'text-victory-gray hover:text-victory-purple hover:bg-victory-light-gray'
+                  }`}
+                >
+                  {link.label}
                 </Link>
               ))}
-
-              <div className="pt-4 border-t border-slate-200">
+              
+              <div className="pt-4 space-y-3">
                 {isAuthenticated ? (
-                  <div className="flex flex-col space-y-2">
-                    <Link href="/dashboard">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Dashboard
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={logout}
-                    >
-                      Sign Out
-                    </Button>
-                  </div>
+                  <Link to="/dashboard" onClick={handleLinkClick}>
+                    <button className="w-full victory-btn-primary">
+                      Dashboard
+                    </button>
+                  </Link>
                 ) : (
-                  <div className="flex flex-col space-y-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => (window.location.href = "/login")}
-                    >
-                      Sign In
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="w-full justify-start bg-purple-600 hover:bg-purple-700 text-white"
-                      onClick={() => (window.location.href = "/register")}
-                    >
-                      Get Started
-                    </Button>
-                  </div>
+                  <>
+                    <Link to="/login" onClick={handleLinkClick}>
+                      <button className="w-full victory-btn-outline">
+                        Sign In
+                      </button>
+                    </Link>
+                    <Link to="/register" onClick={handleLinkClick}>
+                      <button className="w-full victory-btn-primary">
+                        Get Started
+                      </button>
+                    </Link>
+                  </>
                 )}
               </div>
             </div>
           </div>
-        )}
-      </div>
-    </nav>
+        </div>
+      )}
+    </>
   );
-}
+};
+
+export default Header;
