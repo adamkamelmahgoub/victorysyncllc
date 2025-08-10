@@ -1,131 +1,104 @@
+import 'dotenv/config'
+import express from 'express'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
+import helmet from 'helmet'
 
-import express from 'express';
-import cors from 'cors';
-import { setupVite, log } from './vite';
-import { createServer } from 'http';
-import { healthCheck } from './db';
+// Import API routes
+import { router as healthRouter } from './routes/health.js'
+import { router as authRouter } from './routes/auth.js'
+import { router as adminRouter } from './routes/admin.js'
+import { router as orgRouter } from './routes/org.js'
+import { router as integrationRouter } from './routes/integrations.js'
+import { router as billingRouter } from './routes/billing.js'
+import { router as webhookRouter } from './routes/webhooks.js'
 
-// Import routes
-import healthRoutes from './routes/health.js';
-import authRoutes from './routes/auth.js';
-import adminRoutes from './routes/admin.js';
-import orgRoutes from './routes/org.js';
-import integrationRoutes from './routes/integrations.js';
-import billingRoutes from './routes/billing.js';
-import webhookRoutes from './routes/webhooks.js';
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-const app = express();
-const server = createServer(app);
-const PORT = process.env.PORT || 5000;
+const app = express()
 
-// Validate environment
-const requiredEnv = ['DATABASE_URL', 'JWT_SECRET'];
-const missingEnv = requiredEnv.filter(key => !process.env[key]);
+// Basic hardening & json
+app.disable('x-powered-by')
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
+}))
 
-if (missingEnv.length > 0) {
-  console.error(`❌ Missing required environment variables: ${missingEnv.join(', ')}`);
-  console.log('💡 Set these in Replit Secrets:');
-  missingEnv.forEach(env => console.log(`   - ${env}`));
-  process.exit(1);
-}
-
-// CORS middleware
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || process.env.NODE_ENV === 'development' || 
-        (origin && (origin.includes('replit.') || origin.includes('localhost')))) {
-      callback(null, true);
-    } else {
-      callback(null, false);
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
-}));
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.CLIENT_URL
+    : true,
+  credentials: true
+}))
 
-// Request parsing
-app.use('/api/webhooks', webhookRoutes); // Raw body for webhooks
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }))
+app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
 
-// API routes
-app.use('/health', healthRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/org', orgRoutes);
-app.use('/api/integrations', integrationRoutes);
-app.use('/api/billing', billingRoutes);
+// Health check for Replit
+app.get('/health', (_req, res) => {
+  res.json({ ok: true, env: process.env.NODE_ENV || 'development' })
+})
 
-// Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Server error:', err);
-  
-  // Don't leak error details in production
-  const message = process.env.NODE_ENV === 'production' 
-    ? 'Internal server error' 
-    : err.message;
+// Mount API routes BEFORE SPA handler
+app.use('/health', healthRouter)
+app.use('/api/auth', authRouter)
+app.use('/api/admin', adminRouter)
+app.use('/api/org', orgRouter)
+app.use('/api/integrations', integrationRouter)
+app.use('/api/billing', billingRouter)
+app.use('/api/webhooks', webhookRouter)
 
-  res.status(500).json({
-    ok: false,
-    error: 'server_error',
-    message,
-  });
-});
+const isProd = process.env.NODE_ENV === 'production'
+const PORT = Number(process.env.PORT) || 3000
+const HOST = '0.0.0.0'
 
-async function startServer() {
-  try {
-    // Test database connection
-    const health = await healthCheck();
-    if (!health.db) {
-      throw new Error('Database connection failed');
-    }
+async function start() {
+  if (!isProd) {
+    // DEV: Use Vite in middleware mode on SAME Express port
+    const { createServer: createViteServer } = await import('vite')
+    const vite = await createViteServer({
+      root: path.resolve(__dirname, '../client'),
+      server: {
+        middlewareMode: true,
+        hmr: { port: 24678 },
+        watch: { usePolling: true, interval: 150 }
+      },
+      appType: 'custom'
+    })
 
-    // Setup Vite in development
-    if (process.env.NODE_ENV !== 'production') {
-      await setupVite(app, server);
-    } else {
-      // Serve static files in production
-      app.use(express.static('client/dist'));
-      app.get('*', (req, res) => {
-        res.sendFile('index.html', { root: 'client/dist' });
-      });
-    }
+    app.use(vite.middlewares)
 
-    server.listen(PORT, '0.0.0.0', () => {
-      log(`Server running on http://0.0.0.0:${PORT}`);
-      log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-      log('✅ Database connected');
-      
-      if (process.env.NODE_ENV !== 'production') {
-        log('🔧 Development mode with Vite HMR');
+    // Let Vite handle index.html and route fallback
+    app.use('*', async (req, res) => {
+      try {
+        const url = req.originalUrl
+        const template = await vite.transformIndexHtml(url, '')
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template)
+      } catch (e: any) {
+        vite.ssrFixStacktrace(e)
+        console.error(e)
+        res.status(500).end(e.message)
       }
-    });
-
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
+    })
+  } else {
+    // PROD: serve built client
+    const clientDist = path.resolve(__dirname, '../../client/dist')
+    app.use(express.static(clientDist))
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(clientDist, 'index.html'))
+    })
   }
+
+  app.listen(PORT, HOST, () => {
+    console.log(`✅ Server ready on http://${HOST}:${PORT} (NODE_ENV=${process.env.NODE_ENV})`)
+  })
 }
 
-// Graceful shutdown
-const gracefulShutdown = (signal: string) => {
-  log(`${signal} received. Starting graceful shutdown...`);
-  
-  server.close(() => {
-    log('✅ HTTP server closed');
-    process.exit(0);
-  });
-
-  // Force close after 10 seconds
-  setTimeout(() => {
-    log('⚠️ Forcing shutdown');
-    process.exit(1);
-  }, 10000);
-};
-
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-// Start server
-startServer();
+start().catch((err) => {
+  console.error('Failed to start server:', err)
+  process.exit(1)
+})
