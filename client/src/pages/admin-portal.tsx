@@ -77,6 +77,15 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from '../hooks/useAuth';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface UserPrivileges {
   canCreateOrders: boolean;
@@ -174,7 +183,7 @@ interface AuditLog {
   createdAt: string;
 }
 
-// First AdminPortal component (from the original code)
+// First AdminPortal component (renamed to AdminPortalFirst)
 function AdminPortalFirst() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
@@ -1608,7 +1617,7 @@ function AdminPortalFirst() {
   );
 }
 
-// Second AdminPortal component (from the original code)
+// Second AdminPortal component (default export)
 function AdminPortal() {
   const { user, requireSuperAdmin } = useAuth();
   const [overview, setOverview] = useState<any>(null);
@@ -2359,3 +2368,5 @@ function AdminPortal() {
     </div>
   );
 }
+
+export default AdminPortal;
