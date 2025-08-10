@@ -1,11 +1,11 @@
-
 -- Create integrations table
 CREATE TABLE IF NOT EXISTS integrations (
   id SERIAL PRIMARY KEY,
-  customer_id TEXT NOT NULL,
-  type TEXT NOT NULL, 
-  access_token TEXT NOT NULL,
-  refresh_token TEXT,
+  customer_id INTEGER REFERENCES public_users(id),
+  type VARCHAR(50) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  config JSONB NOT NULL,
+  credentials JSONB NOT NULL,
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

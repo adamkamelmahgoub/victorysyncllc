@@ -1,4 +1,3 @@
-
 -- Create features_enabled table for feature flags
 CREATE TABLE IF NOT EXISTS features_enabled (
   id SERIAL PRIMARY KEY,

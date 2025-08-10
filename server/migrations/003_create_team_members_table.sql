@@ -1,4 +1,3 @@
-
 -- Create team_members table for seat-based billing
 CREATE TABLE IF NOT EXISTS team_members (
   id SERIAL PRIMARY KEY,
