@@ -145,3 +145,29 @@ export function requireSuperAdmin(req: AuthRequest, res: Response, next: NextFun
   }
   next();
 }
+
+export const AuthService = {
+  async logAudit(
+    action: string,
+    entityType: string,
+    entityId: string,
+    meta: any,
+    userId: number,
+    orgId: number | null,
+    req: Request
+  ) {
+    // Import auditLog here to avoid circular dependencies
+    const { auditLog } = await import('./audit.js');
+    
+    return auditLog({
+      orgId,
+      actorUserId: userId,
+      action,
+      entityType,
+      entityId,
+      meta,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+    });
+  }
+};
