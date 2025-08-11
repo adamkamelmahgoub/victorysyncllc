@@ -7,7 +7,7 @@ import { db } from '../db';
 import { users, sessions, accessCodes, organizations, userRoles, roles } from '../../shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { generateTokenPair, verifyRefreshToken } from '../lib/jwt';
-import { authenticateJWT } from '../lib/rbac';
+import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
 import { createAuditLog, AUDIT_ACTIONS } from '../lib/audit';
 import { generateSecureToken, generateAccessCode } from '../lib/crypto';
 import { seedSuperAdmin } from '../scripts/seedSuperAdmin';

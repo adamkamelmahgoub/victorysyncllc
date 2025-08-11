@@ -3,6 +3,7 @@ import registerRoutes from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
 import passport from "./auth/passport";
+import http from 'http'; // Import http module for server type
 
 // Validate required environment variables at startup
 function validateEnvironment() {
