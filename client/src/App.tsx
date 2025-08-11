@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { Router, Route, useLocation } from 'wouter';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CartProvider } from './contexts/CartContext';
 import { Toaster } from './components/ui/toaster';
@@ -59,158 +59,104 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <Router>
+        <div>
           <ScrollToTop />
           <div className="min-h-screen">
-            <Routes>
-              <Route 
-                path="/" 
-                element={
-                  <PageTransition>
-                    <HomePage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/services" 
-                element={
-                  <PageTransition>
-                    <ServicesPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/pricing" 
-                element={
-                  <PageTransition>
-                    <PricingPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/about" 
-                element={
-                  <PageTransition>
-                    <AboutPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/contact" 
-                element={
-                  <PageTransition>
-                    <ContactPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/login" 
-                element={
-                  <PageTransition>
-                    <LoginPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/register" 
-                element={
-                  <PageTransition>
-                    <RegisterPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/dashboard" 
-                element={
-                  <PageTransition>
-                    <DashboardPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/customer-dashboard" 
-                element={
-                  <PageTransition>
-                    <CustomerDashboard />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/admin-portal" 
-                element={
-                  <PageTransition>
-                    <AdminPortal />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/privacy-policy" 
-                element={
-                  <PageTransition>
-                    <PrivacyPolicy />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/terms" 
-                element={
-                  <PageTransition>
-                    <TermsPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/help-center" 
-                element={
-                  <PageTransition>
-                    <HelpCenter />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/blog" 
-                element={
-                  <PageTransition>
-                    <BlogPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/careers" 
-                element={
-                  <PageTransition>
-                    <CareersPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/docs" 
-                element={
-                  <PageTransition>
-                    <DocsPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/checkout" 
-                element={
-                  <PageTransition>
-                    <CheckoutPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="*" 
-                element={
-                  <PageTransition>
-                    <NotFoundPage />
-                  </PageTransition>
-                } 
-              />
-            </Routes>
+            <Router>
+              <Route path="/">
+                <PageTransition>
+                  <HomePage />
+                </PageTransition>
+              </Route>
+              <Route path="/services">
+                <PageTransition>
+                  <ServicesPage />
+                </PageTransition>
+              </Route>
+              <Route path="/pricing">
+                <PageTransition>
+                  <PricingPage />
+                </PageTransition>
+              </Route>
+              <Route path="/about">
+                <PageTransition>
+                  <AboutPage />
+                </PageTransition>
+              </Route>
+              <Route path="/contact">
+                <PageTransition>
+                  <ContactPage />
+                </PageTransition>
+              </Route>
+              <Route path="/login">
+                <PageTransition>
+                  <LoginPage />
+                </PageTransition>
+              </Route>
+              <Route path="/register">
+                <PageTransition>
+                  <RegisterPage />
+                </PageTransition>
+              </Route>
+              <Route path="/dashboard">
+                <PageTransition>
+                  <DashboardPage />
+                </PageTransition>
+              </Route>
+              <Route path="/customer-dashboard">
+                <PageTransition>
+                  <CustomerDashboard />
+                </PageTransition>
+              </Route>
+              <Route path="/admin-portal">
+                <PageTransition>
+                  <AdminPortal />
+                </PageTransition>
+              </Route>
+              <Route path="/privacy-policy">
+                <PageTransition>
+                  <PrivacyPolicy />
+                </PageTransition>
+              </Route>
+              <Route path="/terms">
+                <PageTransition>
+                  <TermsPage />
+                </PageTransition>
+              </Route>
+              <Route path="/help-center">
+                <PageTransition>
+                  <HelpCenter />
+                </PageTransition>
+              </Route>
+              <Route path="/blog">
+                <PageTransition>
+                  <BlogPage />
+                </PageTransition>
+              </Route>
+              <Route path="/careers">
+                <PageTransition>
+                  <CareersPage />
+                </PageTransition>
+              </Route>
+              <Route path="/docs">
+                <PageTransition>
+                  <DocsPage />
+                </PageTransition>
+              </Route>
+              <Route path="/checkout">
+                <PageTransition>
+                  <CheckoutPage />
+                </PageTransition>
+              </Route>
+              <Route>
+                <PageTransition>
+                  <NotFoundPage />
+                </PageTransition>
+              </Route>
+            </Router>
           </div>
           <Toaster />
-        </Router>
+        </div>
       </CartProvider>
     </QueryClientProvider>
   );
