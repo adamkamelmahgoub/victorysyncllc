@@ -1,4 +1,3 @@
-
 export async function apiJSON<T>(method: string, url: string, body?: unknown, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     method,
