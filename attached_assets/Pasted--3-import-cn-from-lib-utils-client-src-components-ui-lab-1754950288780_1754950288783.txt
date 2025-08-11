@@ -1,0 +1,1005 @@
+
+3 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/label.tsx:5:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+5 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/menubar.tsx:7:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+7 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/navigation-menu.tsx:6:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+6 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/pagination.tsx:4:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+4 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/pagination.tsx:5:45 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+5 import { ButtonProps, buttonVariants } from "@/components/ui/button"
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/components/ui/pagination.tsx:68:5 - error TS2783: 'size' is specified more than once, so this usage will be overwritten.
+
+68     size="default"
+       ~~~~~~~~~~~~~~
+
+  client/src/components/ui/pagination.tsx:70:5
+    70     {...props}
+           ~~~~~~~~~~
+    This spread always overwrites this property.
+
+client/src/components/ui/pagination.tsx:84:5 - error TS2783: 'size' is specified more than once, so this usage will be overwritten.
+
+84     size="default"
+       ~~~~~~~~~~~~~~
+
+  client/src/components/ui/pagination.tsx:86:5
+    86     {...props}
+           ~~~~~~~~~~
+    This spread always overwrites this property.
+
+client/src/components/ui/popover.tsx:4:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+4 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/progress.tsx:6:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+6 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/radio-group.tsx:5:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+5 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/resizable.tsx:6:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+6 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/scroll-area.tsx:4:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+4 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/select.tsx:7:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+7 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/separator.tsx:4:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+4 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/sheet.tsx:8:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+8 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/sidebar.tsx:6:29 - error TS2307: Cannot find module '@/hooks/use-mobile' or its corresponding type declarations.
+
+6 import { useIsMobile } from "@/hooks/use-mobile"
+                              ~~~~~~~~~~~~~~~~~~~~
+
+client/src/components/ui/sidebar.tsx:7:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+7 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/sidebar.tsx:8:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+8 import { Button } from "@/components/ui/button"
+                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/components/ui/sidebar.tsx:9:23 - error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+
+9 import { Input } from "@/components/ui/input"
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/components/ui/sidebar.tsx:10:27 - error TS2307: Cannot find module '@/components/ui/separator' or its corresponding type declarations.
+
+10 import { Separator } from "@/components/ui/separator"
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/components/ui/sidebar.tsx:17:8 - error TS2307: Cannot find module '@/components/ui/sheet' or its corresponding type declarations.
+
+17 } from "@/components/ui/sheet"
+          ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/components/ui/sidebar.tsx:18:26 - error TS2307: Cannot find module '@/components/ui/skeleton' or its corresponding type declarations.
+
+18 import { Skeleton } from "@/components/ui/skeleton"
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/components/ui/sidebar.tsx:24:8 - error TS2307: Cannot find module '@/components/ui/tooltip' or its corresponding type declarations.
+
+24 } from "@/components/ui/tooltip"
+          ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/components/ui/sidebar.tsx:283:17 - error TS7006: Parameter 'event' implicitly has an 'any' type.
+
+283       onClick={(event) => {
+                    ~~~~~
+
+client/src/components/ui/skeleton.tsx:1:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+1 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/slider.tsx:4:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+4 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/switch.tsx:4:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+4 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/table.tsx:3:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+3 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/tabs.tsx:4:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+4 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/textarea.tsx:3:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+3 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/toast.tsx:6:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+6 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/toaster.tsx:1:26 - error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+
+1 import { useToast } from "@/hooks/use-toast"
+                           ~~~~~~~~~~~~~~~~~~~
+
+client/src/components/ui/toaster.tsx:9:8 - error TS2307: Cannot find module '@/components/ui/toast' or its corresponding type declarations.
+
+9 } from "@/components/ui/toast"
+         ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/components/ui/toaster.tsx:16:31 - error TS7031: Binding element 'id' implicitly has an 'any' type.
+
+16       {toasts.map(function ({ id, title, description, action, ...props }) {
+                                 ~~
+
+client/src/components/ui/toaster.tsx:16:35 - error TS7031: Binding element 'title' implicitly has an 'any' type.
+
+16       {toasts.map(function ({ id, title, description, action, ...props }) {
+                                     ~~~~~
+
+client/src/components/ui/toaster.tsx:16:42 - error TS7031: Binding element 'description' implicitly has an 'any' type.
+
+16       {toasts.map(function ({ id, title, description, action, ...props }) {
+                                            ~~~~~~~~~~~
+
+client/src/components/ui/toaster.tsx:16:55 - error TS7031: Binding element 'action' implicitly has an 'any' type.
+
+16       {toasts.map(function ({ id, title, description, action, ...props }) {
+                                                         ~~~~~~
+
+client/src/components/ui/toggle-group.tsx:7:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+7 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/toggle-group.tsx:8:32 - error TS2307: Cannot find module '@/components/ui/toggle' or its corresponding type declarations.
+
+8 import { toggleVariants } from "@/components/ui/toggle"
+                                 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/components/ui/toggle-group.tsx:22:4 - error TS2322: Type '{ children: Element; ref: ForwardedRef<HTMLDivElement>; className: any; } | { children: Element; ref: ForwardedRef<HTMLDivElement>; className: any; }' is not assignable to type 'IntrinsicAttributes & ((ToggleGroupSingleProps | ToggleGroupMultipleProps) & RefAttributes<HTMLDivElement>)'.
+  Type '{ children: Element; ref: ForwardedRef<HTMLDivElement>; className: any; }' is not assignable to type 'IntrinsicAttributes & ((ToggleGroupSingleProps | ToggleGroupMultipleProps) & RefAttributes<HTMLDivElement>)'.
+    Property 'type' is missing in type '{ children: Element; ref: ForwardedRef<HTMLDivElement>; className: any; }' but required in type 'ToggleGroupMultipleProps'.
+
+22   <ToggleGroupPrimitive.Root
+      ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  node_modules/@radix-ui/react-toggle-group/dist/index.d.mts:12:5
+    12     type: 'multiple';
+           ~~~~
+    'type' is declared here.
+
+client/src/components/ui/toggle-group.tsx:43:6 - error TS2741: Property 'value' is missing in type '{ children: any; ref: ForwardedRef<HTMLButtonElement>; className: any; }' but required in type 'Omit<ToggleGroupItemImplProps, "pressed">'.
+
+43     <ToggleGroupPrimitive.Item
+        ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  node_modules/@radix-ui/react-toggle-group/dist/index.d.mts:70:5
+    70     value: string;
+           ~~~~~
+    'value' is declared here.
+
+client/src/components/ui/toggle.tsx:5:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+5 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/components/ui/tooltip.tsx:6:20 - error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+
+6 import { cn } from "@/lib/utils"
+                     ~~~~~~~~~~~~~
+
+client/src/hooks/use-toast.ts:6:8 - error TS2307: Cannot find module '@/components/ui/toast' or its corresponding type declarations.
+
+6 } from "@/components/ui/toast"
+         ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/hooks/use-toast.ts:158:22 - error TS7006: Parameter 'open' implicitly has an 'any' type.
+
+158       onOpenChange: (open) => {
+                         ~~~~
+
+client/src/hooks/useCart.tsx:1:32 - error TS2307: Cannot find module '@/contexts/CartContext' or its corresponding type declarations.
+
+1 import { useCartContext } from '@/contexts/CartContext';
+                                 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/hooks/useCart.tsx:2:26 - error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+
+2 import { useToast } from '@/hooks/use-toast';
+                           ~~~~~~~~~~~~~~~~~~~
+
+client/src/hooks/useCart.tsx:37:32 - error TS7006: Parameter 'sum' implicitly has an 'any' type.
+
+37     return state.items.reduce((sum, item) => sum + item.quantity, 0);
+                                  ~~~
+
+client/src/hooks/useCart.tsx:37:37 - error TS7006: Parameter 'item' implicitly has an 'any' type.
+
+37     return state.items.reduce((sum, item) => sum + item.quantity, 0);
+                                       ~~~~
+
+client/src/lib/queryClient.ts:3:25 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './http.js'?
+
+3 import { apiJSON } from "./http";
+                          ~~~~~~~~
+
+client/src/pages/about.tsx:2:35 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+2 import { Card, CardContent } from '@/components/ui/card';
+                                    ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/about.tsx:3:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+3 import { Button } from '@/components/ui/button';
+                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-login.tsx:3:75 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+3 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+                                                                            ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-login.tsx:4:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+4 import { Button } from '@/components/ui/button';
+                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-login.tsx:5:23 - error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+
+5 import { Input } from '@/components/ui/input';
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-login.tsx:6:23 - error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+
+6 import { Label } from '@/components/ui/label';
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-login.tsx:7:41 - error TS2307: Cannot find module '@/components/ui/alert' or its corresponding type declarations.
+
+7 import { Alert, AlertDescription } from '@/components/ui/alert';
+                                          ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-portal.tsx:4:58 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+4 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+                                                           ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-portal.tsx:5:23 - error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+
+5 import { Badge } from '@/components/ui/badge';
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-portal.tsx:6:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+6 import { Button } from '@/components/ui/button';
+                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-portal.tsx:7:23 - error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+
+7 import { Input } from '@/components/ui/input';
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-portal.tsx:8:23 - error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+
+8 import { Label } from '@/components/ui/label';
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-portal.tsx:9:58 - error TS2307: Cannot find module '@/components/ui/tabs' or its corresponding type declarations.
+
+9 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+                                                           ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-portal.tsx:10:66 - error TS2307: Cannot find module '@/components/ui/dialog' or its corresponding type declarations.
+
+10 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-portal.tsx:11:79 - error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+
+11 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-portal.tsx:12:132 - error TS2307: Cannot find module '@/components/ui/dropdown-menu' or its corresponding type declarations.
+
+12 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+                                                                                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-portal.tsx:34:28 - error TS2307: Cannot find module '@/lib/queryClient' or its corresponding type declarations.
+
+34 import { apiRequest } from '@/lib/queryClient';
+                              ~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/admin-portal.tsx:221:30 - error TS7006: Parameter 'e' implicitly has an 'any' type.
+
+221                   onChange={(e) => setCredentials(prev => ({ ...prev, username: e.target.value }))}
+                                 ~
+
+client/src/pages/admin-portal.tsx:231:30 - error TS7006: Parameter 'e' implicitly has an 'any' type.
+
+231                   onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
+                                 ~
+
+client/src/pages/admin-portal.tsx:468:32 - error TS7006: Parameter 'e' implicitly has an 'any' type.
+
+468                     onChange={(e) => setSearchTerm(e.target.value)}
+                                   ~
+
+client/src/pages/checkout.tsx:9:25 - error TS2307: Cannot find module '@/hooks/useCart' or its corresponding type declarations.
+
+9 import { useCart } from "@/hooks/useCart";
+                          ~~~~~~~~~~~~~~~~~
+
+client/src/pages/checkout.tsx:10:25 - error TS2307: Cannot find module '@/hooks/useAuth' or its corresponding type declarations.
+
+10 import { useAuth } from "@/hooks/useAuth";
+                           ~~~~~~~~~~~~~~~~~
+
+client/src/pages/checkout.tsx:11:28 - error TS2307: Cannot find module '@/lib/queryClient' or its corresponding type declarations.
+
+11 import { apiRequest } from "@/lib/queryClient";
+                              ~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/checkout.tsx:12:26 - error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+
+12 import { useToast } from "@/hooks/use-toast";
+                            ~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/checkout.tsx:13:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+13 import { Button } from "@/components/ui/button";
+                          ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/checkout.tsx:14:58 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+14 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+                                                            ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/checkout.tsx:15:27 - error TS2307: Cannot find module '@/components/ui/separator' or its corresponding type declarations.
+
+15 import { Separator } from "@/components/ui/separator";
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/checkout.tsx:58:29 - error TS7006: Parameter 'item' implicitly has an 'any' type.
+
+58           items: items.map((item) => ({
+                               ~~~~
+
+client/src/pages/checkout.tsx:151:31 - error TS7006: Parameter 'item' implicitly has an 'any' type.
+
+151             items: items.map((item) => ({
+                                  ~~~~
+
+client/src/pages/checkout.tsx:291:27 - error TS7006: Parameter 'item' implicitly has an 'any' type.
+
+291               {items.map((item) => (
+                              ~~~~
+
+client/src/pages/contact.tsx:2:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+2 import { Button } from '@/components/ui/button';
+                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/contact.tsx:3:35 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+3 import { Card, CardContent } from '@/components/ui/card';
+                                    ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/contact.tsx:4:23 - error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+
+4 import { Input } from '@/components/ui/input';
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/contact.tsx:5:26 - error TS2307: Cannot find module '@/components/ui/textarea' or its corresponding type declarations.
+
+5 import { Textarea } from '@/components/ui/textarea';
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/contact.tsx:6:23 - error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+
+6 import { Label } from '@/components/ui/label';
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/contact.tsx:9:47 - error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+
+9 import { insertContactSubmissionSchema } from '@shared/schema';
+                                                ~~~~~~~~~~~~~~~~
+
+client/src/pages/contact.tsx:11:28 - error TS2307: Cannot find module '@/lib/queryClient' or its corresponding type declarations.
+
+11 import { apiRequest } from '@/lib/queryClient';
+                              ~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/contact.tsx:12:26 - error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+
+12 import { useToast } from '@/hooks/use-toast';
+                            ~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/customer-dashboard.tsx:4:25 - error TS2307: Cannot find module '@/lib/http' or its corresponding type declarations.
+
+4 import { apiJSON } from '@/lib/http';
+                          ~~~~~~~~~~~~
+
+client/src/pages/customer-dashboard.tsx:5:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+5 import { Button } from '@/components/ui/button';
+                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/customer-dashboard.tsx:6:58 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+6 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+                                                           ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/customer-dashboard.tsx:7:58 - error TS2307: Cannot find module '@/components/ui/tabs' or its corresponding type declarations.
+
+7 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+                                                           ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/customer-dashboard.tsx:8:23 - error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+
+8 import { Badge } from '@/components/ui/badge';
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/customer-dashboard.tsx:25:25 - error TS2307: Cannot find module '@/hooks/useAuth' or its corresponding type declarations.
+
+25 import { useAuth } from '@/hooks/useAuth';
+                           ~~~~~~~~~~~~~~~~~
+
+client/src/pages/home.tsx:2:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+2 import { Button } from '@/components/ui/button';
+                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/home.tsx:3:35 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+3 import { Card, CardContent } from '@/components/ui/card';
+                                    ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/login.tsx:6:29 - error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+
+6 import { loginSchema } from "@shared/schema";
+                              ~~~~~~~~~~~~~~~~
+
+client/src/pages/login.tsx:7:28 - error TS2307: Cannot find module '@/lib/queryClient' or its corresponding type declarations.
+
+7 import { apiRequest } from "@/lib/queryClient";
+                             ~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/login.tsx:8:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+8 import { Button } from "@/components/ui/button";
+                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/login.tsx:9:23 - error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+
+9 import { Input } from "@/components/ui/input";
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/login.tsx:10:23 - error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+
+10 import { Label } from "@/components/ui/label";
+                         ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/login.tsx:11:75 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+11 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+                                                                             ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/login.tsx:12:26 - error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+
+12 import { useToast } from "@/hooks/use-toast";
+                            ~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/login.tsx:13:41 - error TS2307: Cannot find module '@/components/ui/alert' or its corresponding type declarations.
+
+13 import { Alert, AlertDescription } from "@/components/ui/alert";
+                                           ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/not-found.tsx:1:35 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+1 import { Card, CardContent } from "@/components/ui/card";
+                                    ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/pricing.tsx:3:87 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+3 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+                                                                                        ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/pricing.tsx:4:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+4 import { Button } from "@/components/ui/button";
+                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/pricing.tsx:5:23 - error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+
+5 import { Badge } from "@/components/ui/badge";
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/pricing.tsx:7:25 - error TS2307: Cannot find module '@/lib/http' or its corresponding type declarations.
+
+7 import { apiJSON } from "@/lib/http";
+                          ~~~~~~~~~~~~
+
+client/src/pages/pricing.tsx:55:26 - error TS7006: Parameter 'pkg' implicitly has an 'any' type.
+
+55           {packages.map((pkg) => (
+                            ~~~
+
+client/src/pages/register.tsx:6:36 - error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+
+6 import { registerUserSchema } from "@shared/schema";
+                                     ~~~~~~~~~~~~~~~~
+
+client/src/pages/register.tsx:7:28 - error TS2307: Cannot find module '@/lib/queryClient' or its corresponding type declarations.
+
+7 import { apiRequest } from "@/lib/queryClient";
+                             ~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/register.tsx:8:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+8 import { Button } from "@/components/ui/button";
+                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/register.tsx:9:23 - error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+
+9 import { Input } from "@/components/ui/input";
+                        ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/register.tsx:10:23 - error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+
+10 import { Label } from "@/components/ui/label";
+                         ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/register.tsx:11:75 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+11 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+                                                                             ~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/register.tsx:12:26 - error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+
+12 import { useToast } from "@/hooks/use-toast";
+                            ~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/register.tsx:13:41 - error TS2307: Cannot find module '@/components/ui/alert' or its corresponding type declarations.
+
+13 import { Alert, AlertDescription } from "@/components/ui/alert";
+                                           ~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/services.tsx:2:24 - error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+
+2 import { Button } from '@/components/ui/button';
+                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+client/src/pages/services.tsx:3:35 - error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+
+3 import { Card, CardContent } from '@/components/ui/card';
+                                    ~~~~~~~~~~~~~~~~~~~~~~
+
+server/__tests__/schema-exports.spec.ts:6:8 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../shared/schema.js'?
+
+6 } from '../../shared/schema';
+         ~~~~~~~~~~~~~~~~~~~~~
+
+server/auth/passport.ts:3:20 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../db.js'?
+
+3 import { db } from '../db';
+                     ~~~~~~~
+
+server/auth/passport.ts:4:23 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../shared/schema.js'?
+
+4 import { users } from '../../shared/schema';
+                        ~~~~~~~~~~~~~~~~~~~~~
+
+server/auth/passport.ts:6:35 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../lib/jwt.js'?
+
+6 import { generateTokenPair } from '../lib/jwt';
+                                    ~~~~~~~~~~~~
+
+server/db.ts:4:25 - error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+
+4 import * as schema from "@shared/schema";
+                          ~~~~~~~~~~~~~~~~
+
+server/index.ts:6:27 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './vite.js'?
+
+6 import { setupVite } from './vite';
+                            ~~~~~~~~
+
+server/lib/audit.ts:1:20 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../db.js'?
+
+1 import { db } from '../db';
+                     ~~~~~~~
+
+server/lib/audit.ts:2:27 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../shared/schema.js'?
+
+2 import { auditLogs } from '../../shared/schema';
+                            ~~~~~~~~~~~~~~~~~~~~~
+
+server/lib/jwt.ts:4:27 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../shared/schema.js'?
+
+4 import type { User } from '../../shared/schema';
+                            ~~~~~~~~~~~~~~~~~~~~~
+
+server/lib/rbac.ts:2:20 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../db.js'?
+
+2 import { db } from '../db';
+                     ~~~~~~~
+
+server/lib/rbac.ts:3:82 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../shared/schema.js'?
+
+3 import { users, userRoles, roles, rolePermissions, permissions, type User } from '../../shared/schema';
+                                                                                   ~~~~~~~~~~~~~~~~~~~~~
+
+server/lib/rbac.ts:5:35 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './jwt.js'?
+
+5 import { verifyAccessToken } from './jwt';
+                                    ~~~~~~~
+
+server/lib/rbac.ts:74:50 - error TS7006: Parameter 'p' implicitly has an 'any' type.
+
+74       const hasPermission = userPermissions.some(p => p.permissions.key === permission);
+                                                    ~
+
+server/publicAuth.ts:5:25 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './storage.js'?
+
+5 import { storage } from './storage';
+                          ~~~~~~~~~~~
+
+server/publicAuth.ts:6:35 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './lib/jwt.js'?
+
+6 import { generateTokenPair } from './lib/jwt';
+                                    ~~~~~~~~~~~
+
+server/publicAuth.ts:7:49 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../shared/schema.js'?
+
+7 import { loginSchema, registerUserSchema } from '../shared/schema';
+                                                  ~~~~~~~~~~~~~~~~~~
+
+server/routes.ts:4:25 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './storage.js'?
+
+4 import { storage } from './storage';
+                          ~~~~~~~~~~~
+
+server/routes.ts:5:24 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './routes/auth.js'?
+
+5 import authRoutes from './routes/auth';
+                         ~~~~~~~~~~~~~~~
+
+server/routes.ts:6:25 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './routes/admin.js'?
+
+6 import adminRoutes from './routes/admin';
+                          ~~~~~~~~~~~~~~~~
+
+server/routes.ts:7:23 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './routes/kpi.js'?
+
+7 import kpiRoutes from './routes/kpi';
+                        ~~~~~~~~~~~~~~
+
+server/routes.ts:8:32 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './routes/integrations.js'?
+
+8 import integrationsRoutes from './routes/integrations';
+                                 ~~~~~~~~~~~~~~~~~~~~~~~
+
+server/routes.ts:9:27 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './routes/billing.js'?
+
+9 import billingRoutes from './routes/billing';
+                            ~~~~~~~~~~~~~~~~~~
+
+server/routes/admin.ts:4:25 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../storage.js'?
+
+4 import { storage } from '../storage';
+                          ~~~~~~~~~~~~
+
+server/routes/admin.ts:23:38 - error TS7006: Parameter 'u' implicitly has an 'any' type.
+
+23     const activeUsers = users.filter(u => u.isActive).length;
+                                        ~
+
+server/routes/admin.ts:24:41 - error TS7006: Parameter 'sum' implicitly has an 'any' type.
+
+24     const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total), 0);
+                                           ~~~
+
+server/routes/admin.ts:24:46 - error TS7006: Parameter 'order' implicitly has an 'any' type.
+
+24     const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total), 0);
+                                                ~~~~~
+
+server/routes/admin.ts:49:38 - error TS7006: Parameter 'user' implicitly has an 'any' type.
+
+49     const usersWithStats = users.map(user => {
+                                        ~~~~
+
+server/routes/admin.ts:50:40 - error TS7006: Parameter 'order' implicitly has an 'any' type.
+
+50       const userOrders = orders.filter(order => order.userId === user.id.toString());
+                                          ~~~~~
+
+server/routes/admin.ts:51:45 - error TS7006: Parameter 'sum' implicitly has an 'any' type.
+
+51       const totalSpent = userOrders.reduce((sum, order) => sum + parseFloat(order.total), 0);
+                                               ~~~
+
+server/routes/admin.ts:51:50 - error TS7006: Parameter 'order' implicitly has an 'any' type.
+
+51       const totalSpent = userOrders.reduce((sum, order) => sum + parseFloat(order.total), 0);
+                                                    ~~~~~
+
+server/routes/auth.ts:6:20 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../db.js'?
+
+6 import { db } from '../db';
+                     ~~~~~~~
+
+server/routes/auth.ts:7:79 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../shared/schema.js'?
+
+7 import { users, sessions, accessCodes, organizations, userRoles, roles } from '../../shared/schema';
+                                                                                ~~~~~~~~~~~~~~~~~~~~~
+
+server/routes/auth.ts:9:55 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../lib/jwt.js'?
+
+9 import { generateTokenPair, verifyRefreshToken } from '../lib/jwt';
+                                                        ~~~~~~~~~~~~
+
+server/routes/auth.ts:10:55 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../lib/rbac.js'?
+
+10 import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
+                                                         ~~~~~~~~~~~~~
+
+server/routes/auth.ts:11:47 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../lib/audit.js'?
+
+11 import { createAuditLog, AUDIT_ACTIONS } from '../lib/audit';
+                                                 ~~~~~~~~~~~~~~
+
+server/routes/auth.ts:12:57 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../lib/crypto.js'?
+
+12 import { generateSecureToken, generateAccessCode } from '../lib/crypto';
+                                                           ~~~~~~~~~~~~~~~
+
+server/routes/auth.ts:13:32 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../scripts/seedSuperAdmin.js'?
+
+13 import { seedSuperAdmin } from '../scripts/seedSuperAdmin';
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+server/routes/auth.ts:364:33 - error TS7006: Parameter 'tx' implicitly has an 'any' type.
+
+364     await db.transaction(async (tx) => {
+                                    ~~
+
+server/routes/billing.ts:2:55 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../lib/rbac.js'?
+
+2 import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
+                                                        ~~~~~~~~~~~~~
+
+server/routes/integrations.ts:2:55 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../lib/rbac.js'?
+
+2 import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
+                                                        ~~~~~~~~~~~~~
+
+server/routes/kpi.ts:2:55 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../lib/rbac.js'?
+
+2 import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
+                                                        ~~~~~~~~~~~~~
+
+server/scripts/seedSuperAdmin.ts:2:20 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../db.js'?
+
+2 import { db } from '../db';
+                     ~~~~~~~
+
+server/scripts/seedSuperAdmin.ts:3:71 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../shared/schema.js'?
+
+3 import { users, permissions, roles, rolePermissions, userRoles } from '../../shared/schema';
+                                                                        ~~~~~~~~~~~~~~~~~~~~~
+
+server/scripts/seedSuperAdmin.ts:81:56 - error TS7006: Parameter 'p' implicitly has an 'any' type.
+
+81   const existingKeys = new Set(existingPermissions.map(p => p.key));
+                                                          ~
+
+server/services/integrations/hubspot.ts:2:33 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './base.js'?
+
+2 import { BaseIntegration } from './base';
+                                  ~~~~~~~~
+
+server/services/integrations/hubspot.ts:13:12 - error TS2339: Property 'apiKey' does not exist on type 'HubSpotIntegration'.
+
+13       this.apiKey = credentials.apiKey;
+              ~~~~~~
+
+server/services/integrations/hubspot.ts:16:44 - error TS2339: Property 'baseUrl' does not exist on type 'HubSpotIntegration'.
+
+16       const response = await fetch(`${this.baseUrl}/crm/v3/objects/contacts?limit=1`, {
+                                              ~~~~~~~
+
+server/services/integrations/hubspot.ts:18:43 - error TS2339: Property 'apiKey' does not exist on type 'HubSpotIntegration'.
+
+18           'Authorization': `Bearer ${this.apiKey}`,
+                                             ~~~~~~
+
+server/services/integrations/hubspot.ts:31:10 - error TS2339: Property 'apiKey' does not exist on type 'HubSpotIntegration'.
+
+31     this.apiKey = undefined;
+            ~~~~~~
+
+server/services/integrations/hubspot.ts:36:15 - error TS2339: Property 'apiKey' does not exist on type 'HubSpotIntegration'.
+
+36     if (!this.apiKey) throw new Error('Not connected to HubSpot');
+                 ~~~~~~
+
+server/services/integrations/hubspot.ts:45:12 - error TS2339: Property 'lastSync' does not exist on type 'HubSpotIntegration'.
+
+45       this.lastSync = new Date();
+              ~~~~~~~~
+
+server/services/integrations/hubspot.ts:46:48 - error TS2339: Property 'lastSync' does not exist on type 'HubSpotIntegration'.
+
+46       return { contacts, deals, lastSync: this.lastSync };
+                                                  ~~~~~~~~
+
+server/services/integrations/hubspot.ts:54:15 - error TS2339: Property 'apiKey' does not exist on type 'HubSpotIntegration'.
+
+54     if (!this.apiKey) throw new Error('Not connected to HubSpot');
+                 ~~~~~~
+
+server/services/integrations/hubspot.ts:69:42 - error TS2339: Property 'baseUrl' does not exist on type 'HubSpotIntegration'.
+
+69     const response = await fetch(`${this.baseUrl}/crm/v3/objects/contacts`, {
+                                            ~~~~~~~
+
+server/services/integrations/hubspot.ts:71:41 - error TS2339: Property 'apiKey' does not exist on type 'HubSpotIntegration'.
+
+71         'Authorization': `Bearer ${this.apiKey}`,
+                                           ~~~~~~
+
+server/services/integrations/hubspot.ts:79:42 - error TS2339: Property 'baseUrl' does not exist on type 'HubSpotIntegration'.
+
+79     const response = await fetch(`${this.baseUrl}/crm/v3/objects/deals`, {
+                                            ~~~~~~~
+
+server/services/integrations/hubspot.ts:81:41 - error TS2339: Property 'apiKey' does not exist on type 'HubSpotIntegration'.
+
+81         'Authorization': `Bearer ${this.apiKey}`,
+                                           ~~~~~~
+
+server/storage.ts:17:8 - error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+
+17 } from "@shared/schema";
+          ~~~~~~~~~~~~~~~~
+
+server/storage.ts:18:20 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './db.js'?
+
+18 import { db } from "./db";
+                      ~~~~~~
+
+
+Found 238 errors in 80 files.
+
+Errors  Files
+    26  client/src/App.tsx:2
+     3  client/src/components/cart-modal.tsx:2
+     4  client/src/components/navigation.tsx:3
+     1  client/src/components/ui/accordion.tsx:5
+     2  client/src/components/ui/alert-dialog.tsx:4
+     1  client/src/components/ui/alert.tsx:4
+     1  client/src/components/ui/avatar.tsx:6
+     1  client/src/components/ui/badge.tsx:4
+     1  client/src/components/ui/breadcrumb.tsx:5
+     1  client/src/components/ui/button.tsx:5
+     2  client/src/components/ui/calendar.tsx:5
+     1  client/src/components/ui/card.tsx:3
+     2  client/src/components/ui/carousel.tsx:7
+     1  client/src/components/ui/chart.tsx:6
+     1  client/src/components/ui/checkbox.tsx:5
+     2  client/src/components/ui/command.tsx:6
+     1  client/src/components/ui/context-menu.tsx:5
+     1  client/src/components/ui/dialog.tsx:7
+     1  client/src/components/ui/drawer.tsx:6
+     1  client/src/components/ui/dropdown-menu.tsx:5
+     2  client/src/components/ui/form.tsx:15
+     1  client/src/components/ui/hover-card.tsx:6
+     1  client/src/components/ui/input-otp.tsx:5
+     1  client/src/components/ui/input.tsx:3
+     1  client/src/components/ui/label.tsx:5
+     1  client/src/components/ui/menubar.tsx:7
+     1  client/src/components/ui/navigation-menu.tsx:6
+     4  client/src/components/ui/pagination.tsx:4
+     1  client/src/components/ui/popover.tsx:4
+     1  client/src/components/ui/progress.tsx:6
+     1  client/src/components/ui/radio-group.tsx:5
+     1  client/src/components/ui/resizable.tsx:6
+     1  client/src/components/ui/scroll-area.tsx:4
+     1  client/src/components/ui/select.tsx:7
+     1  client/src/components/ui/separator.tsx:4
+     1  client/src/components/ui/sheet.tsx:8
+     9  client/src/components/ui/sidebar.tsx:6
+     1  client/src/components/ui/skeleton.tsx:1
+     1  client/src/components/ui/slider.tsx:4
+     1  client/src/components/ui/switch.tsx:4
+     1  client/src/components/ui/table.tsx:3
+     1  client/src/components/ui/tabs.tsx:4
+     1  client/src/components/ui/textarea.tsx:3
+     1  client/src/components/ui/toast.tsx:6
+     6  client/src/components/ui/toaster.tsx:1
+     4  client/src/components/ui/toggle-group.tsx:7
+     1  client/src/components/ui/toggle.tsx:5
+     1  client/src/components/ui/tooltip.tsx:6
+     2  client/src/hooks/use-toast.ts:6
+     4  client/src/hooks/useCart.tsx:1
+     1  client/src/lib/queryClient.ts:3
+     2  client/src/pages/about.tsx:2
+     5  client/src/pages/admin-login.tsx:3
+    13  client/src/pages/admin-portal.tsx:4
+    10  client/src/pages/checkout.tsx:9
+     8  client/src/pages/contact.tsx:2
+     6  client/src/pages/customer-dashboard.tsx:4
+     2  client/src/pages/home.tsx:2
+     8  client/src/pages/login.tsx:6
+     1  client/src/pages/not-found.tsx:1
+     5  client/src/pages/pricing.tsx:3
+     8  client/src/pages/register.tsx:6
+     2  client/src/pages/services.tsx:2
+     1  server/__tests__/schema-exports.spec.ts:6
+     3  server/auth/passport.ts:3
+     1  server/db.ts:4
+     1  server/index.ts:6
+     2  server/lib/audit.ts:1
+     1  server/lib/jwt.ts:4
+     4  server/lib/rbac.ts:2
+     3  server/publicAuth.ts:5
+     6  server/routes.ts:4
+     8  server/routes/admin.ts:4
+     8  server/routes/auth.ts:6
+     1  server/routes/billing.ts:2
+     1  server/routes/integrations.ts:2
+     1  server/routes/kpi.ts:2
+     3  server/scripts/seedSuperAdmin.ts:2
+    13  server/services/integrations/hubspot.ts:2
+     2  server/storage.ts:17
