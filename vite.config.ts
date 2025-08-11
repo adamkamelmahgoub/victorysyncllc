@@ -17,6 +17,12 @@ const replitHost =
 export default defineConfig({
   root: 'client',
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': '/src',
+      '@shared': '../shared'
+    }
+  },
   server: {
     host: true,                                     // listen on 0.0.0.0 for Replit
     port: Number(process.env.PORT) || 5173,
