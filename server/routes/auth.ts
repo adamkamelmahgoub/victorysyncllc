@@ -1,6 +1,4 @@
-
-import { Router } from 'express';
-import { z } from 'zod';
+import { Router, Request, Response, NextFunction } from 'express';
 import argon2 from 'argon2';
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
@@ -55,7 +53,7 @@ router.post('/login', async (req, res) => {
         ip: req.ip,
         userAgent: req.get('User-Agent'),
       });
-      
+
       return res.status(401).json({ 
         ok: false, 
         error: 'INVALID_CREDENTIALS', 
@@ -75,7 +73,7 @@ router.post('/login', async (req, res) => {
         ip: req.ip,
         userAgent: req.get('User-Agent'),
       });
-      
+
       return res.status(401).json({ 
         ok: false, 
         error: 'INVALID_CREDENTIALS', 
@@ -87,7 +85,7 @@ router.post('/login', async (req, res) => {
     if (user[0].twoFactorEnabled) {
       // Store temporary session for 2FA verification
       const tempToken = generateSecureToken();
-      
+
       // Store in cache or session table for 10 minutes
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
       await db.insert(sessions).values({
@@ -373,7 +371,7 @@ router.post('/register-with-code', async (req, res) => {
           slug: orgSlug,
           status: 'active',
         }).returning();
-        
+
         orgId = newOrg.id;
 
         // Create default roles for the new org
@@ -726,7 +724,7 @@ router.post('/refresh', async (req, res) => {
 router.post('/logout', authenticateJWT, async (req: AuthenticatedRequest, res) => {
   try {
     const refreshToken = req.cookies?.refreshToken;
-    
+
     if (refreshToken) {
       try {
         const decoded = verifyRefreshToken(refreshToken);

@@ -1,5 +1,7 @@
-
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
+import { apiJSON } from '@/lib/http';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,9 +22,7 @@ import {
   FileText,
   Activity
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface KPIData {
   callsToday: number;
@@ -40,7 +40,7 @@ interface KPIData {
 interface Order {
   id: number;
   packageName: string;
-  status: string;
+  status: 'pending' | 'active' | 'canceled';
   startDate: string;
   amount: number;
 }
@@ -59,7 +59,7 @@ export default function CustomerDashboard() {
 
   const { data: kpiData, isLoading: kpiLoading } = useQuery<KPIData>({
     queryKey: ['kpi'],
-    queryFn: () => apiRequest('GET', '/api/kpi'),
+    queryFn: () => apiJSON<KPIData>('GET', '/api/kpi'),
     refetchInterval: 30000, // Refresh every 30 seconds
     initialData: {
       callsToday: 0,
@@ -77,20 +77,20 @@ export default function CustomerDashboard() {
 
   const { data: orders = [], isLoading: ordersLoading } = useQuery<Order[]>({
     queryKey: ['orders'],
-    queryFn: () => apiRequest('GET', '/api/orders'),
+    queryFn: () => apiJSON<Order[]>('GET', '/api/orders'),
     initialData: []
   });
 
   const { data: integrations = [], isLoading: integrationsLoading } = useQuery<Integration[]>({
     queryKey: ['integrations'],
-    queryFn: () => apiRequest('GET', '/api/integrations'),
+    queryFn: () => apiJSON<Integration[]>('GET', '/api/integrations'),
     initialData: []
   });
 
   const handleAddSeat = async () => {
     try {
       // Implement seat purchase logic
-      const response = await apiRequest('POST', '/api/billing/seats', { quantity: 1 });
+      const response = await apiJSON<{ checkoutUrl: string }>('POST', '/api/billing/seats', { quantity: 1 });
       // Redirect to Stripe checkout or handle payment
       window.location.href = response.checkoutUrl;
     } catch (error) {
@@ -311,7 +311,7 @@ export default function CustomerDashboard() {
                         />
                       </div>
                     </div>
-                    
+
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span>Resolution Rate</span>

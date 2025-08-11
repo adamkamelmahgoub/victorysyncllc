@@ -1,7 +1,5 @@
-
-import { Router } from 'express';
-import { authenticateJWT, type AuthenticatedRequest } from '../publicAuth';
-import type { Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
+import { authenticateJWT, AuthenticatedRequest } from '../lib/jwt';
 
 const router = Router();
 
@@ -29,7 +27,7 @@ router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response
         type: 'crm'
       },
       {
-        id: 'salesforce-1', 
+        id: 'salesforce-1',
         name: 'Salesforce',
         status: 'disconnected',
         lastSync: 'Never',
@@ -39,7 +37,7 @@ router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response
         id: 'twilio-1',
         name: 'Twilio Flex',
         status: 'connected',
-        lastSync: '5 minutes ago', 
+        lastSync: '5 minutes ago',
         type: 'dialer'
       }
     ];
@@ -55,15 +53,15 @@ router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response
 router.post('/connect', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { platform, credentials } = req.body;
-    
+
     // In production, this would:
     // 1. Validate credentials
     // 2. Establish connection
     // 3. Save integration to database
     // 4. Start data sync
-    
-    res.json({ 
-      success: true, 
+
+    res.json({
+      success: true,
       message: `Successfully connected to ${platform}`,
       integrationId: `${platform}-${Date.now()}`
     });
@@ -77,15 +75,15 @@ router.post('/connect', authenticateJWT, async (req: AuthenticatedRequest, res: 
 router.delete('/:id', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    
+
     // In production, this would:
     // 1. Revoke access tokens
     // 2. Stop data sync
     // 3. Remove from database
-    
-    res.json({ 
-      success: true, 
-      message: 'Integration disconnected successfully' 
+
+    res.json({
+      success: true,
+      message: 'Integration disconnected successfully'
     });
   } catch (error) {
     console.error('Error disconnecting integration:', error);
@@ -97,12 +95,12 @@ router.delete('/:id', authenticateJWT, async (req: AuthenticatedRequest, res: Re
 router.post('/:id/sync', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    
+
     // In production, this would trigger a manual sync
-    
-    res.json({ 
-      success: true, 
-      message: 'Sync initiated successfully' 
+
+    res.json({
+      success: true,
+      message: 'Sync initiated successfully'
     });
   } catch (error) {
     console.error('Error syncing integration:', error);

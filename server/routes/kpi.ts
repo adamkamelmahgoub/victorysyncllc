@@ -1,7 +1,5 @@
-
-import { Router } from 'express';
-import { authenticateJWT, type AuthenticatedRequest } from '../publicAuth';
-import type { Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
+import { authenticateJWT, AuthenticatedRequest } from '../lib/jwt';
 
 const router = Router();
 
@@ -11,7 +9,7 @@ router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response
     const userId = req.user!.id;
     const now = new Date();
     const hour = now.getHours();
-    
+
     // In production, these would come from integrated CRM/dialer APIs
     const kpiData = {
       callsToday: Math.floor(Math.random() * 200) + 150,
@@ -38,7 +36,7 @@ router.get('/calls', authenticateJWT, async (req: AuthenticatedRequest, res: Res
   try {
     const now = new Date();
     const hour = now.getHours();
-    
+
     const callVolumeData = {
       currentHour: 20 + Math.floor(Math.random() * 15),
       lastHour: 18 + Math.floor(Math.random() * 12),

@@ -1,13 +1,13 @@
-
-import { pgTable, serial, text, timestamp, boolean, integer, decimal, json, varchar, unique, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, boolean, integer, decimal, json, unique, foreignKey, pgEnum } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Enums
 export const organizationStatusEnum = pgEnum('organization_status', ['active', 'suspended']);
 export const accessCodeStatusEnum = pgEnum('access_code_status', ['active', 'used', 'revoked', 'expired']);
 export const providerEnum = pgEnum('provider', [
-  'hubspot', 'salesforce', 'zoho', 'pipedrive', 
+  'hubspot', 'salesforce', 'zoho', 'pipedrive',
   'five9', 'ringcentral', 'twilio', 'aircall',
   'zendesk', 'freshdesk', 'intercom', 'helpscout'
 ]);
@@ -15,7 +15,7 @@ export const authTypeEnum = pgEnum('auth_type', ['oauth', 'apikey']);
 export const planEnum = pgEnum('plan', ['basic', 'growth', 'scale']);
 export const ticketStatusEnum = pgEnum('ticket_status', ['open', 'in_progress', 'resolved', 'closed']);
 export const ticketPriorityEnum = pgEnum('ticket_priority', ['low', 'medium', 'high', 'urgent']);
-export const orderStatusEnum = pgEnum('order_status', ['pending', 'processing', 'completed', 'cancelled', 'refunded']);
+export const orderStatusEnum = pgEnum("order_status", ["pending", "processing", "completed", "cancelled", "refunded"]);
 
 // Organizations
 export const organizations = pgTable('organizations', {
@@ -171,18 +171,17 @@ export const tickets = pgTable('tickets', {
 });
 
 // Orders
-export const orders = pgTable('orders', {
-  id: serial('id').primaryKey(),
-  orgId: integer('org_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
-  userId: text('user_id'), // For compatibility with storage interface
-  externalId: text('external_id').notNull(),
-  amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
-  currency: text('currency').notNull().default('USD'),
-  status: orderStatusEnum('status').notNull().default('pending'),
-  customerName: text('customer_name'),
-  customerEmail: text('customer_email'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  status: orderStatusEnum("status").notNull().default("pending"),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  currency: text("currency").notNull().default("USD"),
+  paymentIntentId: text("payment_intent_id"),
+  customerName: text("customer_name"),
+  customerEmail: text("customer_email"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
   uniqueExternalIdPerOrg: unique().on(table.orgId, table.externalId),
 }));
@@ -236,14 +235,22 @@ export const packages = pgTable('packages', {
 });
 
 // Order Items
-export const orderItems = pgTable('order_items', {
-  id: serial('id').primaryKey(),
-  orderId: integer('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
-  packageId: integer('package_id').notNull().references(() => packages.id),
-  quantity: integer('quantity').notNull().default(1),
-  priceAtTime: decimal('price_at_time', { precision: 10, scale: 2 }).notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+export const orderItems = pgTable("order_items", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull(),
+  packageId: integer("package_id").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  priceAtTime: decimal("price_at_time", { precision: 10, scale: 2 }).notNull(),
+}, (table) => [
+  foreignKey({
+    columns: [table.orderId],
+    foreignColumns: [orders.id],
+  }),
+  foreignKey({
+    columns: [table.packageId],
+    foreignColumns: [packages.id],
+  })
+]);
 
 // Contact Submissions
 export const contactSubmissions = pgTable('contact_submissions', {
@@ -502,7 +509,7 @@ export type Session = typeof sessions.$inferSelect;
 export type InsertSession = typeof sessions.$inferInsert;
 
 // Zod validation schemas
-export const insertContactSubmissionSchema = z.object({
+export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions, {
   firstName: z.string().min(1, "First name is required").max(100),
   lastName: z.string().min(1, "Last name is required").max(100),
   email: z.string().email("Invalid email address").max(320),
@@ -510,19 +517,58 @@ export const insertContactSubmissionSchema = z.object({
   message: z.string().min(1, "Message is required").max(2000),
 });
 
-export const insertOrderSchema = z.object({
+export const insertOrderSchema = createInsertSchema(orders, {
   orgId: z.number().int().positive(),
   externalId: z.string().min(1),
-  amount: z.string().regex(/^\d+\.?\d*$/),
+  total: z.string().regex(/^\d+\.?\d*$/),
   currency: z.string().length(3).default('USD'),
   status: z.enum(['pending', 'processing', 'completed', 'cancelled', 'refunded']).default('pending'),
   customerName: z.string().optional(),
   customerEmail: z.string().email().optional(),
 });
 
-export const insertOrderItemSchema = z.object({
+export const insertOrderItemSchema = createInsertSchema(orderItems, {
   orderId: z.number().int().positive(),
   packageId: z.number().int().positive(),
   quantity: z.number().int().positive().default(1),
   priceAtTime: z.string().regex(/^\d+\.?\d*$/),
 });
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+export const registerUserSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+export const createTicketSchema = createInsertSchema(tickets, {
+  subject: z.string().min(1),
+  description: z.string().optional(),
+});
+
+export const createPackageSchema = createInsertSchema(packages, {
+  name: z.string().min(1),
+  price: z.string().regex(/^\d+(\.\d{1,2})?$/),
+});
+
+// Select schemas
+export const organizationSelectSchema = createSelectSchema(organizations);
+export const userSelectSchema = createSelectSchema(users);
+export const roleSelectSchema = createSelectSchema(roles);
+export const permissionSelectSchema = createSelectSchema(permissions);
+export const accessCodeSelectSchema = createSelectSchema(accessCodes);
+export const apiCredentialSelectSchema = createSelectSchema(apiCredentials);
+export const auditLogSelectSchema = createSelectSchema(auditLogs);
+export const subscriptionSelectSchema = createSelectSchema(subscriptions);
+export const invoiceSelectSchema = createSelectSchema(invoices);
+export const ticketSelectSchema = createSelectSchema(tickets);
+export const packageSelectSchema = createSelectSchema(packages);
+export const orderSelectSchema = createSelectSchema(orders);
+export const orderItemSelectSchema = createSelectSchema(orderItems);
+export const kpiDailySelectSchema = createSelectSchema(kpisDaily);
+export const contactSubmissionSelectSchema = createSelectSchema(contactSubmissions);
+export const sessionSelectSchema = createSelectSchema(sessions);

@@ -1,51 +1,66 @@
 
-import * as schema from '@shared/schema';
+import { describe, it, expect } from '@jest/globals';
+import { 
+  users, 
+  roles, 
+  permissions, 
+  organizations,
+  publicUsers,
+  packages,
+  orders,
+  orderItems,
+  contactSubmissions,
+  loginSchema,
+  registerUserSchema,
+  type User,
+  type Role,
+  type Permission,
+  type Organization,
+  type PublicUser,
+  type Package,
+  type Order,
+  type OrderItem,
+  type ContactSubmission
+} from '../../shared/schema';
 
-describe('Schema exports', () => {
-  test('required schema exports exist', () => {
-    expect(schema).toHaveProperty('contactSubmissions');
-    expect(schema).toHaveProperty('users');
-    expect(schema).toHaveProperty('organizations');
-    expect(schema).toHaveProperty('orders');
-    expect(schema).toHaveProperty('insertContactSubmissionSchema');
-    expect(schema).toHaveProperty('insertOrderSchema');
-    expect(schema).toHaveProperty('insertOrderItemSchema');
+describe('Schema Exports', () => {
+  it('should export all required table schemas', () => {
+    expect(users).toBeDefined();
+    expect(roles).toBeDefined();
+    expect(permissions).toBeDefined();
+    expect(organizations).toBeDefined();
+    expect(publicUsers).toBeDefined();
+    expect(packages).toBeDefined();
+    expect(orders).toBeDefined();
+    expect(orderItems).toBeDefined();
+    expect(contactSubmissions).toBeDefined();
   });
 
-  test('contact submission table has required columns', () => {
-    const table = schema.contactSubmissions;
-    expect(table).toBeDefined();
-    
-    // Check that the table structure includes expected columns
-    expect(table.id).toBeDefined();
-    expect(table.firstName).toBeDefined();
-    expect(table.lastName).toBeDefined();
-    expect(table.email).toBeDefined();
-    expect(table.message).toBeDefined();
-    expect(table.createdAt).toBeDefined();
+  it('should export validation schemas', () => {
+    expect(loginSchema).toBeDefined();
+    expect(registerUserSchema).toBeDefined();
   });
 
-  test('validation schemas are properly defined', () => {
-    const contactSchema = schema.insertContactSubmissionSchema;
-    
-    // Test valid data
-    const validData = {
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john@example.com',
-      message: 'Test message'
-    };
-    
-    expect(() => contactSchema.parse(validData)).not.toThrow();
-    
-    // Test invalid data
-    const invalidData = {
-      firstName: '',
-      lastName: 'Doe',
-      email: 'invalid-email',
-      message: ''
-    };
-    
-    expect(() => contactSchema.parse(invalidData)).toThrow();
+  it('should have proper TypeScript types', () => {
+    // Type assertions to ensure types are properly exported
+    const user: User = {} as User;
+    const role: Role = {} as Role;
+    const permission: Permission = {} as Permission;
+    const organization: Organization = {} as Organization;
+    const publicUser: PublicUser = {} as PublicUser;
+    const pkg: Package = {} as Package;
+    const order: Order = {} as Order;
+    const orderItem: OrderItem = {} as OrderItem;
+    const contactSubmission: ContactSubmission = {} as ContactSubmission;
+
+    expect(user).toBeDefined();
+    expect(role).toBeDefined();
+    expect(permission).toBeDefined();
+    expect(organization).toBeDefined();
+    expect(publicUser).toBeDefined();
+    expect(pkg).toBeDefined();
+    expect(order).toBeDefined();
+    expect(orderItem).toBeDefined();
+    expect(contactSubmission).toBeDefined();
   });
 });

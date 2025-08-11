@@ -1,70 +1,43 @@
-
 import jwt from 'jsonwebtoken';
-import { generateSecureToken } from './crypto';
+import { Request, Response, NextFunction } from 'express';
+import { User } from '@shared/schema';
 
-interface TokenPayload {
-  userId: number;
-  orgId?: number;
-  isSuperAdmin: boolean;
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+export interface AuthenticatedRequest extends Request {
+  user?: User;
 }
 
-interface RefreshTokenPayload {
-  userId: number;
-  tokenId: string;
+export function generateToken(userId: number): string {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
 }
 
-export function generateAccessToken(payload: TokenPayload): string {
-  if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET is required');
+export function verifyToken(token: string): { userId: number } | null {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+    return decoded;
+  } catch {
+    return null;
   }
-  
-  return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: '15m',
-    issuer: 'victorysync',
-    audience: 'victorysync-users'
-  });
 }
 
-export function generateRefreshToken(payload: RefreshTokenPayload): string {
-  if (!process.env.REFRESH_SECRET) {
-    throw new Error('REFRESH_SECRET is required');
+export function authenticateJWT(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    res.status(401).json({ error: 'Access denied. No token provided.' });
+    return;
   }
-  
-  return jwt.sign(payload, process.env.REFRESH_SECRET, {
-    expiresIn: '30d',
-    issuer: 'victorysync',
-    audience: 'victorysync-users'
-  });
-}
 
-export function verifyAccessToken(token: string): TokenPayload {
-  if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET is required');
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    res.status(403).json({ error: 'Invalid token.' });
+    return;
   }
-  
-  return jwt.verify(token, process.env.JWT_SECRET, {
-    issuer: 'victorysync',
-    audience: 'victorysync-users'
-  }) as TokenPayload;
-}
 
-export function verifyRefreshToken(token: string): RefreshTokenPayload {
-  if (!process.env.REFRESH_SECRET) {
-    throw new Error('REFRESH_SECRET is required');
-  }
-  
-  return jwt.verify(token, process.env.REFRESH_SECRET, {
-    issuer: 'victorysync',
-    audience: 'victorysync-users'
-  }) as RefreshTokenPayload;
-}
-
-export function generateTokenPair(payload: TokenPayload) {
-  const tokenId = generateSecureToken();
-  
-  return {
-    accessToken: generateAccessToken(payload),
-    refreshToken: generateRefreshToken({ userId: payload.userId, tokenId }),
-    tokenId
-  };
+  // You would typically fetch the user from the database here
+  // For now, we'll set a placeholder
+  req.user = { id: decoded.userId } as User;
+  next();
 }

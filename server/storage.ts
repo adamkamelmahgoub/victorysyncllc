@@ -145,7 +145,7 @@ export class DatabaseStorage implements IStorage {
     return user || null;
   }
 
-  async updateOrderStatus(id: number, status: string): Promise<Order> {
+  async updateOrderStatus(id: number, status: "pending" | "processing" | "completed" | "cancelled" | "refunded"): Promise<Order> {
     const [order] = await db
       .update(orders)
       .set({ status, updatedAt: new Date() })

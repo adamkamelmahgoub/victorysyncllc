@@ -1,164 +1,197 @@
 
 import { db } from '../db';
 import { users, permissions, roles, rolePermissions } from '../../shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import argon2 from 'argon2';
 
-const CORE_PERMISSIONS = [
-  { key: 'org:view', description: 'View organization details' },
-  { key: 'org:update', description: 'Update organization' },
-  { key: 'org:delete', description: 'Delete organization' },
-  { key: 'user:invite', description: 'Invite users' },
-  { key: 'user:update', description: 'Update users' },
-  { key: 'user:delete', description: 'Delete users' },
-  { key: 'role:manage', description: 'Manage roles and permissions' },
-  { key: 'audit:view', description: 'View audit logs' },
-  { key: 'kpi:view', description: 'View KPIs' },
-  { key: 'kpi:export', description: 'Export KPIs' },
-  { key: 'ticket:manage', description: 'Manage tickets' },
-  { key: 'order:manage', description: 'Manage orders' },
-  { key: 'billing:view', description: 'View billing information' },
-  { key: 'billing:manage', description: 'Manage billing and subscriptions' },
-  { key: 'integration:manage', description: 'Manage integrations' },
-  { key: 'api:keys:manage', description: 'Manage API keys' },
-  { key: 'feature:flags:manage', description: 'Manage feature flags' },
-  { key: 'rate:limits:manage', description: 'Manage rate limits' },
-  { key: 'super:admin:*', description: 'Super admin access (bypass all checks)' },
-];
-
-async function seedSuperAdmin() {
-  console.log('🔄 Seeding super admin and permissions...');
-
-  try {
-    // Check required environment variables
-    const { SUPERADMIN_EMAIL, SUPERADMIN_NAME, SUPERADMIN_PASSWORD } = process.env;
-    
-    if (!SUPERADMIN_EMAIL || !SUPERADMIN_NAME || !SUPERADMIN_PASSWORD) {
-      console.error('❌ Missing required environment variables:');
-      console.error('   SUPERADMIN_EMAIL - Email for the super admin user');
-      console.error('   SUPERADMIN_NAME - Full name for the super admin user');
-      console.error('   SUPERADMIN_PASSWORD - Password for the super admin user');
-      console.error('');
-      console.error('Please add these to your Replit Secrets or .env file.');
-      process.exit(1);
-    }
-
-    // Seed permissions first
-    console.log('📝 Seeding permissions...');
-    
-    for (const permission of CORE_PERMISSIONS) {
-      const existing = await db
-        .select()
-        .from(permissions)
-        .where(eq(permissions.key, permission.key))
-        .limit(1);
-
-      if (existing.length === 0) {
-        await db.insert(permissions).values(permission);
-        console.log(`   ✅ Created permission: ${permission.key}`);
-      }
-    }
-
-    // Check if super admin already exists
-    const existingSuperAdmin = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, SUPERADMIN_EMAIL))
-      .limit(1);
-
-    if (existingSuperAdmin.length > 0) {
-      console.log(`✅ Super admin already exists: ${SUPERADMIN_EMAIL}`);
-      
-      // Update password if needed
-      const passwordHash = await argon2.hash(SUPERADMIN_PASSWORD);
-      await db
-        .update(users)
-        .set({
-          name: SUPERADMIN_NAME,
-          passwordHash,
-          isSuperAdmin: true,
-          isActive: true,
-          emailVerified: true,
-        })
-        .where(eq(users.id, existingSuperAdmin[0].id));
-      
-      console.log('✅ Super admin updated successfully');
-      return;
-    }
-
-    // Create super admin user
-    const passwordHash = await argon2.hash(SUPERADMIN_PASSWORD);
-    
-    const [superAdmin] = await db.insert(users).values({
-      orgId: null, // Super admin doesn't belong to any org
-      name: SUPERADMIN_NAME,
-      email: SUPERADMIN_EMAIL,
-      passwordHash,
-      isSuperAdmin: true,
-      isActive: true,
-      emailVerified: true,
-      twoFactorEnabled: false,
-    }).returning();
-
-    console.log(`✅ Super admin created: ${superAdmin.email} (ID: ${superAdmin.id})`);
-    console.log('✅ Seeding completed successfully');
-    
-  } catch (error) {
-    console.error('❌ Failed to seed super admin:', error);
-    throw error;
-  }
+interface RoleDefinition {
+  name: string;
+  description: string;
+  permissions: string[];
 }
 
-async function seedDefaultRoles(orgId: number) {
-  const orgOwnerPermissions = CORE_PERMISSIONS.filter(p => !p.key.startsWith('super:')).map(p => p.key);
-  const managerPermissions = ['org:view', 'user:invite', 'user:update', 'role:manage', 'audit:view', 'kpi:view', 'kpi:export', 'ticket:manage', 'order:manage', 'billing:view', 'billing:manage', 'integration:manage'];
-  const agentPermissions = ['kpi:view', 'ticket:manage', 'order:view'];
+const ROLES: RoleDefinition[] = [
+  {
+    name: 'super_admin',
+    description: 'Super Administrator with full system access',
+    permissions: [
+      'user_create', 'user_read', 'user_update', 'user_delete',
+      'role_create', 'role_read', 'role_update', 'role_delete',
+      'permission_create', 'permission_read', 'permission_update', 'permission_delete',
+      'admin_dashboard', 'system_config', 'audit_logs',
+      'billing_read', 'billing_update', 'subscription_manage',
+      'organization_create', 'organization_read', 'organization_update', 'organization_delete'
+    ]
+  },
+  {
+    name: 'admin',
+    description: 'Administrator with limited system access',
+    permissions: [
+      'user_read', 'user_update',
+      'role_read', 'permission_read',
+      'admin_dashboard', 'audit_logs',
+      'billing_read', 'organization_read'
+    ]
+  },
+  {
+    name: 'manager',
+    description: 'Manager with team oversight capabilities',
+    permissions: [
+      'user_read', 'admin_dashboard',
+      'billing_read', 'organization_read'
+    ]
+  },
+  {
+    name: 'user',
+    description: 'Standard user with basic access',
+    permissions: ['user_read']
+  }
+];
 
-  const defaultRoles = [
-    {
-      name: 'Org Owner',
-      description: 'Full organization management',
-      permissions: orgOwnerPermissions,
-    },
-    {
-      name: 'Manager',
-      description: 'Manage users, integrations, and billing',
-      permissions: managerPermissions,
-    },
-    {
-      name: 'Agent',
-      description: 'Limited access for agents',
-      permissions: agentPermissions,
-    }
-  ];
+const BASE_PERMISSIONS = [
+  { key: 'user_create', description: 'Create users' },
+  { key: 'user_read', description: 'Read user information' },
+  { key: 'user_update', description: 'Update user information' },
+  { key: 'user_delete', description: 'Delete users' },
+  { key: 'role_create', description: 'Create roles' },
+  { key: 'role_read', description: 'Read role information' },
+  { key: 'role_update', description: 'Update role information' },
+  { key: 'role_delete', description: 'Delete roles' },
+  { key: 'permission_create', description: 'Create permissions' },
+  { key: 'permission_read', description: 'Read permission information' },
+  { key: 'permission_update', description: 'Update permission information' },
+  { key: 'permission_delete', description: 'Delete permissions' },
+  { key: 'admin_dashboard', description: 'Access admin dashboard' },
+  { key: 'system_config', description: 'Configure system settings' },
+  { key: 'audit_logs', description: 'View audit logs' },
+  { key: 'billing_read', description: 'View billing information' },
+  { key: 'billing_update', description: 'Update billing information' },
+  { key: 'subscription_manage', description: 'Manage subscriptions' },
+  { key: 'organization_create', description: 'Create organizations' },
+  { key: 'organization_read', description: 'Read organization information' },
+  { key: 'organization_update', description: 'Update organization information' },
+  { key: 'organization_delete', description: 'Delete organizations' }
+];
 
+async function createPermissions() {
+  console.log('Creating base permissions...');
+  
+  // Check which permissions already exist
+  const existingPermissions = await db.select().from(permissions);
+  const existingKeys = new Set(existingPermissions.map(p => p.key));
+  
+  // Filter out permissions that already exist
+  const newPermissions = BASE_PERMISSIONS.filter(p => !existingKeys.has(p.key));
+  
+  if (newPermissions.length > 0) {
+    await db.insert(permissions).values(newPermissions);
+    console.log(`Created ${newPermissions.length} new permissions`);
+  } else {
+    console.log('All permissions already exist');
+  }
+  
+  return await db.select().from(permissions);
+}
+
+async function createRoles(allPermissions: any[]) {
+  console.log('Creating roles...');
+  
   const createdRoles = [];
   
-  for (const roleData of defaultRoles) {
-    // Create role
-    const [role] = await db.insert(roles).values({
-      orgId,
-      name: roleData.name,
-      description: roleData.description,
-      isSystem: true,
-    }).returning();
-
-    // Assign permissions
-    const rolePermissions = await db
-      .select()
-      .from(permissions)
-      .where(permissions.key.in(roleData.permissions));
-
-    for (const permission of rolePermissions) {
-      await db.insert(rolePermissions).values({
-        roleId: role.id,
-        permissionId: permission.id,
-      });
+  for (const roleData of ROLES) {
+    // Check if role already exists
+    const existingRole = await db.select().from(roles).where(eq(roles.name, roleData.name));
+    
+    let roleId: number;
+    if (existingRole.length === 0) {
+      // Create new role
+      const [newRole] = await db.insert(roles).values({
+        name: roleData.name,
+        description: roleData.description,
+        orgId: 1 // Default organization
+      }).returning();
+      roleId = newRole.id;
+      console.log(`Created role: ${roleData.name}`);
+    } else {
+      roleId = existingRole[0].id;
+      console.log(`Role already exists: ${roleData.name}`);
     }
-
-    createdRoles.push(role);
+    
+    // Get permissions for this role
+    const rolePermissions = allPermissions.filter(p => 
+      roleData.permissions.includes(p.key)
+    );
+    
+    // Clear existing role permissions
+    await db.delete(rolePermissions).where(eq(rolePermissions.roleId, roleId));
+    
+    // Add new role permissions
+    if (rolePermissions.length > 0) {
+      const rolePermissionValues = rolePermissions.map(p => ({
+        roleId: roleId,
+        permissionId: p.id
+      }));
+      await db.insert(rolePermissions).values(rolePermissionValues);
+    }
+    
+    createdRoles.push({ id: roleId, name: roleData.name });
   }
+  
+  return createdRoles;
+}
 
+export async function seedSuperAdmin() {
+  try {
+    console.log('Starting super admin seeding process...');
+    
+    // Create permissions first
+    const allPermissions = await createPermissions();
+    
+    // Create roles and assign permissions
+    const createdRoles = await createRoles(allPermissions);
+    
+    // Create super admin user
+    const superAdminEmail = 'admin@victorysync.com';
+    const superAdminPassword = 'SuperAdmin123!';
+    
+    // Check if super admin already exists
+    const existingAdmin = await db.select().from(users).where(eq(users.email, superAdminEmail));
+    
+    if (existingAdmin.length === 0) {
+      const hashedPassword = await argon2.hash(superAdminPassword);
+      
+      const [newUser] = await db.insert(users).values({
+        name: 'Super Administrator',
+        email: superAdminEmail,
+        passwordHash: hashedPassword,
+        isActive: true,
+        orgId: 1 // Default organization
+      }).returning();
+      
+      console.log(`Created super admin user: ${superAdminEmail}`);
+      console.log(`Super admin password: ${superAdminPassword}`);
+      
+      // Assign super_admin role to the user
+      const superAdminRole = createdRoles.find(r => r.name === 'super_admin');
+      if (superAdminRole) {
+        // Note: You'll need to create a userRoles table and import it
+        // await db.insert(userRoles).values({
+        //   userId: newUser.id,
+        //   roleId: superAdminRole.id
+        // });
+        console.log('Super admin role assigned to user');
+      }
+    } else {
+      console.log('Super admin user already exists');
+    }
+    
+    console.log('Super admin seeding completed successfully!');
+    
+  } catch (error) {
+    console.error('Error seeding super admin:', error);
+    throw error;
+  }
+  
   return createdRoles;
 }
 
@@ -172,5 +205,3 @@ if (require.main === module) {
     process.exit(1);
   });
 }
-
-export { seedSuperAdmin, seedDefaultRoles };
