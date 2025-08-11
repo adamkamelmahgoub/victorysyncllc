@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useReducer, ReactNode } from 'react';
 
 export interface CartItem {
@@ -17,6 +18,11 @@ type CartAction =
   | { type: 'REMOVE_ITEM'; payload: number }
   | { type: 'UPDATE_QUANTITY'; payload: { packageId: number; quantity: number } }
   | { type: 'CLEAR_CART' };
+
+const CartContext = createContext<{
+  state: CartState;
+  dispatch: React.Dispatch<CartAction>;
+} | undefined>(undefined);
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
@@ -66,11 +72,6 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return state;
   }
 };
-
-const CartContext = createContext<{
-  state: CartState;
-  dispatch: React.Dispatch<CartAction>;
-} | undefined>(undefined);
 
 interface CartProviderProps {
   children: ReactNode;

@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { Link, useLocation } from "react-router-dom";
 import { ShoppingCart, User, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
@@ -15,7 +15,7 @@ interface NavigationProps {
 }
 
 export default function Navigation({ onCartClick }: NavigationProps) {
-  const [location] = useLocation();
+  const location = useLocation();
   const { getItemCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -54,7 +54,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
               <Link key={link.href} href={link.href}>
                 <span
                   className={`font-medium transition-colors cursor-pointer ${
-                    location === link.href
+                    location.pathname === link.href
                       ? "victory-purple"
                       : "victory-gray hover:victory-purple"
                   }`}
@@ -141,7 +141,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                 <Link key={link.href} href={link.href}>
                   <span
                     className={`font-medium transition-colors cursor-pointer block py-2 ${
-                      location === link.href
+                      location.pathname === link.href
                         ? "victory-purple"
                         : "victory-gray hover:victory-purple"
                     }`}

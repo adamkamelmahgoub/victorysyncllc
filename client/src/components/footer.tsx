@@ -80,3 +80,26 @@ export default function Footer() {
     </footer>
   );
 }
+import React from 'react';
+
+export default function Footer() {
+  return (
+    <footer className="bg-gray-900 text-white py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <img 
+              src="/LOGO_VS.png" 
+              alt="VictorySync Logo" 
+              className="w-8 h-8 rounded-lg bg-white p-1"
+            />
+            <span className="text-xl font-bold">VictorySync</span>
+          </div>
+          <p className="text-gray-400">
+            © 2024 VictorySync. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}

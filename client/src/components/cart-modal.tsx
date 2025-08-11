@@ -1,7 +1,7 @@
 import { X, Plus, Minus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 
 interface CartModalProps {
   isOpen: boolean;
@@ -74,7 +74,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                 </div>
                 
                 <div className="space-y-3">
-                  <Link href="/checkout">
+                  <Link to="/checkout">
                     <Button 
                       className="w-full bg-victory-purple hover:bg-purple-700 text-white"
                       onClick={onClose}
