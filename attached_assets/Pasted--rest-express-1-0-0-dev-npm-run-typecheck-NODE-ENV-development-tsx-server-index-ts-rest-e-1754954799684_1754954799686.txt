@@ -1,0 +1,113 @@
+
+> rest-express@1.0.0 dev
+> npm run typecheck && NODE_ENV=development tsx server/index.ts
+
+
+> rest-express@1.0.0 typecheck
+> tsc --noEmit
+
+client/src/pages/about.tsx:50:21 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+50               <Link href="/contact">
+                       ~~~~
+
+client/src/pages/about.tsx:261:19 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+261             <Link href="/contact">
+                      ~~~~
+
+client/src/pages/about.tsx:266:19 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+266             <Link href="/pricing">
+                      ~~~~
+
+client/src/pages/home.tsx:21:23 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+21                 <Link href="/pricing">
+                         ~~~~
+
+client/src/pages/home.tsx:26:23 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+26                 <Link href="/contact">
+                         ~~~~
+
+client/src/pages/home.tsx:255:19 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+255             <Link href="/contact">
+                      ~~~~
+
+client/src/pages/home.tsx:260:19 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+260             <Link href="/pricing">
+                      ~~~~
+
+client/src/pages/login.tsx:148:19 - error TS2322: Type '{ children: string; href: string; className: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+148             <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
+                      ~~~~
+
+client/src/pages/register.tsx:166:21 - error TS2322: Type '{ children: string; href: string; className: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+166               <Link href="/login" className="text-victory-purple hover:underline font-medium">
+                        ~~~~
+
+client/src/pages/register.tsx:173:19 - error TS2322: Type '{ children: string; href: string; className: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+173             <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
+                      ~~~~
+
+client/src/pages/services.tsx:109:17 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+109           <Link href="/pricing">
+                    ~~~~
+
+client/src/pages/services.tsx:157:27 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+157                     <Link href="/contact">
+                              ~~~~
+
+client/src/pages/services.tsx:173:33 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+173                           <Link href="/pricing">
+                                    ~~~~
+
+client/src/pages/services.tsx:178:33 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+178                           <Link href="/contact">
+                                    ~~~~
+
+client/src/pages/services.tsx:256:19 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+256             <Link href="/contact">
+                      ~~~~
+
+client/src/pages/services.tsx:261:19 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+261             <Link href="/pricing">
+                      ~~~~
+
+
+Found 16 errors in 5 files.
+
+Errors  Files
+     3  client/src/pages/about.tsx:50
+     4  client/src/pages/home.tsx:21
+     1  client/src/pages/login.tsx:148
+     2  client/src/pages/register.tsx:166
+     6  client/src/pages/services.tsx:109
