@@ -1,0 +1,90 @@
+Here’s a copy-paste **MASTER PROMPT** you can give Claude in Replit to fix the blocked-host error permanently. It tells it exactly what to do and not do anything else.
+
+---
+
+````plaintext
+You are acting ONLY as a Vite configuration expert. Do not modify any UI, server routes, schemas, or code outside Vite config. Your single task: permanently fix the Replit preview error:
+
+"Blocked request. This host ('...janeway.replit.dev') is not allowed. To allow this host, add it to server.allowedHosts in vite.config.js."
+
+Make the dev server work in Replit regardless of the random janeway hostname and without future edits. Apply the following precise changes and nothing else:
+
+1) If a root Vite config exists (vite.config.ts or vite.config.js), replace its export with the exact config below. If none exists, create vite.config.ts at repo root with this content.
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+// Detect Replit environment
+const isReplit =
+  Boolean(process.env.REPL_ID || process.env.REPL_SLUG || process.env.REPLIT_DB_URL);
+
+// Try to infer the preview host if Replit provides one (best effort)
+const replitHost =
+  process.env.REPLIT_HOSTNAME ||
+  process.env.REPL_HOST ||
+  undefined;
+
+// IMPORTANT: Only change Vite config. Do not touch app code.
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    host: true,                                     // listen on 0.0.0.0 for Replit
+    port: Number(process.env.PORT) || 5173,
+    strictPort: false,
+    // Allow all hosts inside Replit; keep local strict
+    allowedHosts: isReplit ? true : ['localhost', '127.0.0.1'],
+    // HMR over secure WebSocket fixes Replit preview reloads
+    hmr: isReplit
+      ? {
+          protocol: 'wss',
+          clientPort: 443,
+          host: replitHost, // undefined is OK; Vite will use current origin
+        }
+      : undefined,
+  },
+  preview: {
+    allowedHosts: isReplit ? true : ['localhost'],
+  },
+});
+````
+
+2. If the project also creates a Vite dev server programmatically (e.g., server/vite.ts or server/vite.js), update ONLY its server options to match the above policy. Do not alter any middleware logic. The server options should be:
+
+```ts
+// server/vite.ts (only if this file exists and is used)
+import type { ServerOptions } from 'vite';
+export const serverOptions: ServerOptions = {
+  middlewareMode: true,
+  allowedHosts: true,           // accept Replit janeway hosts
+  // If HMR is configured here, ensure it's compatible with Replit:
+  hmr: { protocol: 'wss', clientPort: 443 },
+};
+```
+
+3. Do not edit anything else in the repo. No UI, routes, schemas, or package scripts.
+
+4. Clean Vite cache and restart the dev server (Replit commands):
+
+   * Run: `rm -rf client/node_modules/.vite node_modules/.vite .vite 2>/dev/null || true`
+   * Then: `npm run dev` (or the project’s dev script)
+
+5. Acceptance criteria:
+
+   * The Replit “Preview” loads the app without the “Blocked request… allowedHosts” error.
+   * HMR works (edits reload) and the change is persistent across restarts.
+   * No other files beyond the Vite config(s) and the optional server/vite.ts are modified.
+
+Report back with:
+a) Which file(s) you edited.
+b) A diff of the changes.
+c) Confirmation that the preview now loads and HMR reconnects cleanly.
+
+Do not perform any additional refactors or dependency changes beyond what is listed above.
+
+```
+
+---
+::contentReference[oaicite:0]{index=0}
+```
