@@ -1,0 +1,162 @@
+Here’s a copy-paste **MASTER PROMPT** you can give to **Claude in Replit** to fully fix the error and harden the project so this class of error doesn’t come back.
+
+---
+
+````plaintext
+ROLE
+You are a 10,000× senior full-stack TypeScript engineer. Fix the backend startup error and add guardrails so missing/renamed exports from @shared/schema never break the server again.
+
+CURRENT ERROR
+When running `npm run dev`:
+
+SyntaxError: The requested module '@shared/schema' does not provide an export named 'contactSubmissions'
+  at /server/storage.ts:6
+
+GOAL
+1) Make the dev server start cleanly with NODE_ENV=development.
+2) Ensure `@shared/schema` exports exactly what the server imports.
+3) Add tests/CI and typecheck steps so this class of error is caught before runtime.
+4) Do not introduce demo data or change user data. Maintain all features exactly as-is.
+
+DO THIS STEP BY STEP (edit files and run commands directly)
+
+A) Identify and fix the broken import
+1. Open `server/storage.ts`. Locate the import from `@shared/schema` that includes `contactSubmissions`.
+2. Search the codebase for the actual table/export name:
+   - grep for `contactSubmissions`, `contactSubmission`, `contact_messages`, `contact`, `contact_form` under `shared/` and `@shared/*`.
+3. Open the file that defines the contact form table (likely `shared/schema.ts` or `shared/db/*.ts`).
+4. Fix one of the following, whichever applies:
+   - If a table for contact submissions **exists** but with a different export name (e.g., `contactMessages`), either:
+     - Rename the export in the schema to `contactSubmissions`, **OR**
+     - Change the import in `server/storage.ts` to the real exported name and update references in that file.
+   - If **no table exists**, create it in `shared/schema.ts` (or wherever tables are defined) and export it:
+
+   (Postgres/Drizzle example — adjust to the project’s driver)
+   ```ts
+   // shared/schema.ts
+   import { pgTable, serial, varchar, text, timestamp } from 'drizzle-orm/pg-core';
+
+   export const contactSubmissions = pgTable('contact_submissions', {
+     id: serial('id').primaryKey(),
+     name: varchar('name', { length: 120 }).notNull(),
+     email: varchar('email', { length: 320 }).notNull(),
+     subject: varchar('subject', { length: 200 }),
+     message: text('message').notNull(),
+     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+   });
+
+   export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+   export type NewContactSubmission = typeof contactSubmissions.$inferInsert;
+````
+
+(If SQLite is used, swap the imports to `sqlite-core` types accordingly.)
+
+5. Ensure `@shared/schema` actually re-exports the table. If the project uses a barrel:
+
+   * If there is `shared/index.ts` or `shared/schema/index.ts`, `export * from './schema'`.
+   * Otherwise, export directly from the defining file.
+
+B) Verify path alias and ESM setup (prevent “module not found”/export shape issues)
+
+1. Confirm `tsconfig.json` has:
+
+   ```json
+   {
+     "compilerOptions": {
+       "baseUrl": ".",
+       "paths": {
+         "@/*": ["./client/src/*"],
+         "@shared/*": ["./shared/*"]
+       },
+       "module": "ESNext",
+       "moduleResolution": "bundler",
+       "esModuleInterop": true,
+       "skipLibCheck": true,
+       "jsx": "preserve",
+       "strict": true
+     },
+     "include": ["client/src/**/*", "shared/**/*", "server/**/*"]
+   }
+   ```
+2. Ensure the runtime resolves aliases:
+
+   * We’re using `tsx`. It supports TS paths, but make sure the `dev` script runs via `tsx` (it already does). Do **not** switch to ts-node.
+3. If there is a schema barrel file, make sure named exports match exactly what the server imports. Avoid default exports in schema.
+
+C) Update server code to use the fixed export
+
+1. In `server/storage.ts`, update any references to the contact table and columns so they match the schema you finalized.
+2. If the server expects fields (name/email/subject/message/createdAt), align types and column names.
+
+D) Migrations (only if you added a new table)
+
+1. If the repo uses Drizzle:
+
+   * Check `drizzle.config.*` for driver and out dir.
+   * Run:
+
+     * `npx drizzle-kit generate` (or the repo’s migration command)
+     * `npx drizzle-kit push` (or apply migration as the project intends)
+   * Do **not** seed demo rows.
+
+E) Add guardrails to prevent future breakages
+
+1. Add a compile-time check that every server import from `@shared/schema` exists:
+
+   * Run `tsc --noEmit` as part of dev:
+
+     * Add to `package.json`:
+
+       ```json
+       "scripts": {
+         "typecheck": "tsc --noEmit",
+         "dev": "npm run typecheck && NODE_ENV=development tsx server/index.ts"
+       }
+       ```
+     * If dev becomes slow, keep `typecheck` in `prestart` and a git hook instead (see below).
+2. Add a tiny unit test that imports `@shared/schema` and asserts the existence of exports the server uses:
+
+   ```ts
+   // server/__tests__/schema-exports.spec.ts
+   import * as schema from '@shared/schema';
+
+   test('required schema exports exist', () => {
+     expect(schema).toHaveProperty('contactSubmissions'); // or the chosen name
+     // also assert other critical tables you import in storage.ts
+   });
+   ```
+
+   Add a test runner script if missing and wire it into CI or a `precommit` hook.
+3. Add a pre-commit hook with `lint-staged` to run `tsc --noEmit` and tests on changed files.
+
+F) Run and verify
+
+1. Run `npm run dev` (or the project’s dev command).
+2. Confirm: no startup error, server logs healthy, routes work.
+3. Push a small request through whatever code path touches contact submissions to ensure the table and import work.
+
+G) Deliverables (reply back with)
+
+* A short summary of the root cause and the exact fix (rename vs. added table).
+* List of files changed with one-line notes.
+* If a new table was added: the migration file name and a note confirming it was applied.
+* Confirmation that `npm run dev` starts cleanly.
+* Confirmation that `tsc --noEmit` passes and tests pass.
+
+ACCEPTANCE CRITERIA
+
+* Server boots without `@shared/schema` named-export errors.
+* All imports from `@shared/schema` exist and match names used by server code.
+* Typecheck passes locally; tests pass.
+* No demo data added; existing data untouched.
+* Guardrails (typecheck/test) will catch missing schema exports in future PRs.
+
+Begin now. Work file-by-file and narrate changes with file paths and reasons.
+
+```
+
+---
+
+If Claude finds the table already exists but with a different name, it should **rename the server import or re-export under the expected name** (and keep both names temporarily if needed to avoid breaking other modules).
+::contentReference[oaicite:0]{index=0}
+```
