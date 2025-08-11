@@ -32,5 +32,9 @@ export default defineConfig({
   server: {
     middlewareMode: true,
     hmr: false,
+    allowedHosts: [
+      "13206e28-c0e5-4f02-ae3f-f56da3295fd0-00-2qod1gv6wxymw.janeway.replit.dev",
+      ".replit.dev"
+    ],
   },
 });
