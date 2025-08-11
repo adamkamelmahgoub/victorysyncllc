@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'wouter';
 import { ArrowRight, CheckCircle, Phone, Users, TrendingUp, Clock, Star, PlayCircle } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/footer';
