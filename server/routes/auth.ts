@@ -55,10 +55,10 @@ router.post('/login', async (req, res) => {
         userAgent: req.get('User-Agent'),
       });
 
-      return res.status(401).json({ 
-        ok: false, 
-        error: 'INVALID_CREDENTIALS', 
-        message: 'Invalid email or password' 
+      return res.status(401).json({
+        ok: false,
+        error: 'INVALID_CREDENTIALS',
+        message: 'Invalid email or password'
       });
     }
 
@@ -75,10 +75,10 @@ router.post('/login', async (req, res) => {
         userAgent: req.get('User-Agent'),
       });
 
-      return res.status(401).json({ 
-        ok: false, 
-        error: 'INVALID_CREDENTIALS', 
-        message: 'Invalid email or password' 
+      return res.status(401).json({
+        ok: false,
+        error: 'INVALID_CREDENTIALS',
+        message: 'Invalid email or password'
       });
     }
 
@@ -168,10 +168,10 @@ router.post('/login', async (req, res) => {
 
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ 
-      ok: false, 
-      error: 'SERVER_ERROR', 
-      message: 'An error occurred during login' 
+    res.status(500).json({
+      ok: false,
+      error: 'SERVER_ERROR',
+      message: 'An error occurred during login'
     });
   }
 });
@@ -183,10 +183,10 @@ router.post('/2fa/verify', async (req, res) => {
     const tempToken = req.cookies?.temp2faToken;
 
     if (!tempToken) {
-      return res.status(401).json({ 
-        ok: false, 
-        error: 'NO_TEMP_TOKEN', 
-        message: 'No temporary token found' 
+      return res.status(401).json({
+        ok: false,
+        error: 'NO_TEMP_TOKEN',
+        message: 'No temporary token found'
       });
     }
 
@@ -198,10 +198,10 @@ router.post('/2fa/verify', async (req, res) => {
       .limit(1);
 
     if (!session[0] || session[0].expiresAt < new Date()) {
-      return res.status(401).json({ 
-        ok: false, 
-        error: 'INVALID_TEMP_TOKEN', 
-        message: 'Invalid or expired temporary token' 
+      return res.status(401).json({
+        ok: false,
+        error: 'INVALID_TEMP_TOKEN',
+        message: 'Invalid or expired temporary token'
       });
     }
 
@@ -213,10 +213,10 @@ router.post('/2fa/verify', async (req, res) => {
       .limit(1);
 
     if (!user[0] || !user[0].twoFactorSecret) {
-      return res.status(401).json({ 
-        ok: false, 
-        error: 'USER_NOT_FOUND', 
-        message: 'User not found or 2FA not enabled' 
+      return res.status(401).json({
+        ok: false,
+        error: 'USER_NOT_FOUND',
+        message: 'User not found or 2FA not enabled'
       });
     }
 
@@ -229,10 +229,10 @@ router.post('/2fa/verify', async (req, res) => {
     });
 
     if (!verified) {
-      return res.status(401).json({ 
-        ok: false, 
-        error: 'INVALID_2FA_TOKEN', 
-        message: 'Invalid two-factor authentication code' 
+      return res.status(401).json({
+        ok: false,
+        error: 'INVALID_2FA_TOKEN',
+        message: 'Invalid two-factor authentication code'
       });
     }
 
@@ -301,10 +301,10 @@ router.post('/2fa/verify', async (req, res) => {
 
   } catch (error) {
     console.error('2FA verification error:', error);
-    res.status(500).json({ 
-      ok: false, 
-      error: 'SERVER_ERROR', 
-      message: 'An error occurred during 2FA verification' 
+    res.status(500).json({
+      ok: false,
+      error: 'SERVER_ERROR',
+      message: 'An error occurred during 2FA verification'
     });
   }
 });
@@ -322,10 +322,10 @@ router.post('/register-with-code', async (req, res) => {
       .limit(1);
 
     if (existingUser[0]) {
-      return res.status(400).json({ 
-        ok: false, 
-        error: 'EMAIL_EXISTS', 
-        message: 'Email already registered' 
+      return res.status(400).json({
+        ok: false,
+        error: 'EMAIL_EXISTS',
+        message: 'Email already registered'
       });
     }
 
@@ -340,10 +340,10 @@ router.post('/register-with-code', async (req, res) => {
       .limit(1);
 
     if (!codeRecord[0]) {
-      return res.status(400).json({ 
-        ok: false, 
-        error: 'INVALID_ACCESS_CODE', 
-        message: 'Invalid or expired access code' 
+      return res.status(400).json({
+        ok: false,
+        error: 'INVALID_ACCESS_CODE',
+        message: 'Invalid or expired access code'
       });
     }
 
@@ -353,10 +353,10 @@ router.post('/register-with-code', async (req, res) => {
         .set({ status: 'expired' })
         .where(eq(accessCodes.id, codeRecord[0].id));
 
-      return res.status(400).json({ 
-        ok: false, 
-        error: 'ACCESS_CODE_EXPIRED', 
-        message: 'Access code has expired' 
+      return res.status(400).json({
+        ok: false,
+        error: 'ACCESS_CODE_EXPIRED',
+        message: 'Access code has expired'
       });
     }
 
@@ -438,10 +438,10 @@ router.post('/register-with-code', async (req, res) => {
 
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ 
-      ok: false, 
-      error: 'SERVER_ERROR', 
-      message: 'An error occurred during registration' 
+    res.status(500).json({
+      ok: false,
+      error: 'SERVER_ERROR',
+      message: 'An error occurred during registration'
     });
   }
 });
@@ -478,10 +478,10 @@ router.post('/enroll-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
 
   } catch (error) {
     console.error('2FA enrollment error:', error);
-    res.status(500).json({ 
-      ok: false, 
-      error: 'SERVER_ERROR', 
-      message: 'Failed to enroll 2FA' 
+    res.status(500).json({
+      ok: false,
+      error: 'SERVER_ERROR',
+      message: 'Failed to enroll 2FA'
     });
   }
 });
@@ -503,10 +503,10 @@ router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
       .limit(1);
 
     if (!user[0]?.twoFactorSecret) {
-      return res.status(400).json({ 
-        ok: false, 
-        error: 'NO_SECRET', 
-        message: 'No 2FA secret found. Please enroll first.' 
+      return res.status(400).json({
+        ok: false,
+        error: 'NO_SECRET',
+        message: 'No 2FA secret found. Please enroll first.'
       });
     }
 
@@ -519,10 +519,10 @@ router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
     });
 
     if (!verified) {
-      return res.status(400).json({ 
-        ok: false, 
-        error: 'INVALID_TOKEN', 
-        message: 'Invalid verification code' 
+      return res.status(400).json({
+        ok: false,
+        error: 'INVALID_TOKEN',
+        message: 'Invalid verification code'
       });
     }
 
@@ -533,7 +533,7 @@ router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
       .where(eq(users.id, req.user.id));
 
     await createAuditLog({
-      orgId: req.user.orgId,
+      orgId: req.user.orgId || undefined,
       actorUserId: req.user.id,
       action: AUDIT_ACTIONS.ENABLE_2FA,
       entityType: 'user',
@@ -549,10 +549,10 @@ router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
 
   } catch (error) {
     console.error('2FA enable error:', error);
-    res.status(500).json({ 
-      ok: false, 
-      error: 'SERVER_ERROR', 
-      message: 'Failed to enable 2FA' 
+    res.status(500).json({
+      ok: false,
+      error: 'SERVER_ERROR',
+      message: 'Failed to enable 2FA'
     });
   }
 });
@@ -580,10 +580,10 @@ router.post('/disable-2fa', authenticateJWT, async (req: AuthenticatedRequest, r
     // Verify password
     const validPassword = await argon2.verify(user[0].passwordHash, password);
     if (!validPassword) {
-      return res.status(401).json({ 
-        ok: false, 
-        error: 'INVALID_PASSWORD', 
-        message: 'Invalid password' 
+      return res.status(401).json({
+        ok: false,
+        error: 'INVALID_PASSWORD',
+        message: 'Invalid password'
       });
     }
 
@@ -597,10 +597,10 @@ router.post('/disable-2fa', authenticateJWT, async (req: AuthenticatedRequest, r
       });
 
       if (!verified) {
-        return res.status(400).json({ 
-          ok: false, 
-          error: 'INVALID_2FA_TOKEN', 
-          message: 'Invalid 2FA code' 
+        return res.status(400).json({
+          ok: false,
+          error: 'INVALID_2FA_TOKEN',
+          message: 'Invalid 2FA code'
         });
       }
     }
@@ -608,14 +608,14 @@ router.post('/disable-2fa', authenticateJWT, async (req: AuthenticatedRequest, r
     // Disable 2FA
     await db
       .update(users)
-      .set({ 
+      .set({
         twoFactorEnabled: false,
         twoFactorSecret: null,
       })
       .where(eq(users.id, req.user.id));
 
     await createAuditLog({
-      orgId: req.user.orgId,
+      orgId: req.user.orgId || undefined,
       actorUserId: req.user.id,
       action: AUDIT_ACTIONS.DISABLE_2FA,
       entityType: 'user',
@@ -631,10 +631,10 @@ router.post('/disable-2fa', authenticateJWT, async (req: AuthenticatedRequest, r
 
   } catch (error) {
     console.error('2FA disable error:', error);
-    res.status(500).json({ 
-      ok: false, 
-      error: 'SERVER_ERROR', 
-      message: 'Failed to disable 2FA' 
+    res.status(500).json({
+      ok: false,
+      error: 'SERVER_ERROR',
+      message: 'Failed to disable 2FA'
     });
   }
 });
@@ -682,7 +682,7 @@ router.post('/refresh', async (req, res) => {
     // Update session
     await db
       .update(sessions)
-      .set({ 
+      .set({
         id: tokens.tokenId,
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       })
@@ -736,7 +736,7 @@ router.post('/logout', authenticateJWT, async (req: AuthenticatedRequest, res) =
 
     if (req.user) {
       await createAuditLog({
-        orgId: req.user.orgId,
+        orgId: req.user.orgId || undefined,
         actorUserId: req.user.id,
         action: AUDIT_ACTIONS.LOGOUT,
         entityType: 'user',
@@ -754,10 +754,10 @@ router.post('/logout', authenticateJWT, async (req: AuthenticatedRequest, res) =
 
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({ 
-      ok: false, 
-      error: 'SERVER_ERROR', 
-      message: 'An error occurred during logout' 
+    res.status(500).json({
+      ok: false,
+      error: 'SERVER_ERROR',
+      message: 'An error occurred during logout'
     });
   }
 });
@@ -794,10 +794,10 @@ router.get('/me', authenticateJWT, async (req: AuthenticatedRequest, res) => {
 
   } catch (error) {
     console.error('Get user error:', error);
-    res.status(500).json({ 
-      ok: false, 
-      error: 'SERVER_ERROR', 
-      message: 'Failed to get user information' 
+    res.status(500).json({
+      ok: false,
+      error: 'SERVER_ERROR',
+      message: 'Failed to get user information'
     });
   }
 });

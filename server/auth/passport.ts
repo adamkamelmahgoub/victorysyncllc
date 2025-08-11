@@ -1,5 +1,5 @@
 import passport from "passport";
-import { generateJWT } from "../publicAuth";
+// JWT generation is handled in publicAuth.ts routes
 
 // Helper function to create JWT for users
 export const createJWT = (user: any) => {

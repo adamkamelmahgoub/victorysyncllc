@@ -1,10 +1,8 @@
-
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../db';
-import { users, userRoles, roles, rolePermissions, permissions } from '../../shared/schema';
+import { users, userRoles, roles, rolePermissions, permissions, type User } from '../../shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { verifyAccessToken } from './jwt';
-import type { User } from '../../shared/schema';
 
 export interface AuthenticatedRequest extends Request {
   user?: User;
@@ -16,7 +14,7 @@ export async function authenticateJWT(
   next: NextFunction
 ): Promise<void> {
   const token = req.cookies?.accessToken || req.headers.authorization?.split(' ')[1];
-  
+
   if (!token) {
     res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
     return;
@@ -24,20 +22,20 @@ export async function authenticateJWT(
 
   try {
     const decoded = verifyAccessToken(token);
-    
+
     // Get full user details from database
-    const user = await db
+    const [user] = await db
       .select()
       .from(users)
       .where(and(eq(users.id, decoded.userId), eq(users.isActive, true)))
       .limit(1);
 
-    if (!user[0]) {
+    if (!user) {
       res.status(401).json({ ok: false, error: 'USER_NOT_FOUND' });
       return;
     }
 
-    req.user = user[0];
+    req.user = user;
     next();
   } catch (error) {
     res.status(401).json({ ok: false, error: 'INVALID_TOKEN' });

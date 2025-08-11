@@ -56,8 +56,14 @@ interface AuditLogData {
 export async function createAuditLog(data: AuditLogData) {
   try {
     await db.insert(auditLogs).values({
-      ...data,
-      createdAt: new Date(),
+      action: data.action,
+      entityType: data.entityType,
+      entityId: data.entityId,
+      meta: data.meta,
+      ip: data.ip,
+      userAgent: data.userAgent,
+      orgId: data.orgId || undefined,
+      actorUserId: data.actorUserId,
     });
   } catch (error) {
     console.error('Failed to create audit log:', error);
@@ -66,14 +72,13 @@ export async function createAuditLog(data: AuditLogData) {
 }
 
 export function auditMiddleware(action: string, entityType: string) {
-  return (req: Request, res: any, next: any) => {
-    // Store audit info on request for later use
-    req.auditInfo = {
+  return (req: any, res: any, next: any) => {
+    (req as any).auditInfo = {
       action,
       entityType,
       ip: req.ip || req.connection.remoteAddress,
       userAgent: req.get('User-Agent'),
-      orgId: req.user?.orgId,
+      orgId: req.user?.orgId || undefined,
       actorUserId: req.user?.id
     };
     next();
@@ -85,9 +90,9 @@ export async function auditAction(
   entityId?: string,
   meta?: Record<string, any>
 ) {
-  if (req.auditInfo) {
+  if ((req as any).auditInfo) {
     await createAuditLog({
-      ...req.auditInfo,
+      ...(req as any).auditInfo,
       entityId,
       meta
     });
