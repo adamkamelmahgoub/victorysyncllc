@@ -4,7 +4,7 @@ import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
 const router = Router();
 
 // Placeholder billing routes
-router.get('/subscriptions', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/subscriptions', authenticateJWT, async (req: Request, res: Response) => {
   try {
     // TODO: Implement subscription management
     res.json({ subscriptions: [] });
@@ -15,7 +15,7 @@ router.get('/subscriptions', authenticateJWT, async (req: AuthenticatedRequest, 
 });
 
 // Add seats endpoint
-router.post('/seats', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/seats', authenticateJWT, async (req: Request, res: Response) => {
   try {
     // TODO: Implement seat management
     res.json({ success: true, message: 'Seats updated' });
@@ -26,9 +26,10 @@ router.post('/seats', authenticateJWT, async (req: AuthenticatedRequest, res: Re
 });
 
 // Get billing information
-router.get('/info', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/info', authenticateJWT, async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.id;
+    const authenticatedReq = req as AuthenticatedRequest;
+    const userId = authenticatedReq.user!.id;
 
     // Mock billing data - in production this would come from database/Stripe
     const billingInfo = {
@@ -51,7 +52,7 @@ router.get('/info', authenticateJWT, async (req: AuthenticatedRequest, res: Resp
 });
 
 // Download invoice
-router.get('/invoice/:id', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/invoice/:id', authenticateJWT, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 

@@ -4,9 +4,10 @@ import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
 const router = Router();
 
 // Main KPI dashboard endpoint
-router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/', authenticateJWT, async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.id;
+    const authenticatedReq = req as AuthenticatedRequest;
+    const userId = authenticatedReq.user!.id;
     const now = new Date();
     const hour = now.getHours();
 
@@ -32,7 +33,7 @@ router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response
 });
 
 // Call volume data endpoint
-router.get('/calls', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/calls', authenticateJWT, async (req: Request, res: Response) => {
   try {
     const now = new Date();
     const hour = now.getHours();
@@ -52,7 +53,7 @@ router.get('/calls', authenticateJWT, async (req: AuthenticatedRequest, res: Res
 });
 
 // Agent performance endpoint
-router.get('/agents', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/agents', authenticateJWT, async (req: Request, res: Response) => {
   try {
     const agents = [
       { id: 1, name: 'Sarah Johnson', status: 'active', callsToday: 45, avgHandleTime: 180, satisfaction: 92 },
@@ -70,7 +71,7 @@ router.get('/agents', authenticateJWT, async (req: AuthenticatedRequest, res: Re
 });
 
 // Performance trends endpoint
-router.get('/trends', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/trends', authenticateJWT, async (req: Request, res: Response) => {
   try {
     const trends = {
       daily: Array.from({ length: 7 }, (_, i) => ({

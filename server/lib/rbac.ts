@@ -14,11 +14,11 @@ declare global {
 }
 
 export interface AuthenticatedRequest extends Request {
-  user?: User;
+  user: User;
 }
 
 export async function authenticateJWT(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
@@ -44,7 +44,7 @@ export async function authenticateJWT(
       return;
     }
 
-    req.user = user;
+    (req as AuthenticatedRequest).user = user;
     next();
   } catch (error) {
     res.status(401).json({ ok: false, error: 'INVALID_TOKEN' });
@@ -52,12 +52,13 @@ export async function authenticateJWT(
 }
 
 export function requirePermission(permission: string) {
-  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    if (!req.user) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const authenticatedReq = req as AuthenticatedRequest;
+    if (!authenticatedReq.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
     }
 
-    if (req.user.isSuperAdmin) {
+    if (authenticatedReq.user.isSuperAdmin) {
       return next();
     }
 
@@ -68,7 +69,7 @@ export function requirePermission(permission: string) {
         .innerJoin(rolePermissions, eq(permissions.id, rolePermissions.permissionId))
         .innerJoin(roles, eq(rolePermissions.roleId, roles.id))
         .innerJoin(userRoles, eq(roles.id, userRoles.roleId))
-        .where(eq(userRoles.userId, req.user.id));
+        .where(eq(userRoles.userId, authenticatedReq.user.id));
 
       const hasPermission = userPermissions.some(p => p.permissions.key === permission);
 

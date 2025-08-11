@@ -446,18 +446,19 @@ router.post('/register-with-code', async (req, res) => {
   }
 });
 
-// Enroll 2FA
-router.post('/enroll-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+// Enroll in 2FA
+router.post('/enroll-2fa', authenticateJWT, async (req: Request, res: Response) => {
+  const authenticatedReq = req as AuthenticatedRequest;
   try {
-    if (!req.user) {
+    if (!authenticatedReq.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
     }
 
-    // Generate secret
+    // Generate 2FA secret
     const secret = speakeasy.generateSecret({
-      name: req.user.id.toString(),
-      issuer: process.env.TOTP_ISSUER || 'VictorySync',
-      length: 32,
+      name: `Victory Sync (${authenticatedReq.user.email})`,
+      issuer: 'Victory Sync',
+      length: 20
     });
 
     // Generate QR code
@@ -467,7 +468,7 @@ router.post('/enroll-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
     await db
       .update(users)
       .set({ twoFactorSecret: secret.base32 })
-      .where(eq(users.id, req.user.id));
+      .where(eq(users.id, authenticatedReq.user.id));
 
     res.json({
       ok: true,
@@ -486,20 +487,28 @@ router.post('/enroll-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
   }
 });
 
-// Verify and enable 2FA
-router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+// Enable 2FA
+router.post('/enable-2fa', authenticateJWT, async (req: Request, res: Response) => {
+  const authenticatedReq = req as AuthenticatedRequest;
   try {
-    if (!req.user) {
+    if (!authenticatedReq.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
     }
 
-    const { token } = enroll2FASchema.parse(req.body);
+    const validation = verify2FASchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        ok: false,
+        error: 'INVALID_INPUT',
+        message: 'Invalid input data'
+      });
+    }
 
-    // Get user's temp secret
+    // Get the temporary secret from user record (stored during enrollment)
     const user = await db
       .select()
       .from(users)
-      .where(eq(users.id, req.user.id))
+      .where(eq(users.id, authenticatedReq.user.id))
       .limit(1);
 
     if (!user[0]?.twoFactorSecret) {
@@ -510,12 +519,11 @@ router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
       });
     }
 
-    // Verify token
+    // Verify the token
     const verified = speakeasy.totp.verify({
       secret: user[0].twoFactorSecret,
       encoding: 'base32',
-      token,
-      window: 1,
+      token: validation.data.token
     });
 
     if (!verified) {
@@ -526,18 +534,18 @@ router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
       });
     }
 
-    // Enable 2FA
+    // Enable 2FA and clear the temporary secret
     await db
       .update(users)
-      .set({ twoFactorEnabled: true })
-      .where(eq(users.id, req.user.id));
+      .set({ twoFactorEnabled: true, twoFactorSecret: null })
+      .where(eq(users.id, authenticatedReq.user.id));
 
     await createAuditLog({
-      orgId: req.user.orgId || undefined,
-      actorUserId: req.user.id,
+      orgId: authenticatedReq.user.orgId || undefined,
+      actorUserId: authenticatedReq.user.id,
       action: AUDIT_ACTIONS.ENABLE_2FA,
       entityType: 'user',
-      entityId: req.user.id.toString(),
+      entityId: authenticatedReq.user.id.toString(),
       ip: req.ip,
       userAgent: req.get('User-Agent'),
     });
@@ -558,68 +566,67 @@ router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
 });
 
 // Disable 2FA
-router.post('/disable-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/disable-2fa', authenticateJWT, async (req: Request, res: Response) => {
+  const authenticatedReq = req as AuthenticatedRequest;
   try {
-    if (!req.user) {
+    if (!authenticatedReq.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
     }
 
-    const { token, password } = req.body;
+    const validation = verify2FASchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        ok: false,
+        error: 'INVALID_INPUT',
+        message: 'Invalid input data'
+      });
+    }
 
-    // Get user
-    const user = await db
+    const [currentUser] = await db
       .select()
       .from(users)
-      .where(eq(users.id, req.user.id))
+      .where(eq(users.id, authenticatedReq.user.id))
       .limit(1);
 
-    if (!user[0]) {
-      return res.status(404).json({ ok: false, error: 'USER_NOT_FOUND' });
-    }
-
-    // Verify password
-    const validPassword = await argon2.verify(user[0].passwordHash, password);
-    if (!validPassword) {
-      return res.status(401).json({
+    if (!currentUser || !currentUser.twoFactorEnabled || !currentUser.twoFactorSecret) {
+      return res.status(400).json({
         ok: false,
-        error: 'INVALID_PASSWORD',
-        message: 'Invalid password'
+        error: 'TWO_FA_NOT_ENABLED',
+        message: '2FA is not currently enabled'
       });
     }
 
-    // Verify current 2FA token if enabled
-    if (user[0].twoFactorEnabled && user[0].twoFactorSecret) {
-      const verified = speakeasy.totp.verify({
-        secret: user[0].twoFactorSecret,
-        encoding: 'base32',
-        token,
-        window: 1,
-      });
+    // Verify the current 2FA token before disabling
+    const verified = speakeasy.totp.verify({
+      secret: currentUser.twoFactorSecret,
+      encoding: 'base32',
+      token: validation.data.token
+    });
 
-      if (!verified) {
-        return res.status(400).json({
-          ok: false,
-          error: 'INVALID_2FA_TOKEN',
-          message: 'Invalid 2FA code'
-        });
-      }
+    if (!verified) {
+      return res.status(400).json({
+        ok: false,
+        error: 'INVALID_TOKEN',
+        message: 'Invalid 2FA token'
+      });
     }
 
     // Disable 2FA
-    await db
+    const [user] = await db
       .update(users)
       .set({
         twoFactorEnabled: false,
-        twoFactorSecret: null,
+        twoFactorSecret: null
       })
-      .where(eq(users.id, req.user.id));
+      .where(eq(users.id, authenticatedReq.user.id))
+      .returning();
 
     await createAuditLog({
-      orgId: req.user.orgId || undefined,
-      actorUserId: req.user.id,
+      orgId: authenticatedReq.user.orgId || undefined,
+      actorUserId: authenticatedReq.user.id,
       action: AUDIT_ACTIONS.DISABLE_2FA,
       entityType: 'user',
-      entityId: req.user.id.toString(),
+      entityId: authenticatedReq.user.id.toString(),
       ip: req.ip,
       userAgent: req.get('User-Agent'),
     });
