@@ -1,6 +1,4 @@
 
-#!/usr/bin/env tsx
-
 import { db } from '../db';
 import { users, permissions, roles, rolePermissions } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
@@ -164,8 +162,12 @@ async function seedDefaultRoles(orgId: number) {
   return createdRoles;
 }
 
+async function main() {
+  await seedSuperAdmin();
+}
+
 if (require.main === module) {
-  seedSuperAdmin().catch((error) => {
+  main().catch((error) => {
     console.error(error);
     process.exit(1);
   });
