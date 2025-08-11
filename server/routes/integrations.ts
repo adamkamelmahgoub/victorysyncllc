@@ -1,11 +1,11 @@
 
-import { Router, Response } from 'express';
-import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
+import { Router, Request, Response } from 'express';
+import { authenticateJWT } from '../lib/rbac';
 
 const router = Router();
 
 // Get available integrations
-router.get('/available', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/available', authenticateJWT, async (req: Request, res: Response) => {
   try {
     // TODO: Implement integration management
     res.json({ integrations: [] });
@@ -16,7 +16,7 @@ router.get('/available', authenticateJWT, async (req: AuthenticatedRequest, res:
 });
 
 // Get user integrations
-router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/', authenticateJWT, async (req: Request, res: Response) => {
   try {
     // Mock integrations data - in production this would come from database
     const integrations = [
@@ -51,7 +51,7 @@ router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response
 });
 
 // Connect integration
-router.post('/connect', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/connect', authenticateJWT, async (req: Request, res: Response) => {
   try {
     const { platform, credentials } = req.body;
 
@@ -73,7 +73,7 @@ router.post('/connect', authenticateJWT, async (req: AuthenticatedRequest, res: 
 });
 
 // Disconnect integration
-router.delete('/:id', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id', authenticateJWT, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -93,7 +93,7 @@ router.delete('/:id', authenticateJWT, async (req: AuthenticatedRequest, res: Re
 });
 
 // Sync integration data
-router.post('/:id/sync', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/:id/sync', authenticateJWT, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 

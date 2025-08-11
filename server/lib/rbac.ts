@@ -4,6 +4,15 @@ import { users, userRoles, roles, rolePermissions, permissions, type User } from
 import { eq, and } from 'drizzle-orm';
 import { verifyAccessToken } from './jwt';
 
+// Extend Express Request to include user property
+declare global {
+  namespace Express {
+    interface Request {
+      user?: User;
+    }
+  }
+}
+
 export interface AuthenticatedRequest extends Request {
   user?: User;
 }

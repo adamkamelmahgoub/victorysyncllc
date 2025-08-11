@@ -3,7 +3,7 @@ import passport from "passport";
 
 // Helper function to create JWT for users
 export const createJWT = (user: any) => {
-  return generateJWT(user);
+  return generateTokenPair(user);
 };
 
 export default passport;

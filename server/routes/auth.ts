@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { db } from '../db';
 import { users, sessions, accessCodes, organizations, userRoles, roles } from '../../shared/schema';
 import { eq, and } from 'drizzle-orm';
-import { generateTokenPair, verifyRefreshToken, AuthenticatedRequest } from '../lib/jwt';
+import { generateTokenPair, verifyRefreshToken } from '../lib/jwt';
 import { authenticateJWT } from '../lib/rbac';
 import { createAuditLog, AUDIT_ACTIONS } from '../lib/audit';
 import { generateSecureToken, generateAccessCode } from '../lib/crypto';
@@ -447,7 +447,7 @@ router.post('/register-with-code', async (req, res) => {
 });
 
 // Enroll 2FA
-router.post('/enroll-2fa', authenticateJWT, async (req: AuthenticatedRequest, res) => {
+router.post('/enroll-2fa', authenticateJWT, async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
@@ -487,7 +487,7 @@ router.post('/enroll-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
 });
 
 // Verify and enable 2FA
-router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, res) => {
+router.post('/enable-2fa', authenticateJWT, async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
@@ -558,7 +558,7 @@ router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, re
 });
 
 // Disable 2FA
-router.post('/disable-2fa', authenticateJWT, async (req: AuthenticatedRequest, res) => {
+router.post('/disable-2fa', authenticateJWT, async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
@@ -721,7 +721,7 @@ router.post('/refresh', async (req, res) => {
 });
 
 // Logout
-router.post('/logout', authenticateJWT, async (req: AuthenticatedRequest, res) => {
+router.post('/logout', authenticateJWT, async (req: Request, res: Response) => {
   try {
     const refreshToken = req.cookies?.refreshToken;
 
@@ -763,7 +763,7 @@ router.post('/logout', authenticateJWT, async (req: AuthenticatedRequest, res) =
 });
 
 // Get current user
-router.get('/me', authenticateJWT, async (req: AuthenticatedRequest, res) => {
+router.get('/me', authenticateJWT, async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
