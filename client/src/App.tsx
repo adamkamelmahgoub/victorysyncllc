@@ -1,9 +1,11 @@
 
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Navigation from "./components/navigation";
 import Footer from "./components/footer";
+import CartModal from "./components/cart-modal";
+import { CartProvider } from "./contexts/CartContext";
 
 // Helper: scroll to top on route change
 function ScrollToTop() {
@@ -35,26 +37,39 @@ function PageFallback() {
 }
 
 export default function App() {
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const handleCartClick = () => {
+    setIsCartOpen(true);
+  };
+
+  const handleCartClose = () => {
+    setIsCartOpen(false);
+  };
+
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <ScrollToTop />
-        <Navigation />
-        <Suspense fallback={<PageFallback />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/login" element={<SignIn />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-        <Footer />
-      </BrowserRouter>
+      <CartProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <Navigation onCartClick={handleCartClick} />
+          <Suspense fallback={<PageFallback />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/login" element={<SignIn />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+          <Footer />
+          <CartModal isOpen={isCartOpen} onClose={handleCartClose} />
+        </BrowserRouter>
+      </CartProvider>
     </ErrorBoundary>
   );
 }
