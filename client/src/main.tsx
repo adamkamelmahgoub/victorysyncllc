@@ -1,30 +1,28 @@
-import { StrictMode } from "react";
+
+import React from "react";
 import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import App from "./App.tsx";
-import "./index.css";
-import { CartProvider } from "./contexts/CartContext.tsx";
+import App from "./App";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
-
-const rootElement = document.getElementById("root");
-if (!rootElement) {
-  throw new Error("Root element not found");
+function bootstrap() {
+  // Boot breadcrumbs to detect where it stalls
+  // eslint-disable-next-line no-console
+  console.log("[VictorySync] BOOT:start", { env: import.meta.env.MODE });
+  const el = document.getElementById("root");
+  if (!el) {
+    console.error("[VictorySync] #root not found");
+    return;
+  }
+  const root = createRoot(el);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+  console.log("[VictorySync] BOOT:mounted");
 }
 
-createRoot(rootElement).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <App />
-      </CartProvider>
-    </QueryClientProvider>
-  </StrictMode>,
-);
+try {
+  bootstrap();
+} catch (e) {
+  console.error("[VictorySync] BOOT:error", e);
+}

@@ -1,107 +1,24 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { CartProvider } from "@/contexts/CartContext";
-import { useState } from "react";
+import React from "react";
+import ErrorBoundary from "./components/ErrorBoundary";
+// If you use React Router, import and render your Routes here.
+// Keep a visible shell so a thrown error doesn't look like a blank page.
 
-// Layout Components
-import Navigation from "@/components/navigation";
-import Footer from "@/components/footer";
-import CartModal from "@/components/cart-modal";
-
-// Pages
-import Home from "@/pages/home";
-import Services from "@/pages/services";
-import Pricing from "@/pages/pricing";
-import About from "@/pages/about";
-import Contact from "@/pages/contact";
-import Checkout from "@/pages/checkout";
-import CustomerDashboard from "@/pages/customer-dashboard";
-import Register from "@/pages/register";
-import Login from "@/pages/login";
-import NotFound from "@/pages/not-found";
-import AdminPortal from "@/pages/admin-portal";
-import AdminLogin from "@/pages/admin-login";
-
-// Footer Pages
-import AboutUs from "@/pages/about-us";
-import Careers from "@/pages/careers";
-import Blog from "@/pages/blog";
-import HelpCenter from "@/pages/help-center";
-import Documentation from "@/pages/docs";
-import PrivacyPolicy from "@/pages/privacy-policy";
-import TermsOfService from "@/pages/terms";
-
-// Import Google Fonts
-import "@fontsource/inter/300.css";
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/700.css";
-import "@fontsource/inter/800.css";
-
-function Router() {
-  const [cartModalOpen, setCartModalOpen] = useState(false);
-
-  const openCartModal = () => setCartModalOpen(true);
-  const closeCartModal = () => setCartModalOpen(false);
-
+export default function App() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation onCartClick={openCartModal} />
-
-      <main className="flex-1">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/services" component={Services} />
-          <Route path="/pricing" component={Pricing} />
-          <Route path="/about" component={About} />
-          <Route path="/contact" component={Contact} />
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/dashboard" component={CustomerDashboard} />
-          <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/admin" component={AdminPortal} />
-          <Route path="/login" component={Login} />
-          <Route path="/register" component={Register} />
-          <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/admin-portal" component={AdminPortal} />
-
-          {/* Footer Pages */}
-          <Route path="/about-us" component={AboutUs} />
-          <Route path="/careers" component={Careers} />
-          <Route path="/blog" component={Blog} />
-          <Route path="/help-center" component={HelpCenter} />
-          <Route path="/docs" component={Documentation} />
-          <Route path="/privacy-policy" component={PrivacyPolicy} />
-          <Route path="/terms" component={TermsOfService} />
-          <Route path="/admin/login" component={AdminLogin} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-
-      <Footer />
-
-      <CartModal 
-        isOpen={cartModalOpen} 
-        onClose={closeCartModal} 
-      />
-    </div>
+    <ErrorBoundary>
+      <div style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+      }}>
+        <div>
+          <h1 style={{ margin: 0 }}>VictorySync app loaded</h1>
+          <p style={{ marginTop: 8, color: "#667085" }}>
+            If you don't see your real UI yet, the app shell is mounted. Now wire your routes/components.
+          </p>
+        </div>
+      </div>
+    </ErrorBoundary>
   );
 }
-
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </CartProvider>
-    </QueryClientProvider>
-  );
-}
-
-export default App;
