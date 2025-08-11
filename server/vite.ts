@@ -18,6 +18,12 @@ export async function setupVite(app: Express): Promise<ViteDevServer> {
     appType: 'custom',
     root: 'client',
     plugins: [react()],
+    resolve: {
+      alias: {
+        '@': '/client/src',
+        '@shared': '/shared'
+      }
+    },
     server: serverOptions,
     preview: { allowedHosts: true },
     build: { outDir: 'dist', emptyOutDir: true },

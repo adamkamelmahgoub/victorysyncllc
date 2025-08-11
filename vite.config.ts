@@ -19,8 +19,8 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': '/src',
-      '@shared': '../shared'
+      '@': '/client/src',
+      '@shared': '/shared'
     }
   },
   server: {
