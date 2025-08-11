@@ -1,43 +1,74 @@
-import jwt from 'jsonwebtoken';
-import { Request, Response, NextFunction } from 'express';
-import { User } from '@shared/schema';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+import { Request } from 'express';
+import jwt from 'jsonwebtoken';
+import type { User } from '../../shared/schema';
 
 export interface AuthenticatedRequest extends Request {
   user?: User;
 }
 
-export function generateToken(userId: number): string {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
+export interface TokenPayload {
+  userId: number;
+  orgId?: number;
+  isSuperAdmin: boolean;
+  tokenId: string;
+  iat: number;
+  exp: number;
 }
 
-export function verifyToken(token: string): { userId: number } | null {
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
-    return decoded;
-  } catch {
-    return null;
-  }
+export interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+  tokenId: string;
 }
 
-export function authenticateJWT(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
+export function generateTokenPair(payload: {
+  userId: number;
+  orgId?: number;
+  isSuperAdmin: boolean;
+}): TokenPair {
+  const tokenId = Math.random().toString(36).substring(2);
+  
+  const commonPayload = {
+    ...payload,
+    tokenId
+  };
 
+  const accessToken = jwt.sign(commonPayload, process.env.JWT_SECRET!, {
+    expiresIn: '15m'
+  });
+
+  const refreshToken = jwt.sign(commonPayload, process.env.JWT_REFRESH_SECRET!, {
+    expiresIn: '30d'
+  });
+
+  return { accessToken, refreshToken, tokenId };
+}
+
+export function verifyAccessToken(token: string): TokenPayload {
+  return jwt.verify(token, process.env.JWT_SECRET!) as TokenPayload;
+}
+
+export function verifyRefreshToken(token: string): TokenPayload {
+  return jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as TokenPayload;
+}
+
+export function authenticateJWT(req: AuthenticatedRequest, res: any, next: any) {
+  const token = req.cookies?.accessToken || req.headers.authorization?.split(' ')[1];
+  
   if (!token) {
-    res.status(401).json({ error: 'Access denied. No token provided.' });
-    return;
+    return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
   }
 
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    res.status(403).json({ error: 'Invalid token.' });
-    return;
+  try {
+    const decoded = verifyAccessToken(token);
+    req.user = {
+      id: decoded.userId,
+      orgId: decoded.orgId || null,
+      isSuperAdmin: decoded.isSuperAdmin
+    } as User;
+    next();
+  } catch (error) {
+    return res.status(401).json({ ok: false, error: 'INVALID_TOKEN' });
   }
-
-  // You would typically fetch the user from the database here
-  // For now, we'll set a placeholder
-  req.user = { id: decoded.userId } as User;
-  next();
 }

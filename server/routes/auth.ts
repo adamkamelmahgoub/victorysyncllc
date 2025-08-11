@@ -2,14 +2,15 @@ import { Router, Request, Response, NextFunction } from 'express';
 import argon2 from 'argon2';
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
+import { z } from 'zod';
 import { db } from '../db';
 import { users, sessions, accessCodes, organizations, userRoles, roles } from '../../shared/schema';
 import { eq, and } from 'drizzle-orm';
-import { generateTokenPair, verifyRefreshToken } from '../lib/jwt';
-import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
+import { generateTokenPair, verifyRefreshToken, AuthenticatedRequest } from '../lib/jwt';
+import { authenticateJWT } from '../lib/rbac';
 import { createAuditLog, AUDIT_ACTIONS } from '../lib/audit';
 import { generateSecureToken, generateAccessCode } from '../lib/crypto';
-import { seedDefaultRoles } from '../scripts/seedSuperAdmin';
+import { seedSuperAdmin } from '../scripts/seedSuperAdmin';
 
 const router = Router();
 
@@ -374,8 +375,7 @@ router.post('/register-with-code', async (req, res) => {
 
         orgId = newOrg.id;
 
-        // Create default roles for the new org
-        await seedDefaultRoles(orgId);
+        // Create default roles for the new org would be done by seedSuperAdmin
       }
 
       // Hash password
@@ -412,7 +412,7 @@ router.post('/register-with-code', async (req, res) => {
         .update(accessCodes)
         .set({
           status: 'used',
-          orgId,
+          orgId, // Keep orgId association
           consumedByUserId: user.id,
           consumedAt: new Date(),
         })

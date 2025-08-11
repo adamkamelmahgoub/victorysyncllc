@@ -1,5 +1,6 @@
-import { Router, Response, NextFunction } from 'express';
-import { authenticateJWT, AuthenticatedRequest } from '../lib/jwt';
+
+import { Router, Response } from 'express';
+import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
 
 const router = Router();
 

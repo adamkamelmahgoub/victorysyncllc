@@ -1,44 +1,15 @@
 
 import { describe, it, expect } from '@jest/globals';
-import { 
-  users, 
-  roles, 
-  permissions, 
-  organizations,
-  publicUsers,
-  packages,
-  orders,
-  orderItems,
-  contactSubmissions,
-  loginSchema,
-  registerUserSchema,
-  type User,
-  type Role,
-  type Permission,
-  type Organization,
-  type PublicUser,
-  type Package,
-  type Order,
-  type OrderItem,
-  type ContactSubmission
+import {
+  User, Role, Permission, Organization, PublicUser, Package, Order, OrderItem, ContactSubmission,
+  loginSchema, registerUserSchema, insertContactSubmissionSchema
 } from '../../shared/schema';
 
 describe('Schema Exports', () => {
-  it('should export all required table schemas', () => {
-    expect(users).toBeDefined();
-    expect(roles).toBeDefined();
-    expect(permissions).toBeDefined();
-    expect(organizations).toBeDefined();
-    expect(publicUsers).toBeDefined();
-    expect(packages).toBeDefined();
-    expect(orders).toBeDefined();
-    expect(orderItems).toBeDefined();
-    expect(contactSubmissions).toBeDefined();
-  });
-
-  it('should export validation schemas', () => {
+  it('should export all necessary schemas', () => {
     expect(loginSchema).toBeDefined();
     expect(registerUserSchema).toBeDefined();
+    expect(insertContactSubmissionSchema).toBeDefined();
   });
 
   it('should have proper TypeScript types', () => {

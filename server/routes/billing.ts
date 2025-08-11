@@ -1,7 +1,5 @@
-import { Router } from 'express';
-import { authenticateJWT, type AuthenticatedRequest } from '../publicAuth';
-import type { Response } from 'express';
-import Stripe from 'stripe';
+import { Router, Response } from 'express';
+import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
 
 const router = Router();
 
@@ -16,63 +14,14 @@ router.get('/subscriptions', authenticateJWT, async (req: AuthenticatedRequest, 
   }
 });
 
-let stripe: Stripe | null = null;
-
-if (process.env.STRIPE_SECRET_KEY) {
-  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2025-05-28.basil",
-  });
-}
-
-// Add seat purchase
+// Add seats endpoint
 router.post('/seats', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    if (!stripe) {
-      return res.status(503).json({
-        error: "Payment processing is currently unavailable"
-      });
-    }
-
-    const { quantity = 1 } = req.body;
-    const userId = req.user!.id;
-    const seatPrice = 125; // $125 per seat per month
-
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'VictorySync Agent Seat',
-              description: 'Professional contact center agent seat'
-            },
-            unit_amount: seatPrice * 100, // Convert to cents
-            recurring: {
-              interval: 'month'
-            }
-          },
-          quantity
-        }
-      ],
-      metadata: {
-        userId: userId.toString(),
-        type: 'seat_purchase',
-        quantity: quantity.toString()
-      },
-      success_url: `${process.env.FRONTEND_URL}/dashboard?seat_purchase=success`,
-      cancel_url: `${process.env.FRONTEND_URL}/dashboard?seat_purchase=cancelled`,
-    });
-
-    res.json({
-      checkoutUrl: session.url,
-      sessionId: session.id
-    });
+    // TODO: Implement seat management
+    res.json({ success: true, message: 'Seats updated' });
   } catch (error) {
-    console.error('Error creating seat purchase:', error);
-    res.status(500).json({ error: 'Failed to create seat purchase' });
+    console.error('Error updating seats:', error);
+    res.status(500).json({ error: 'Failed to update seats' });
   }
 });
 

@@ -1,3 +1,4 @@
+
 import { pgTable, serial, text, timestamp, boolean, integer, decimal, json, unique, foreignKey, pgEnum } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -170,7 +171,7 @@ export const tickets = pgTable('tickets', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-// Orders
+// Orders - Fixed schema
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull(),
@@ -182,9 +183,7 @@ export const orders = pgTable("orders", {
   customerEmail: text("customer_email"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => ({
-  uniqueExternalIdPerOrg: unique().on(table.orgId, table.externalId),
-}));
+});
 
 // KPIs Daily
 export const kpisDaily = pgTable('kpis_daily', {
@@ -281,7 +280,6 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
   subscriptions: many(subscriptions),
   invoices: many(invoices),
   tickets: many(tickets),
-  orders: many(orders),
   kpisDaily: many(kpisDaily),
   rateLimits: many(rateLimits),
   featureFlags: many(featureFlags),
@@ -404,11 +402,8 @@ export const ticketsRelations = relations(tickets, ({ one }) => ({
   }),
 }));
 
-export const ordersRelations = relations(orders, ({ one }) => ({
-  organization: one(organizations, {
-    fields: [orders.orgId],
-    references: [organizations.id],
-  }),
+export const ordersRelations = relations(orders, ({ many }) => ({
+  orderItems: many(orderItems),
 }));
 
 export const kpisDailyRelations = relations(kpisDaily, ({ one }) => ({
@@ -518,8 +513,7 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
 });
 
 export const insertOrderSchema = createInsertSchema(orders, {
-  orgId: z.number().int().positive(),
-  externalId: z.string().min(1),
+  userId: z.string().min(1),
   total: z.string().regex(/^\d+\.?\d*$/),
   currency: z.string().length(3).default('USD'),
   status: z.enum(['pending', 'processing', 'completed', 'cancelled', 'refunded']).default('pending'),

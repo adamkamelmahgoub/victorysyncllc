@@ -1,7 +1,46 @@
-
 import { db } from '../db';
 import { auditLogs } from '../../shared/schema';
 import { Request } from 'express';
+
+export const AUDIT_ACTIONS = {
+  // Authentication
+  LOGIN: 'login',
+  LOGIN_FAILED: 'login_failed',
+  LOGOUT: 'logout',
+  PASSWORD_RESET: 'password_reset',
+  ENABLE_2FA: 'enable_2fa',
+  DISABLE_2FA: 'disable_2fa',
+
+  // Access codes
+  ACCESS_CODE_CREATED: 'access_code_created',
+  ACCESS_CODE_USED: 'access_code_used',
+  ACCESS_CODE_REVOKED: 'access_code_revoked',
+
+  // User management
+  USER_CREATED: 'user_created',
+  USER_UPDATED: 'user_updated',
+  USER_DEACTIVATED: 'user_deactivated',
+  USER_ROLE_ASSIGNED: 'user_role_assigned',
+  USER_ROLE_REMOVED: 'user_role_removed',
+
+  // Organization
+  ORG_CREATED: 'organization_created',
+  ORG_UPDATED: 'organization_updated',
+  ORG_SUSPENDED: 'organization_suspended',
+
+  // Integrations
+  INTEGRATION_CONNECTED: 'integration_connected',
+  INTEGRATION_DISCONNECTED: 'integration_disconnected',
+  INTEGRATION_SYNCED: 'integration_synced',
+
+  // Billing
+  PLAN_CHANGED: 'plan_changed',
+  PORTAL_OPENED: 'portal_opened',
+
+  // Admin actions
+  ADMIN_IMPERSONATE_START: 'admin_impersonate_start',
+  ADMIN_IMPERSONATE_END: 'admin_impersonate_end',
+} as const;
 
 interface AuditLogData {
   orgId?: number;
@@ -17,14 +56,8 @@ interface AuditLogData {
 export async function createAuditLog(data: AuditLogData) {
   try {
     await db.insert(auditLogs).values({
-      orgId: data.orgId,
-      actorUserId: data.actorUserId,
-      action: data.action,
-      entityType: data.entityType,
-      entityId: data.entityId,
-      meta: data.meta,
-      ip: data.ip,
-      userAgent: data.userAgent,
+      ...data,
+      createdAt: new Date(),
     });
   } catch (error) {
     console.error('Failed to create audit log:', error);
@@ -33,7 +66,7 @@ export async function createAuditLog(data: AuditLogData) {
 }
 
 export function auditMiddleware(action: string, entityType: string) {
-  return (req: any, res: any, next: any) => {
+  return (req: Request, res: any, next: any) => {
     // Store audit info on request for later use
     req.auditInfo = {
       action,
@@ -48,7 +81,7 @@ export function auditMiddleware(action: string, entityType: string) {
 }
 
 export async function auditAction(
-  req: any,
+  req: Request,
   entityId?: string,
   meta?: Record<string, any>
 ) {
@@ -60,44 +93,3 @@ export async function auditAction(
     });
   }
 }
-
-// Common audit actions
-export const AUDIT_ACTIONS = {
-  // Authentication
-  LOGIN: 'user.login',
-  LOGIN_FAILED: 'user.login_failed',
-  LOGOUT: 'user.logout',
-  PASSWORD_RESET: 'user.password_reset',
-  ENABLE_2FA: 'user.enable_2fa',
-  DISABLE_2FA: 'user.disable_2fa',
-
-  // Access codes
-  ACCESS_CODE_CREATED: 'access_code.created',
-  ACCESS_CODE_USED: 'access_code.used',
-  ACCESS_CODE_REVOKED: 'access_code.revoked',
-
-  // User management
-  USER_CREATED: 'user.created',
-  USER_UPDATED: 'user.updated',
-  USER_DEACTIVATED: 'user.deactivated',
-  USER_ROLE_ASSIGNED: 'user.role_assigned',
-  USER_ROLE_REMOVED: 'user.role_removed',
-
-  // Organization
-  ORG_CREATED: 'organization.created',
-  ORG_UPDATED: 'organization.updated',
-  ORG_SUSPENDED: 'organization.suspended',
-
-  // Integrations
-  INTEGRATION_CONNECTED: 'integration.connected',
-  INTEGRATION_DISCONNECTED: 'integration.disconnected',
-  INTEGRATION_SYNCED: 'integration.synced',
-
-  // Billing
-  PLAN_CHANGED: 'billing.plan_changed',
-  PORTAL_OPENED: 'billing.portal_opened',
-
-  // Admin actions
-  ADMIN_IMPERSONATE_START: 'admin.impersonate_start',
-  ADMIN_IMPERSONATE_END: 'admin.impersonate_end',
-} as const;

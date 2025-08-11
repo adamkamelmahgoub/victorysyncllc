@@ -1,6 +1,6 @@
 
 import { db } from '../db';
-import { users, permissions, roles, rolePermissions } from '../../shared/schema';
+import { users, permissions, roles, rolePermissions, userRoles } from '../../shared/schema';
 import { eq, inArray } from 'drizzle-orm';
 import argon2 from 'argon2';
 
@@ -118,7 +118,7 @@ async function createRoles(allPermissions: any[]) {
     }
     
     // Get permissions for this role
-    const rolePermissions = allPermissions.filter(p => 
+    const rolePermissionsList = allPermissions.filter(p => 
       roleData.permissions.includes(p.key)
     );
     
@@ -126,8 +126,8 @@ async function createRoles(allPermissions: any[]) {
     await db.delete(rolePermissions).where(eq(rolePermissions.roleId, roleId));
     
     // Add new role permissions
-    if (rolePermissions.length > 0) {
-      const rolePermissionValues = rolePermissions.map(p => ({
+    if (rolePermissionsList.length > 0) {
+      const rolePermissionValues = rolePermissionsList.map(p => ({
         roleId: roleId,
         permissionId: p.id
       }));
@@ -174,11 +174,10 @@ export async function seedSuperAdmin() {
       // Assign super_admin role to the user
       const superAdminRole = createdRoles.find(r => r.name === 'super_admin');
       if (superAdminRole) {
-        // Note: You'll need to create a userRoles table and import it
-        // await db.insert(userRoles).values({
-        //   userId: newUser.id,
-        //   roleId: superAdminRole.id
-        // });
+        await db.insert(userRoles).values({
+          userId: newUser.id,
+          roleId: superAdminRole.id
+        });
         console.log('Super admin role assigned to user');
       }
     } else {
@@ -187,12 +186,12 @@ export async function seedSuperAdmin() {
     
     console.log('Super admin seeding completed successfully!');
     
+    return createdRoles;
+    
   } catch (error) {
     console.error('Error seeding super admin:', error);
     throw error;
   }
-  
-  return createdRoles;
 }
 
 async function main() {
