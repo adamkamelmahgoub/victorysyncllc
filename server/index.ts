@@ -68,6 +68,7 @@ app.use((req, res, next) => {
       throw new Error('Database connection failed - cannot start server');
     }
 
+    // registerRoutes returns the http server instance
     const server = await registerRoutes(app);
     console.log(`✅ Routes registered successfully`);
 

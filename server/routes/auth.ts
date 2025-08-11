@@ -447,7 +447,7 @@ router.post('/register-with-code', async (req, res) => {
 });
 
 // Enroll 2FA
-router.post('/enroll-2fa', authenticateJWT, async (req: Request, res: Response) => {
+router.post('/enroll-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
@@ -487,7 +487,7 @@ router.post('/enroll-2fa', authenticateJWT, async (req: Request, res: Response) 
 });
 
 // Verify and enable 2FA
-router.post('/enable-2fa', authenticateJWT, async (req: Request, res: Response) => {
+router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
@@ -558,7 +558,7 @@ router.post('/enable-2fa', authenticateJWT, async (req: Request, res: Response) 
 });
 
 // Disable 2FA
-router.post('/disable-2fa', authenticateJWT, async (req: Request, res: Response) => {
+router.post('/disable-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
@@ -721,7 +721,7 @@ router.post('/refresh', async (req, res) => {
 });
 
 // Logout
-router.post('/logout', authenticateJWT, async (req: Request, res: Response) => {
+router.post('/logout', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const refreshToken = req.cookies?.refreshToken;
 
@@ -763,7 +763,7 @@ router.post('/logout', authenticateJWT, async (req: Request, res: Response) => {
 });
 
 // Get current user
-router.get('/me', authenticateJWT, async (req: Request, res: Response) => {
+router.get('/me', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });

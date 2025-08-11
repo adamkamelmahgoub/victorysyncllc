@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
-import { authenticateJWT } from '../lib/rbac';
+import { authenticateJWT, AuthenticatedRequest } from '../lib/rbac';
 
 const router = Router();
 
 // Placeholder billing routes
-router.get('/subscriptions', authenticateJWT, async (req: Request, res: Response) => {
+router.get('/subscriptions', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     // TODO: Implement subscription management
     res.json({ subscriptions: [] });
@@ -15,7 +15,7 @@ router.get('/subscriptions', authenticateJWT, async (req: Request, res: Response
 });
 
 // Add seats endpoint
-router.post('/seats', authenticateJWT, async (req: Request, res: Response) => {
+router.post('/seats', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     // TODO: Implement seat management
     res.json({ success: true, message: 'Seats updated' });
@@ -26,7 +26,7 @@ router.post('/seats', authenticateJWT, async (req: Request, res: Response) => {
 });
 
 // Get billing information
-router.get('/info', authenticateJWT, async (req: Request, res: Response) => {
+router.get('/info', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
 
@@ -51,7 +51,7 @@ router.get('/info', authenticateJWT, async (req: Request, res: Response) => {
 });
 
 // Download invoice
-router.get('/invoice/:id', authenticateJWT, async (req: Request, res: Response) => {
+router.get('/invoice/:id', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
 

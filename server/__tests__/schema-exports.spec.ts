@@ -1,5 +1,5 @@
 
-import { describe, it, expect } from 'jest';
+import { describe, it, expect } from '@jest/globals';
 import {
   User, Role, Permission, Organization, PublicUser, Package, Order, OrderItem, ContactSubmission,
   loginSchema, registerUserSchema, insertContactSubmissionSchema
