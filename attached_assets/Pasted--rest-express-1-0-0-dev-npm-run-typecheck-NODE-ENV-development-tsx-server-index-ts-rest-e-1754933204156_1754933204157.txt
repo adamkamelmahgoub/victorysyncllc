@@ -1,0 +1,518 @@
+
+> rest-express@1.0.0 dev
+> npm run typecheck && NODE_ENV=development tsx server/index.ts
+
+
+> rest-express@1.0.0 typecheck
+> tsc --noEmit
+
+server/auth/passport.ts:1:53 - error TS2307: Cannot find module 'passport-jwt' or its corresponding type declarations.
+
+1 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+                                                      ~~~~~~~~~~~~~~
+
+server/index.ts:87:28 - error TS2345: Argument of type 'void' is not assignable to parameter of type 'Server<typeof IncomingMessage, typeof ServerResponse>'.
+
+87       await setupVite(app, server);
+                              ~~~~~~
+
+server/index.ts:107:12 - error TS2339: Property 'listen' does not exist on type 'void'.
+
+107     server.listen({
+               ~~~~~~
+
+server/index.ts:120:14 - error TS2339: Property 'close' does not exist on type 'void'.
+
+120       server.close(() => {
+                 ~~~~~
+
+server/index.ts:128:14 - error TS2339: Property 'close' does not exist on type 'void'.
+
+128       server.close(() => {
+                 ~~~~~
+
+server/routes/auth.ts:450:28 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+450 router.post('/enroll-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                               ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/auth.ts:450:57 - error TS2304: Cannot find name 'AuthenticatedRequest'.
+
+450 router.post('/enroll-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                                                            ~~~~~~~~~~~~~~~~~~~~
+
+server/routes/auth.ts:490:28 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+490 router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                               ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/auth.ts:490:57 - error TS2304: Cannot find name 'AuthenticatedRequest'.
+
+490 router.post('/enable-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                                                            ~~~~~~~~~~~~~~~~~~~~
+
+server/routes/auth.ts:561:29 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+561 router.post('/disable-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                                ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/auth.ts:561:58 - error TS2304: Cannot find name 'AuthenticatedRequest'.
+
+561 router.post('/disable-2fa', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                                                             ~~~~~~~~~~~~~~~~~~~~
+
+server/routes/auth.ts:724:24 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+724 router.post('/logout', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                           ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/auth.ts:724:53 - error TS2304: Cannot find name 'AuthenticatedRequest'.
+
+724 router.post('/logout', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                                                        ~~~~~~~~~~~~~~~~~~~~
+
+server/routes/auth.ts:766:19 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+766 router.get('/me', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                      ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/auth.ts:766:48 - error TS2304: Cannot find name 'AuthenticatedRequest'.
+
+766 router.get('/me', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                                                   ~~~~~~~~~~~~~~~~~~~~
+
+server/routes/billing.ts:7:30 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+7 router.get('/subscriptions', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                               ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/billing.ts:18:23 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+18 router.post('/seats', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                         ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/billing.ts:29:21 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+29 router.get('/info', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                       ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/billing.ts:54:28 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+54 router.get('/invoice/:id', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                              ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/integrations.ts:8:26 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+8 router.get('/available', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                           ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/integrations.ts:19:17 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+19 router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                   ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/integrations.ts:54:25 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+54 router.post('/connect', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                           ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/integrations.ts:76:23 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+76 router.delete('/:id', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                         ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/integrations.ts:96:26 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+96 router.post('/:id/sync', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                            ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/kpi.ts:7:17 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+7 router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                  ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/kpi.ts:35:22 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+35 router.get('/calls', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                        ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/kpi.ts:55:23 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+55 router.get('/agents', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                         ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+server/routes/kpi.ts:73:23 - error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: AuthenticatedRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Types of parameters 'req' and 'req' are incompatible.
+          Type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to type 'AuthenticatedRequest'.
+            Types of property 'user' are incompatible.
+              Type 'User | undefined' is not assignable to type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; } | undefined'.
+                Type 'User' is missing the following properties from type '{ email: string; name: string; id: number; createdAt: Date; orgId: number | null; passwordHash: string; twoFactorEnabled: boolean; twoFactorSecret: string | null; isSuperAdmin: boolean; isActive: boolean; emailVerified: boolean; emailVerificationToken: string | null; lastLoginAt: Date | null; }': email, name, id, createdAt, and 9 more.
+
+73 router.get('/trends', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+                         ~~~~~~~~~~~~~~~
+
+  node_modules/@types/express-serve-static-core/index.d.ts:153:5
+    153     <
+            ~
+    154         P = ParamsDictionary,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ... 
+    162         ...handlers: Array<RequestHandlerParams<P, ResBody, ReqBody, ReqQuery, LocalsObj>>
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    163     ): T;
+        ~~~~~~~~~
+    The last overload is declared here.
+
+
+Found 28 errors in 6 files.
+
+Errors  Files
+     1  server/auth/passport.ts:1
+     4  server/index.ts:87
+    10  server/routes/auth.ts:450
+     4  server/routes/billing.ts:7
+     5  server/routes/integrations.ts:8
+     4  server/routes/kpi.ts:7
