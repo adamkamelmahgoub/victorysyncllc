@@ -1,12 +1,28 @@
-import express, { type Express } from "express";
-import fs from "fs";
-import path from "path";
-import { createServer as createViteServer, createLogger } from "vite";
-import { type Server } from "http";
-import viteConfig from "../vite.config";
-import { nanoid } from "nanoid";
 
-const viteLogger = createLogger();
+// server/vite.ts
+import { createServer, type ViteDevServer, type ServerOptions } from 'vite';
+import react from '@vitejs/plugin-react';
+import type { Express } from 'express';
+
+const isReplit =
+  Boolean(process.env.REPL_ID || process.env.REPL_SLUG || process.env.REPLIT_DB_URL);
+
+const serverOptions: ServerOptions = {
+  middlewareMode: true,
+  allowedHosts: true, // allow janeway.replit.dev variants
+  hmr: isReplit ? { protocol: 'wss', clientPort: 443 } : undefined,
+};
+
+export async function setupVite(app: Express): Promise<ViteDevServer> {
+  const vite = await createServer({
+    appType: 'custom',
+    plugins: [react()],
+    server: serverOptions,
+    preview: { allowedHosts: true },
+  });
+  app.use(vite.middlewares);
+  return vite;
+}
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -19,29 +35,11 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
-import { createServer } from "vite";
-import type { ServerOptions } from 'vite';
-
-export const serverOptions: ServerOptions = {
-  middlewareMode: true,
-  allowedHosts: true,           // accept Replit janeway hosts
-  // If HMR is configured here, ensure it's compatible with Replit:
-  hmr: { protocol: 'wss', clientPort: 443 },
-};
-
-export async function setupVite(app: any) {
-  const vite = await createServer({
-    server: serverOptions,
-    appType: "custom",
-  });
-
-  app.use(vite.ssrFixStacktrace);
-  app.use(vite.middlewares);
-
-  return vite;
-}
-
 export function serveStatic(app: Express) {
+  const express = require('express');
+  const path = require('path');
+  const fs = require('fs');
+  
   const distPath = path.resolve(import.meta.dirname, "public");
 
   if (!fs.existsSync(distPath)) {
@@ -53,7 +51,7 @@ export function serveStatic(app: Express) {
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  app.use("*", (_req: any, res: any) => {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
