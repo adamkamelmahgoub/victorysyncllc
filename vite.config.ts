@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -29,13 +30,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    host: "0.0.0.0",
-    port: 5173,
-    strictPort: false,
-    fs: {
-      strict: false,
-      allow: [".."],
-    },
-    allowedHosts: true,
+    middlewareMode: true,
+    hmr: false,
   },
 });
