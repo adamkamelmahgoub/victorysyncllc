@@ -106,7 +106,7 @@ export default function Services() {
           <p className="text-xl text-purple-100 max-w-3xl mx-auto mb-8">
             From customer support to sales growth, we provide end-to-end services that help your business thrive while reducing costs by up to 60%.
           </p>
-          <Link href="/pricing">
+          <Link to="/pricing">
             <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6750f0]">
               View Our Packages
             </Button>
@@ -154,7 +154,7 @@ export default function Services() {
                       </div>
                     </div>
 
-                    <Link href="/contact">
+                    <Link to="/contact">
                       <Button className="bg-victory-purple hover:bg-purple-700 text-white">
                         Learn More
                       </Button>
@@ -170,12 +170,12 @@ export default function Services() {
                           Discover how our {service.title.toLowerCase()} services can transform your business operations.
                         </p>
                         <div className="space-y-3">
-                          <Link href="/pricing">
+                          <Link to="/pricing">
                             <Button className="w-full bg-victory-purple hover:bg-purple-700 text-white">
                               View Pricing Plans
                             </Button>
                           </Link>
-                          <Link href="/contact">
+                          <Link to="/contact">
                             <Button variant="outline" className="w-full">
                               Schedule Consultation
                             </Button>
@@ -253,12 +253,12 @@ export default function Services() {
             Let's discuss how our services can help you reduce costs, improve efficiency, and drive growth.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact">
+            <Link to="/contact">
               <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#7046ee]">
                 Get Free Consultation
               </Button>
             </Link>
-            <Link href="/pricing">
+            <Link to="/pricing">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#7147ef]">
                 View Pricing
               </Button>
