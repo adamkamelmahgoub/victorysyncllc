@@ -9,16 +9,18 @@ const isReplit =
 
 const serverOptions: ServerOptions = {
   middlewareMode: true,
-  allowedHosts: true, // allow janeway.replit.dev variants
+  allowedHosts: true,            // allow *.replit.dev
   hmr: isReplit ? { protocol: 'wss', clientPort: 443 } : undefined,
 };
 
 export async function setupVite(app: Express): Promise<ViteDevServer> {
   const vite = await createServer({
     appType: 'custom',
+    root: 'client',
     plugins: [react()],
     server: serverOptions,
     preview: { allowedHosts: true },
+    build: { outDir: 'dist', emptyOutDir: true },
   });
   app.use(vite.middlewares);
   return vite;
@@ -40,7 +42,7 @@ export function serveStatic(app: Express) {
   const path = require('path');
   const fs = require('fs');
   
-  const distPath = path.resolve(import.meta.dirname, "public");
+  const distPath = path.resolve(import.meta.dirname, "../client/dist");
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
@@ -50,7 +52,7 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
-  // fall through to index.html if the file doesn't exist
+  // SPA catch-all: serve index.html for all non-API routes
   app.use("*", (_req: any, res: any) => {
     res.sendFile(path.resolve(distPath, "index.html"));
   });

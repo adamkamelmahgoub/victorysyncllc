@@ -1,4 +1,5 @@
 
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -14,6 +15,7 @@ const replitHost =
 
 // IMPORTANT: Only change Vite config. Do not touch app code.
 export default defineConfig({
+  root: 'client',
   plugins: [react()],
   server: {
     host: true,                                     // listen on 0.0.0.0 for Replit
@@ -33,4 +35,9 @@ export default defineConfig({
   preview: {
     allowedHosts: isReplit ? true : ['localhost'],
   },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
 });
+
