@@ -1,0 +1,290 @@
+
+> rest-express@1.0.0 dev
+> npm run typecheck && NODE_ENV=development tsx server/index.ts
+
+
+> rest-express@1.0.0 typecheck
+> tsc --noEmit
+
+client/src/components/footer.tsx:7:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+7 export default function Footer() {
+                          ~~~~~~
+
+client/src/components/footer.tsx:7:25 - error TS2393: Duplicate function implementation.
+
+7 export default function Footer() {
+                          ~~~~~~
+
+client/src/components/footer.tsx:85:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+85 export default function Footer() {
+                           ~~~~~~
+
+client/src/components/footer.tsx:85:25 - error TS2393: Duplicate function implementation.
+
+85 export default function Footer() {
+                           ~~~~~~
+
+client/src/components/navigation.tsx:38:17 - error TS2322: Type '{ children: Element; href: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+38           <Link href="/" onClick={scrollToTop}>
+                   ~~~~
+
+client/src/components/navigation.tsx:54:37 - error TS2322: Type '{ children: Element; key: string; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+54               <Link key={link.href} href={link.href}>
+                                       ~~~~
+
+client/src/components/navigation.tsx:84:23 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+84                 <Link href="/dashboard">
+                         ~~~~
+
+client/src/components/navigation.tsx:100:23 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+100                 <Link href="/login">
+                          ~~~~
+
+client/src/components/navigation.tsx:141:39 - error TS2322: Type '{ children: Element; key: string; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+141                 <Link key={link.href} href={link.href}>
+                                          ~~~~
+
+client/src/components/navigation.tsx:158:27 - error TS2322: Type '{ children: Element; href: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'href' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'. Did you mean 'ref'?
+
+158                     <Link href="/dashboard">
+                              ~~~~
+
+client/src/hooks/useAuth.ts:3:17 - error TS2323: Cannot redeclare exported variable 'useAuth'.
+
+3 export function useAuth() {
+                  ~~~~~~~
+
+client/src/hooks/useAuth.ts:3:17 - error TS2393: Duplicate function implementation.
+
+3 export function useAuth() {
+                  ~~~~~~~
+
+client/src/hooks/useAuth.ts:55:17 - error TS2323: Cannot redeclare exported variable 'useAuth'.
+
+55 export function useAuth() {
+                   ~~~~~~~
+
+client/src/hooks/useAuth.ts:55:17 - error TS2393: Duplicate function implementation.
+
+55 export function useAuth() {
+                   ~~~~~~~
+
+client/src/hooks/useCart.tsx:1:10 - error TS2300: Duplicate identifier 'useCartContext'.
+
+1 import { useCartContext } from '@/contexts/CartContext';
+           ~~~~~~~~~~~~~~
+
+client/src/hooks/useCart.tsx:4:14 - error TS2300: Duplicate identifier 'useCart'.
+
+4 export const useCart = () => {
+               ~~~~~~~
+
+client/src/hooks/useCart.tsx:50:10 - error TS2300: Duplicate identifier 'useCartContext'.
+
+50 import { useCartContext } from '@/contexts/CartContext';
+            ~~~~~~~~~~~~~~
+
+client/src/hooks/useCart.tsx:52:17 - error TS2300: Duplicate identifier 'useCart'.
+
+52 export function useCart() {
+                   ~~~~~~~
+
+client/src/pages/about.tsx:6:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+6 export default function About() {
+                          ~~~~~
+
+client/src/pages/about.tsx:6:25 - error TS2393: Duplicate function implementation.
+
+6 export default function About() {
+                          ~~~~~
+
+client/src/pages/about.tsx:279:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+279 export default function About() {
+                            ~~~~~
+
+client/src/pages/about.tsx:279:25 - error TS2393: Duplicate function implementation.
+
+279 export default function About() {
+                            ~~~~~
+
+client/src/pages/contact.tsx:17:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+17 export default function Contact() {
+                           ~~~~~~~
+
+client/src/pages/contact.tsx:17:25 - error TS2393: Duplicate function implementation.
+
+17 export default function Contact() {
+                           ~~~~~~~
+
+client/src/pages/contact.tsx:303:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+303 export default function Contact() {
+                            ~~~~~~~
+
+client/src/pages/contact.tsx:303:25 - error TS2393: Duplicate function implementation.
+
+303 export default function Contact() {
+                            ~~~~~~~
+
+client/src/pages/customer-dashboard.tsx:1:8 - error TS2300: Duplicate identifier 'React'.
+
+1 import React, { useState, useEffect } from 'react';
+         ~~~~~
+
+client/src/pages/customer-dashboard.tsx:56:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+56 export default function CustomerDashboard() {
+                           ~~~~~~~~~~~~~~~~~
+
+client/src/pages/customer-dashboard.tsx:56:25 - error TS2393: Duplicate function implementation.
+
+56 export default function CustomerDashboard() {
+                           ~~~~~~~~~~~~~~~~~
+
+client/src/pages/customer-dashboard.tsx:593:8 - error TS2300: Duplicate identifier 'React'.
+
+593 import React from 'react';
+           ~~~~~
+
+client/src/pages/customer-dashboard.tsx:595:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+595 export default function Dashboard() {
+                            ~~~~~~~~~
+
+client/src/pages/customer-dashboard.tsx:595:25 - error TS2393: Duplicate function implementation.
+
+595 export default function Dashboard() {
+                            ~~~~~~~~~
+
+client/src/pages/home.tsx:6:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+6 export default function Home() {
+                          ~~~~
+
+client/src/pages/home.tsx:6:25 - error TS2393: Duplicate function implementation.
+
+6 export default function Home() {
+                          ~~~~
+
+client/src/pages/home.tsx:273:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+273 export default function Home() {
+                            ~~~~
+
+client/src/pages/home.tsx:273:25 - error TS2393: Duplicate function implementation.
+
+273 export default function Home() {
+                            ~~~~
+
+client/src/pages/login.tsx:19:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+19 export default function Login() {
+                           ~~~~~
+
+client/src/pages/login.tsx:19:25 - error TS2393: Duplicate function implementation.
+
+19 export default function Login() {
+                           ~~~~~
+
+client/src/pages/login.tsx:158:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+158 export default function SignIn() {
+                            ~~~~~~
+
+client/src/pages/login.tsx:158:25 - error TS2393: Duplicate function implementation.
+
+158 export default function SignIn() {
+                            ~~~~~~
+
+client/src/pages/pricing.tsx:18:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+18 export default function Pricing() {
+                           ~~~~~~~
+
+client/src/pages/pricing.tsx:18:25 - error TS2393: Duplicate function implementation.
+
+18 export default function Pricing() {
+                           ~~~~~~~
+
+client/src/pages/pricing.tsx:108:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+108 export default function Pricing() {
+                            ~~~~~~~
+
+client/src/pages/pricing.tsx:108:25 - error TS2393: Duplicate function implementation.
+
+108 export default function Pricing() {
+                            ~~~~~~~
+
+client/src/pages/register.tsx:19:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+19 export default function Register() {
+                           ~~~~~~~~
+
+client/src/pages/register.tsx:19:25 - error TS2393: Duplicate function implementation.
+
+19 export default function Register() {
+                           ~~~~~~~~
+
+client/src/pages/register.tsx:183:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+183 export default function Register() {
+                            ~~~~~~~~
+
+client/src/pages/register.tsx:183:25 - error TS2393: Duplicate function implementation.
+
+183 export default function Register() {
+                            ~~~~~~~~
+
+client/src/pages/services.tsx:6:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+6 export default function Services() {
+                          ~~~~~~~~
+
+client/src/pages/services.tsx:6:25 - error TS2393: Duplicate function implementation.
+
+6 export default function Services() {
+                          ~~~~~~~~
+
+client/src/pages/services.tsx:274:25 - error TS2323: Cannot redeclare exported variable 'default'.
+
+274 export default function Services() {
+                            ~~~~~~~~
+
+client/src/pages/services.tsx:274:25 - error TS2393: Duplicate function implementation.
+
+274 export default function Services() {
+                            ~~~~~~~~
+
+
+Found 52 errors in 12 files.
+
+Errors  Files
+     4  client/src/components/footer.tsx:7
+     6  client/src/components/navigation.tsx:38
+     4  client/src/hooks/useAuth.ts:3
+     4  client/src/hooks/useCart.tsx:1
+     4  client/src/pages/about.tsx:6
+     4  client/src/pages/contact.tsx:17
+     6  client/src/pages/customer-dashboard.tsx:1
+     4  client/src/pages/home.tsx:6
+     4  client/src/pages/login.tsx:19
+     4  client/src/pages/pricing.tsx:18
+     4  client/src/pages/register.tsx:19
+     4  client/src/pages/services.tsx:6
