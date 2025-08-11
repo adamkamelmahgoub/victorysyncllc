@@ -728,7 +728,8 @@ router.post('/refresh', async (req, res) => {
 });
 
 // Logout
-router.post('/logout', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/logout', authenticateJWT, async (req: Request, res: Response) => {
+  const authenticatedReq = req as AuthenticatedRequest;
   try {
     const refreshToken = req.cookies?.refreshToken;
 
@@ -741,13 +742,13 @@ router.post('/logout', authenticateJWT, async (req: AuthenticatedRequest, res: R
       }
     }
 
-    if (req.user) {
+    if (authenticatedReq.user) {
       await createAuditLog({
-        orgId: req.user.orgId || undefined,
-        actorUserId: req.user.id,
+        orgId: authenticatedReq.user.orgId || undefined,
+        actorUserId: authenticatedReq.user.id,
         action: AUDIT_ACTIONS.LOGOUT,
         entityType: 'user',
-        entityId: req.user.id.toString(),
+        entityId: authenticatedReq.user.id.toString(),
         ip: req.ip,
         userAgent: req.get('User-Agent'),
       });
@@ -770,9 +771,10 @@ router.post('/logout', authenticateJWT, async (req: AuthenticatedRequest, res: R
 });
 
 // Get current user
-router.get('/me', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/me', authenticateJWT, async (req: Request, res: Response) => {
+  const authenticatedReq = req as AuthenticatedRequest;
   try {
-    if (!req.user) {
+    if (!authenticatedReq.user) {
       return res.status(401).json({ ok: false, error: 'UNAUTHORIZED' });
     }
 
@@ -787,7 +789,7 @@ router.get('/me', authenticateJWT, async (req: AuthenticatedRequest, res: Respon
         emailVerified: users.emailVerified,
       })
       .from(users)
-      .where(eq(users.id, req.user.id))
+      .where(eq(users.id, authenticatedReq.user.id))
       .limit(1);
 
     if (!user[0]) {
