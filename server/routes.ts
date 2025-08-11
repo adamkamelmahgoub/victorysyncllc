@@ -1,12 +1,13 @@
-import { Express } from 'express'; // Assuming Express type is needed
+import { Express } from 'express';
 import { Router } from 'express';
+import http from 'http';
 import authRoutes from './routes/auth';
 import adminRoutes from './routes/admin';
 import kpiRoutes from './routes/kpi';
 import integrationsRoutes from './routes/integrations';
 import billingRoutes from './routes/billing';
 
-function registerRoutes(app: Express): void {
+function registerRoutes(app: Express): http.Server {
   const router = Router();
 
   // Mount route modules
@@ -22,6 +23,9 @@ function registerRoutes(app: Express): void {
   });
 
   app.use('/', router); // Mount the main router at the root
+
+  // Create and return HTTP server
+  return http.createServer(app);
 }
 
 export default registerRoutes;
