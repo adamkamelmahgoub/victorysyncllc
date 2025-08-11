@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { authenticateJWT, type AuthenticatedRequest } from '../publicAuth';
 import type { Response } from 'express';
@@ -17,10 +16,6 @@ router.get('/subscriptions', authenticateJWT, async (req: AuthenticatedRequest, 
   }
 });
 
-export default router;
-
-const router = Router();
-
 let stripe: Stripe | null = null;
 
 if (process.env.STRIPE_SECRET_KEY) {
@@ -33,8 +28,8 @@ if (process.env.STRIPE_SECRET_KEY) {
 router.post('/seats', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!stripe) {
-      return res.status(503).json({ 
-        error: "Payment processing is currently unavailable" 
+      return res.status(503).json({
+        error: "Payment processing is currently unavailable"
       });
     }
 
@@ -71,9 +66,9 @@ router.post('/seats', authenticateJWT, async (req: AuthenticatedRequest, res: Re
       cancel_url: `${process.env.FRONTEND_URL}/dashboard?seat_purchase=cancelled`,
     });
 
-    res.json({ 
+    res.json({
       checkoutUrl: session.url,
-      sessionId: session.id 
+      sessionId: session.id
     });
   } catch (error) {
     console.error('Error creating seat purchase:', error);
@@ -85,7 +80,7 @@ router.post('/seats', authenticateJWT, async (req: AuthenticatedRequest, res: Re
 router.get('/info', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
-    
+
     // Mock billing data - in production this would come from database/Stripe
     const billingInfo = {
       plan: 'Professional',
@@ -110,15 +105,15 @@ router.get('/info', authenticateJWT, async (req: AuthenticatedRequest, res: Resp
 router.get('/invoice/:id', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    
+
     // In production, this would:
     // 1. Verify user owns the invoice
     // 2. Generate/retrieve PDF from Stripe
     // 3. Return the PDF file
-    
-    res.json({ 
+
+    res.json({
       message: 'Invoice download would be implemented here',
-      invoiceId: id 
+      invoiceId: id
     });
   } catch (error) {
     console.error('Error downloading invoice:', error);

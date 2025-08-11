@@ -5,7 +5,7 @@ import type { Response } from 'express';
 
 const router = Router();
 
-// Placeholder integration routes
+// Get available integrations
 router.get('/available', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   try {
     // TODO: Implement integration management
@@ -15,10 +15,6 @@ router.get('/available', authenticateJWT, async (req: AuthenticatedRequest, res:
     res.status(500).json({ error: 'Failed to fetch integrations' });
   }
 });
-
-export default router;
-
-const router = Router();
 
 // Get user integrations
 router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
