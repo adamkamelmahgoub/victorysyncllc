@@ -33,12 +33,6 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
-    allowedHosts: [
-      ".replit.dev",
-      ".replit.co",
-      "13206e28-c0e5-4f02-ae3f-f56da3295fd0-00-2qod1gv6wxymw.janeway.replit.dev",
-      "localhost",
-      "0.0.0.0"
-    ],
+    allowedHosts: "all",
   },
 });
