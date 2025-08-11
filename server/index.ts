@@ -1,139 +1,76 @@
-import express, { type Request, Response, NextFunction } from "express";
-import registerRoutes from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { testDatabaseConnection } from "./db";
-import passport from "./auth/passport";
-import http from 'http'; // Import http module for server type
+import express, { type Request, type Response, type NextFunction } from 'express';
+import http from 'http';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { setupVite } from './vite';
 
-// Validate required environment variables at startup
-function validateEnvironment() {
-  const requiredEnvVars = ['DATABASE_URL'];
-  const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
-
-  if (missing.length > 0) {
-    console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
-    process.exit(1);
-  }
-
-  console.log(`✅ All required environment variables are set`);
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+const server = http.createServer(app);
 
-// Initialize Passport
-app.use(passport.initialize());
+// Minimal hardening for dev preview (optional)
+app.disable('x-powered-by');
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+// Health check so we can see the server is alive
+app.get('/healthz', (_req, res) => res.status(200).send('ok'));
 
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
+// IMPORTANT: mount your API routers here (if any)
+// Example:
+// app.use('/api', apiRouter);
 
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
+// Self-diagnostic to know which branch is active
+app.get('/__whoami', (_req, res) => {
+  res.json({
+    NODE_ENV: process.env.NODE_ENV || 'undefined',
+    mode: process.env.NODE_ENV === 'production' ? 'PROD' : 'DEV',
   });
-
-  next();
 });
 
-(async () => {
-  try {
-    console.log(`🚀 Starting VictorySync application...`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+// Decide dev vs prod.
+// Default to DEV unless NODE_ENV === 'production'.
+const isDev = process.env.NODE_ENV !== 'production';
 
-    // Validate environment variables
-    validateEnvironment();
+if (isDev) {
+  // DEV: use Vite middleware and transform index.html
+  const vite = await setupVite(app);
 
-    // Test database connection
-    const dbConnected = await testDatabaseConnection();
-    if (!dbConnected) {
-      throw new Error('Database connection failed - cannot start server');
-    }
+  app.use('*', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const url = req.originalUrl;
+      const indexPath = path.resolve(__dirname, '..', 'client', 'index.html');
 
-    // registerRoutes returns the http server instance
-    const server: http.Server = registerRoutes(app);
-    console.log(`✅ Routes registered successfully`);
-
-    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-
-      console.error(`❌ Application error: ${message}`, err);
-      res.status(status).json({ message });
-    });
-
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
-    if (app.get("env") === "development") {
-      await setupVite(app);
-      console.log(`✅ Vite development server setup complete`);
-    } else {
-      try {
-        serveStatic(app);
-        console.log(`✅ Static file serving setup complete`);
-      } catch (error) {
-        console.error(`❌ Failed to setup static file serving:`, error);
-        console.log(`This might happen if the build files are missing.`);
-        console.log(`In production, ensure you run 'npm run build' before starting the server.`);
-        throw error;
+      // Ensure index.html exists
+      if (!fs.existsSync(indexPath)) {
+        return res.status(500).send('client/index.html not found');
       }
+
+      let html = fs.readFileSync(indexPath, 'utf-8');
+      html = await vite.transformIndexHtml(url, html);
+      res.setHeader('Content-Type', 'text/html');
+      return res.status(200).send(html);
+    } catch (err) {
+      return next(err);
     }
+  });
+} else {
+  // PROD: serve the built SPA from client/dist and use catch-all
+  const distDir = path.resolve(__dirname, '..', 'client', 'dist');
+  const indexHtml = path.resolve(distDir, 'index.html');
 
+  app.use(express.static(distDir, { index: false, fallthrough: true }));
+  app.get('*', (_req, res) => res.sendFile(indexHtml));
+}
 
+// Basic error handler so we see issues in preview instead of "Cannot GET /"
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('Server error:', err);
+  res.status(500).send(err?.stack || String(err));
+});
 
-    // ALWAYS serve the app on port 5000
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
-    const port = process.env.PORT || 5000;
-    server.listen({
-      port: Number(port),
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
-      console.log(`🎉 VictorySync server is running successfully!`);
-      log(`serving on port ${port}`);
-      console.log(`Health check available at: http://0.0.0.0:${port}/health`);
-    });
-
-    // Handle graceful shutdown
-    process.on('SIGTERM', () => {
-      console.log('SIGTERM received, shutting down gracefully');
-      server.close(() => {
-        console.log('Server closed');
-        process.exit(0);
-      });
-    });
-
-    process.on('SIGINT', () => {
-      console.log('SIGINT received, shutting down gracefully');
-      server.close(() => {
-        console.log('Server closed');
-        process.exit(0);
-      });
-    });
-
-  } catch (error) {
-    console.error(`❌ Failed to start server:`, error);
-    process.exit(1);
-  }
-})();
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`HTTP server listening on ${PORT}. NODE_ENV=${process.env.NODE_ENV || 'undefined'}`);
+});
