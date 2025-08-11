@@ -19,51 +19,26 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
-export async function setupVite(app: Express, server: Server) {
-  const vite = await createViteServer({
-    ...viteConfig,
-    configFile: false,
-    customLogger: {
-      ...viteLogger,
-      error: (msg, options) => {
-        viteLogger.error(msg, options);
-        process.exit(1);
-      },
-    },
-    server: {
-      middlewareMode: true,
-      hmr: {
-        server: server,
-      },
-    },
+import { createServer } from "vite";
+import type { ServerOptions } from 'vite';
+
+export const serverOptions: ServerOptions = {
+  middlewareMode: true,
+  allowedHosts: true,           // accept Replit janeway hosts
+  // If HMR is configured here, ensure it's compatible with Replit:
+  hmr: { protocol: 'wss', clientPort: 443 },
+};
+
+export async function setupVite(app: any) {
+  const vite = await createServer({
+    server: serverOptions,
     appType: "custom",
   });
 
+  app.use(vite.ssrFixStacktrace);
   app.use(vite.middlewares);
-  app.use("*", async (req, res, next) => {
-    const url = req.originalUrl;
 
-    try {
-      const clientTemplate = path.resolve(
-        import.meta.dirname,
-        "..",
-        "client",
-        "index.html",
-      );
-
-      // always reload the index.html file from disk incase it changes
-      let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      template = template.replace(
-        `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`,
-      );
-      const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
-    } catch (e) {
-      vite.ssrFixStacktrace(e as Error);
-      next(e);
-    }
-  });
+  return vite;
 }
 
 export function serveStatic(app: Express) {
