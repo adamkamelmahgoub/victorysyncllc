@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
+import { useLocation } from 'react-router-dom';
 import { apiJSON } from '@/lib/http';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -590,19 +590,4 @@ export default function CustomerDashboard() {
     </div>
   );
 }
-import React from 'react';
 
-export default function Dashboard() {
-  return (
-    <div className="min-h-screen bg-white">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900">Customer Dashboard</h1>
-          <p className="mt-6 text-lg text-gray-600 max-w-3xl mx-auto">
-            Welcome to your dashboard
-          </p>
-        </div>
-      </main>
-    </div>
-  );
-}

@@ -47,38 +47,3 @@ export const useCart = () => {
     getItemCount,
   };
 };
-import { useCartContext } from '@/contexts/CartContext';
-
-export function useCart() {
-  const { state, dispatch } = useCartContext();
-
-  const addItem = (item: { packageId: number; name: string; price: number }) => {
-    dispatch({ type: 'ADD_ITEM', payload: item });
-  };
-
-  const removeItem = (packageId: number) => {
-    dispatch({ type: 'REMOVE_ITEM', payload: packageId });
-  };
-
-  const updateQuantity = (packageId: number, quantity: number) => {
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { packageId, quantity } });
-  };
-
-  const clearCart = () => {
-    dispatch({ type: 'CLEAR_CART' });
-  };
-
-  const getItemCount = () => {
-    return state.items.reduce((total, item) => total + item.quantity, 0);
-  };
-
-  return {
-    items: state.items,
-    total: state.total,
-    addItem,
-    removeItem,
-    updateQuantity,
-    clearCart,
-    getItemCount,
-  };
-}

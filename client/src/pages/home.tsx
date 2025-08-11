@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, Megaphone, Bot, Check, Star } from 'lucide-react';
@@ -268,29 +268,4 @@ export default function Home() {
     </div>
   );
 }
-import React from 'react';
 
-export default function Home() {
-  return (
-    <div className="min-h-screen bg-white">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 sm:text-6xl">
-            Welcome to VictorySync
-          </h1>
-          <p className="mt-6 text-lg text-gray-600 max-w-3xl mx-auto">
-            Your premier call center solutions provider. We deliver exceptional customer service experiences.
-          </p>
-          <div className="mt-10">
-            <a
-              href="/pricing"
-              className="bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
-            >
-              Get Started
-            </a>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-}

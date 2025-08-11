@@ -1,7 +1,7 @@
 import { Phone, Megaphone, Bot, BarChart3, Check, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 
 export default function Services() {
   const services = [
@@ -269,19 +269,4 @@ export default function Services() {
     </div>
   );
 }
-import React from 'react';
 
-export default function Services() {
-  return (
-    <div className="min-h-screen bg-white">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900">Our Services</h1>
-          <p className="mt-6 text-lg text-gray-600 max-w-3xl mx-auto">
-            Discover our comprehensive call center solutions.
-          </p>
-        </div>
-      </main>
-    </div>
-  );
-}
