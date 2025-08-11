@@ -27,7 +27,7 @@ export default function Careers() {
         "Experience with AI/ML technologies and chatbot development",
         "Knowledge of workflow automation tools",
         "Strong analytical and problem-solving skills",
-        "Experience with customer service platforms"
+        "Experience with contact center platforms"
       ]
     },
     {
@@ -35,7 +35,7 @@ export default function Careers() {
       department: "Sales",
       location: "Remote",
       type: "Full-time",
-      description: "Drive business growth by connecting with potential clients and showcasing our call center solutions.",
+      description: "Drive business growth by connecting with potential clients and showcasing our contact center solutions.",
       requirements: [
         "2+ years of B2B sales experience",
         "Strong communication and presentation skills",

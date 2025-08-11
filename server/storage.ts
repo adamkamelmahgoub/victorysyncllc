@@ -24,25 +24,31 @@ export interface IStorage {
   getPublicUserByEmail(email: string): Promise<PublicUser | undefined>;
   getPublicUserById(id: number): Promise<PublicUser | undefined>;
   updatePublicUserSocialAccounts(id: number, socialAccounts: any[]): Promise<PublicUser>;
-  
+
   // Package operations
   getPackages(): Promise<Package[]>;
   getPackage(id: number): Promise<Package | undefined>;
   createPackage(pkg: InsertPackage): Promise<Package>;
-  
+
   // Order operations
   createOrder(order: InsertOrder): Promise<Order>;
   getOrder(id: number): Promise<Order | undefined>;
   getUserOrders(userId: string): Promise<Order[]>;
   updateOrderStatus(id: number, status: string): Promise<Order>;
-  
+
   // Order item operations
   createOrderItem(item: InsertOrderItem): Promise<OrderItem>;
   getOrderItems(orderId: number): Promise<OrderItem[]>;
-  
+
   // Contact submissions
   createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
   getContactSubmissions(): Promise<ContactSubmission[]>;
+
+  getAllPublicUsers(): Promise<PublicUser[]>;
+  getAllOrders(): Promise<Order[]>;
+  updateUserStatus(userId: number, isActive: boolean): Promise<PublicUser | null>;
+  deleteUser(userId: number): Promise<boolean>;
+  updateUserPrivileges(userId: number, privileges: any): Promise<PublicUser | null>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -100,6 +106,43 @@ export class DatabaseStorage implements IStorage {
 
   async getUserOrders(userId: string): Promise<Order[]> {
     return await db.select().from(orders).where(eq(orders.userId, userId));
+  }
+
+  async getAllPublicUsers(): Promise<PublicUser[]> {
+    return await db.select().from(publicUsers);
+  }
+
+  async getAllOrders(): Promise<Order[]> {
+    return await db.select().from(orders);
+  }
+
+  async updateUserStatus(userId: number, isActive: boolean): Promise<PublicUser | null> {
+    const [user] = await db
+      .update(publicUsers)
+      .set({ isActive })
+      .where(eq(publicUsers.id, userId))
+      .returning();
+
+    return user || null;
+  }
+
+  async deleteUser(userId: number): Promise<boolean> {
+    const results = await db
+      .delete(publicUsers)
+      .where(eq(publicUsers.id, userId))
+      .returning();
+
+    return results.length > 0;
+  }
+
+  async updateUserPrivileges(userId: number, privileges: any): Promise<PublicUser | null> {
+    const [user] = await db
+      .update(publicUsers)
+      .set({ privileges })
+      .where(eq(publicUsers.id, userId))
+      .returning();
+
+    return user || null;
   }
 
   async updateOrderStatus(id: number, status: string): Promise<Order> {

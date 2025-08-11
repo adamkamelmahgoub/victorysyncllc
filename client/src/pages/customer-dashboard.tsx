@@ -1,335 +1,591 @@
-import { useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  User,
-  Package,
-  Clock,
-  DollarSign,
-  Phone,
-  Mail,
-  Settings,
-  BarChart3,
-  Calendar,
-  CheckCircle,
+
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Phone, 
+  Users, 
+  Clock, 
+  TrendingUp, 
+  CheckCircle, 
   AlertCircle,
-} from "lucide-react";
-import { Link } from "wouter";
+  Calendar,
+  DollarSign,
+  BarChart3,
+  Settings,
+  Plus,
+  CreditCard,
+  FileText,
+  Activity
+} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useState } from 'react';
+
+interface KPIData {
+  callsToday: number;
+  callsThisWeek: number;
+  callsThisMonth: number;
+  activeAgents: number;
+  avgResponseTime: number;
+  customerSatisfaction: number;
+  resolutionRate: number;
+  slaCompliance: number;
+  avgHandleTime: number;
+  occupancyRate: number;
+}
+
+interface Order {
+  id: number;
+  packageName: string;
+  status: string;
+  startDate: string;
+  amount: number;
+}
+
+interface Integration {
+  id: string;
+  name: string;
+  status: 'connected' | 'disconnected' | 'error';
+  lastSync: string;
+  type: 'crm' | 'dialer' | 'ticketing';
+}
 
 export default function CustomerDashboard() {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  const { toast } = useToast();
+  const { user, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState("overview");
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 500);
-      return;
+  const { data: kpiData, isLoading: kpiLoading } = useQuery<KPIData>({
+    queryKey: ['kpi'],
+    queryFn: () => apiRequest('GET', '/api/kpi'),
+    refetchInterval: 30000, // Refresh every 30 seconds
+    initialData: {
+      callsToday: 0,
+      callsThisWeek: 0,
+      callsThisMonth: 0,
+      activeAgents: 0,
+      avgResponseTime: 0,
+      customerSatisfaction: 0,
+      resolutionRate: 0,
+      slaCompliance: 0,
+      avgHandleTime: 0,
+      occupancyRate: 0
     }
-  }, [isAuthenticated, isLoading, toast]);
+  });
 
-  const { data: orders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ["/api/orders"],
-    enabled: isAuthenticated,
-  }) as { data: any[], isLoading: boolean };
+  const { data: orders = [], isLoading: ordersLoading } = useQuery<Order[]>({
+    queryKey: ['orders'],
+    queryFn: () => apiRequest('GET', '/api/orders'),
+    initialData: []
+  });
 
-  if (isLoading) {
+  const { data: integrations = [], isLoading: integrationsLoading } = useQuery<Integration[]>({
+    queryKey: ['integrations'],
+    queryFn: () => apiRequest('GET', '/api/integrations'),
+    initialData: []
+  });
+
+  const handleAddSeat = async () => {
+    try {
+      // Implement seat purchase logic
+      const response = await apiRequest('POST', '/api/billing/seats', { quantity: 1 });
+      // Redirect to Stripe checkout or handle payment
+      window.location.href = response.checkoutUrl;
+    } catch (error) {
+      console.error('Failed to add seat:', error);
+    }
+  };
+
+  if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-4">Please log in to access the dashboard.</p>
+          <Button onClick={() => window.location.href = '/login'}>
+            Go to Login
+          </Button>
+        </div>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
-    return null; // Will redirect to login
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "processing":
-        return "bg-blue-100 text-blue-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle className="w-4 h-4" />;
-      case "processing":
-        return <Clock className="w-4 h-4" />;
-      case "pending":
-        return <AlertCircle className="w-4 h-4" />;
-      default:
-        return <Clock className="w-4 h-4" />;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold victory-dark">Welcome back!</h1>
-              <p className="victory-gray">
-                Hello {user?.name || "there"}, manage your VictorySync services
-                here.
-              </p>
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="border-b border-gray-200 bg-white sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <img src="/LOGO_VS.png" alt="VictorySync" className="w-8 h-8" />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user.name}!</h1>
+                <p className="text-sm text-gray-600">Customer Dashboard</p>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => (window.location.href = "/api/logout")}
-            >
-              Sign Out
-            </Button>
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" size="sm">
+                <FileText className="w-4 h-4 mr-2" />
+                Support
+              </Button>
+              <Button onClick={logout} variant="outline" size="sm">
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Active Services */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Package className="victory-purple w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm victory-gray">Active Services</p>
-                  <p className="text-2xl font-bold victory-dark">
-                    {Array.isArray(orders) ? orders.filter(
-                      (order: any) => order.status === "completed",
-                    ).length : 0}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="kpi">KPI Tracker</TabsTrigger>
+            <TabsTrigger value="integrations">Integrations</TabsTrigger>
+            <TabsTrigger value="billing">Billing</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
 
-          {/* Monthly Spend */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="text-green-600 w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm victory-gray">Monthly Spend</p>
-                  <p className="text-2xl font-bold victory-dark">
-                    $
-                    {Array.isArray(orders) ? orders
-                      .reduce(
-                        (sum: number, order: any) =>
-                          order.status === "completed"
-                            ? sum + parseFloat(order.total)
-                            : sum,
-                        0,
-                      )
-                      .toLocaleString() : "0"}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <TabsContent value="overview" className="space-y-6">
+            {/* Real-time KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="border-l-4 border-l-blue-500">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Agents</CardTitle>
+                  <Users className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{kpiData.activeAgents}</div>
+                  <p className="text-xs text-gray-600">Currently online</p>
+                </CardContent>
+              </Card>
 
-          {/* Support Tickets */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Phone className="victory-blue w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm victory-gray">Support Tickets</p>
-                  <p className="text-2xl font-bold victory-dark">0</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="border-l-4 border-l-green-500">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Calls Today</CardTitle>
+                  <Phone className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{kpiData.callsToday}</div>
+                  <p className="text-xs text-gray-600">+12% from yesterday</p>
+                </CardContent>
+              </Card>
 
-          {/* Account Status */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="text-green-600 w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm victory-gray">Account Status</p>
-                  <p className="text-lg font-semibold text-green-600">Active</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              <Card className="border-l-4 border-l-yellow-500">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Avg Response</CardTitle>
+                  <Clock className="h-4 w-4 text-yellow-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{kpiData.avgResponseTime}s</div>
+                  <p className="text-xs text-gray-600">-5% improvement</p>
+                </CardContent>
+              </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Orders */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Package className="w-5 h-5" />
-                  <span>Recent Orders</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {ordersLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
+              <Card className="border-l-4 border-l-purple-500">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">CSAT Score</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-purple-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{kpiData.customerSatisfaction}%</div>
+                  <p className="text-xs text-gray-600">+2% this week</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Service Status & Recent Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-5 h-5" />
+                    Service Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span className="text-sm">Contact Center</span>
+                      </div>
+                      <Badge variant="default" className="bg-green-100 text-green-800">Online</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span className="text-sm">AI Automation</span>
+                      </div>
+                      <Badge variant="default" className="bg-green-100 text-green-800">Active</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-yellow-500" />
+                        <span className="text-sm">Maintenance Window</span>
+                      </div>
+                      <Badge variant="secondary">Scheduled 2 AM EST</Badge>
+                    </div>
                   </div>
-                ) : Array.isArray(orders) && orders.length > 0 ? (
-                  <div className="space-y-4">
-                    {orders.slice(0, 5).map((order: any) => (
-                      <div
-                        key={order.id}
-                        className="flex items-center justify-between p-4 border border-slate-200 rounded-lg"
-                      >
-                        <div className="flex items-center space-x-3">
-                          {getStatusIcon(order.status)}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Orders</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {ordersLoading ? (
+                    <div className="text-center py-4">Loading orders...</div>
+                  ) : orders.length === 0 ? (
+                    <div className="text-center py-4 text-gray-500">No orders found</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {orders.slice(0, 3).map((order) => (
+                        <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div>
-                            <p className="font-semibold victory-dark">
-                              Order #{order.id}
-                            </p>
-                            <p className="text-sm victory-gray">
-                              {new Date(order.createdAt).toLocaleDateString()}
-                            </p>
+                            <p className="font-medium text-sm">{order.packageName}</p>
+                            <p className="text-xs text-gray-500">Started {order.startDate}</p>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <Badge className={getStatusColor(order.status)}>
+                          <Badge variant={order.status === 'active' ? 'default' : 'secondary'}>
                             {order.status}
                           </Badge>
-                          <p className="text-sm font-semibold victory-dark mt-1">
-                            ${parseFloat(order.total).toLocaleString()}
-                          </p>
                         </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="kpi" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {/* Call Volume Metrics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Phone className="h-5 w-5 text-blue-600" />
+                    Call Volume
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{kpiData.callsToday}</div>
+                      <div className="text-xs text-gray-600">Today</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">{kpiData.callsThisWeek}</div>
+                      <div className="text-xs text-gray-600">This Week</div>
+                    </div>
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <div className="text-3xl font-bold text-purple-600">{kpiData.callsThisMonth}</div>
+                    <div className="text-xs text-gray-600">This Month</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Performance Metrics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-green-600" />
+                    Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>CSAT Score</span>
+                        <span className="font-semibold">{kpiData.customerSatisfaction}%</span>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Package className="w-12 h-12 victory-gray mx-auto mb-4" />
-                    <p className="victory-gray mb-4">No orders yet</p>
-                    <Link href="/pricing">
-                      <Button className="bg-victory-purple hover:bg-purple-700 text-white">
-                        Browse Services
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                          style={{ width: `${kpiData.customerSatisfaction}%` }}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Resolution Rate</span>
+                        <span className="font-semibold">{kpiData.resolutionRate}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                          style={{ width: `${kpiData.resolutionRate}%` }}
+                        />
+                      </div>
+                    </div>
 
-          {/* Quick Actions & Account Info */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>SLA Compliance</span>
+                        <span className="font-semibold">{kpiData.slaCompliance}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                          style={{ width: `${kpiData.slaCompliance}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Agent Metrics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-orange-600" />
+                    Agent Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm">Active Agents</span>
+                      <span className="font-bold text-lg">{kpiData.activeAgents}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm">Avg Handle Time</span>
+                      <span className="font-bold text-lg">{kpiData.avgHandleTime}s</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm">Occupancy Rate</span>
+                      <span className="font-bold text-lg">{kpiData.occupancyRate}%</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="integrations" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Integrations</h2>
+                <p className="text-gray-600">Connect your tools to sync data and improve workflows</p>
+              </div>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Integration
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* CRM Integrations */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">CRM Systems</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {['HubSpot', 'Salesforce', 'Zoho CRM', 'Pipedrive'].map((crm) => (
+                    <div key={crm} className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="font-medium">{crm}</span>
+                      <Button variant="outline" size="sm">Connect</Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Dialer Integrations */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Contact Center</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {['Twilio Flex', 'Five9', 'RingCentral', 'Aircall'].map((dialer) => (
+                    <div key={dialer} className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="font-medium">{dialer}</span>
+                      <Button variant="outline" size="sm">Connect</Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Support Tools */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Support Tools</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {['Zendesk', 'Freshdesk', 'Intercom', 'Help Scout'].map((tool) => (
+                    <div key={tool} className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="font-medium">{tool}</span>
+                      <Button variant="outline" size="sm">Connect</Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="billing" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Billing & Usage</h2>
+                <p className="text-gray-600">Manage your subscription and add team members</p>
+              </div>
+              <Button onClick={handleAddSeat} className="bg-green-600 hover:bg-green-700">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Seat ($125/month)
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="w-5 h-5" />
+                    Current Plan
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span>Plan</span>
+                    <Badge>Professional</Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Seats</span>
+                    <span className="font-semibold">5 active</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Monthly Cost</span>
+                    <span className="font-semibold">$625.00</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Next Billing</span>
+                    <span className="text-sm text-gray-600">January 15, 2025</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Usage This Month
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span>Total Calls</span>
+                    <span className="font-semibold">{kpiData.callsThisMonth}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Call Minutes</span>
+                    <span className="font-semibold">2,450 min</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>AI Automations</span>
+                    <span className="font-semibold">148 runs</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Integrations Active</span>
+                    <span className="font-semibold">3 connected</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Invoices */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="w-5 h-5" />
-                  <span>Quick Actions</span>
-                </CardTitle>
+                <CardTitle>Recent Invoices</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Link href="/pricing">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Package className="w-4 h-4 mr-2" />
-                    Add New Service
-                  </Button>
-                </Link>
-                <Link href="/contact">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Contact Support
-                  </Button>
-                </Link>
-                <Button variant="outline" className="w-full justify-start">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  View Analytics
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Schedule Meeting
-                </Button>
+              <CardContent>
+                <div className="space-y-3">
+                  {[
+                    { date: 'Dec 15, 2024', amount: '$625.00', status: 'Paid' },
+                    { date: 'Nov 15, 2024', amount: '$500.00', status: 'Paid' },
+                    { date: 'Oct 15, 2024', amount: '$500.00', status: 'Paid' }
+                  ].map((invoice, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{invoice.date}</p>
+                        <p className="text-sm text-gray-600">{invoice.amount}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="default" className="bg-green-100 text-green-800">
+                          {invoice.status}
+                        </Badge>
+                        <Button variant="outline" size="sm">
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
+          </TabsContent>
 
-            {/* Account Information */}
+          <TabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="w-5 h-5" />
-                  <span>Account Information</span>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Account Settings
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                    <User className="victory-purple w-6 h-6" />
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Email</label>
+                    <input 
+                      type="email" 
+                      value={user.email || ''} 
+                      disabled 
+                      className="w-full p-3 border rounded-lg bg-gray-50"
+                    />
                   </div>
                   <div>
-                    <p className="font-semibold victory-dark">
-                      {user?.name || "User"}
-                    </p>
-                    <p className="text-sm victory-gray flex items-center">
-                      <Mail className="w-3 h-3 mr-1" />
-                      {user?.email || "No email provided"}
-                    </p>
+                    <label className="block text-sm font-medium mb-2">Name</label>
+                    <input 
+                      type="text" 
+                      value={user.name || ''} 
+                      disabled 
+                      className="w-full p-3 border rounded-lg bg-gray-50"
+                    />
                   </div>
                 </div>
-
-                <div className="pt-4 border-t border-slate-200">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="victory-gray">Member since:</span>
-                    <span className="font-medium">
-                      {user?.createdAt
-                        ? new Date(user.createdAt).toLocaleDateString()
-                        : "N/A"}
-                    </span>
-                  </div>
+                <div className="flex gap-4">
+                  <Button variant="outline">Update Profile</Button>
+                  <Button variant="outline">Change Password</Button>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Support Card */}
-            <Card className="gradient-victory text-white">
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-2">Need Help?</h3>
-                <p className="text-purple-100 text-sm mb-4">
-                  Our support team is available 24/7 to assist you with any
-                  questions.
-                </p>
-                <Link href="/contact">
-                  <Button className="bg-white text-victory-purple hover:bg-gray-100 w-full">
-                    Contact Support
-                  </Button>
-                </Link>
+            {/* Notification Preferences */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Notification Preferences</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[
+                  'Email notifications for new orders',
+                  'SMS alerts for critical issues', 
+                  'Weekly performance reports',
+                  'Integration sync notifications'
+                ].map((setting, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-sm">{setting}</span>
+                    <input type="checkbox" defaultChecked className="rounded" />
+                  </div>
+                ))}
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

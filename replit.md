@@ -1,7 +1,7 @@
-# VictorySync - Call Center & AI Automation Platform
+# VictorySync - Contact Center & AI Automation Platform
 
 ## Overview
-VictorySync is a comprehensive call center and AI automation platform designed to help US businesses reduce customer service costs by up to 60% by leveraging professional services from Cairo, Egypt. The application provides a complete solution for inbound call center services, outbound sales, AI automation, and digital marketing services.
+VictorySync is a comprehensive contact center and AI automation platform designed to help US businesses reduce customer service costs by up to 60% by leveraging professional services from Cairo, Egypt. The application provides a complete solution for inbound contact center services, outbound sales, AI automation, and digital marketing services.
 
 ## System Architecture
 The application follows a full-stack architecture with clear separation between client and server components:

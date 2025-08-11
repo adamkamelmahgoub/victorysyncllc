@@ -1,10 +1,10 @@
-# VictorySync - Call Center & AI Automation Platform
+# VictorySync - Contact Center & AI Automation Platform
 
-A comprehensive call center and AI automation platform built with React and Express, helping US businesses reduce customer service costs by up to 60%.
+A comprehensive contact center and AI automation platform built with React and Express, helping US businesses reduce customer service costs by up to 60%.
 
 ## Features
 
-- 🏢 **Professional Call Center Services** - 24/7 inbound/outbound support
+- 🏢 **Professional Contact Center Services** - 24/7 inbound/outbound support
 - 🤖 **AI Automation Suite** - Intelligent chatbots and workflow automation  
 - 📊 **Customer Dashboard** - Order tracking and service management
 - 🛒 **E-commerce Integration** - Service packages with shopping cart

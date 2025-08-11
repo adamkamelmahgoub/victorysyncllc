@@ -1,0 +1,38 @@
+Thought for
+38s
+Expand for details
+Below is the prompt you can provide to Claude 4 Sonnet through Replit to accomplish all the tasks you specified for your VictorySync project. This prompt is clear, direct, and includes all the necessary details to ensure the AI understands and executes your requirements effectively.
+
+Prompt for Claude 4 Sonnet on Replit
+Hi Claude 4 Sonnet,
+
+I need your help with my Replit project called VictorySync. The project is hosted under the username "kimo8723" with the project name "VictorySync." It uses Node.js and includes dependencies like Babel. I have several tasks that need to be completed to fix issues and add new features to the website. Here’s what I need you to do:
+
+Tasks
+Fix Login Errors on Customer Dashboard
+The customer dashboard currently shows a "login failed" message even when correct credentials are entered.
+Please investigate and resolve all login errors to ensure users can log in successfully with valid credentials.
+Create a Real-Time KPI Tracker
+Build a KPI tracker that pulls real-time data from CRM and dialer integrations.
+It should support all major platforms (like Salesforce, HubSpot, etc.) and display live data in a user-friendly way.
+Do not use demo or static data—only real-time data from the integrations.
+Develop an Admin Portal
+Create an admin portal accessible at victorysync.com/admin.
+The portal should provide:
+Full control over the website and all customer accounts.
+CRUD options (Create, Read, Update, Delete) for managing customer accounts.
+The ability to add more admin users with different roles (e.g., super admin, moderator).
+Set the login credentials for the admin portal to:
+Username: admin
+Password: victorysync2025
+Button Styling
+Make sure all buttons across the website have a white outline. This applies to the customer dashboard, admin portal, and everywhere else.
+Additional Notes
+All previously reported errors have already been fixed, so focus on these new tasks.
+Test everything thoroughly to confirm it works as expected:
+The customer dashboard login should work without errors.
+The KPI tracker should show real-time data from CRM and dialer integrations.
+The admin portal should be fully functional with the specified login and features.
+All buttons should have a white outline.
+If you run into any issues, debug and fix them to ensure the website works perfectly.
+Thank you for helping me with VictorySync!
