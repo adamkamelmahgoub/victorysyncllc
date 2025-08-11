@@ -1,0 +1,178 @@
+You are only fixing the web serving so the front-end renders smoothly in Replit preview. Do NOT touch DB, schemas, RBAC, routes logic, styles, or any other files besides the three I list. If something else looks wrong, stop and ask.
+
+STACK: Express (Node/TypeScript) + Vite + React SPA in ./client. Current preview shows “Cannot GET /” because the SPA fallback is missing/mis-ordered.
+
+Make THESE EXACT changes:
+
+FILES TO REPLACE ENTIRELY
+1) server/vite.ts
+2) server/index.ts
+3) vite.config.ts  (project root)
+
+--------------------------------
+1) server/vite.ts  (replace whole file)
+--------------------------------
+import type { Express } from 'express';
+import { createServer, type ViteDevServer } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export async function setupVite(app: Express): Promise<ViteDevServer> {
+  const isReplit = Boolean(process.env.REPL_ID || process.env.REPL_SLUG || process.env.REPLIT_DB_URL);
+
+  const vite = await createServer({
+    appType: 'custom',
+    root: 'client',
+    plugins: [react()],
+    server: {
+      middlewareMode: true,
+      host: true,
+      // Replit preview uses *.replit.dev with HTTPS/WSS
+      allowedHosts: true,
+      hmr: isReplit ? { protocol: 'wss', clientPort: 443 } : undefined,
+    },
+    preview: { host: true, allowedHosts: true },
+    build: { outDir: 'dist', emptyOutDir: true },
+  });
+
+  app.use(vite.middlewares);
+  return vite;
+}
+
+--------------------------------
+2) server/index.ts  (replace whole file)
+--------------------------------
+import express, { type Request, type Response, type NextFunction } from 'express';
+import http from 'http';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { setupVite } from './vite';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const server = http.createServer(app);
+
+// Minimal hardening for dev preview (optional)
+app.disable('x-powered-by');
+
+// Health check so we can see the server is alive
+app.get('/healthz', (_req, res) => res.status(200).send('ok'));
+
+// IMPORTANT: mount your API routers here (if any)
+// Example:
+// app.use('/api', apiRouter);
+
+// Self-diagnostic to know which branch is active
+app.get('/__whoami', (_req, res) => {
+  res.json({
+    NODE_ENV: process.env.NODE_ENV || 'undefined',
+    mode: process.env.NODE_ENV === 'production' ? 'PROD' : 'DEV',
+  });
+});
+
+// Decide dev vs prod.
+// Default to DEV unless NODE_ENV === 'production'.
+const isDev = process.env.NODE_ENV !== 'production';
+
+if (isDev) {
+  // DEV: use Vite middleware and transform index.html
+  const vite = await setupVite(app);
+
+  app.use('*', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const url = req.originalUrl;
+      const indexPath = path.resolve(__dirname, '..', 'client', 'index.html');
+
+      // Ensure index.html exists
+      if (!fs.existsSync(indexPath)) {
+        return res.status(500).send('client/index.html not found');
+      }
+
+      let html = fs.readFileSync(indexPath, 'utf-8');
+      html = await vite.transformIndexHtml(url, html);
+      res.setHeader('Content-Type', 'text/html');
+      return res.status(200).send(html);
+    } catch (err) {
+      return next(err);
+    }
+  });
+} else {
+  // PROD: serve the built SPA from client/dist and use catch-all
+  const distDir = path.resolve(__dirname, '..', 'client', 'dist');
+  const indexHtml = path.resolve(distDir, 'index.html');
+
+  app.use(express.static(distDir, { index: false, fallthrough: true }));
+  app.get('*', (_req, res) => res.sendFile(indexHtml));
+}
+
+// Basic error handler so we see issues in preview instead of “Cannot GET /”
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('Server error:', err);
+  res.status(500).send(err?.stack || String(err));
+});
+
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`HTTP server listening on ${PORT}. NODE_ENV=${process.env.NODE_ENV || 'undefined'}`);
+});
+
+--------------------------------
+3) vite.config.ts  (replace whole file)
+--------------------------------
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  root: 'client',
+  plugins: [react()],
+  server: {
+    host: true,
+    port: 5173,
+    allowedHosts: true, // allow Replit preview host
+  },
+  preview: {
+    host: true,
+    port: 5173,
+    allowedHosts: true,
+  },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
+});
+
+--------------------------------
+CLEAN & RUN (Replit Shell)
+--------------------------------
+1) Clear caches to avoid stale Vite state:
+   rm -rf client/node_modules/.vite node_modules/.vite .vite 2>/dev/null || true
+
+2) Start dev (this must keep NODE_ENV=development):
+   npm run dev
+
+   If there is no dev script, create:
+   // package.json
+   // "scripts": {
+   //   "dev": "NODE_ENV=development tsx server/index.ts",
+   //   "build": "vite build",
+   //   "preview": "NODE_ENV=production tsx server/index.ts"
+   // }
+
+3) Open Replit Preview and visit:
+   - /__whoami   → should show { mode: "DEV" }
+   - /healthz    → should return "ok"
+   - /           → must render the React app (no “Cannot GET /”)
+
+--------------------------------
+ACCEPTANCE CRITERIA
+--------------------------------
+- Visiting the preview root “/” renders the SPA with Vite HMR in DEV.
+- /__whoami responds and confirms mode DEV or PROD.
+- No “Cannot GET /” on root or deep links; refresh works on routes due to catch-all.
+- In PROD (`npm run build` then `npm run preview`), Express serves `client/dist/index.html` and static assets.
+- No modifications outside the three files and package.json scripts if missing.
+- If the SPA still doesn’t render, print the resolved index path and NODE_ENV, then stop and ask.
+
+Do not refactor unrelated code or touch UI.
