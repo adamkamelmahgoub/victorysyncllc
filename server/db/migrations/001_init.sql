@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS organizations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TYPE user_role AS ENUM ('admin', 'staff', 'customer');
+CREATE TYPE IF NOT EXISTS user_role AS ENUM ('admin', 'staff', 'customer');
 
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
