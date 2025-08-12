@@ -24,7 +24,7 @@ import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import AdminPortal from "@/pages/admin-portal";
 import AdminAccessControl from "./pages/AdminAccessControl";
-import RegisterWithCode from "./pages/RegisterWithCode"; // Assuming this is the new component
+import RegisterWithCode from "./pages/register-with-code";
 
 // Footer Pages
 import AboutUs from "@/pages/about-us";
