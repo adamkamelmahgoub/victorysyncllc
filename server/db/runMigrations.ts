@@ -23,23 +23,48 @@ async function applied(): Promise<Set<string>> {
 async function applyMigration(name: string, sqlText: string) {
   await sql`BEGIN`;
   try {
-    // Split SQL text into individual statements and execute them
-    const statements = sqlText
-      .split(';')
-      .map(stmt => stmt.trim())
-      .filter(stmt => stmt.length > 0 && !stmt.match(/^\s*--/) && !stmt.match(/^\s*\/\*/)); // Remove empty, comment-only lines, and block comments
+    // Parse SQL text into statements, handling DO blocks properly
+    const statements = [];
+    let current = '';
+    let inDoBlock = false;
     
-    // Execute each statement individually
+    const lines = sqlText.split('\n');
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      
+      // Skip comments and empty lines
+      if (!trimmedLine || trimmedLine.startsWith('--')) continue;
+      
+      current += line + '\n';
+      
+      // Check for DO block start
+      if (trimmedLine.match(/^DO\s+\$\$/i)) {
+        inDoBlock = true;
+      }
+      
+      // Check for DO block end
+      if (inDoBlock && trimmedLine.match(/^END\s+\$\$;?$/i)) {
+        inDoBlock = false;
+        statements.push(current.trim());
+        current = '';
+      }
+      // Check for regular statement end (semicolon at end of line, not in DO block)
+      else if (!inDoBlock && trimmedLine.endsWith(';')) {
+        statements.push(current.trim());
+        current = '';
+      }
+    }
+    
+    // Add any remaining content
+    if (current.trim()) {
+      statements.push(current.trim());
+    }
+    
+    // Execute each statement
     for (const statement of statements) {
       if (statement.trim()) {
-        // For complex statements like DO blocks, we need to use a different approach
-        try {
-          await sql([statement] as any);
-        } catch (err: any) {
-          // If the statement fails, try executing it as a raw query
-          console.log(`Retrying statement: ${statement.substring(0, 50)}...`);
-          throw err;
-        }
+        console.log(`Executing: ${statement.substring(0, 50)}...`);
+        await sql([statement] as any);
       }
     }
     
