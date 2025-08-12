@@ -35,16 +35,61 @@ export async function runMigrations() {
     const sqlText = readFileSync(full, 'utf8');
     console.log('Applying migration:', file);
     
-    // Split SQL statements and execute them individually
-    const statements = sqlText
-      .split(';')
-      .map(stmt => stmt.trim())
-      .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+    // Handle complex SQL with DO blocks and multiple statements
+    const lines = sqlText.split('\n');
+    let currentStatement = '';
+    let inDoBlock = false;
     
-    for (const statement of statements) {
-      if (statement.trim()) {
-        await sql(statement as any);
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      
+      // Skip empty lines and comments
+      if (!trimmedLine || trimmedLine.startsWith('--')) {
+        continue;
       }
+      
+      // Check for DO block start
+      if (trimmedLine.startsWith('DO $$') || trimmedLine === 'DO $$') {
+        inDoBlock = true;
+        currentStatement += line + '\n';
+        continue;
+      }
+      
+      // Check for DO block end
+      if (inDoBlock && (trimmedLine === 'END $$;' || trimmedLine.startsWith('END $$'))) {
+        currentStatement += line + '\n';
+        inDoBlock = false;
+        
+        // Execute the complete DO block
+        if (currentStatement.trim()) {
+          await sql(currentStatement.trim() as any);
+        }
+        currentStatement = '';
+        continue;
+      }
+      
+      // If we're in a DO block, keep adding lines
+      if (inDoBlock) {
+        currentStatement += line + '\n';
+        continue;
+      }
+      
+      // For regular statements, add the line
+      currentStatement += line + '\n';
+      
+      // If line ends with semicolon, execute the statement
+      if (trimmedLine.endsWith(';')) {
+        const statement = currentStatement.trim();
+        if (statement && !statement.startsWith('--')) {
+          await sql(statement as any);
+        }
+        currentStatement = '';
+      }
+    }
+    
+    // Execute any remaining statement
+    if (currentStatement.trim() && !currentStatement.trim().startsWith('--')) {
+      await sql(currentStatement.trim() as any);
     }
     
     await sql`insert into schema_migrations (name) values (${file})`;
