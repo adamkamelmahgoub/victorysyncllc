@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS "access_codes" (
   "created_by" integer REFERENCES "public_users"("id")
 );
 
--- Create indexes for performance
+-- Create indexes for performance (only after table is created)
 CREATE INDEX IF NOT EXISTS "idx_public_users_mfa_enabled" ON "public_users"("mfa_enabled");
 CREATE INDEX IF NOT EXISTS "idx_public_users_locked_until" ON "public_users"("locked_until");
 CREATE INDEX IF NOT EXISTS "idx_access_codes_code" ON "access_codes"("code");
