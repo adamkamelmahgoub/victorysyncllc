@@ -13,7 +13,7 @@ export async function runMigrations() {
       )
     `);
 
-    const migrationsDir = path.join(__dirname, 'migrations');
+    const migrationsDir = path.join(process.cwd(), 'migrations');
     
     // Check if migrations directory exists
     if (!fs.existsSync(migrationsDir)) {

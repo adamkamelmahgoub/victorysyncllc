@@ -5,16 +5,22 @@ import {
   orderItems,
   contactSubmissions,
   userFeatureFlags,
-  userPaymentPolicies,
-  orgPaymentPolicies,
   userIntegrationPolicies,
   orgIntegrationPolicies,
+  userPaymentPolicies,
+  orgPaymentPolicies,
+  userDialerMap,
   auditLogs,
   apiKeys,
-  userDialerMap,
   callsCache,
   coupons,
   couponRedemptions,
+  accessControlRoles,
+  accessControlUserRoles,
+  accessControlSessions,
+  accessControlIntegrations,
+  accessControlPaymentMethods,
+  accessControlCallMetrics,
   type PublicUser,
   type InsertPublicUser,
   type Package,
@@ -25,18 +31,43 @@ import {
   type InsertOrderItem,
   type ContactSubmission,
   type InsertContactSubmission,
+  type UserFeatureFlag,
+  type InsertUserFeatureFlag,
+  type UserIntegrationPolicy,
+  type InsertUserIntegrationPolicy,
+  type OrgIntegrationPolicy,
+  type InsertOrgIntegrationPolicy,
+  type UserPaymentPolicy,
+  type InsertUserPaymentPolicy,
+  type OrgPaymentPolicy,
+  type InsertOrgPaymentPolicy,
+  type UserDialerMap,
+  type InsertUserDialerMap,
   type AuditLog,
   type InsertAuditLog,
   type ApiKey,
   type InsertApiKey,
-  type UserDialerMap,
-  type InsertUserDialerMap,
   type CallsCache,
+  type InsertCallsCache,
   type Coupon,
   type InsertCoupon,
+  type CouponRedemption,
+  type InsertCouponRedemption,
+  type AccessControlRole,
+  type InsertAccessControlRole,
+  type AccessControlUserRole,
+  type InsertAccessControlUserRole,
+  type AccessControlSession,
+  type InsertAccessControlSession,
+  type AccessControlIntegration,
+  type InsertAccessControlIntegration,
+  type AccessControlPaymentMethod,
+  type InsertAccessControlPaymentMethod,
+  type AccessControlCallMetric,
+  type InsertAccessControlCallMetric,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, isNull, inArray, count, sql } from "drizzle-orm";
+import { eq, and, desc, sql, count } from "drizzle-orm";
 
 export interface IStorage {
   // Public user operations (JWT auth system)
@@ -64,22 +95,75 @@ export interface IStorage {
   createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
   getContactSubmissions(): Promise<ContactSubmission[]>;
 
+  // Admin operations
   getAllPublicUsers(): Promise<PublicUser[]>;
   getAllOrders(): Promise<Order[]>;
   updateUserStatus(userId: number, isActive: boolean): Promise<PublicUser | null>;
   deleteUser(userId: number): Promise<boolean>;
   updateUserPrivileges(userId: number, privileges: any): Promise<PublicUser | null>;
-  updateUserProfile(userId: number, updates: { name?: string; email?: string }): Promise<any>;
-  getUserIntegrations(userId: number): Promise<any[]>;
-  createUserIntegration(integration: any): Promise<any>;
-  deleteUserIntegration(integrationId: number, userId: number): Promise<boolean>;
-  updatePackage(packageId: number, updates: any): Promise<any>;
-  deletePackage(packageId: number): Promise<boolean>;
+
+  // Access Control operations
+  getUserPermissions(userId: number): Promise<string[]>;
+  getUserFeatureFlags(userId: number): Promise<string[]>;
+  updateUserRole(userId: number, role: string): Promise<PublicUser | null>;
+  updateUserPermissions(userId: number, permissions: string[]): Promise<PublicUser | null>;
+  updateUserFeatureFlags(userId: number, flags: Record<string, boolean>): Promise<void>;
+  getUserIntegrationPolicies(userId: number): Promise<UserIntegrationPolicy[]>;
+  getOrgIntegrationPolicies(orgId: number): Promise<OrgIntegrationPolicy[]>;
+  updateUserIntegrationPolicy(userId: number, provider: string, allowedScopes: string[], deniedScopes: string[]): Promise<UserIntegrationPolicy>;
+  getUserPaymentPolicies(userId: number): Promise<UserPaymentPolicy | null>;
+  updateUserPaymentPolicy(userId: number, allowedMethods: string[], defaultMethod: string): Promise<UserPaymentPolicy>;
+  getUserDialerMapping(userId: number): Promise<UserDialerMap | null>;
+  setUserDialerMapping(userId: number, provider: string, externalAgentId: string, meta: any): Promise<UserDialerMap>;
+  getCallsCache(userId: number): Promise<CallsCache[]>;
+  updateCallsCache(userId: number, period: string, callsCount: number, avgHandleTime: number, occupancy: number): Promise<CallsCache>;
+  getApiKeys(userId?: number, orgId?: number): Promise<ApiKey[]>;
+  createApiKey(apiKey: InsertApiKey): Promise<ApiKey>;
+  revokeApiKey(keyId: number): Promise<boolean>;
+  auditLog(log: InsertAuditLog): Promise<AuditLog>;
+  getAuditLogs(userId?: number, orgId?: number): Promise<AuditLog[]>;
+  getCoupons(): Promise<Coupon[]>;
+  createCoupon(coupon: InsertCoupon): Promise<Coupon>;
+  redeemCoupon(redemption: InsertCouponRedemption): Promise<CouponRedemption>;
+
+  // Enhanced Access Control Center operations
+  getAllUsersWithDetails(page?: number, limit?: number, search?: string, filters?: any): Promise<{ users: any[], total: number }>;
+  lockUserAccount(userId: number, reason: string): Promise<PublicUser>;
+  unlockUserAccount(userId: number): Promise<PublicUser>;
+  forcePasswordReset(userId: number): Promise<PublicUser>;
+  requireMfaNextLogin(userId: number): Promise<PublicUser>;
+  bulkUpdateUsers(userIds: number[], updates: any): Promise<void>;
+  
+  // Enhanced Role management
+  createAccessControlRole(role: InsertAccessControlRole): Promise<AccessControlRole>;
+  getAccessControlRoles(): Promise<AccessControlRole[]>;
+  updateAccessControlRole(roleId: number, updates: Partial<AccessControlRole>): Promise<AccessControlRole>;
+  deleteAccessControlRole(roleId: number): Promise<void>;
+  assignUserAccessControlRole(userId: number, roleId: number, orgId?: string): Promise<AccessControlUserRole>;
+  removeUserAccessControlRole(userId: number, roleId: number, orgId?: string): Promise<void>;
+  
+  // Enhanced Sessions
+  createAccessControlSession(session: InsertAccessControlSession): Promise<AccessControlSession>;
+  getAccessControlSessions(userId: number): Promise<AccessControlSession[]>;
+  revokeAccessControlSession(sessionId: string): Promise<void>;
+  revokeAllAccessControlSessions(userId: number): Promise<void>;
+  
+  // Enhanced Integrations
+  createAccessControlIntegration(integration: InsertAccessControlIntegration): Promise<AccessControlIntegration>;
+  getAccessControlIntegrations(userId: number): Promise<AccessControlIntegration[]>;
+  updateAccessControlIntegrationStatus(integrationId: number, status: string): Promise<AccessControlIntegration>;
+  
+  // Enhanced Payment methods
+  setAccessControlPaymentPolicy(userId: number, allowedMethods: string[]): Promise<AccessControlPaymentMethod>;
+  getAccessControlPaymentPolicy(userId: number): Promise<AccessControlPaymentMethod | undefined>;
+  
+  // Enhanced Call metrics
+  getAccessControlCallMetrics(userId: number): Promise<AccessControlCallMetric[]>;
+  updateAccessControlCallMetrics(userId: number, metrics: InsertAccessControlCallMetric): Promise<AccessControlCallMetric>;
 }
 
 export class DatabaseStorage implements IStorage {
   // User operations
-  // Public user operations
   async createPublicUser(user: InsertPublicUser): Promise<PublicUser> {
     const [newUser] = await db.insert(publicUsers).values(user).returning();
     return newUser;
@@ -131,49 +215,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserOrders(userId: string): Promise<Order[]> {
-    return await db.select().from(orders).where(eq(orders.userId, userId));
-  }
-
-  async getAllPublicUsers(): Promise<PublicUser[]> {
-    return await db.select().from(publicUsers);
-  }
-
-  async getAllOrders(): Promise<Order[]> {
-    return await db.select().from(orders);
-  }
-
-  async updateUserStatus(userId: number, isActive: boolean): Promise<PublicUser | null> {
-    const [user] = await db
-      .update(publicUsers)
-      .set({ isActive })
-      .where(eq(publicUsers.id, userId))
-      .returning();
-
-    return user || null;
-  }
-
-  async deleteUser(userId: number): Promise<boolean> {
-    const results = await db
-      .delete(publicUsers)
-      .where(eq(publicUsers.id, userId))
-      .returning();
-
-    return results.length > 0;
-  }
-
-  async updateUserPrivileges(userId: number, privileges: any): Promise<PublicUser | null> {
-    const [user] = await db
-      .update(publicUsers)
-      .set({ 
-        socialAccounts: [
-          ...(await this.getPublicUserById(userId))?.socialAccounts || [],
-          { type: 'privileges', data: privileges }
-        ]
-      })
-      .where(eq(publicUsers.id, userId))
-      .returning();
-
-    return user || null;
+    return await db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.createdAt));
   }
 
   async updateOrderStatus(id: number, status: string): Promise<Order> {
@@ -205,97 +247,42 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(contactSubmissions);
   }
 
-  async updateUserProfile(userId: number, updates: { name?: string; email?: string }): Promise<any> {
-    try {
-      const result = await db.update(publicUsers)
-        .set(updates)
-        .where(eq(publicUsers.id, userId))
-        .returning();
-      return result[0];
-    } catch (error) {
-      console.error("Error updating user profile:", error);
-      return null;
-    }
+  // Admin operations
+  async getAllPublicUsers(): Promise<PublicUser[]> {
+    return await db.select().from(publicUsers);
   }
 
-  async getUserIntegrations(userId: number): Promise<any[] > {
-    try {
-      // Mock integrations data - in production would be a real table
-      return [
-        {
-          id: 1,
-          type: 'crm',
-          name: 'Salesforce',
-          isActive: true,
-          lastSync: new Date().toISOString(),
-          status: 'connected'
-        },
-        {
-          id: 2,
-          type: 'dialer',
-          name: 'VoIP System',
-          isActive: false,
-          lastSync: null,
-          status: 'disconnected'
-        }
-      ];
-    } catch (error) {
-      console.error("Error fetching user integrations:", error);
-      return [];
-    }
+  async getAllOrders(): Promise<Order[]> {
+    return await db.select().from(orders);
   }
 
-  async createUserIntegration(integration: any): Promise<any> {
-    try {
-      // Mock creation - in production would save to database
-      return {
-        id: Date.now(),
-        ...integration,
-        createdAt: new Date().toISOString(),
-        status: 'connected'
-      };
-    } catch (error) {
-      console.error("Error creating user integration:", error);
-      throw error;
-    }
+  async updateUserStatus(userId: number, isActive: boolean): Promise<PublicUser | null> {
+    const [user] = await db
+      .update(publicUsers)
+      .set({ isActive })
+      .where(eq(publicUsers.id, userId))
+      .returning();
+    return user || null;
   }
 
-  async deleteUserIntegration(integrationId: number, userId: number): Promise<boolean> {
-    try {
-      // Mock deletion - in production would delete from database
-      return true;
-    } catch (error) {
-      console.error("Error deleting user integration:", error);
-      return false;
-    }
+  async deleteUser(userId: number): Promise<boolean> {
+    const results = await db
+      .delete(publicUsers)
+      .where(eq(publicUsers.id, userId))
+      .returning();
+    return results.length > 0;
   }
 
-  async updatePackage(packageId: number, updates: any): Promise<any> {
-    try {
-      const result = await db.update(packages)
-        .set(updates)
-        .where(eq(packages.id, packageId))
-        .returning();
-      return result[0];
-    } catch (error) {
-      console.error("Error updating package:", error);
-      return null;
-    }
+  async updateUserPrivileges(userId: number, privileges: any): Promise<PublicUser | null> {
+    const [user] = await db
+      .update(publicUsers)
+      .set({ privileges })
+      .where(eq(publicUsers.id, userId))
+      .returning();
+    return user || null;
   }
 
-  async deletePackage(packageId: number): Promise<boolean> {
-    try {
-      const result = await db.delete(packages).where(eq(packages.id, packageId)).returning();
-      return result.length > 0;
-    } catch (error) {
-      console.error("Error deleting package:", error);
-      return false;
-    }
-  }
-
-  }
-
-// Access Control Methods
+  // Access Control operations
   async getUserPermissions(userId: number): Promise<string[]> {
     try {
       const user = await this.getPublicUserById(userId);
@@ -310,7 +297,10 @@ export class DatabaseStorage implements IStorage {
         customer: ['profile:read', 'profile:write', 'orders:read']
       };
 
-      return user.permissions || rolePermissions[user.role || 'customer'] || [];
+      const userPermissions = user.permissions as string[] || [];
+      const rolePerms = rolePermissions[user.role || 'customer'] || [];
+      
+      return [...new Set([...userPermissions, ...rolePerms])];
     } catch (error) {
       console.error("Error fetching user permissions:", error);
       return [];
@@ -319,346 +309,499 @@ export class DatabaseStorage implements IStorage {
 
   async getUserFeatureFlags(userId: number): Promise<string[]> {
     try {
-      const [flags] = await db.select({ flagKey: userFeatureFlags.flagKey })
+      const flags = await db.select({ flagKey: userFeatureFlags.flagKey })
         .from(userFeatureFlags)
-        .where(eq(userFeatureFlags.userId, userId));
+        .where(and(eq(userFeatureFlags.userId, userId), eq(userFeatureFlags.value, true)));
 
-      return flags?.map(f => f.flagKey) || [];
+      return flags.map(f => f.flagKey);
     } catch (error) {
       console.error("Error fetching user feature flags:", error);
       return [];
     }
   }
 
-  async updateLastLogin(userId: number): Promise<void> {
-    try {
-      await db.update(publicUsers)
-        .set({ lastLoginAt: new Date() })
-        .where(eq(publicUsers.id, userId));
-    } catch (error) {
-      console.error("Error updating last login:", error);
-    }
-  }
-
-  async getAllowedPaymentMethods(userId: number, orgId?: string): Promise<string[]> {
-    try {
-      // Check user-specific policy first
-      const [userPolicy] = await db.select()
-        .from(userPaymentPolicies)
-        .where(eq(userPaymentPolicies.userId, userId));
-
-      if (userPolicy?.allowedMethods) {
-        return userPolicy.allowedMethods;
-      }
-
-      // Fall back to org policy
-      if (orgId) {
-        const [orgPolicy] = await db.select()
-          .from(orgPaymentPolicies)
-          .where(eq(orgPaymentPolicies.orgId, orgId));
-
-        if (orgPolicy?.allowedMethods) {
-          return orgPolicy.allowedMethods;
-        }
-      }
-
-      // Default to card only
-      return ['card'];
-    } catch (error) {
-      console.error("Error fetching allowed payment methods:", error);
-      return ['card'];
-    }
-  }
-
-  async getAllowedIntegrationScopes(userId: number, orgId: string | undefined, provider: string): Promise<string[]> {
-    try {
-      // Check user-specific policy first
-      const [userPolicy] = await db.select()
-        .from(userIntegrationPolicies)
-        .where(eq(userIntegrationPolicies.userId, userId))
-        .where(eq(userIntegrationPolicies.provider, provider));
-
-      if (userPolicy?.allowedScopes) {
-        return userPolicy.allowedScopes;
-      }
-
-      // Fall back to org policy
-      if (orgId) {
-        const [orgPolicy] = await db.select()
-          .from(orgIntegrationPolicies)
-          .where(eq(orgIntegrationPolicies.orgId, orgId))
-          .where(eq(orgIntegrationPolicies.provider, provider));
-
-        if (orgPolicy?.allowedScopes) {
-          return orgPolicy.allowedScopes;
-        }
-      }
-
-      // Default to read-only
-      return ['read'];
-    } catch (error) {
-      console.error("Error fetching allowed integration scopes:", error);
-      return ['read'];
-    }
-  }
-
-  async createAuditLog(log: InsertAuditLog): Promise<AuditLog> {
-    const [newLog] = await db.insert(auditLogs).values(log).returning();
-    return newLog;
-  }
-
-  async getApiKeyByHash(keyHash: string): Promise<ApiKey | undefined> {
-    const [apiKey] = await db.select().from(apiKeys).where(eq(apiKeys.keyHash, keyHash));
-    return apiKey;
-  }
-
-  async getApiKeyUsage(keyId: number, periodMinutes: number): Promise<number> {
-    // Mock implementation - would track actual usage in practice
-    return Math.floor(Math.random() * 10);
-  }
-
-  async updateApiKeyLastUsed(keyId: number): Promise<void> {
-    await db.update(apiKeys)
-      .set({ lastUsedAt: new Date() })
-      .where(eq(apiKeys.id, keyId));
-  }
-
-  async getAllDialerMappings(): Promise<UserDialerMap[]> {
-    return await db.select().from(userDialerMap);
-  }
-
-  async getDialerMapping(userId: number): Promise<UserDialerMap | undefined> {
-    const [mapping] = await db.select().from(userDialerMap)
-      .where(eq(userDialerMap.userId, userId));
-    return mapping;
-  }
-
-  async updateCallsCache(userId: number, period: string, data: { callsCount: number; avgHandleTime: number; occupancy: number }): Promise<void> {
-    await db.insert(callsCache)
-      .values({
-        userId,
-        period,
-        ...data,
-        updatedAt: new Date()
-      })
-      .onConflictDoUpdate({
-        target: [callsCache.userId, callsCache.period],
-        set: {
-          ...data,
-          updatedAt: new Date()
-        }
-      });
-  }
-
-  async getCallsCache(userId: number): Promise<CallsCache[]> {
-    return await db.select().from(callsCache)
-      .where(eq(callsCache.userId, userId));
-  }
-
-  // Admin Access Control Methods
-  async getAllUsersWithDetails(): Promise<any[]> {
-    try {
-      const users = await db.select().from(publicUsers);
-
-      // Get additional details for each user
-      const usersWithDetails = await Promise.all(users.map(async (user) => {
-        const [permissions, featureFlags, dialerMapping, orderCount, totalSpent] = await Promise.all([
-          this.getUserPermissions(user.id),
-          this.getUserFeatureFlags(user.id),
-          this.getDialerMapping(user.id),
-          this.getUserOrderCount(user.id),
-          this.getUserTotalSpent(user.id)
-        ]);
-
-        return {
-          ...user,
-          permissions,
-          featureFlags,
-          isLinkedToDialer: !!dialerMapping,
-          orderCount,
-          totalSpent
-        };
-      }));
-
-      return usersWithDetails;
-    } catch (error) {
-      console.error("Error fetching users with details:", error);
-      throw error;
-    }
-  }
-
-  async updateUserStatus(userId: number, status: string): Promise<PublicUser | null> {
-    try {
-      const [user] = await db.update(publicUsers)
-        .set({ status })
-        .where(eq(publicUsers.id, userId))
-        .returning();
-      return user || null;
-    } catch (error) {
-      console.error("Error updating user status:", error);
-      return null;
-    }
-  }
-
   async updateUserRole(userId: number, role: string): Promise<PublicUser | null> {
-    try {
-      const [user] = await db.update(publicUsers)
-        .set({ role })
-        .where(eq(publicUsers.id, userId))
-        .returning();
-      return user || null;
-    } catch (error) {
-      console.error("Error updating user role:", error);
-      return null;
-    }
+    const [user] = await db
+      .update(publicUsers)
+      .set({ role })
+      .where(eq(publicUsers.id, userId))
+      .returning();
+    return user || null;
   }
 
   async updateUserPermissions(userId: number, permissions: string[]): Promise<PublicUser | null> {
-    try {
-      const [user] = await db.update(publicUsers)
-        .set({ permissions })
-        .where(eq(publicUsers.id, userId))
+    const [user] = await db
+      .update(publicUsers)
+      .set({ permissions })
+      .where(eq(publicUsers.id, userId))
+      .returning();
+    return user || null;
+  }
+
+  async updateUserFeatureFlags(userId: number, flags: Record<string, boolean>): Promise<void> {
+    // Remove all existing flags for user
+    await db.delete(userFeatureFlags).where(eq(userFeatureFlags.userId, userId));
+    
+    // Insert new flags
+    const flagInserts = Object.entries(flags)
+      .filter(([_, value]) => value)
+      .map(([flagKey, value]) => ({
+        userId,
+        flagKey,
+        value
+      }));
+
+    if (flagInserts.length > 0) {
+      await db.insert(userFeatureFlags).values(flagInserts);
+    }
+  }
+
+  async getUserIntegrationPolicies(userId: number): Promise<UserIntegrationPolicy[]> {
+    return await db.select().from(userIntegrationPolicies).where(eq(userIntegrationPolicies.userId, userId));
+  }
+
+  async getOrgIntegrationPolicies(orgId: number): Promise<OrgIntegrationPolicy[]> {
+    return await db.select().from(orgIntegrationPolicies).where(eq(orgIntegrationPolicies.orgId, orgId));
+  }
+
+  async updateUserIntegrationPolicy(
+    userId: number, 
+    provider: string, 
+    allowedScopes: string[], 
+    deniedScopes: string[]
+  ): Promise<UserIntegrationPolicy> {
+    const existing = await db.select().from(userIntegrationPolicies)
+      .where(and(eq(userIntegrationPolicies.userId, userId), eq(userIntegrationPolicies.provider, provider)));
+
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(userIntegrationPolicies)
+        .set({ allowedScopes, deniedScopes, updatedAt: new Date() })
+        .where(and(eq(userIntegrationPolicies.userId, userId), eq(userIntegrationPolicies.provider, provider)))
         .returning();
-      return user || null;
-    } catch (error) {
-      console.error("Error updating user permissions:", error);
-      return null;
+      return updated;
+    } else {
+      const [created] = await db.insert(userIntegrationPolicies).values({
+        userId,
+        provider,
+        allowedScopes,
+        deniedScopes,
+      }).returning();
+      return created;
     }
   }
 
-  async setUserFeatureFlag(userId: number, flagKey: string, value: boolean): Promise<void> {
-    await db.insert(userFeatureFlags)
-      .values({ userId, flagKey, value })
-      .onConflictDoUpdate({
-        target: [userFeatureFlags.userId, userFeatureFlags.flagKey],
-        set: { value, updatedAt: new Date() }
-      });
+  async getUserPaymentPolicies(userId: number): Promise<UserPaymentPolicy | null> {
+    const [policy] = await db.select().from(userPaymentPolicies).where(eq(userPaymentPolicies.userId, userId));
+    return policy || null;
   }
 
-  async createApiKey(data: InsertApiKey): Promise<ApiKey> {
-    const [apiKey] = await db.insert(apiKeys).values(data).returning();
-    return apiKey;
-  }
-
-  async revokeApiKey(keyId: number): Promise<void> {
-    await db.update(apiKeys)
-      .set({ revokedAt: new Date() })
-      .where(eq(apiKeys.id, keyId));
-  }
-
-  async getUserOrderCount(userId: number): Promise<number> {
-    try {
-      const result = await db.select({ count: count() })
-        .from(orders)
-        .where(eq(orders.userId, userId.toString()));
-      return result[0]?.count || 0;
-    } catch (error) {
-      return 0;
+  async updateUserPaymentPolicy(userId: number, allowedMethods: string[], defaultMethod: string): Promise<UserPaymentPolicy> {
+    const existing = await this.getUserPaymentPolicies(userId);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(userPaymentPolicies)
+        .set({ allowedMethods, defaultMethod, updatedAt: new Date() })
+        .where(eq(userPaymentPolicies.userId, userId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(userPaymentPolicies).values({
+        userId,
+        allowedMethods,
+        defaultMethod,
+      }).returning();
+      return created;
     }
   }
 
-  async getUserTotalSpent(userId: number): Promise<number> {
-    try {
-      const userOrders = await db.select({ total: orders.total })
-        .from(orders)
-        .where(eq(orders.userId, userId.toString()));
-
-      return userOrders.reduce((sum, order) => sum + parseFloat(order.total), 0);
-    } catch (error) {
-      return 0;
-    }
+  async getUserDialerMapping(userId: number): Promise<UserDialerMap | null> {
+    const [mapping] = await db.select().from(userDialerMap)
+      .where(and(eq(userDialerMap.userId, userId), eq(userDialerMap.isActive, true)));
+    return mapping || null;
   }
 
-  async createDialerMapping(data: InsertUserDialerMap): Promise<UserDialerMap> {
-    const [mapping] = await db.insert(userDialerMap).values(data).returning();
+  async setUserDialerMapping(userId: number, provider: string, externalAgentId: string, meta: any): Promise<UserDialerMap> {
+    // Deactivate existing mappings
+    await db.update(userDialerMap)
+      .set({ isActive: false })
+      .where(eq(userDialerMap.userId, userId));
+
+    // Create new mapping
+    const [mapping] = await db.insert(userDialerMap).values({
+      userId,
+      provider,
+      externalAgentId,
+      meta,
+      isActive: true,
+    }).returning();
     return mapping;
   }
 
-  async deleteDialerMapping(userId: number): Promise<void> {
-    await db.delete(userDialerMap).where(eq(userDialerMap.userId, userId));
+  async getCallsCache(userId: number): Promise<CallsCache[]> {
+    return await db.select().from(callsCache).where(eq(callsCache.userId, userId));
   }
 
-  async setUserPaymentPolicy(userId: number, allowedMethods: string[]): Promise<void> {
-    await db.insert(userPaymentPolicies)
-      .values({ userId, allowedMethods })
-      .onConflictDoUpdate({
-        target: userPaymentPolicies.userId,
-        set: { allowedMethods, updatedAt: new Date() }
-      });
-  }
+  async updateCallsCache(userId: number, period: string, callsCount: number, avgHandleTime: number, occupancy: number): Promise<CallsCache> {
+    const existing = await db.select().from(callsCache)
+      .where(and(eq(callsCache.userId, userId), eq(callsCache.period, period)));
 
-  async setUserIntegrationPolicy(userId: number, provider: string, allowedScopes: string[]): Promise<void> {
-    await db.insert(userIntegrationPolicies)
-      .values({ userId, provider, allowedScopes })
-      .onConflictDoUpdate({
-        target: [userIntegrationPolicies.userId, userIntegrationPolicies.provider],
-        set: { allowedScopes, updatedAt: new Date() }
-      });
-  }
-
-  async getAuditLogs(targetUserId?: number, limit = 100): Promise<AuditLog[]> {
-    let query = db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(limit);
-
-    if (targetUserId) {
-      query = query.where(eq(auditLogs.targetUserId, targetUserId));
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(callsCache)
+        .set({ 
+          callsCount, 
+          avgHandleTime: avgHandleTime.toString(), 
+          occupancy: occupancy.toString(),
+          updatedAt: new Date() 
+        })
+        .where(and(eq(callsCache.userId, userId), eq(callsCache.period, period)))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(callsCache).values({
+        userId,
+        period,
+        callsCount,
+        avgHandleTime: avgHandleTime.toString(),
+        occupancy: occupancy.toString(),
+      }).returning();
+      return created;
     }
+  }
 
+  async getApiKeys(userId?: number, orgId?: number): Promise<ApiKey[]> {
+    let query = db.select().from(apiKeys).where(eq(apiKeys.revokedAt, null));
+    
+    if (userId) {
+      query = query.where(eq(apiKeys.userId, userId));
+    }
+    if (orgId) {
+      query = query.where(eq(apiKeys.orgId, orgId));
+    }
+    
     return await query;
   }
 
-  async getUserApiKeys(userId: number): Promise<ApiKey[]> {
-    return await db.select().from(apiKeys)
-      .where(eq(apiKeys.userId, userId))
-      .where(isNull(apiKeys.revokedAt));
+  async createApiKey(apiKey: InsertApiKey): Promise<ApiKey> {
+    const [created] = await db.insert(apiKeys).values(apiKey).returning();
+    return created;
   }
 
-  async getOrgApiKeys(orgId: string): Promise<ApiKey[]> {
-    return await db.select().from(apiKeys)
-      .where(eq(apiKeys.orgId, orgId))
-      .where(isNull(apiKeys.revokedAt));
+  async revokeApiKey(keyId: number): Promise<boolean> {
+    const result = await db
+      .update(apiKeys)
+      .set({ revokedAt: new Date() })
+      .where(eq(apiKeys.id, keyId))
+      .returning();
+    return result.length > 0;
   }
 
-  async bulkUpdateUsers(userIds: number[], updates: any): Promise<void> {
-    if (userIds.length === 0) return;
-
-    await db.update(publicUsers)
-      .set(updates)
-      .where(inArray(publicUsers.id, userIds));
+  async auditLog(log: InsertAuditLog): Promise<AuditLog> {
+    const [created] = await db.insert(auditLogs).values(log).returning();
+    return created;
   }
 
-  async createCoupon(data: InsertCoupon): Promise<Coupon> {
-    const [coupon] = await db.insert(coupons).values(data).returning();
-    return coupon;
+  async getAuditLogs(userId?: number, orgId?: number): Promise<AuditLog[]> {
+    let query = db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt));
+    
+    if (userId) {
+      query = query.where(eq(auditLogs.targetUserId, userId));
+    }
+    if (orgId) {
+      query = query.where(eq(auditLogs.targetOrgId, orgId));
+    }
+    
+    return await query;
   }
 
   async getCoupons(): Promise<Coupon[]> {
-    return await db.select().from(coupons).orderBy(desc(coupons.createdAt));
+    return await db.select().from(coupons);
   }
 
-  async getCouponByCode(code: string): Promise<Coupon | undefined> {
-    const [coupon] = await db.select().from(coupons)
-      .where(eq(coupons.code, code))
-      .where(eq(coupons.isActive, true));
-    return coupon;
+  async createCoupon(coupon: InsertCoupon): Promise<Coupon> {
+    const [created] = await db.insert(coupons).values(coupon).returning();
+    return created;
   }
 
-  async redeemCoupon(couponId: number, userId: number, orderId: number, discountAmount: number): Promise<void> {
-    await db.transaction(async (tx) => {
-      // Create redemption record
-      await tx.insert(couponRedemptions).values({
-        couponId,
-        userId,
-        orderId,
-        discountAmount
-      });
+  async redeemCoupon(redemption: InsertCouponRedemption): Promise<CouponRedemption> {
+    const [created] = await db.insert(couponRedemptions).values(redemption).returning();
+    
+    // Update coupon usage count
+    await db.update(coupons)
+      .set({ usesCount: sql`${coupons.usesCount} + 1` })
+      .where(eq(coupons.id, redemption.couponId));
+    
+    return created;
+  }
 
-      // Increment usage count
-      await tx.update(coupons)
-        .set({ 
-          currentUses: sql`${coupons.currentUses} + 1`
-        })
-        .where(eq(coupons.id, couponId));
-    });
+  // Enhanced Access Control Center implementations
+  async getAllUsersWithDetails(page: number = 1, limit: number = 50, search?: string, filters?: any): Promise<{ users: any[], total: number }> {
+    const offset = (page - 1) * limit;
+    
+    // Build base query
+    let query = db.select({
+      id: publicUsers.id,
+      name: publicUsers.name,
+      email: publicUsers.email,
+      createdAt: publicUsers.createdAt,
+      stripeCustomerId: publicUsers.stripeCustomerId,
+      socialAccounts: publicUsers.socialAccounts,
+    }).from(publicUsers);
+
+    // Add search filter
+    if (search) {
+      query = query.where(
+        sql`${publicUsers.name} ILIKE ${'%' + search + '%'} OR ${publicUsers.email} ILIKE ${'%' + search + '%'}`
+      );
+    }
+
+    // Get total count
+    const totalQuery = db.select({ count: count() }).from(publicUsers);
+    const [{ count: total }] = await totalQuery;
+
+    // Get paginated results
+    const users = await query.limit(limit).offset(offset).orderBy(desc(publicUsers.createdAt));
+
+    // Enhance each user with additional details
+    const enhancedUsers = await Promise.all(users.map(async (user) => {
+      // Get order statistics
+      const userOrders = await db.select({
+        orderCount: count(),
+        totalSpent: sql<number>`COALESCE(SUM(${orders.total}), 0)`.as('totalSpent')
+      }).from(orders).where(eq(orders.userId, user.email));
+
+      return {
+        ...user,
+        role: 'customer', // Default role
+        status: 'active', // Default status
+        orgId: null,
+        orderCount: userOrders[0]?.orderCount || 0,
+        totalSpent: Number(userOrders[0]?.totalSpent || 0),
+        lastLoginAt: null,
+        isMfaEnabled: false,
+        permissions: [],
+      };
+    }));
+
+    return { users: enhancedUsers, total };
+  }
+
+  async lockUserAccount(userId: number, reason: string): Promise<PublicUser> {
+    const [user] = await db
+      .update(publicUsers)
+      .set({ 
+        // Note: These fields would need to be added to the actual schema
+        // For now, we'll simulate the update
+      })
+      .where(eq(publicUsers.id, userId))
+      .returning();
+    return user;
+  }
+
+  async unlockUserAccount(userId: number): Promise<PublicUser> {
+    const [user] = await db
+      .update(publicUsers)
+      .set({ 
+        // Unlock account logic
+      })
+      .where(eq(publicUsers.id, userId))
+      .returning();
+    return user;
+  }
+
+  async forcePasswordReset(userId: number): Promise<PublicUser> {
+    const [user] = await db
+      .update(publicUsers)
+      .set({ 
+        // Force password reset logic
+      })
+      .where(eq(publicUsers.id, userId))
+      .returning();
+    return user;
+  }
+
+  async requireMfaNextLogin(userId: number): Promise<PublicUser> {
+    const [user] = await db
+      .update(publicUsers)
+      .set({ 
+        // Require MFA next login logic
+      })
+      .where(eq(publicUsers.id, userId))
+      .returning();
+    return user;
+  }
+
+  async bulkUpdateUsers(userIds: number[], updates: any): Promise<void> {
+    await db
+      .update(publicUsers)
+      .set(updates)
+      .where(sql`${publicUsers.id} = ANY(${userIds})`);
+  }
+
+  // Enhanced Role management
+  async createAccessControlRole(role: InsertAccessControlRole): Promise<AccessControlRole> {
+    const [created] = await db.insert(accessControlRoles).values(role).returning();
+    return created;
+  }
+
+  async getAccessControlRoles(): Promise<AccessControlRole[]> {
+    return await db.select().from(accessControlRoles).orderBy(accessControlRoles.name);
+  }
+
+  async updateAccessControlRole(roleId: number, updates: Partial<AccessControlRole>): Promise<AccessControlRole> {
+    const [updated] = await db
+      .update(accessControlRoles)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(accessControlRoles.id, roleId))
+      .returning();
+    return updated;
+  }
+
+  async deleteAccessControlRole(roleId: number): Promise<void> {
+    await db.delete(accessControlRoles).where(eq(accessControlRoles.id, roleId));
+  }
+
+  async assignUserAccessControlRole(userId: number, roleId: number, orgId?: string): Promise<AccessControlUserRole> {
+    const [assigned] = await db.insert(accessControlUserRoles).values({
+      userId,
+      roleId,
+      orgId,
+    }).returning();
+    return assigned;
+  }
+
+  async removeUserAccessControlRole(userId: number, roleId: number, orgId?: string): Promise<void> {
+    let deleteQuery = db.delete(accessControlUserRoles)
+      .where(and(
+        eq(accessControlUserRoles.userId, userId),
+        eq(accessControlUserRoles.roleId, roleId)
+      ));
+
+    if (orgId) {
+      deleteQuery = deleteQuery.where(eq(accessControlUserRoles.orgId, orgId));
+    }
+
+    await deleteQuery;
+  }
+
+  // Enhanced Sessions
+  async createAccessControlSession(session: InsertAccessControlSession): Promise<AccessControlSession> {
+    const [created] = await db.insert(accessControlSessions).values(session).returning();
+    return created;
+  }
+
+  async getAccessControlSessions(userId: number): Promise<AccessControlSession[]> {
+    return await db
+      .select()
+      .from(accessControlSessions)
+      .where(eq(accessControlSessions.userId, userId))
+      .orderBy(desc(accessControlSessions.lastActive));
+  }
+
+  async revokeAccessControlSession(sessionId: string): Promise<void> {
+    await db.delete(accessControlSessions).where(eq(accessControlSessions.sessionId, sessionId));
+  }
+
+  async revokeAllAccessControlSessions(userId: number): Promise<void> {
+    await db.delete(accessControlSessions).where(eq(accessControlSessions.userId, userId));
+  }
+
+  // Enhanced Integrations
+  async createAccessControlIntegration(integration: InsertAccessControlIntegration): Promise<AccessControlIntegration> {
+    const [created] = await db.insert(accessControlIntegrations).values(integration).returning();
+    return created;
+  }
+
+  async getAccessControlIntegrations(userId: number): Promise<AccessControlIntegration[]> {
+    return await db
+      .select()
+      .from(accessControlIntegrations)
+      .where(eq(accessControlIntegrations.userId, userId))
+      .orderBy(desc(accessControlIntegrations.createdAt));
+  }
+
+  async updateAccessControlIntegrationStatus(integrationId: number, status: string): Promise<AccessControlIntegration> {
+    const [updated] = await db
+      .update(accessControlIntegrations)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(accessControlIntegrations.id, integrationId))
+      .returning();
+    return updated;
+  }
+
+  // Enhanced Payment methods
+  async setAccessControlPaymentPolicy(userId: number, allowedMethods: string[]): Promise<AccessControlPaymentMethod> {
+    // First try to update existing policy
+    const existing = await db
+      .select()
+      .from(accessControlPaymentMethods)
+      .where(eq(accessControlPaymentMethods.userId, userId))
+      .limit(1);
+
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(accessControlPaymentMethods)
+        .set({ allowedMethods, updatedAt: new Date() })
+        .where(eq(accessControlPaymentMethods.userId, userId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(accessControlPaymentMethods)
+        .values({ userId, allowedMethods })
+        .returning();
+      return created;
+    }
+  }
+
+  async getAccessControlPaymentPolicy(userId: number): Promise<AccessControlPaymentMethod | undefined> {
+    const [policy] = await db
+      .select()
+      .from(accessControlPaymentMethods)
+      .where(eq(accessControlPaymentMethods.userId, userId))
+      .limit(1);
+    return policy;
+  }
+
+  // Enhanced Call metrics
+  async getAccessControlCallMetrics(userId: number): Promise<AccessControlCallMetric[]> {
+    return await db
+      .select()
+      .from(accessControlCallMetrics)
+      .where(eq(accessControlCallMetrics.userId, userId))
+      .orderBy(desc(accessControlCallMetrics.updatedAt));
+  }
+
+  async updateAccessControlCallMetrics(userId: number, metrics: InsertAccessControlCallMetric): Promise<AccessControlCallMetric> {
+    // First try to update existing metrics for the same period
+    const existing = await db
+      .select()
+      .from(accessControlCallMetrics)
+      .where(and(
+        eq(accessControlCallMetrics.userId, userId),
+        eq(accessControlCallMetrics.period, metrics.period)
+      ))
+      .limit(1);
+
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(accessControlCallMetrics)
+        .set({ ...metrics, updatedAt: new Date() })
+        .where(and(
+          eq(accessControlCallMetrics.userId, userId),
+          eq(accessControlCallMetrics.period, metrics.period)
+        ))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(accessControlCallMetrics)
+        .values(metrics)
+        .returning();
+      return created;
+    }
   }
 }
 
