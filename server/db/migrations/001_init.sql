@@ -180,6 +180,25 @@ CREATE TABLE IF NOT EXISTS packages (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Drop orders table if it exists with wrong column types
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables 
+    WHERE table_name = 'orders'
+  ) THEN
+    -- Check if user_id column has wrong type
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_name = 'orders' 
+      AND column_name = 'user_id' 
+      AND data_type != 'uuid'
+    ) THEN
+      DROP TABLE orders CASCADE;
+    END IF;
+  END IF;
+END $$;
+
 CREATE TABLE IF NOT EXISTS orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID,
