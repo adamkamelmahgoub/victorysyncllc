@@ -5,6 +5,7 @@ import { sign } from '../lib/jwt.js';
 import { generate, dispatch, verifyPair } from '../services/otp.js';
 import { issueAccessCode, validateAccessCode, markConsumed } from '../services/accessCodes.js';
 import { createOrgIfNeeded, createUser, findUserByEmail, verifyPassword, setVerificationFlags } from '../services/users.js';
+import { requireAuth } from '../middleware/auth.js';
 
 export const auth = Router();
 
@@ -58,4 +59,9 @@ auth.post('/api/auth/login', async (req,res) => {
   const jwt = sign({ id:u.id, role:u.role, org_id:u.org_id });
   res.cookie('vs_token', jwt, { httpOnly:true, sameSite:'lax', maxAge:7*24*3600*1000 });
   res.json({ user: { id:u.id, email:u.email, role:u.role, org_id:u.org_id, full_name:u.full_name }});
+});
+
+// Get current user info (protected route)
+auth.get('/api/auth/me', requireAuth, (req: any, res) => {
+  res.json({ user: req.user });
 });

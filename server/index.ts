@@ -1,11 +1,10 @@
-
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
-import { auth } from './routes/auth';
-import { admin } from './routes/admin';
-import { requireAuth, requireRole } from './middleware/auth';
+import { auth } from './routes/auth.js';
+import { admin } from './routes/admin.js';
+import { requireAuth, requireRole } from './middleware/auth.js';
 
 const app = express();
 app.use(cors({ origin: true, credentials: true }));
@@ -17,8 +16,8 @@ app.get('/api/health', (_req,res)=>res.json({ok:true}));
 // Public auth routes
 app.use(auth);
 
-// Admin protected
-app.use(requireAuth, requireRole('admin'), admin);
+// Protected admin routes
+app.use('/api/admin', requireAuth, requireRole('admin'), admin);
 
 // In production, serve built client
 if (process.env.NODE_ENV === 'production') {

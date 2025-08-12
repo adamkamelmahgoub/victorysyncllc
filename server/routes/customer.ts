@@ -1,6 +1,5 @@
-
 import { Router } from 'express';
-import { sql } from '../db/index';
+import { sql } from '../db/index.js';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
