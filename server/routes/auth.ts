@@ -1,10 +1,10 @@
 
 import { Router } from 'express';
 import { z } from 'zod';
-import { sign } from '../lib/jwt';
-import { generate, dispatch, verifyPair } from '../services/otp';
-import { issueAccessCode, validateAccessCode, markConsumed } from '../services/accessCodes';
-import { createOrgIfNeeded, createUser, findUserByEmail, verifyPassword, setVerificationFlags } from '../services/users';
+import { sign } from '../lib/jwt.js';
+import { generate, dispatch, verifyPair } from '../services/otp.js';
+import { issueAccessCode, validateAccessCode, markConsumed } from '../services/accessCodes.js';
+import { createOrgIfNeeded, createUser, findUserByEmail, verifyPassword, setVerificationFlags } from '../services/users.js';
 
 export const auth = Router();
 
