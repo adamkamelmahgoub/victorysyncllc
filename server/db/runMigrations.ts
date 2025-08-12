@@ -1,77 +1,50 @@
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { sql } from './index.ts';
 
-import { readdir, readFile } from 'fs/promises';
-import { join } from 'path';
-import { db } from './index.js';
-import { sql } from 'drizzle-orm';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const MIGRATIONS_DIR = join(__dirname, 'migrations');
 
-async function runMigrations() {
-  try {
-    console.log('🔄 Running database migrations...');
-    
-    // Create migrations table if it doesn't exist
-    await db.execute(sql`
-      CREATE TABLE IF NOT EXISTS migrations (
-        id SERIAL PRIMARY KEY,
-        filename VARCHAR(255) UNIQUE NOT NULL,
-        executed_at TIMESTAMP DEFAULT NOW()
-      )
-    `);
+async function ensureMigrationsTable() {
+  await sql`
+    create table if not exists schema_migrations (
+      id serial primary key,
+      name text not null unique,
+      applied_at timestamptz not null default now()
+    )
+  `;
+}
 
-    // Get list of migration files
-    const migrationsDir = join(process.cwd(), 'server/db/migrations');
-    const files = await readdir(migrationsDir);
-    const migrationFiles = files.filter(f => f.endsWith('.sql')).sort();
+async function getApplied(): Promise<Set<string>> {
+  const rows = await sql`select name from schema_migrations order by applied_at asc`;
+  return new Set(rows.map((r: any) => r.name));
+}
 
-    // Get already executed migrations
-    const executedMigrations = await db.execute(sql`
-      SELECT filename FROM migrations ORDER BY executed_at
-    `);
-    
-    const executedFilenames = new Set(
-      executedMigrations.map((row: any) => row.filename)
-    );
+export async function runMigrations() {
+  await ensureMigrationsTable();
+  const applied = await getApplied();
+  const files = readdirSync(MIGRATIONS_DIR)
+    .filter(f => f.endsWith('.sql'))
+    .sort();
 
-    // Run pending migrations
-    for (const filename of migrationFiles) {
-      if (!executedFilenames.has(filename)) {
-        console.log(`📄 Running migration: ${filename}`);
-        
-        const migrationPath = join(migrationsDir, filename);
-        const migrationSql = await readFile(migrationPath, 'utf8');
-        
-        // Execute migration
-        await db.execute(sql.raw(migrationSql));
-        
-        // Record migration as executed
-        await db.execute(sql`
-          INSERT INTO migrations (filename) VALUES (${filename})
-        `);
-        
-        console.log(`✅ Migration completed: ${filename}`);
-      } else {
-        console.log(`⏭️  Migration already executed: ${filename}`);
-      }
-    }
-
-    console.log('✅ All migrations completed successfully!');
-    
-  } catch (error) {
-    console.error('❌ Migration failed:', error);
-    throw error;
+  for (const file of files) {
+    if (applied.has(file)) continue;
+    const full = join(MIGRATIONS_DIR, file);
+    const sqlText = readFileSync(full, 'utf8');
+    console.log('Applying migration:', file);
+    await sql(sqlText as any);
+    await sql`insert into schema_migrations (name) values (${file})`;
   }
+
+  console.log('✅ All migrations applied');
 }
 
-// Run migrations if this file is executed directly
+// Allow running directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  runMigrations()
-    .then(() => {
-      console.log('Migration process completed.');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('Migration process failed:', error);
-      process.exit(1);
-    });
+  runMigrations().catch(err => {
+    console.error('❌ Migration failed:', err);
+    process.exit(1);
+  });
 }
-
-export { runMigrations };

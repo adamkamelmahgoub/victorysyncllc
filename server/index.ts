@@ -1,10 +1,10 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes.js";
 import { setupVite, serveStatic, log } from "./vite.js";
-import { testDatabaseConnection } from "./db/index.js";
+import { dbHealthcheck } from "./db/index.ts";
 import passport from "./auth/passport.js";
 import { runMigrations } from './migrations.js';
-import { runMigrations as runSQLMigrations } from './db/runMigrations.js';
+import { runMigrations as runSQLMigrations } from './db/runMigrations.ts';
 import { callMetricsService } from "./services/callMetricsService.js";
 
 // Validate required environment variables at startup
@@ -71,7 +71,7 @@ log(logLine);
 
     // Test database connection
     console.log('🔗 Connecting to database...');
-    await testDatabaseConnection();
+    await dbHealthcheck();
 
     console.log('✅ Database connection test successful');
 
