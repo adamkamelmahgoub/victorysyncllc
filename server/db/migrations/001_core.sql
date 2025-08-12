@@ -1,12 +1,12 @@
 
--- Organizations
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE TABLE IF NOT EXISTS organizations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT UNIQUE NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Users
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE INDEX IF NOT EXISTS idx_users_org ON users(org_id);
 
--- Access codes (admin-issued)
 CREATE TABLE IF NOT EXISTS access_codes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code TEXT UNIQUE NOT NULL,
@@ -39,7 +38,6 @@ CREATE TABLE IF NOT EXISTS access_codes (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Integrations & permissions per user
 CREATE TABLE IF NOT EXISTS user_permissions (
   user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   can_use_api BOOLEAN DEFAULT false,
@@ -49,7 +47,6 @@ CREATE TABLE IF NOT EXISTS user_permissions (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Payment policy per user
 CREATE TABLE IF NOT EXISTS user_payment_policies (
   user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   allow_card BOOLEAN DEFAULT true,
@@ -58,7 +55,6 @@ CREATE TABLE IF NOT EXISTS user_payment_policies (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Call metrics
 CREATE TABLE IF NOT EXISTS call_events (
   id BIGSERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -68,7 +64,6 @@ CREATE TABLE IF NOT EXISTS call_events (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Audit log
 CREATE TABLE IF NOT EXISTS audit_logs (
   id BIGSERIAL PRIMARY KEY,
   actor_id UUID,
