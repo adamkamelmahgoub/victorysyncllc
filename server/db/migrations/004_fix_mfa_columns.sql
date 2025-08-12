@@ -16,8 +16,11 @@ UPDATE "public_users" SET "require_mfa" = false WHERE "require_mfa" IS NULL;
 UPDATE "public_users" SET "force_password_reset" = false WHERE "force_password_reset" IS NULL;
 UPDATE "public_users" SET "login_attempts" = 0 WHERE "login_attempts" IS NULL;
 
--- Create access codes table
-CREATE TABLE IF NOT EXISTS "access_codes" (
+-- Drop access_codes table if it exists to recreate it properly
+DROP TABLE IF EXISTS "access_codes";
+
+-- Create access codes table with all columns
+CREATE TABLE "access_codes" (
   "id" text PRIMARY KEY DEFAULT gen_random_uuid(),
   "code" text UNIQUE NOT NULL,
   "org_id" text,
@@ -29,7 +32,7 @@ CREATE TABLE IF NOT EXISTS "access_codes" (
   "created_by" integer REFERENCES "public_users"("id")
 );
 
--- Create indexes for performance (only after table is created)
+-- Create indexes for performance (after table is fully created)
 CREATE INDEX IF NOT EXISTS "idx_public_users_mfa_enabled" ON "public_users"("mfa_enabled");
 CREATE INDEX IF NOT EXISTS "idx_public_users_locked_until" ON "public_users"("locked_until");
 CREATE INDEX IF NOT EXISTS "idx_access_codes_code" ON "access_codes"("code");
