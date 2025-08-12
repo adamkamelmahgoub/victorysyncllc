@@ -13,12 +13,12 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
 
   async function start(e:React.FormEvent) {
-    e.preventDefault(); 
+    e.preventDefault();
     setMsg('');
     setLoading(true);
     try {
       const r = await api('/auth/register/start', { method:'POST', body:JSON.stringify(payload) });
-      setToken(r.token); 
+      setToken(r.token);
       setStage('verify');
       setMsg('Verification codes sent to your email and phone.');
     } catch (error: any) {
@@ -28,7 +28,7 @@ export default function Register() {
   }
 
   async function verify(e:React.FormEvent) {
-    e.preventDefault(); 
+    e.preventDefault();
     setMsg('');
     setLoading(true);
     try {
@@ -56,68 +56,68 @@ export default function Register() {
         <form onSubmit={start} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Access Code</label>
-            <input 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" 
-              placeholder="Enter your access code" 
-              value={payload.code} 
-              onChange={e=>setPayload({...payload, code:e.target.value})} 
-              required 
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Enter your access code"
+              value={payload.code}
+              onChange={e=>setPayload({...payload, code:e.target.value})}
+              required
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Full Name</label>
-            <input 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" 
-              placeholder="Your full name" 
-              value={payload.full_name} 
-              onChange={e=>setPayload({...payload, full_name:e.target.value})} 
-              required 
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Your full name"
+              value={payload.full_name}
+              onChange={e=>setPayload({...payload, full_name:e.target.value})}
+              required
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Organization</label>
-            <input 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" 
-              placeholder="Your organization name" 
-              value={payload.org_name} 
-              onChange={e=>setPayload({...payload, org_name:e.target.value})} 
-              required 
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Your organization name"
+              value={payload.org_name}
+              onChange={e=>setPayload({...payload, org_name:e.target.value})}
+              required
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
-            <input 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" 
-              placeholder="Your email address" 
-              type="email" 
-              value={payload.email} 
-              onChange={e=>setPayload({...payload, email:e.target.value})} 
-              required 
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Your email address"
+              type="email"
+              value={payload.email}
+              onChange={e=>setPayload({...payload, email:e.target.value})}
+              required
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Phone</label>
-            <input 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" 
-              placeholder="Your phone number" 
-              value={payload.phone} 
-              onChange={e=>setPayload({...payload, phone:e.target.value})} 
-              required 
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Your phone number"
+              value={payload.phone}
+              onChange={e=>setPayload({...payload, phone:e.target.value})}
+              required
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Password</label>
-            <input 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" 
-              placeholder="Create a strong password" 
-              type="password" 
-              value={payload.password} 
-              onChange={e=>setPayload({...payload, password:e.target.value})} 
-              required 
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Create a strong password"
+              type="password"
+              value={payload.password}
+              onChange={e=>setPayload({...payload, password:e.target.value})}
+              required
             />
           </div>
-          <button 
-            className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 disabled:opacity-50" 
+          <button
+            className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 disabled:opacity-50"
             disabled={loading}
           >
             {loading ? 'Sending...' : 'Send verification codes'}
@@ -128,26 +128,26 @@ export default function Register() {
           <p className="text-sm text-gray-600 mb-4">We sent a 6-digit code to your email and phone.</p>
           <div>
             <label className="block text-sm font-medium mb-1">Email Code</label>
-            <input 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" 
-              placeholder="Enter email verification code" 
-              value={emailCode} 
-              onChange={e=>setEmailCode(e.target.value)} 
-              required 
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Enter email verification code"
+              value={emailCode}
+              onChange={e=>setEmailCode(e.target.value)}
+              required
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">SMS Code</label>
-            <input 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" 
-              placeholder="Enter SMS verification code" 
-              value={smsCode} 
-              onChange={e=>setSmsCode(e.target.value)} 
-              required 
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Enter SMS verification code"
+              value={smsCode}
+              onChange={e=>setSmsCode(e.target.value)}
+              required
             />
           </div>
-          <button 
-            className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 disabled:opacity-50" 
+          <button
+            className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 disabled:opacity-50"
             disabled={loading}
           >
             {loading ? 'Creating account...' : 'Complete registration'}

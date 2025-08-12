@@ -1,3 +1,4 @@
+
 // server/db/runMigrations.ts
 import fs from 'fs';
 import path from 'path';
@@ -35,17 +36,16 @@ async function run() {
       console.log(`Applying migration: ${f}`);
       const ddl = fs.readFileSync(path.join(dir, f), 'utf8');
       
-      // Split SQL file by semicolons and execute each statement separately
-      const statements = ddl.split(';').filter(stmt => stmt.trim().length > 0);
-      
-      for (const statement of statements) {
-        if (statement.trim()) {
-          await sql.unsafe(statement + ';');
-        }
+      try {
+        // Execute migration using neon's raw string approach
+        const result = await sql([ddl] as any, []);
+        console.log(`✅ Applied ${f}`);
+        
+        await sql`INSERT INTO _migrations (id) VALUES (${f});`;
+      } catch (error) {
+        console.error(`❌ Failed to apply ${f}:`, error);
+        throw error;
       }
-      
-      await sql`INSERT INTO _migrations (id) VALUES (${f});`;
-      console.log(`✅ Applied ${f}`);
     }
     
     console.log('All migrations up to date.');
