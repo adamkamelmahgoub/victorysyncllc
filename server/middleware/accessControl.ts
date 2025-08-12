@@ -274,3 +274,162 @@ export const decryptSecret = (encryptedText: string): string => {
   
   return decrypted;
 };
+import { Request, Response, NextFunction } from 'express';
+import { storage } from '../storage';
+import jwt from 'jsonwebtoken';
+
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number;
+    email: string;
+    role: string;
+    permissions: string[];
+    featureFlags: string[];
+    orgId?: string;
+    isSuperAdmin: boolean;
+  };
+}
+
+export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ message: 'Access token required' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    const user = await storage.getPublicUserById(decoded.id);
+    
+    if (!user || !user.isActive) {
+      return res.status(401).json({ message: 'User not found or inactive' });
+    }
+
+    // Get user permissions and feature flags
+    const [permissions, featureFlags] = await Promise.all([
+      storage.getUserPermissions(user.id),
+      storage.getUserFeatureFlags(user.id)
+    ]);
+
+    req.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role || 'customer',
+      permissions,
+      featureFlags,
+      isSuperAdmin: user.role === 'superAdmin'
+    };
+
+    next();
+  } catch (error) {
+    console.error('JWT authentication error:', error);
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+};
+
+export const authorize = (requiredPermissions: string[] = [], requiredRole?: string) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    // Super admin has all permissions
+    if (req.user.isSuperAdmin) {
+      return next();
+    }
+
+    // Check role if specified
+    if (requiredRole && req.user.role !== requiredRole) {
+      return res.status(403).json({ message: 'Insufficient role permissions' });
+    }
+
+    // Check permissions
+    if (requiredPermissions.length > 0) {
+      const hasPermission = requiredPermissions.some(permission => 
+        req.user!.permissions.includes(permission) || 
+        req.user!.permissions.includes('*')
+      );
+
+      if (!hasPermission) {
+        return res.status(403).json({ message: 'Insufficient permissions' });
+      }
+    }
+
+    next();
+  };
+};
+
+export const enforceFeatureFlag = (flagKey: string) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    if (req.user.isSuperAdmin || req.user.featureFlags.includes(flagKey)) {
+      return next();
+    }
+
+    return res.status(403).json({ message: 'Feature not enabled for this user' });
+  };
+};
+
+export const enforcePaymentMethodAllowed = (methodType: string) => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    try {
+      const paymentPolicy = await storage.getAccessControlPaymentPolicy(req.user.id);
+      
+      if (!paymentPolicy || paymentPolicy.allowedMethods.includes(methodType)) {
+        return next();
+      }
+
+      return res.status(403).json({ 
+        message: `Payment method '${methodType}' is not allowed for this user` 
+      });
+    } catch (error) {
+      console.error('Payment method enforcement error:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+};
+
+export const enforceIntegrationPolicy = (provider: string, scope: string) => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    if (req.user.isSuperAdmin) {
+      return next();
+    }
+
+    try {
+      const policies = await storage.getUserIntegrationPolicies(req.user.id);
+      const policy = policies.find(p => p.provider === provider && p.isActive);
+      
+      if (!policy) {
+        return next(); // No policy = allowed by default
+      }
+
+      if (policy.deniedScopes.includes(scope)) {
+        return res.status(403).json({ 
+          message: `Integration scope '${scope}' is denied for provider '${provider}'` 
+        });
+      }
+
+      if (policy.allowedScopes.length > 0 && !policy.allowedScopes.includes(scope)) {
+        return res.status(403).json({ 
+          message: `Integration scope '${scope}' is not in allowed list for provider '${provider}'` 
+        });
+      }
+
+      next();
+    } catch (error) {
+      console.error('Integration policy enforcement error:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+};

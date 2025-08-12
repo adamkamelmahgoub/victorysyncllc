@@ -222,6 +222,312 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Access Control Center API Routes
+  app.get("/api/admin/access/users", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const { page = 1, limit = 50, search = '', role, status } = req.query;
+      const { users, total } = await storage.getAllUsersWithDetails(
+        parseInt(page as string),
+        parseInt(limit as string),
+        search as string,
+        { role, status }
+      );
+      
+      res.json({ users, total, page: parseInt(page as string), limit: parseInt(limit as string) });
+    } catch (error) {
+      console.error("Error fetching access control users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/admin/access/users/:id", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.getPublicUserById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get additional user details
+      const [sessions, integrations, apiKeys, callMetrics, paymentPolicy, auditLogs] = await Promise.all([
+        storage.getAccessControlSessions(userId),
+        storage.getAccessControlIntegrations(userId),
+        storage.getApiKeys(userId),
+        storage.getAccessControlCallMetrics(userId),
+        storage.getAccessControlPaymentPolicy(userId),
+        storage.getAuditLogs(userId)
+      ]);
+
+      res.json({
+        ...user,
+        sessions,
+        integrations,
+        apiKeys,
+        callMetrics,
+        paymentPolicy,
+        auditLogs: auditLogs.slice(0, 50) // Last 50 audit entries
+      });
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      res.status(500).json({ message: "Failed to fetch user details" });
+    }
+  });
+
+  app.patch("/api/admin/access/users/:id/status", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive, lockReason } = req.body;
+      const actorId = req.user!.id;
+
+      let result;
+      if (isActive === false && lockReason) {
+        result = await storage.lockUserAccount(userId, lockReason);
+      } else if (isActive === true) {
+        result = await storage.unlockUserAccount(userId);
+      } else {
+        result = await storage.updateUserStatus(userId, isActive);
+      }
+
+      // Audit log
+      await storage.auditLog({
+        actorUserId: actorId,
+        targetUserId: userId,
+        action: isActive ? 'user.activate' : 'user.deactivate',
+        before: { isActive: !isActive },
+        after: { isActive, lockReason },
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      res.status(500).json({ message: "Failed to update user status" });
+    }
+  });
+
+  app.patch("/api/admin/access/users/:id/role", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { role } = req.body;
+      const actorId = req.user!.id;
+
+      const user = await storage.updateUserRole(userId, role);
+      
+      // Audit log
+      await storage.auditLog({
+        actorUserId: actorId,
+        targetUserId: userId,
+        action: 'user.role.update',
+        after: { role },
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "Failed to update user role" });
+    }
+  });
+
+  app.patch("/api/admin/access/users/:id/permissions", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { permissions } = req.body;
+      const actorId = req.user!.id;
+
+      const user = await storage.updateUserPermissions(userId, permissions);
+      
+      // Audit log
+      await storage.auditLog({
+        actorUserId: actorId,
+        targetUserId: userId,
+        action: 'user.permissions.update',
+        after: { permissions },
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user permissions:", error);
+      res.status(500).json({ message: "Failed to update user permissions" });
+    }
+  });
+
+  app.patch("/api/admin/access/users/:id/feature-flags", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { flags } = req.body;
+      const actorId = req.user!.id;
+
+      await storage.updateUserFeatureFlags(userId, flags);
+      
+      // Audit log
+      await storage.auditLog({
+        actorUserId: actorId,
+        targetUserId: userId,
+        action: 'user.feature_flags.update',
+        after: { flags },
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating user feature flags:", error);
+      res.status(500).json({ message: "Failed to update feature flags" });
+    }
+  });
+
+  app.post("/api/admin/access/users/:id/sessions/revoke-all", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const actorId = req.user!.id;
+
+      await storage.revokeAllAccessControlSessions(userId);
+      
+      // Audit log
+      await storage.auditLog({
+        actorUserId: actorId,
+        targetUserId: userId,
+        action: 'user.sessions.revoke_all',
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error revoking user sessions:", error);
+      res.status(500).json({ message: "Failed to revoke sessions" });
+    }
+  });
+
+  app.patch("/api/admin/access/users/:id/payment-policy", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { allowedMethods } = req.body;
+      const actorId = req.user!.id;
+
+      const policy = await storage.setAccessControlPaymentPolicy(userId, allowedMethods);
+      
+      // Audit log
+      await storage.auditLog({
+        actorUserId: actorId,
+        targetUserId: userId,
+        action: 'user.payment_policy.update',
+        after: { allowedMethods },
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+
+      res.json(policy);
+    } catch (error) {
+      console.error("Error updating payment policy:", error);
+      res.status(500).json({ message: "Failed to update payment policy" });
+    }
+  });
+
+  app.post("/api/admin/access/users/:id/api-keys", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { label, scopes } = req.body;
+      const actorId = req.user!.id;
+
+      // Generate API key
+      const crypto = await import('crypto');
+      const apiKey = crypto.randomBytes(32).toString('hex');
+      const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
+
+      const createdKey = await storage.createApiKey({
+        userId,
+        keyHash,
+        label,
+        scopes,
+        createdBy: actorId
+      });
+
+      // Audit log
+      await storage.auditLog({
+        actorUserId: actorId,
+        targetUserId: userId,
+        action: 'user.api_key.create',
+        after: { label, scopes },
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+
+      res.json({ ...createdKey, apiKey }); // Return key only once
+    } catch (error) {
+      console.error("Error creating API key:", error);
+      res.status(500).json({ message: "Failed to create API key" });
+    }
+  });
+
+  app.delete("/api/admin/access/api-keys/:keyId", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const keyId = parseInt(req.params.keyId);
+      const actorId = req.user!.id;
+
+      const success = await storage.revokeApiKey(keyId);
+      
+      // Audit log
+      await storage.auditLog({
+        actorUserId: actorId,
+        action: 'api_key.revoke',
+        after: { keyId },
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+
+      res.json({ success });
+    } catch (error) {
+      console.error("Error revoking API key:", error);
+      res.status(500).json({ message: "Failed to revoke API key" });
+    }
+  });
+
+  // Roles management
+  app.get("/api/admin/access/roles", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const roles = await storage.getAccessControlRoles();
+      res.json(roles);
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      res.status(500).json({ message: "Failed to fetch roles" });
+    }
+  });
+
+  app.post("/api/admin/access/roles", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const { name, description, permissions } = req.body;
+      const actorId = req.user!.id;
+
+      const role = await storage.createAccessControlRole({
+        name,
+        description,
+        permissions,
+        isSystem: false
+      });
+
+      // Audit log
+      await storage.auditLog({
+        actorUserId: actorId,
+        action: 'role.create',
+        after: { name, description, permissions },
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+
+      res.json(role);
+    } catch (error) {
+      console.error("Error creating role:", error);
+      res.status(500).json({ message: "Failed to create role" });
+    }
+  });
+
   // Admin routes - protected by authentication
   app.post("/api/admin/users", requireAdmin, async (req: any, res: any) => {
     try {

@@ -201,3 +201,140 @@ export class DialerProviderFactory {
 }
 
 export { CallMetrics, DialerProvider };
+export interface DialerIntegration {
+  provider: string;
+  authenticate(credentials: any): Promise<boolean>;
+  getAgentId(userIdentifier: string): Promise<string>;
+  fetchCallStats(agentId: string, period: string): Promise<{
+    callsCount: number;
+    avgHandleTime: number;
+    occupancy: number;
+  }>;
+  getAgentStatus(agentId: string): Promise<'online' | 'offline' | 'away' | 'busy'>;
+}
+
+export class TwilioDialerIntegration implements DialerIntegration {
+  provider = 'twilio';
+  private accountSid: string;
+  private authToken: string;
+  private workspaceSid: string;
+
+  constructor(accountSid: string, authToken: string, workspaceSid: string) {
+    this.accountSid = accountSid;
+    this.authToken = authToken;
+    this.workspaceSid = workspaceSid;
+  }
+
+  async authenticate(credentials: any): Promise<boolean> {
+    try {
+      // Implement Twilio authentication
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async getAgentId(userEmail: string): Promise<string> {
+    // Mock implementation - would normally query Twilio for worker SID by email
+    return `WK${Math.random().toString(36).substring(2, 15)}`;
+  }
+
+  async fetchCallStats(workerSid: string, period: string): Promise<{
+    callsCount: number;
+    avgHandleTime: number;
+    occupancy: number;
+  }> {
+    // Mock implementation - would query Twilio TaskRouter statistics
+    const now = new Date();
+    let startTime: Date;
+
+    switch (period) {
+      case 'today':
+        startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case '7d':
+        startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '30d':
+        startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    }
+
+    // Mock data - replace with actual Twilio API calls
+    return {
+      callsCount: Math.floor(Math.random() * 100),
+      avgHandleTime: Math.floor(Math.random() * 300) + 60,
+      occupancy: Math.random() * 100
+    };
+  }
+
+  async getAgentStatus(workerSid: string): Promise<'online' | 'offline' | 'away' | 'busy'> {
+    // Mock implementation - would query Twilio worker status
+    const statuses: ('online' | 'offline' | 'away' | 'busy')[] = ['online', 'offline', 'away', 'busy'];
+    return statuses[Math.floor(Math.random() * statuses.length)];
+  }
+}
+
+export class Five9DialerIntegration implements DialerIntegration {
+  provider = 'five9';
+  private clientId: string;
+  private clientSecret: string;
+
+  constructor(clientId: string, clientSecret: string) {
+    this.clientId = clientId;
+    this.clientSecret = clientSecret;
+  }
+
+  async authenticate(credentials: any): Promise<boolean> {
+    try {
+      // Implement Five9 authentication
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async getAgentId(userEmail: string): Promise<string> {
+    // Mock implementation - would query Five9 for agent ID by email
+    return `agent_${Math.random().toString(36).substring(2, 10)}`;
+  }
+
+  async fetchCallStats(agentId: string, period: string): Promise<{
+    callsCount: number;
+    avgHandleTime: number;
+    occupancy: number;
+  }> {
+    // Mock implementation - would query Five9 reporting API
+    return {
+      callsCount: Math.floor(Math.random() * 150),
+      avgHandleTime: Math.floor(Math.random() * 250) + 80,
+      occupancy: Math.random() * 100
+    };
+  }
+
+  async getAgentStatus(agentId: string): Promise<'online' | 'offline' | 'away' | 'busy'> {
+    // Mock implementation - would query Five9 agent status
+    const statuses: ('online' | 'offline' | 'away' | 'busy')[] = ['online', 'offline', 'away', 'busy'];
+    return statuses[Math.floor(Math.random() * statuses.length)];
+  }
+}
+
+export function createDialerIntegration(provider: string): DialerIntegration | null {
+  switch (provider.toLowerCase()) {
+    case 'twilio':
+      return new TwilioDialerIntegration(
+        process.env.TWILIO_ACCOUNT_SID || '',
+        process.env.TWILIO_AUTH_TOKEN || '',
+        process.env.TWILIO_WORKSPACE_SID || ''
+      );
+    case 'five9':
+      return new Five9DialerIntegration(
+        process.env.FIVE9_CLIENT_ID || '',
+        process.env.FIVE9_CLIENT_SECRET || ''
+      );
+    default:
+      return null;
+  }
+}

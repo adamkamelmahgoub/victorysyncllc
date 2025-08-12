@@ -1,84 +1,77 @@
 
-import { pool } from '../db';
-import fs from 'fs';
-import path from 'path';
+import { readdir, readFile } from 'fs/promises';
+import { join } from 'path';
+import { db } from './index.js';
+import { sql } from 'drizzle-orm';
 
-export async function runMigrations() {
+async function runMigrations() {
   try {
-    // Ensure migrations table exists
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS __migrations (
-        filename VARCHAR(255) PRIMARY KEY,
-        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    console.log('🔄 Running database migrations...');
+    
+    // Create migrations table if it doesn't exist
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS migrations (
+        id SERIAL PRIMARY KEY,
+        filename VARCHAR(255) UNIQUE NOT NULL,
+        executed_at TIMESTAMP DEFAULT NOW()
       )
     `);
 
-    const migrationsDir = path.join(process.cwd(), 'migrations');
+    // Get list of migration files
+    const migrationsDir = join(process.cwd(), 'server/db/migrations');
+    const files = await readdir(migrationsDir);
+    const migrationFiles = files.filter(f => f.endsWith('.sql')).sort();
+
+    // Get already executed migrations
+    const executedMigrations = await db.execute(sql`
+      SELECT filename FROM migrations ORDER BY executed_at
+    `);
     
-    // Check if migrations directory exists
-    if (!fs.existsSync(migrationsDir)) {
-      console.log('✅ No migrations directory found, skipping migrations');
-      return;
-    }
-
-    // Get all SQL files
-    const migrationFiles = fs.readdirSync(migrationsDir)
-      .filter(file => file.endsWith('.sql'))
-      .sort();
-
-    if (migrationFiles.length === 0) {
-      console.log('✅ No migration files found');
-      return;
-    }
-
-    // Get already applied migrations
-    const { rows: appliedMigrations } = await pool.query(
-      'SELECT filename FROM __migrations'
+    const executedFilenames = new Set(
+      executedMigrations.map((row: any) => row.filename)
     );
-    const appliedSet = new Set(appliedMigrations.map((row: any) => row.filename));
 
-    // Apply pending migrations
+    // Run pending migrations
     for (const filename of migrationFiles) {
-      if (appliedSet.has(filename)) {
-        console.log(`⏭️  Skipping already applied migration: ${filename}`);
-        continue;
-      }
-
-      console.log(`🔄 Applying migration: ${filename}`);
-      
-      const migrationPath = path.join(migrationsDir, filename);
-      const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
-
-      // Execute migration in a transaction
-      const client = await pool.connect();
-      try {
-        await client.query('BEGIN');
-        await client.query(migrationSQL);
-        await client.query(
-          'INSERT INTO __migrations (filename) VALUES ($1)',
-          [filename]
-        );
-        await client.query('COMMIT');
-        console.log(`✅ Applied migration: ${filename}`);
-      } catch (error) {
-        await client.query('ROLLBACK');
-        console.error(`❌ Failed to apply migration ${filename}:`, error);
-        throw error;
-      } finally {
-        client.release();
+      if (!executedFilenames.has(filename)) {
+        console.log(`📄 Running migration: ${filename}`);
+        
+        const migrationPath = join(migrationsDir, filename);
+        const migrationSql = await readFile(migrationPath, 'utf8');
+        
+        // Execute migration
+        await db.execute(sql.raw(migrationSql));
+        
+        // Record migration as executed
+        await db.execute(sql`
+          INSERT INTO migrations (filename) VALUES (${filename})
+        `);
+        
+        console.log(`✅ Migration completed: ${filename}`);
+      } else {
+        console.log(`⏭️  Migration already executed: ${filename}`);
       }
     }
 
-    console.log('✅ All migrations applied successfully');
+    console.log('✅ All migrations completed successfully!');
+    
   } catch (error) {
-    console.error('❌ Migration runner failed:', error);
+    console.error('❌ Migration failed:', error);
     throw error;
   }
 }
 
-// Allow running directly with tsx
+// Run migrations if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   runMigrations()
-    .then(() => process.exit(0))
-    .catch(() => process.exit(1));
+    .then(() => {
+      console.log('Migration process completed.');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('Migration process failed:', error);
+      process.exit(1);
+    });
 }
+
+export { runMigrations };

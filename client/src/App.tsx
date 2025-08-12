@@ -23,6 +23,7 @@ import Register from "@/pages/register";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import AdminPortal from "@/pages/admin-portal";
+import AdminAccessControl from "./pages/AdminAccessControl";
 
 // Footer Pages
 import AboutUs from "@/pages/about-us";
@@ -74,6 +75,7 @@ function Router() {
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route path="/terms" component={TermsOfService} />
           <Route path="/admin" component={AdminPortal} />
+          <Route path="/admin/access-control" element={<AdminAccessControl />} />
           <Route component={NotFound} />
         </Switch>
       </main>

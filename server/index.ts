@@ -1,10 +1,11 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { testDatabaseConnection } from "./db";
-import passport from "./auth/passport";
-import { runMigrations } from './migrations';
-import { runMigrations as runSQLMigrations } from './db/runMigrations';
+import { registerRoutes } from "./routes.js";
+import { setupVite, serveStatic, log } from "./vite.js";
+import { testDatabaseConnection } from "./db/index.js";
+import passport from "./auth/passport.js";
+import { runMigrations } from './migrations.js';
+import { runMigrations as runSQLMigrations } from './db/runMigrations.js';
+import { callMetricsService } from "./services/callMetricsService.js";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -58,7 +59,7 @@ log(logLine);
 });
 
 // Initialize call metrics service
-import { callMetricsService } from './services/callMetricsService';
+// import { callMetricsService } from './services/callMetricsService';
 
 (async () => {
   try {
@@ -127,14 +128,22 @@ import { callMetricsService } from './services/callMetricsService';
       console.log(`🎉 VictorySync server is running successfully!`);
       log(`serving on port ${port}`);
       console.log(`Health check available at: http://0.0.0.0:${port}/health`);
+
+      // Start call metrics periodic updates
+      if (process.env.DIALER_PROVIDER) {
+        callMetricsService.startPolling();
+        console.log('📊 Call metrics service started');
+      }
+
+      return server;
     });
 
     // Start call metrics polling after server is ready
-    process.nextTick(() => {
-      if (process.env.DIALER_PROVIDER) {
-        callMetricsService.startPolling();
-      }
-    });
+    // process.nextTick(() => {
+    //   if (process.env.DIALER_PROVIDER) {
+    //     callMetricsService.startPolling();
+    //   }
+    // });
 
     // Handle graceful shutdown
     process.on('SIGTERM', () => {

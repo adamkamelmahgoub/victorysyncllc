@@ -56,6 +56,7 @@ import AccessControlCenter from '@/admin/access-control/AccessControlCenter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
+import { Link } from 'wouter-react';
 
 interface User {
   id: number;
@@ -671,7 +672,7 @@ const AdminPortal = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => updateUserMutation.mutate({
+                                  onClick={() =>updateUserMutation.mutate({
                                     userId: user.id,
                                     data: { isActive: !user.isActive }
                                   })}
@@ -974,6 +975,11 @@ const AdminPortal = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Access Control Tab */}
+          <TabsContent value="access-control">
+            <AccessControlCenter />
           </TabsContent>
         </Tabs>
       </div>

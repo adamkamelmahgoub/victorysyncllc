@@ -177,3 +177,140 @@ export class CallMetricsService {
 }
 
 export const callMetricsService = CallMetricsService.getInstance();
+import { storage } from '../storage';
+
+interface CallMetrics {
+  callsCount: number;
+  avgHandleTime: number;
+  occupancy: number;
+  liveStatus: 'online' | 'offline' | 'away' | 'busy';
+}
+
+interface DialerProvider {
+  fetchCallMetrics(externalAgentId: string, period: string): Promise<CallMetrics>;
+  getAgentStatus(externalAgentId: string): Promise<string>;
+}
+
+class TwilioProvider implements DialerProvider {
+  private accountSid: string;
+  private authToken: string;
+
+  constructor() {
+    this.accountSid = process.env.TWILIO_ACCOUNT_SID || '';
+    this.authToken = process.env.TWILIO_AUTH_TOKEN || '';
+  }
+
+  async fetchCallMetrics(workspaceSid: string, period: string): Promise<CallMetrics> {
+    // Mock implementation - replace with actual Twilio API calls
+    return {
+      callsCount: Math.floor(Math.random() * 50),
+      avgHandleTime: Math.floor(Math.random() * 300) + 60, // 1-5 minutes
+      occupancy: Math.random() * 100,
+      liveStatus: ['online', 'offline', 'away', 'busy'][Math.floor(Math.random() * 4)] as any
+    };
+  }
+
+  async getAgentStatus(workspaceSid: string): Promise<string> {
+    return ['online', 'offline', 'away', 'busy'][Math.floor(Math.random() * 4)];
+  }
+}
+
+class Five9Provider implements DialerProvider {
+  private clientId: string;
+  private clientSecret: string;
+
+  constructor() {
+    this.clientId = process.env.FIVE9_CLIENT_ID || '';
+    this.clientSecret = process.env.FIVE9_CLIENT_SECRET || '';
+  }
+
+  async fetchCallMetrics(agentId: string, period: string): Promise<CallMetrics> {
+    // Mock implementation - replace with actual Five9 API calls
+    return {
+      callsCount: Math.floor(Math.random() * 75),
+      avgHandleTime: Math.floor(Math.random() * 400) + 45,
+      occupancy: Math.random() * 100,
+      liveStatus: ['online', 'offline', 'away', 'busy'][Math.floor(Math.random() * 4)] as any
+    };
+  }
+
+  async getAgentStatus(agentId: string): Promise<string> {
+    return ['online', 'offline', 'away', 'busy'][Math.floor(Math.random() * 4)];
+  }
+}
+
+class CallMetricsService {
+  private providers: Map<string, DialerProvider> = new Map();
+
+  constructor() {
+    this.providers.set('twilio', new TwilioProvider());
+    this.providers.set('five9', new Five9Provider());
+  }
+
+  async updateUserCallMetrics(userId: number): Promise<void> {
+    try {
+      const dialerMapping = await storage.getUserDialerMapping(userId);
+      
+      if (!dialerMapping) {
+        return; // No dialer mapping configured
+      }
+
+      const provider = this.providers.get(dialerMapping.provider);
+      if (!provider) {
+        console.error(`Unknown dialer provider: ${dialerMapping.provider}`);
+        return;
+      }
+
+      // Fetch metrics for different periods
+      const periods = ['today', '7d', '30d'];
+      
+      for (const period of periods) {
+        try {
+          const metrics = await provider.fetchCallMetrics(dialerMapping.externalAgentId, period);
+          const liveStatus = await provider.getAgentStatus(dialerMapping.externalAgentId);
+          
+          await storage.updateAccessControlCallMetrics(userId, {
+            userId,
+            dialerProvider: dialerMapping.provider,
+            externalAgentId: dialerMapping.externalAgentId,
+            period,
+            callsCount: metrics.callsCount,
+            avgHandleTime: metrics.avgHandleTime,
+            occupancy: metrics.occupancy.toString(),
+            liveStatus
+          });
+        } catch (error) {
+          console.error(`Error fetching ${period} metrics for user ${userId}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error(`Error updating call metrics for user ${userId}:`, error);
+    }
+  }
+
+  async updateAllUsersCallMetrics(): Promise<void> {
+    try {
+      // Get all users with dialer mappings
+      const users = await storage.getAllPublicUsers();
+      
+      for (const user of users) {
+        await this.updateUserCallMetrics(user.id);
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    } catch (error) {
+      console.error('Error updating call metrics for all users:', error);
+    }
+  }
+
+  startPeriodicUpdates(): void {
+    const updateInterval = (parseInt(process.env.CALLS_POLL_SECONDS || '300') * 1000); // Default 5 minutes
+    
+    setInterval(async () => {
+      console.log('📊 Updating call metrics...');
+      await this.updateAllUsersCallMetrics();
+    }, updateInterval);
+  }
+}
+
+export const callMetricsService = new CallMetricsService();
