@@ -133,7 +133,7 @@ export interface IStorage {
   forcePasswordReset(userId: number): Promise<PublicUser>;
   requireMfaNextLogin(userId: number): Promise<PublicUser>;
   bulkUpdateUsers(userIds: number[], updates: any): Promise<void>;
-  
+
   // Enhanced Role management
   createAccessControlRole(role: InsertAccessControlRole): Promise<AccessControlRole>;
   getAccessControlRoles(): Promise<AccessControlRole[]>;
@@ -141,22 +141,22 @@ export interface IStorage {
   deleteAccessControlRole(roleId: number): Promise<void>;
   assignUserAccessControlRole(userId: number, roleId: number, orgId?: string): Promise<AccessControlUserRole>;
   removeUserAccessControlRole(userId: number, roleId: number, orgId?: string): Promise<void>;
-  
+
   // Enhanced Sessions
   createAccessControlSession(session: InsertAccessControlSession): Promise<AccessControlSession>;
   getAccessControlSessions(userId: number): Promise<AccessControlSession[]>;
   revokeAccessControlSession(sessionId: string): Promise<void>;
   revokeAllAccessControlSessions(userId: number): Promise<void>;
-  
+
   // Enhanced Integrations
   createAccessControlIntegration(integration: InsertAccessControlIntegration): Promise<AccessControlIntegration>;
   getAccessControlIntegrations(userId: number): Promise<AccessControlIntegration[]>;
   updateAccessControlIntegrationStatus(integrationId: number, status: string): Promise<AccessControlIntegration>;
-  
+
   // Enhanced Payment methods
   setAccessControlPaymentPolicy(userId: number, allowedMethods: string[]): Promise<AccessControlPaymentMethod>;
   getAccessControlPaymentPolicy(userId: number): Promise<AccessControlPaymentMethod | undefined>;
-  
+
   // Enhanced Call metrics
   getAccessControlCallMetrics(userId: number): Promise<AccessControlCallMetric[]>;
   updateAccessControlCallMetrics(userId: number, metrics: InsertAccessControlCallMetric): Promise<AccessControlCallMetric>;
@@ -249,7 +249,19 @@ export class DatabaseStorage implements IStorage {
 
   // Admin operations
   async getAllPublicUsers(): Promise<PublicUser[]> {
-    return await db.select().from(publicUsers);
+    const users = await db.select().from(publicUsers).orderBy(desc(publicUsers.createdAt));
+
+    // Ensure all users have required fields with defaults
+    return users.map(user => ({
+      ...user,
+      isActive: user.isActive !== false,
+      status: user.status || 'active',
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      orderCount: 0, // TODO: Calculate from orders
+      totalSpent: 0   // TODO: Calculate from orders
+    }));
   }
 
   async getAllOrders(): Promise<Order[]> {
@@ -299,7 +311,7 @@ export class DatabaseStorage implements IStorage {
 
       const userPermissions = user.permissions as string[] || [];
       const rolePerms = rolePermissions[user.role || 'customer'] || [];
-      
+
       return [...new Set([...userPermissions, ...rolePerms])];
     } catch (error) {
       console.error("Error fetching user permissions:", error);
@@ -341,7 +353,7 @@ export class DatabaseStorage implements IStorage {
   async updateUserFeatureFlags(userId: number, flags: Record<string, boolean>): Promise<void> {
     // Remove all existing flags for user
     await db.delete(userFeatureFlags).where(eq(userFeatureFlags.userId, userId));
-    
+
     // Insert new flags
     const flagInserts = Object.entries(flags)
       .filter(([_, value]) => value)
@@ -365,9 +377,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserIntegrationPolicy(
-    userId: number, 
-    provider: string, 
-    allowedScopes: string[], 
+    userId: number,
+    provider: string,
+    allowedScopes: string[],
     deniedScopes: string[]
   ): Promise<UserIntegrationPolicy> {
     const existing = await db.select().from(userIntegrationPolicies)
@@ -398,7 +410,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateUserPaymentPolicy(userId: number, allowedMethods: string[], defaultMethod: string): Promise<UserPaymentPolicy> {
     const existing = await this.getUserPaymentPolicies(userId);
-    
+
     if (existing) {
       const [updated] = await db
         .update(userPaymentPolicies)
@@ -450,11 +462,11 @@ export class DatabaseStorage implements IStorage {
     if (existing.length > 0) {
       const [updated] = await db
         .update(callsCache)
-        .set({ 
-          callsCount, 
-          avgHandleTime: avgHandleTime.toString(), 
+        .set({
+          callsCount,
+          avgHandleTime: avgHandleTime.toString(),
           occupancy: occupancy.toString(),
-          updatedAt: new Date() 
+          updatedAt: new Date()
         })
         .where(and(eq(callsCache.userId, userId), eq(callsCache.period, period)))
         .returning();
@@ -473,14 +485,14 @@ export class DatabaseStorage implements IStorage {
 
   async getApiKeys(userId?: number, orgId?: number): Promise<ApiKey[]> {
     let query = db.select().from(apiKeys).where(eq(apiKeys.revokedAt, null));
-    
+
     if (userId) {
       query = query.where(eq(apiKeys.userId, userId));
     }
     if (orgId) {
       query = query.where(eq(apiKeys.orgId, orgId));
     }
-    
+
     return await query;
   }
 
@@ -505,14 +517,14 @@ export class DatabaseStorage implements IStorage {
 
   async getAuditLogs(userId?: number, orgId?: number): Promise<AuditLog[]> {
     let query = db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt));
-    
+
     if (userId) {
       query = query.where(eq(auditLogs.targetUserId, userId));
     }
     if (orgId) {
       query = query.where(eq(auditLogs.targetOrgId, orgId));
     }
-    
+
     return await query;
   }
 
@@ -527,19 +539,19 @@ export class DatabaseStorage implements IStorage {
 
   async redeemCoupon(redemption: InsertCouponRedemption): Promise<CouponRedemption> {
     const [created] = await db.insert(couponRedemptions).values(redemption).returning();
-    
+
     // Update coupon usage count
     await db.update(coupons)
       .set({ usesCount: sql`${coupons.usesCount} + 1` })
       .where(eq(coupons.id, redemption.couponId));
-    
+
     return created;
   }
 
   // Enhanced Access Control Center implementations
   async getAllUsersWithDetails(page: number = 1, limit: number = 50, search?: string, filters?: any): Promise<{ users: any[], total: number }> {
     const offset = (page - 1) * limit;
-    
+
     // Build base query
     let query = db.select({
       id: publicUsers.id,
@@ -548,6 +560,11 @@ export class DatabaseStorage implements IStorage {
       createdAt: publicUsers.createdAt,
       stripeCustomerId: publicUsers.stripeCustomerId,
       socialAccounts: publicUsers.socialAccounts,
+      isActive: publicUsers.isActive,
+      status: publicUsers.status,
+      role: publicUsers.role,
+      permissions: publicUsers.permissions,
+      featureFlags: publicUsers.featureFlags,
     }).from(publicUsers);
 
     // Add search filter
@@ -555,6 +572,19 @@ export class DatabaseStorage implements IStorage {
       query = query.where(
         sql`${publicUsers.name} ILIKE ${'%' + search + '%'} OR ${publicUsers.email} ILIKE ${'%' + search + '%'}`
       );
+    }
+
+    // Add other filters
+    if (filters) {
+      if (filters.isActive !== undefined) {
+        query = query.where(eq(publicUsers.isActive, filters.isActive));
+      }
+      if (filters.role) {
+        query = query.where(eq(publicUsers.role, filters.role));
+      }
+      if (filters.status) {
+        query = query.where(eq(publicUsers.status, filters.status));
+      }
     }
 
     // Get total count
@@ -570,18 +600,37 @@ export class DatabaseStorage implements IStorage {
       const userOrders = await db.select({
         orderCount: count(),
         totalSpent: sql<number>`COALESCE(SUM(${orders.total}), 0)`.as('totalSpent')
-      }).from(orders).where(eq(orders.userId, user.email));
+      }).from(orders).where(eq(orders.userId, user.email)); // Assuming email is used as userId in orders table
+
+      const featureFlags = await db.select({ flagKey: userFeatureFlags.flagKey })
+        .from(userFeatureFlags)
+        .where(and(eq(userFeatureFlags.userId, user.id), eq(userFeatureFlags.value, true)));
+
+      const permissions = await db.select({ permission: userFeatureFlags.flagKey }) // Assuming permissions are stored similarly or need to be fetched
+        .from(userFeatureFlags) // Placeholder, replace with actual permissions table if different
+        .where(and(eq(userFeatureFlags.userId, user.id), eq(userFeatureFlags.value, true))); // Placeholder
+
+      // Fetching actual user roles
+      const userRoles = await db.select({
+        roleName: accessControlRoles.name,
+        roleId: accessControlRoles.id
+      })
+      .from(accessControlUserRoles)
+      .innerJoin(accessControlRoles, eq(accessControlUserRoles.roleId, accessControlRoles.id))
+      .where(eq(accessControlUserRoles.userId, user.id));
 
       return {
         ...user,
-        role: 'customer', // Default role
-        status: 'active', // Default status
-        orgId: null,
+        isActive: user.isActive !== false, // Ensure isActive is boolean
+        status: user.status || 'active', // Default status
+        role: user.role || 'customer', // Default role
+        permissions: user.permissions || [], // Default permissions
+        featureFlags: featureFlags.map(f => f.flagKey), // Map feature flags
         orderCount: userOrders[0]?.orderCount || 0,
         totalSpent: Number(userOrders[0]?.totalSpent || 0),
-        lastLoginAt: null,
-        isMfaEnabled: false,
-        permissions: [],
+        userRoles: userRoles.map(ur => ({ name: ur.roleName, id: ur.roleId })),
+        lastLoginAt: null, // Placeholder, needs to be fetched
+        isMfaEnabled: false, // Placeholder, needs to be fetched
       };
     }));
 
@@ -591,10 +640,7 @@ export class DatabaseStorage implements IStorage {
   async lockUserAccount(userId: number, reason: string): Promise<PublicUser> {
     const [user] = await db
       .update(publicUsers)
-      .set({ 
-        // Note: These fields would need to be added to the actual schema
-        // For now, we'll simulate the update
-      })
+      .set({ status: 'locked', statusReason: reason, updatedAt: new Date() })
       .where(eq(publicUsers.id, userId))
       .returning();
     return user;
@@ -603,20 +649,18 @@ export class DatabaseStorage implements IStorage {
   async unlockUserAccount(userId: number): Promise<PublicUser> {
     const [user] = await db
       .update(publicUsers)
-      .set({ 
-        // Unlock account logic
-      })
+      .set({ status: 'active', statusReason: null, updatedAt: new Date() })
       .where(eq(publicUsers.id, userId))
       .returning();
     return user;
   }
 
   async forcePasswordReset(userId: number): Promise<PublicUser> {
+    // In a real implementation, you'd generate a reset token and send an email.
+    // For this example, we'll just update a flag or timestamp.
     const [user] = await db
       .update(publicUsers)
-      .set({ 
-        // Force password reset logic
-      })
+      .set({ forcePasswordReset: true, updatedAt: new Date() })
       .where(eq(publicUsers.id, userId))
       .returning();
     return user;
@@ -625,9 +669,7 @@ export class DatabaseStorage implements IStorage {
   async requireMfaNextLogin(userId: number): Promise<PublicUser> {
     const [user] = await db
       .update(publicUsers)
-      .set({ 
-        // Require MFA next login logic
-      })
+      .set({ requireMfa: true, updatedAt: new Date() })
       .where(eq(publicUsers.id, userId))
       .returning();
     return user;
@@ -660,10 +702,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteAccessControlRole(roleId: number): Promise<void> {
+    // Before deleting a role, ensure no users are assigned to it, or handle cascading deletes.
+    // For simplicity, we'll just delete the role here.
     await db.delete(accessControlRoles).where(eq(accessControlRoles.id, roleId));
+    // Also remove assignments for this role
+    await db.delete(accessControlUserRoles).where(eq(accessControlUserRoles.roleId, roleId));
   }
 
   async assignUserAccessControlRole(userId: number, roleId: number, orgId?: string): Promise<AccessControlUserRole> {
+    // Check if assignment already exists to prevent duplicates
+    const existingAssignment = await db.select()
+      .from(accessControlUserRoles)
+      .where(and(
+        eq(accessControlUserRoles.userId, userId),
+        eq(accessControlUserRoles.roleId, roleId),
+        orgId ? eq(accessControlUserRoles.orgId, orgId) : sql`true`
+      ));
+
+    if (existingAssignment.length > 0) {
+      return existingAssignment[0];
+    }
+
     const [assigned] = await db.insert(accessControlUserRoles).values({
       userId,
       roleId,
