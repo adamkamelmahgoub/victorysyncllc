@@ -198,7 +198,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getUserIntegrations(userId: number): Promise<any[]> {
+  async getUserIntegrations(userId: number): Promise<any[] > {
     try {
       // Mock integrations data - in production would be a real table
       return [
@@ -301,7 +301,7 @@ export const storage = new DatabaseStorage();
     try {
       const user = await this.getPublicUserById(userId);
       if (!user) return [];
-      
+
       // Base permissions by role
       const rolePermissions: Record<string, string[]> = {
         superAdmin: ['*'],
@@ -323,7 +323,7 @@ export const storage = new DatabaseStorage();
       const [flags] = await db.select({ flagKey: userFeatureFlags.flagKey })
         .from(userFeatureFlags)
         .where(eq(userFeatureFlags.userId, userId));
-      
+
       return flags?.map(f => f.flagKey) || [];
     } catch (error) {
       console.error("Error fetching user feature flags:", error);
@@ -347,7 +347,7 @@ export const storage = new DatabaseStorage();
       const [userPolicy] = await db.select()
         .from(userPaymentPolicies)
         .where(eq(userPaymentPolicies.userId, userId));
-      
+
       if (userPolicy?.allowedMethods) {
         return userPolicy.allowedMethods;
       }
@@ -357,7 +357,7 @@ export const storage = new DatabaseStorage();
         const [orgPolicy] = await db.select()
           .from(orgPaymentPolicies)
           .where(eq(orgPaymentPolicies.orgId, orgId));
-        
+
         if (orgPolicy?.allowedMethods) {
           return orgPolicy.allowedMethods;
         }
@@ -378,7 +378,7 @@ export const storage = new DatabaseStorage();
         .from(userIntegrationPolicies)
         .where(eq(userIntegrationPolicies.userId, userId))
         .where(eq(userIntegrationPolicies.provider, provider));
-      
+
       if (userPolicy?.allowedScopes) {
         return userPolicy.allowedScopes;
       }
@@ -389,7 +389,7 @@ export const storage = new DatabaseStorage();
           .from(orgIntegrationPolicies)
           .where(eq(orgIntegrationPolicies.orgId, orgId))
           .where(eq(orgIntegrationPolicies.provider, provider));
-        
+
         if (orgPolicy?.allowedScopes) {
           return orgPolicy.allowedScopes;
         }
@@ -460,7 +460,7 @@ export const storage = new DatabaseStorage();
   async getAllUsersWithDetails(): Promise<any[]> {
     try {
       const users = await db.select().from(publicUsers);
-      
+
       // Get additional details for each user
       const usersWithDetails = await Promise.all(users.map(async (user) => {
         const [permissions, featureFlags, dialerMapping, orderCount, totalSpent] = await Promise.all([
@@ -563,7 +563,7 @@ export const storage = new DatabaseStorage();
       const userOrders = await db.select({ total: orders.total })
         .from(orders)
         .where(eq(orders.userId, userId.toString()));
-      
+
       return userOrders.reduce((sum, order) => sum + parseFloat(order.total), 0);
     } catch (error) {
       return 0;
@@ -599,7 +599,7 @@ export const storage = new DatabaseStorage();
 
   async getAuditLogs(targetUserId?: number, limit = 100): Promise<AuditLog[]> {
     let query = db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(limit);
-    
+
     if (targetUserId) {
       query = query.where(eq(auditLogs.targetUserId, targetUserId));
     }
@@ -621,7 +621,7 @@ export const storage = new DatabaseStorage();
 
   async bulkUpdateUsers(userIds: number[], updates: any): Promise<void> {
     if (userIds.length === 0) return;
-    
+
     await db.update(publicUsers)
       .set(updates)
       .where(inArray(publicUsers.id, userIds));
@@ -661,3 +661,4 @@ export const storage = new DatabaseStorage();
         .where(eq(coupons.id, couponId));
     });
   }
+}

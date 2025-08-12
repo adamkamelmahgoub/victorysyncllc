@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,13 +11,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Users, 
-  Package, 
-  Settings, 
-  BarChart3, 
-  DollarSign, 
-  TrendingUp, 
+import {
+  Users,
+  Package,
+  Settings,
+  BarChart3,
+  DollarSign,
+  TrendingUp,
   Download,
   Plus,
   Edit,
@@ -32,9 +31,6 @@ import {
   UserX,
   Search,
   Filter,
-
-import AccessControlCenter from '@/admin/access-control/AccessControlCenter';
-
   ChevronDown,
   RefreshCw,
   Activity,
@@ -56,6 +52,7 @@ import AccessControlCenter from '@/admin/access-control/AccessControlCenter';
   Home,
   LogOut
 } from 'lucide-react';
+import AccessControlCenter from '@/admin/access-control/AccessControlCenter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
@@ -80,18 +77,6 @@ interface Order {
   userName: string;
   total: string;
   status: string;
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="packages">Packages</TabsTrigger>
-            <TabsTrigger value="access-control">Access Control</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="system">System</TabsTrigger>
-          </TabsList>
-
   createdAt: string;
   items: any[];
 }
@@ -349,7 +334,7 @@ const AdminPortal = () => {
   // Handle bulk actions
   const handleBulkAction = () => {
     if (selectedUsers.length === 0 || !bulkAction) return;
-    
+
     bulkActionMutation.mutate({
       userIds: selectedUsers,
       action: bulkAction
@@ -363,7 +348,7 @@ const AdminPortal = () => {
         headers: adminHeaders
       });
       if (!response.ok) throw new Error('Failed to export data');
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -371,7 +356,7 @@ const AdminPortal = () => {
       a.download = `${type}-export.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
-      
+
       toast({ title: `${type} exported successfully` });
     } catch (error) {
       toast({ title: 'Export failed', variant: 'destructive' });
@@ -500,12 +485,6 @@ const AdminPortal = () => {
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
-
-          {/* Access Control Tab */}
-          <TabsContent value="access-control" className="space-y-6">
-            <AccessControlCenter />
-          </TabsContent>
-
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{dashboardStats.conversionRate.toFixed(1)}%</div>
@@ -1009,7 +988,7 @@ const AdminPortal = () => {
           <form onSubmit={(e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
-            
+
             createUserMutation.mutate({
               name: formData.get('name'),
               email: formData.get('email'),
@@ -1070,7 +1049,7 @@ const AdminPortal = () => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
             const features = formData.get('features')?.toString().split('\n').filter(f => f.trim()) || [];
-            
+
             createPackageMutation.mutate({
               name: formData.get('name'),
               price: formData.get('price'),
@@ -1117,7 +1096,7 @@ const AdminPortal = () => {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
-              
+
               updateUserMutation.mutate({
                 userId: editingUser.id,
                 data: {
@@ -1178,7 +1157,7 @@ const AdminPortal = () => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               const features = formData.get('features')?.toString().split('\n').filter(f => f.trim()) || [];
-              
+
               updatePackageMutation.mutate({
                 packageId: editingPackage.id,
                 data: {
@@ -1258,8 +1237,8 @@ const AdminPortal = () => {
                 <div className="space-y-3">
                   <div>
                     <Label htmlFor="sessionTimeout">Session Timeout (minutes)</Label>
-                    <Input 
-                      id="sessionTimeout" 
+                    <Input
+                      id="sessionTimeout"
                       type="number"
                       value={adminSettings.sessionTimeout}
                       onChange={(e) => setAdminSettings({...adminSettings, sessionTimeout: parseInt(e.target.value)})}
@@ -1267,8 +1246,8 @@ const AdminPortal = () => {
                   </div>
                   <div>
                     <Label htmlFor="maxUsers">Max Users Per Account</Label>
-                    <Input 
-                      id="maxUsers" 
+                    <Input
+                      id="maxUsers"
                       type="number"
                       value={adminSettings.maxUsersPerAccount}
                       onChange={(e) => setAdminSettings({...adminSettings, maxUsersPerAccount: parseInt(e.target.value)})}

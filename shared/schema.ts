@@ -300,3 +300,5 @@ export type CouponRedemption = typeof couponRedemptions.$inferSelect;
 export type InsertCouponRedemption = typeof couponRedemptions.$inferInsert;
 export type CallsCache = typeof callsCache.$inferSelect;
 export type InsertCallsCache = typeof callsCache.$inferInsert;
+export type User = typeof publicUsers.$inferSelect;
+export type UserWithPrivileges = User & { privileges: string[] };
