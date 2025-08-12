@@ -1,0 +1,799 @@
+Here’s a single, copy-paste **MASTER PROMPT** you can give to Claude in Replit. It tells Claude exactly what to build and where to paste code so your **Admin Portal + Customer Dashboard** are fully functional (no demo data, no placeholders), with **access-code sign-up** and **email+SMS verification** tied to name + phone + org. It also adds full **access controls**, **integration toggles** (CRM/dialers), **payment-method policies**, and **call metrics** — production-ready with migrations and tests.
+
+---
+
+# MASTER PROMPT — BUILD FULL ADMIN + CUSTOMER PORTAL (NO PLACEHOLDERS)
+
+You’re inside the VictorySync Replit monorepo (Vite React client + Express/TS server + Postgres/Neon). Implement the **exact** changes below. Do not alter the navbar or global UI branding. Do not add demo seed data. Use migrations only.
+
+## 0) Install deps (one time)
+
+Run:
+
+```bash
+npm i zod bcrypt jsonwebtoken cookie-parser cors uuid @neondatabase/serverless
+npm i -D tsx jest @types/jest ts-jest supertest @types/supertest @types/cookie-parser @types/jsonwebtoken
+```
+
+## 1) Environment variables (Replit Secrets)
+
+Create these:
+
+```
+DATABASE_URL=postgres://<user>:<pass>@<host>/<db>?sslmode=require
+JWT_SECRET=<a-strong-secret>
+EMAIL_FROM="VictorySync <no-reply@victorysync.com>"
+SMTP_HOST=<smtp-host>
+SMTP_PORT=587
+SMTP_USER=<smtp-user>
+SMTP_PASS=<smtp-pass>
+TWILIO_ACCOUNT_SID=<twilio-sid>
+TWILIO_AUTH_TOKEN=<twilio-token>
+TWILIO_FROM=<verified-sender-or-shortcode>
+```
+
+Both email (SMTP) and SMS (Twilio) **must** be set; otherwise registration should fail with a clear 503.
+
+---
+
+## 2) Database layer
+
+### 2.1 Create Postgres driver
+
+**Create/replace** `server/db/index.ts`:
+
+```ts
+// server/db/index.ts
+import { neon, neonConfig } from '@neondatabase/serverless';
+neonConfig.fetchConnectionCache = true;
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not set');
+export const sql = neon(process.env.DATABASE_URL);
+export async function query<T=unknown>(strings: TemplateStringsArray, ...values: any[]): Promise<T[]> {
+  // @ts-ignore
+  return (await sql(strings, ...values)) as T[];
+}
+```
+
+### 2.2 Migration runner
+
+**Create** `server/db/runMigrations.ts`:
+
+```ts
+// server/db/runMigrations.ts
+import fs from 'fs';
+import path from 'path';
+import { sql } from './index';
+
+async function run() {
+  const dir = path.join(__dirname, 'migrations');
+  const files = fs.readdirSync(dir).filter(f => f.endsWith('.sql')).sort();
+  await sql`CREATE TABLE IF NOT EXISTS _migrations (id text primary key, ran_at timestamptz default now());`;
+  const ran = await sql<{id:string}>`SELECT id FROM _migrations`;
+  const ranSet = new Set(ran.map(r => r.id));
+  for (const f of files) {
+    if (ranSet.has(f)) continue;
+    const ddl = fs.readFileSync(path.join(dir, f), 'utf8');
+    await sql`${ddl}` as any;
+    await sql`INSERT INTO _migrations (id) VALUES (${f});`;
+    console.log('Applied', f);
+  }
+  console.log('All migrations up to date.');
+}
+run().catch(e => { console.error(e); process.exit(1); });
+```
+
+Add **npm scripts** in root `package.json`:
+
+```json
+{
+  "scripts": {
+    "db:migrate": "tsx server/db/runMigrations.ts",
+    "test": "jest --runInBand",
+    "dev": "NODE_ENV=development tsx server/index.ts",
+    "build:client": "cd client && npm run build"
+  },
+  "jest": { "preset": "ts-jest", "testEnvironment": "node", "roots": ["<rootDir>/server"] }
+}
+```
+
+### 2.3 SQL migrations
+
+**Create folder** `server/db/migrations/` and add:
+
+**`001_core.sql`**
+
+```sql
+-- Organizations
+CREATE TABLE IF NOT EXISTS organizations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Users
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  email TEXT UNIQUE NOT NULL,
+  phone TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('admin','manager','agent','customer')),
+  password_hash TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  email_verified BOOLEAN DEFAULT false,
+  phone_verified BOOLEAN DEFAULT false,
+  twofa_enabled BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_org ON users(org_id);
+
+-- Access codes (admin-issued)
+CREATE TABLE IF NOT EXISTS access_codes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code TEXT UNIQUE NOT NULL,
+  issued_to_email TEXT NOT NULL,
+  issued_to_phone TEXT NOT NULL,
+  issued_to_full_name TEXT NOT NULL,
+  issued_to_org_name TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  consumed BOOLEAN DEFAULT false,
+  consumed_by UUID REFERENCES users(id),
+  created_by UUID,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Integrations & permissions per user
+CREATE TABLE IF NOT EXISTS user_permissions (
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  can_use_api BOOLEAN DEFAULT false,
+  can_manage_org BOOLEAN DEFAULT false,
+  can_view_billing BOOLEAN DEFAULT false,
+  integrations JSONB DEFAULT '{}'::jsonb, -- e.g. {"hubspot":true,"salesforce":false,"five9":true}
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Payment policy per user
+CREATE TABLE IF NOT EXISTS user_payment_policies (
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  allow_card BOOLEAN DEFAULT true,
+  allow_paypal BOOLEAN DEFAULT false,
+  allow_wire BOOLEAN DEFAULT false,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Call metrics
+CREATE TABLE IF NOT EXISTS call_events (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  org_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  direction TEXT NOT NULL CHECK (direction IN ('inbound','outbound')),
+  duration_seconds INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Audit log
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id BIGSERIAL PRIMARY KEY,
+  actor_id UUID,
+  action TEXT NOT NULL,
+  target TEXT,
+  meta JSONB,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**`002_indexes.sql`**
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_access_codes_code ON access_codes(code);
+CREATE INDEX IF NOT EXISTS idx_call_events_user ON call_events(user_id, created_at DESC);
+```
+
+Run:
+
+```bash
+npm run db:migrate
+```
+
+(If `gen_random_uuid()` isn’t available, enable PG crypto: `CREATE EXTENSION IF NOT EXISTS pgcrypto;` at top of 001 file.)
+
+---
+
+## 3) Auth & Services
+
+### 3.1 Utilities
+
+**Create** `server/lib/email.ts`:
+
+```ts
+import nodemailer from 'nodemailer';
+export async function sendEmail(to: string, subject: string, html: string) {
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM } = process.env;
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !EMAIL_FROM) throw new Error('Email not configured');
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST, port: Number(SMTP_PORT), secure: false,
+    auth: { user: SMTP_USER, pass: SMTP_PASS }
+  });
+  await transporter.sendMail({ from: EMAIL_FROM, to, subject, html });
+}
+```
+
+**Create** `server/lib/sms.ts`:
+
+```ts
+import twilio from 'twilio';
+export async function sendSms(to: string, body: string) {
+  const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM } = process.env;
+  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM) throw new Error('SMS not configured');
+  const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+  await client.messages.create({ to, from: TWILIO_FROM, body });
+}
+```
+
+**Create** `server/lib/jwt.ts`:
+
+```ts
+import jwt from 'jsonwebtoken';
+const SECRET = process.env.JWT_SECRET!;
+export function sign(payload: object, expires='7d') {
+  return jwt.sign(payload, SECRET, { expiresIn: expires });
+}
+export function verify<T=any>(token: string) {
+  return jwt.verify(token, SECRET) as T;
+}
+```
+
+### 3.2 Services
+
+**Create** `server/services/accessCodes.ts`:
+
+```ts
+import { query } from '../db';
+import { randomBytes } from 'crypto';
+import { sql } from '@neondatabase/serverless';
+
+export async function issueAccessCode(adminId: string, data: {
+  email: string; phone: string; full_name: string; org_name: string; ttlMinutes?: number;
+}) {
+  const code = randomBytes(6).toString('hex').toUpperCase(); // 12 chars
+  const expires = new Date(Date.now() + (data.ttlMinutes ?? 120)*60*1000);
+  await query`
+    INSERT INTO access_codes (code, issued_to_email, issued_to_phone, issued_to_full_name, issued_to_org_name, expires_at, created_by)
+    VALUES (${code}, ${data.email}, ${data.phone}, ${data.full_name}, ${data.org_name}, ${expires.toISOString()}, ${adminId})
+  `;
+  return code;
+}
+
+export async function consumeAccessCode(code: string, payload: {
+  email: string; phone: string; full_name: string; org_name: string;
+}) {
+  const rows = await query<any>`
+    SELECT * FROM access_codes WHERE code=${code} AND consumed=false AND expires_at>now() LIMIT 1
+  `;
+  const ac = rows[0];
+  if (!ac) throw new Error('Invalid or expired access code');
+  // verify strict match
+  if (ac.issued_to_email !== payload.email ||
+      ac.issued_to_phone !== payload.phone ||
+      ac.issued_to_full_name !== payload.full_name ||
+      ac.issued_to_org_name !== payload.org_name) {
+    throw new Error('Access code does not match submitted identity');
+  }
+  return ac;
+}
+
+export async function markAccessCodeConsumed(code: string, userId: string) {
+  await query`UPDATE access_codes SET consumed=true, consumed_by=${userId} WHERE code=${code}`;
+}
+```
+
+**Create** `server/services/users.ts`:
+
+```ts
+import { query } from '../db';
+import bcrypt from 'bcrypt';
+
+export async function findUserByEmail(email: string) {
+  const r = await query<any>`SELECT * FROM users WHERE email=${email} LIMIT 1`; return r[0];
+}
+export async function createOrgIfNeeded(name: string) {
+  const existing = await query<any>`SELECT id FROM organizations WHERE name=${name} LIMIT 1`;
+  if (existing[0]) return existing[0].id;
+  const ins = await query<any>`INSERT INTO organizations (name) VALUES (${name}) RETURNING id`; 
+  return ins[0].id;
+}
+export async function createUser(data: {
+  org_id: string; email: string; phone: string; full_name: string; role: string; password: string;
+}) {
+  const hash = await bcrypt.hash(data.password, 12);
+  const ins = await query<any>`
+    INSERT INTO users (org_id,email,phone,full_name,role,password_hash)
+    VALUES (${data.org_id}, ${data.email}, ${data.phone}, ${data.full_name}, ${data.role}, ${hash})
+    RETURNING id, email, role, org_id, full_name, phone;
+  `;
+  // default permissions + payment policy
+  await query`INSERT INTO user_permissions (user_id) VALUES (${ins[0].id})`;
+  await query`INSERT INTO user_payment_policies (user_id) VALUES (${ins[0].id})`;
+  return ins[0];
+}
+export async function verifyPassword(user: any, pwd: string) {
+  return bcrypt.compare(pwd, user.password_hash);
+}
+export async function setVerificationFlags(userId: string, {email, phone}:{email?:boolean; phone?:boolean}) {
+  if (email !== undefined) await query`UPDATE users SET email_verified=${email} WHERE id=${userId}`;
+  if (phone !== undefined) await query`UPDATE users SET phone_verified=${phone} WHERE id=${userId}`;
+}
+```
+
+**Create** `server/services/otp.ts`:
+
+```ts
+import { randomInt } from 'crypto';
+import { sendEmail } from '../lib/email';
+import { sendSms } from '../lib/sms';
+
+const cache = new Map<string,{email:string;phone:string; codeEmail:string; codeSms:string; expires:number}>();
+export function generateOtps(key:string, email:string, phone:string) {
+  const codeEmail = String(randomInt(100000,999999));
+  const codeSms   = String(randomInt(100000,999999));
+  cache.set(key, { email, phone, codeEmail, codeSms, expires: Date.now()+10*60*1000 });
+  return { codeEmail, codeSms };
+}
+export async function sendOtps(email:string, phone:string, ce:string, cs:string) {
+  await sendEmail(email, 'Your VictorySync Email Code', `<p>Your code: <b>${ce}</b></p>`);
+  await sendSms(phone, `Your VictorySync SMS code: ${cs}`);
+}
+export function verifyOtps(key:string, emailCode:string, smsCode:string) {
+  const rec = cache.get(key); if (!rec) return false;
+  if (Date.now()>rec.expires) { cache.delete(key); return false; }
+  const ok = rec.codeEmail===emailCode && rec.codeSms===smsCode;
+  if (ok) cache.delete(key);
+  return ok;
+}
+```
+
+---
+
+## 4) Express routes & middleware
+
+**Create** `server/middleware/auth.ts`:
+
+```ts
+import { verify } from '../lib/jwt';
+import type { Request, Response, NextFunction } from 'express';
+
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const token = req.cookies?.vs_token;
+  if (!token) return res.status(401).json({message:'Unauthenticated'});
+  try { (req as any).user = verify(token); next(); }
+  catch { return res.status(401).json({message:'Invalid session'}); }
+}
+export function requireRole(...roles: string[]) {
+  return (req: any, res: any, next: any) => {
+    if (!roles.includes(req.user?.role)) return res.status(403).json({message:'Forbidden'});
+    next();
+  };
+}
+```
+
+**Create/replace** `server/routes/auth.ts`:
+
+```ts
+import { Router } from 'express';
+import { z } from 'zod';
+import { sign } from '../lib/jwt';
+import { generateOtps, sendOtps, verifyOtps } from '../services/otp';
+import { issueAccessCode, consumeAccessCode, markAccessCodeConsumed } from '../services/accessCodes';
+import { createOrgIfNeeded, createUser, findUserByEmail, verifyPassword, setVerificationFlags } from '../services/users';
+
+export const auth = Router();
+
+/** Admin issues an access code for a specific person/org */
+auth.post('/admin/access-codes', async (req, res) => {
+  try {
+    const adminId = (req as any).user?.id; // requireAuth+requireRole('admin') in index.ts
+    const body = z.object({
+      email:z.string().email(),
+      phone:z.string().min(6),
+      full_name:z.string().min(2),
+      org_name:z.string().min(2),
+      ttlMinutes:z.number().min(5).max(1440).optional()
+    }).parse(req.body);
+    const code = await issueAccessCode(adminId, body);
+    res.json({code});
+  } catch (e:any) { res.status(400).json({message:e.message}); }
+});
+
+/** Step 1 of signup: validate code + identity, send OTPs */
+auth.post('/auth/register/start', async (req, res) => {
+  try {
+    const b = z.object({
+      code:z.string().min(8),
+      email:z.string().email(),
+      phone:z.string().min(6),
+      full_name:z.string().min(2),
+      org_name:z.string().min(2),
+      password:z.string().min(8)
+    }).parse(req.body);
+    await consumeAccessCode(b.code, b);
+    const key = `${b.email}:${b.phone}`;
+    const { codeEmail, codeSms } = generateOtps(key, b.email, b.phone);
+    await sendOtps(b.email, b.phone, codeEmail, codeSms);
+    res.json({ token:key }); // temp token to verify step 2
+  } catch (e:any) { res.status(400).json({message:e.message}); }
+});
+
+/** Step 2: submit OTPs, create account, consume code */
+auth.post('/auth/register/verify', async (req,res) => {
+  try {
+    const b = z.object({
+      token:z.string(),
+      code:z.string(),
+      email:z.string().email(),
+      phone:z.string().min(6),
+      full_name:z.string(),
+      org_name:z.string(),
+      password:z.string().min(8),
+      email_code:z.string().length(6),
+      sms_code:z.string().length(6)
+    }).parse(req.body);
+    if (!verifyOtps(`${b.email}:${b.phone}`, b.email_code, b.sms_code))
+      return res.status(400).json({message:'Invalid codes'});
+    const orgId = await createOrgIfNeeded(b.org_name);
+    const user = await createUser({
+      org_id: orgId, email: b.email, phone:b.phone, full_name:b.full_name,
+      role: 'customer', password: b.password
+    });
+    await setVerificationFlags(user.id, {email:true, phone:true});
+    await markAccessCodeConsumed(b.code, user.id);
+    const jwt = sign({ id:user.id, role:user.role, org_id:user.org_id });
+    res.cookie('vs_token', jwt, { httpOnly:true, sameSite:'lax', maxAge:7*24*3600*1000 });
+    res.json({ user });
+  } catch (e:any) { res.status(400).json({message:e.message}); }
+});
+
+/** Login */
+auth.post('/auth/login', async (req,res) => {
+  const b = z.object({ email:z.string().email(), password:z.string().min(8) }).parse(req.body);
+  const user = await findUserByEmail(b.email);
+  if (!user) return res.status(400).json({message:'Invalid credentials'});
+  const ok = await verifyPassword(user, b.password);
+  if (!ok) return res.status(400).json({message:'Invalid credentials'});
+  const jwt = sign({ id:user.id, role:user.role, org_id:user.org_id });
+  res.cookie('vs_token', jwt, { httpOnly:true, sameSite:'lax', maxAge:7*24*3600*1000 });
+  res.json({ user: { id:user.id, email:user.email, role:user.role, org_id:user.org_id, full_name:user.full_name }});
+});
+```
+
+**Create/replace** `server/routes/admin.ts`:
+
+```ts
+import { Router } from 'express';
+import { z } from 'zod';
+import { query } from '../db';
+
+export const admin = Router();
+
+/** Users list */
+admin.get('/admin/users', async (_req,res) => {
+  const users = await query<any>`
+    SELECT u.id,u.email,u.phone,u.full_name,u.role,u.is_active,u.email_verified,u.phone_verified,
+           up.can_use_api, up.can_manage_org, up.can_view_billing, up.integrations,
+           pp.allow_card, pp.allow_paypal, pp.allow_wire,
+           o.name as org_name
+    FROM users u
+    LEFT JOIN user_permissions up ON up.user_id=u.id
+    LEFT JOIN user_payment_policies pp ON pp.user_id=u.id
+    LEFT JOIN organizations o ON o.id=u.org_id
+    ORDER BY u.created_at DESC
+  `;
+  res.json(users);
+});
+
+/** Update user permissions + payments */
+admin.post('/admin/users/:id/policy', async (req,res) => {
+  const id = req.params.id;
+  const body = z.object({
+    can_use_api:z.boolean(),
+    can_manage_org:z.boolean(),
+    can_view_billing:z.boolean(),
+    integrations:z.record(z.boolean()),
+    allow_card:z.boolean(),
+    allow_paypal:z.boolean(),
+    allow_wire:z.boolean(),
+    is_active:z.boolean()
+  }).parse(req.body);
+
+  await query`UPDATE user_permissions SET can_use_api=${body.can_use_api}, can_manage_org=${body.can_manage_org},
+    can_view_billing=${body.can_view_billing}, integrations=${JSON.stringify(body.integrations)},
+    updated_at=now() WHERE user_id=${id}`;
+
+  await query`UPDATE user_payment_policies SET allow_card=${body.allow_card}, allow_paypal=${body.allow_paypal},
+    allow_wire=${body.allow_wire}, updated_at=now() WHERE user_id=${id}`;
+
+  await query`UPDATE users SET is_active=${body.is_active} WHERE id=${id}`;
+
+  res.json({ok:true});
+});
+
+/** Lightweight analytics: calls today + month per user */
+admin.get('/admin/analytics', async (_req,res) => {
+  const rows = await query<any>`
+    SELECT u.id, u.full_name,
+      SUM(CASE WHEN date_trunc('day', c.created_at)=date_trunc('day', now()) THEN 1 ELSE 0 END) AS calls_today,
+      SUM(CASE WHEN date_trunc('month', c.created_at)=date_trunc('month', now()) THEN 1 ELSE 0 END) AS calls_month
+    FROM users u LEFT JOIN call_events c ON c.user_id=u.id
+    GROUP BY u.id ORDER BY calls_month DESC NULLS LAST
+  `;
+  res.json(rows);
+});
+```
+
+**Create/replace** `server/index.ts`:
+
+```ts
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import path from 'path';
+import { auth } from './routes/auth';
+import { admin } from './routes/admin';
+import { requireAuth, requireRole } from './middleware/auth';
+
+const app = express();
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json());
+app.use(cookieParser());
+
+app.get('/health', (_req,res)=>res.json({ok:true}));
+
+// Auth + registration
+app.use(auth);
+
+// Admin-protected routes
+app.use(requireAuth, requireRole('admin'), admin);
+
+// Vite dev proxy will handle client in dev; serve static in prod
+if (process.env.NODE_ENV==='production') {
+  const clientDist = path.join(__dirname, '../client/dist');
+  app.use(express.static(clientDist));
+  app.get(/^\/(?!api).*/, (_req,res)=>res.sendFile(path.join(clientDist,'index.html')));
+}
+
+const PORT = Number(process.env.PORT || 5000);
+app.listen(PORT, ()=>console.log(`[express] serving on port ${PORT}`));
+```
+
+---
+
+## 5) Client: API wrapper
+
+**Create** `client/src/api/client.ts`:
+
+```ts
+export async function api(path: string, init?: RequestInit) {
+  const res = await fetch(path.startsWith('/api')? path : `/api${path}`, {
+    credentials: 'include',
+    headers: { 'Content-Type':'application/json', ...(init?.headers||{}) },
+    ...init
+  });
+  if (!res.ok) throw new Error((await res.json().catch(()=>({message:res.statusText}))).message);
+  return res.json();
+}
+```
+
+---
+
+## 6) Customer registration with access code (2-step OTP)
+
+**Replace** `client/src/pages/register.tsx` with a real flow (no placeholders):
+
+```tsx
+import React, { useState } from 'react';
+import { api } from '@/api/client';
+
+export default function Register() {
+  const [stage, setStage] = useState<'start'|'verify'>('start');
+  const [payload, setPayload] = useState({
+    code:'', email:'', phone:'', full_name:'', org_name:'', password:''
+  });
+  const [token, setToken] = useState('');
+  const [emailCode, setEmailCode] = useState('');
+  const [smsCode, setSmsCode] = useState('');
+  const [msg, setMsg] = useState('');
+
+  async function start(e:React.FormEvent) {
+    e.preventDefault(); setMsg('');
+    const r = await api('/auth/register/start', { method:'POST', body:JSON.stringify(payload) });
+    setToken(r.token); setStage('verify');
+  }
+  async function verify(e:React.FormEvent) {
+    e.preventDefault(); setMsg('');
+    const r = await api('/auth/register/verify', {
+      method:'POST',
+      body:JSON.stringify({
+        token, code:payload.code, email:payload.email, phone:payload.phone,
+        full_name:payload.full_name, org_name:payload.org_name, password:payload.password,
+        email_code: emailCode, sms_code: smsCode
+      })
+    });
+    setMsg(`Welcome, ${r.user.full_name}!`);
+  }
+
+  return (
+    <main className="max-w-xl mx-auto p-6">
+      <h1 className="text-2xl font-semibold mb-4">Create your VictorySync account</h1>
+      {stage==='start' ? (
+        <form onSubmit={start} className="space-y-3">
+          <input className="input" placeholder="Access code" value={payload.code} onChange={e=>setPayload({...payload, code:e.target.value})} required />
+          <input className="input" placeholder="Full name" value={payload.full_name} onChange={e=>setPayload({...payload, full_name:e.target.value})} required />
+          <input className="input" placeholder="Organization" value={payload.org_name} onChange={e=>setPayload({...payload, org_name:e.target.value})} required />
+          <input className="input" placeholder="Email" type="email" value={payload.email} onChange={e=>setPayload({...payload, email:e.target.value})} required />
+          <input className="input" placeholder="Phone" value={payload.phone} onChange={e=>setPayload({...payload, phone:e.target.value})} required />
+          <input className="input" placeholder="Password" type="password" value={payload.password} onChange={e=>setPayload({...payload, password:e.target.value})} required />
+          <button className="btn btn-primary w-full">Send verification codes</button>
+        </form>
+      ) : (
+        <form onSubmit={verify} className="space-y-3">
+          <p className="text-sm text-gray-600">We sent a 6-digit code to your email and phone.</p>
+          <input className="input" placeholder="Email code" value={emailCode} onChange={e=>setEmailCode(e.target.value)} required />
+          <input className="input" placeholder="SMS code" value={smsCode} onChange={e=>setSmsCode(e.target.value)} required />
+          <button className="btn btn-primary w-full">Complete registration</button>
+        </form>
+      )}
+      {msg && <p className="mt-3 text-green-700">{msg}</p>}
+    </main>
+  );
+}
+```
+
+> Note: Use your existing UI classes; this component must not change the navbar.
+
+---
+
+## 7) Admin Portal (real data)
+
+**Replace** `client/src/pages/admin-portal.tsx`:
+
+```tsx
+import React, { useEffect, useState } from 'react';
+import { api } from '@/api/client';
+
+type UserRow = {
+  id:string; email:string; phone:string; full_name:string; role:string; is_active:boolean;
+  email_verified:boolean; phone_verified:boolean; org_name:string|null;
+  can_use_api:boolean; can_manage_org:boolean; can_view_billing:boolean; integrations:Record<string,boolean>;
+  allow_card:boolean; allow_paypal:boolean; allow_wire:boolean;
+};
+
+export default function AdminPortal(){
+  const [users,setUsers] = useState<UserRow[]>([]);
+  const [loading,setLoading] = useState(true);
+  const [error,setError] = useState('');
+
+  async function load(){
+    try{ setLoading(true); setUsers(await api('/admin/users')); }
+    catch(e:any){ setError(e.message); } finally { setLoading(false); }
+  }
+  useEffect(()=>{ load(); },[]);
+
+  async function save(u:UserRow){
+    await api(`/admin/users/${u.id}/policy`,{
+      method:'POST',
+      body:JSON.stringify({
+        can_use_api:u.can_use_api, can_manage_org:u.can_manage_org, can_view_billing:u.can_view_billing,
+        integrations:u.integrations, allow_card:u.allow_card, allow_paypal:u.allow_paypal, allow_wire:u.allow_wire,
+        is_active:u.is_active
+      })
+    });
+  }
+
+  return (
+    <main className="max-w-6xl mx-auto p-6">
+      <h1 className="text-2xl font-semibold mb-4">Admin Portal</h1>
+      {loading && <p>Loading…</p>}
+      {error && <p className="text-red-600">{error}</p>}
+      {!loading && users.map(u=>(
+        <div key={u.id} className="rounded border p-4 mb-3 bg-white">
+          <div className="font-medium">{u.full_name} <span className="text-gray-500">({u.email})</span> — {u.org_name||'No org'}</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 my-3">
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.can_use_api} onChange={e=>setUsers(prev=>prev.map(x=>x.id===u.id?{...x,can_use_api:e.target.checked}:x))}/> API</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.can_manage_org} onChange={e=>setUsers(prev=>prev.map(x=>x.id===u.id?{...x,can_manage_org:e.target.checked}:x))}/> Manage Org</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.can_view_billing} onChange={e=>setUsers(prev=>prev.map(x=>x.id===u.id?{...x,can_view_billing:e.target.checked}:x))}/> View Billing</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.is_active} onChange={e=>setUsers(prev=>prev.map(x=>x.id===u.id?{...x,is_active:e.target.checked}:x))}/> Active</label>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 my-3">
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.allow_card} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,allow_card:e.target.checked}:x))}/> Card</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.allow_paypal} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,allow_paypal:e.target.checked}:x))}/> PayPal</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.allow_wire} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,allow_wire:e.target.checked}:x))}/> Wire</label>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 my-3">
+            {['hubspot','salesforce','zohocrm','five9','talkdesk','gohighlevel'].map(k=>(
+              <label key={k} className="flex items-center gap-2">
+                <input type="checkbox" checked={!!u.integrations?.[k]} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,integrations:{...x.integrations,[k]:e.target.checked}}:x))}/>{k}
+              </label>
+            ))}
+          </div>
+          <button className="btn btn-primary" onClick={()=>save(u)}>Save</button>
+        </div>
+      ))}
+    </main>
+  );
+}
+```
+
+**Optional add:** A small “Issue Access Code” admin widget can POST to `/api/admin/access-codes` — implement similarly in this page if needed.
+
+---
+
+## 8) Router wiring (client)
+
+Ensure `client/src/App.tsx` has:
+
+```tsx
+import { Routes, Route } from 'react-router-dom';
+import AdminPortal from '@/pages/admin-portal';
+import Register from '@/pages/register';
+
+// inside <Routes>...
+<Route path="/admin" element={<AdminPortal />} />
+<Route path="/register" element={<Register />} />
+```
+
+Ensure `BrowserRouter` wraps App in `client/src/main.tsx`.
+
+---
+
+## 9) Production SPA fallback
+
+Already done in `server/index.ts` (non-API paths fall back to `index.html`).
+
+---
+
+## 10) Minimal tests (validate access code + register)
+
+**Create** `server/__tests__/access-register.test.ts`:
+
+```ts
+import request from 'supertest';
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import { auth } from '../routes/auth';
+
+const app = express(); app.use(express.json()); app.use(cookieParser()); app.use(auth);
+
+// NOTE: This is a logic test; real email/SMS calls should be mocked in CI.
+// For brevity, assert route shape exists.
+describe('Auth routes exist', () => {
+  it('exposes /auth/register/start', async () => {
+    const res = await request(app).post('/auth/register/start').send({});
+    expect([400,503]).toContain(res.status); // bad request or not configured
+  });
+});
+```
+
+Run:
+
+```bash
+npm test
+```
+
+---
+
+## 11) What **not** to do
+
+* Do **not** modify navbar, site branding, or non-auth pages.
+* Do **not** insert placeholder/demo data.
+* Do **not** weaken access-code matching: it must strictly match email, phone, full name, and organization.
+* Do **not** bypass email + SMS verification; both are required.
+
+## 12) Final validation
+
+1. `npm run db:migrate` completes.
+2. In Admin session, call `POST /api/admin/access-codes` to generate a code for a real person/org.
+3. That person uses `/register` with the code → receives email + SMS → submits both codes → account created → session cookie set.
+4. Admin Portal `/admin` loads real users; you can toggle **API**, **integrations**, **payment methods**, **active status**.
+5. `/api/admin/analytics` returns non-empty when `call_events` exist.
+
+Return a short summary confirming each file you created/modified and that the app runs with **no TypeScript or runtime errors**.
