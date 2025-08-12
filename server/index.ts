@@ -38,12 +38,19 @@ app.use(auth);
 // Protected admin routes
 app.use('/api/admin', requireAuth, requireRole('admin'), admin);
 
-// In production, serve built client
-if (process.env.NODE_ENV === 'production') {
-  const clientDist = path.join(__dirname, '../client/dist');
-  app.use(express.static(clientDist));
-  app.get(/^\/(?!api).*/, (_req,res)=>res.sendFile(path.join(clientDist, 'index.html')));
-}
+// Serve built client files
+const clientDist = path.join(__dirname, '../dist/public');
+app.use(express.static(clientDist));
+
+// Handle React routing - serve index.html for all non-API routes
+app.get(/^\/(?!api).*/, (_req, res) => {
+  try {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  } catch (error) {
+    console.error('Error serving index.html:', error);
+    res.status(404).send('Page not found');
+  }
+});
 
 const PORT = Number(process.env.PORT || 5000);
 app.listen(PORT, '0.0.0.0', ()=>console.log(`[express] serving on port ${PORT}`));
