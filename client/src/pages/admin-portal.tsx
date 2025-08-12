@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '@/api/client';
-import { sql } from 'drizzle-orm/sql'; // Import sql from drizzle-orm
 
 type UserRow = {
   id:string; email:string; phone:string; full_name:string; role:string; is_active:boolean;
