@@ -13,6 +13,25 @@ app.use(cookieParser());
 
 app.get('/api/health', (_req,res)=>res.json({ok:true}));
 
+// Debug endpoint to list available routes
+app.get('/api/debug/routes', (_req, res) => {
+  const routes = {
+    public: [
+      'GET /api/health',
+      'GET /api/debug/routes',
+      'POST /api/auth/login',
+      'POST /api/auth/register/start', 
+      'POST /api/auth/register/verify',
+      'GET /api/auth/me (requires auth)'
+    ],
+    protected: [
+      'POST /api/admin/access-codes (admin only)',
+      '/api/admin/* (admin only)'
+    ]
+  };
+  res.json(routes);
+});
+
 // Public auth routes
 app.use(auth);
 

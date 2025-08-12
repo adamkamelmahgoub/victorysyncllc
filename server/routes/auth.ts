@@ -63,5 +63,13 @@ auth.post('/api/auth/login', async (req,res) => {
 
 // Get current user info (protected route)
 auth.get('/api/auth/me', requireAuth, (req: any, res) => {
-  res.json({ user: req.user });
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+    res.json({ user: req.user });
+  } catch (error) {
+    console.error('Error in /api/auth/me:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
