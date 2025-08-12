@@ -37,8 +37,18 @@ async function run() {
       const ddl = fs.readFileSync(path.join(dir, f), 'utf8');
       
       try {
-        // Execute migration using neon's raw string approach
-        const result = await sql([ddl] as any, []);
+        // Split DDL into individual statements and execute each one
+        const statements = ddl
+          .split(';')
+          .map(stmt => stmt.trim())
+          .filter(stmt => stmt.length > 0);
+        
+        for (const statement of statements) {
+          if (statement.trim()) {
+            await sql.unsafe(statement);
+          }
+        }
+        
         console.log(`✅ Applied ${f}`);
         
         await sql`INSERT INTO _migrations (id) VALUES (${f});`;
