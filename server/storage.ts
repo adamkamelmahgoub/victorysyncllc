@@ -21,7 +21,7 @@ import {
   accessControlIntegrations,
   accessControlPaymentMethods,
   accessControlCallMetrics,
-  type PublicUser,
+  type PublicUser as SchemaPublicUser, // Alias to avoid naming conflict
   type InsertPublicUser,
   type Package,
   type InsertPackage,
@@ -68,6 +68,90 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, count } from "drizzle-orm";
+import type postgres from "postgres"; // Import type for postgres client
+
+// Define a type for the public user, potentially more specific than the schema type
+export type PublicUser = {
+  id: number; // Assuming ID is a number as per original code's usage
+  name: string | null;
+  email: string;
+  emailVerified: boolean;
+  isActive: boolean;
+  status: string | null;
+  statusReason: string | null;
+  role: string;
+  permissions: string[];
+  featureFlags: string[];
+  socialAccounts: any[] | null;
+  stripeCustomerId: string | null;
+  forcePasswordReset: boolean;
+  requireMfa: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  // Add any other fields that are commonly used or mapped
+};
+
+
+// Function to get all public users with enhanced details
+// This function is intended to replace the getAllPublicUsers in the original class,
+// but the original `getAllPublicUsers` in `IStorage` and `DatabaseStorage` uses `PublicUser` type from schema.
+// We will adjust the DatabaseStorage.getAllPublicUsers to use the new helper if that's the intent,
+// or keep the original if the helper is supplementary.
+// Given the prompt, it seems the intention is to replace the original implementation.
+// However, the prompt also provides a `getAllPublicUsers` function signature in the changes.
+// Let's assume the helper function `getAllPublicUsers` from the changes is meant to be used.
+
+// The original `db` import is from `./db` and likely initializes the Drizzle client.
+// The change snippet also imports `drizzle` and `sql` from `drizzle-orm/postgres-js`.
+// This implies a potential change in how the DB client is managed or accessed.
+// For now, we'll assume `db` from `./db` is the initialized Drizzle client.
+
+// If the intent was to *replace* the `db` import and usage with a new helper setup,
+// that would be a significant change. Based on the provided snippet, it seems like adding
+// a new helper function that might use a different underlying `sql` instance,
+// but the class methods still expect to use `dbClient`.
+
+// Let's proceed by integrating the provided `getAllPublicUsers` function definition
+// and ensuring the class uses the `db` client consistently.
+
+// NOTE: The provided `getAllPublicUsers` helper function in the changes snippet
+// uses `sql` directly and queries `users` table. The original code uses Drizzle ORM
+// with `publicUsers` schema. There's a mismatch here.
+// For consistency and to make the changes work with the existing structure,
+// we should adapt the helper function to use Drizzle ORM and the `publicUsers` schema.
+
+// Helper function to get all public users using Drizzle ORM and schema
+async function getPublicUsersFromDb(): Promise<PublicUser[]> {
+  // Using the existing `db` client from ./db
+  const users = await db.select().from(publicUsers).orderBy(desc(publicUsers.createdAt));
+
+  // Map Drizzle schema types to the expected PublicUser type if necessary,
+  // or directly return the Drizzle result if types align.
+  // For now, let's assume Drizzle's `publicUsers` schema aligns well enough with the `PublicUser` type
+  // expected by the `IStorage` interface, or can be mapped.
+  // The original `getAllPublicUsers` in `DatabaseStorage` did some mapping/defaulting.
+  // Let's replicate that behavior here.
+
+  return users.map(user => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    emailVerified: user.emailVerified ?? false, // Defaulting if not present
+    isActive: user.isActive ?? true, // Defaulting if not present
+    status: user.status || 'active', // Default status
+    statusReason: user.statusReason || null,
+    role: user.role || 'customer', // Default role
+    permissions: user.permissions || [], // Default permissions
+    featureFlags: user.featureFlags || [], // Default featureFlags
+    socialAccounts: user.socialAccounts || null,
+    stripeCustomerId: user.stripeCustomerId || null,
+    forcePasswordReset: user.forcePasswordReset || false,
+    requireMfa: user.requireMfa || false,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  }));
+}
+
 
 export interface IStorage {
   // Public user operations (JWT auth system)
@@ -166,17 +250,73 @@ export class DatabaseStorage implements IStorage {
   // User operations
   async createPublicUser(user: InsertPublicUser): Promise<PublicUser> {
     const [newUser] = await db.insert(publicUsers).values(user).returning();
-    return newUser;
+    // Map to PublicUser type if necessary, ensuring all fields are present
+    return {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      emailVerified: newUser.emailVerified ?? false,
+      isActive: newUser.isActive ?? true,
+      status: newUser.status || 'active',
+      statusReason: newUser.statusReason || null,
+      role: newUser.role || 'customer',
+      permissions: newUser.permissions || [],
+      featureFlags: newUser.featureFlags || [],
+      socialAccounts: newUser.socialAccounts || null,
+      stripeCustomerId: newUser.stripeCustomerId || null,
+      forcePasswordReset: newUser.forcePasswordReset || false,
+      requireMfa: newUser.requireMfa || false,
+      createdAt: newUser.createdAt,
+      updatedAt: newUser.updatedAt,
+    };
   }
 
   async getPublicUserByEmail(email: string): Promise<PublicUser | undefined> {
     const [user] = await db.select().from(publicUsers).where(eq(publicUsers.email, email));
-    return user;
+    if (!user) return undefined;
+    // Map to PublicUser type
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async getPublicUserById(id: number): Promise<PublicUser | undefined> {
     const [user] = await db.select().from(publicUsers).where(eq(publicUsers.id, id));
-    return user;
+    if (!user) return undefined;
+     // Map to PublicUser type
+     return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async updatePublicUserSocialAccounts(id: number, socialAccounts: any[]): Promise<PublicUser> {
@@ -185,7 +325,25 @@ export class DatabaseStorage implements IStorage {
       .set({ socialAccounts })
       .where(eq(publicUsers.id, id))
       .returning();
-    return user;
+    // Map to PublicUser type
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   // Package operations
@@ -249,19 +407,8 @@ export class DatabaseStorage implements IStorage {
 
   // Admin operations
   async getAllPublicUsers(): Promise<PublicUser[]> {
-    const users = await db.select().from(publicUsers).orderBy(desc(publicUsers.createdAt));
-
-    // Ensure all users have required fields with defaults
-    return users.map(user => ({
-      ...user,
-      isActive: user.isActive !== false,
-      status: user.status || 'active',
-      role: user.role || 'customer',
-      permissions: user.permissions || [],
-      featureFlags: user.featureFlags || [],
-      orderCount: 0, // TODO: Calculate from orders
-      totalSpent: 0   // TODO: Calculate from orders
-    }));
+    // Use the helper function for fetching users with enhanced details
+    return await getPublicUsersFromDb();
   }
 
   async getAllOrders(): Promise<Order[]> {
@@ -274,7 +421,26 @@ export class DatabaseStorage implements IStorage {
       .set({ isActive })
       .where(eq(publicUsers.id, userId))
       .returning();
-    return user || null;
+    if (!user) return null;
+    // Map to PublicUser type
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async deleteUser(userId: number): Promise<boolean> {
@@ -291,7 +457,26 @@ export class DatabaseStorage implements IStorage {
       .set({ privileges })
       .where(eq(publicUsers.id, userId))
       .returning();
-    return user || null;
+    if (!user) return null;
+    // Map to PublicUser type
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   // Access Control operations
@@ -338,7 +523,26 @@ export class DatabaseStorage implements IStorage {
       .set({ role })
       .where(eq(publicUsers.id, userId))
       .returning();
-    return user || null;
+    if (!user) return null;
+    // Map to PublicUser type
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async updateUserPermissions(userId: number, permissions: string[]): Promise<PublicUser | null> {
@@ -347,7 +551,26 @@ export class DatabaseStorage implements IStorage {
       .set({ permissions })
       .where(eq(publicUsers.id, userId))
       .returning();
-    return user || null;
+    if (!user) return null;
+    // Map to PublicUser type
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async updateUserFeatureFlags(userId: number, flags: Record<string, boolean>): Promise<void> {
@@ -606,10 +829,6 @@ export class DatabaseStorage implements IStorage {
         .from(userFeatureFlags)
         .where(and(eq(userFeatureFlags.userId, user.id), eq(userFeatureFlags.value, true)));
 
-      const permissions = await db.select({ permission: userFeatureFlags.flagKey }) // Assuming permissions are stored similarly or need to be fetched
-        .from(userFeatureFlags) // Placeholder, replace with actual permissions table if different
-        .where(and(eq(userFeatureFlags.userId, user.id), eq(userFeatureFlags.value, true))); // Placeholder
-
       // Fetching actual user roles
       const userRoles = await db.select({
         roleName: accessControlRoles.name,
@@ -619,13 +838,28 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(accessControlRoles, eq(accessControlUserRoles.roleId, accessControlRoles.id))
       .where(eq(accessControlUserRoles.userId, user.id));
 
+      // Map to PublicUser type
+      const mappedUser: PublicUser = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        emailVerified: user.emailVerified ?? false,
+        isActive: user.isActive ?? true,
+        status: user.status || 'active',
+        statusReason: user.statusReason || null,
+        role: user.role || 'customer',
+        permissions: user.permissions || [],
+        featureFlags: featureFlags.map(f => f.flagKey),
+        socialAccounts: user.socialAccounts || null,
+        stripeCustomerId: user.stripeCustomerId || null,
+        forcePasswordReset: user.forcePasswordReset || false,
+        requireMfa: user.requireMfa || false,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+
       return {
-        ...user,
-        isActive: user.isActive !== false, // Ensure isActive is boolean
-        status: user.status || 'active', // Default status
-        role: user.role || 'customer', // Default role
-        permissions: user.permissions || [], // Default permissions
-        featureFlags: featureFlags.map(f => f.flagKey), // Map feature flags
+        ...mappedUser,
         orderCount: userOrders[0]?.orderCount || 0,
         totalSpent: Number(userOrders[0]?.totalSpent || 0),
         userRoles: userRoles.map(ur => ({ name: ur.roleName, id: ur.roleId })),
@@ -643,7 +877,25 @@ export class DatabaseStorage implements IStorage {
       .set({ status: 'locked', statusReason: reason, updatedAt: new Date() })
       .where(eq(publicUsers.id, userId))
       .returning();
-    return user;
+    // Map to PublicUser type
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async unlockUserAccount(userId: number): Promise<PublicUser> {
@@ -652,7 +904,25 @@ export class DatabaseStorage implements IStorage {
       .set({ status: 'active', statusReason: null, updatedAt: new Date() })
       .where(eq(publicUsers.id, userId))
       .returning();
-    return user;
+    // Map to PublicUser type
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async forcePasswordReset(userId: number): Promise<PublicUser> {
@@ -663,7 +933,25 @@ export class DatabaseStorage implements IStorage {
       .set({ forcePasswordReset: true, updatedAt: new Date() })
       .where(eq(publicUsers.id, userId))
       .returning();
-    return user;
+    // Map to PublicUser type
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async requireMfaNextLogin(userId: number): Promise<PublicUser> {
@@ -672,7 +960,25 @@ export class DatabaseStorage implements IStorage {
       .set({ requireMfa: true, updatedAt: new Date() })
       .where(eq(publicUsers.id, userId))
       .returning();
-    return user;
+     // Map to PublicUser type
+     return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      role: user.role || 'customer',
+      permissions: user.permissions || [],
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async bulkUpdateUsers(userIds: number[], updates: any): Promise<void> {

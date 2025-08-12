@@ -7,6 +7,9 @@ import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
+import authRoutes from './routes/auth';
+import adminRoutes from './routes/admin';
+import customerRoutes from './routes/customer';
 
 let stripe: Stripe | null = null;
 
@@ -299,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { page = 1, limit = 50, search = '', role, status } = req.query;
       const users = await storage.getAllPublicUsers();
-      
+
       // Filter users based on search and filters
       let filteredUsers = users.filter((user: any) => {
         const matchesSearch = !search || 
@@ -307,10 +310,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           user.email.toLowerCase().includes(search.toLowerCase());
         const matchesRole = !role || user.role === role;
         const matchesStatus = !status || user.status === status;
-        
+
         return matchesSearch && matchesRole && matchesStatus;
       });
-      
+
       // Add calculated fields
       filteredUsers = filteredUsers.map((user: any) => ({
         ...user,
@@ -322,10 +325,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accountLocked: user.status === 'locked',
         mfaEnabled: user.mfaEnabled || false
       }));
-      
+
       const startIndex = (parseInt(page as string) - 1) * parseInt(limit as string);
       const paginatedUsers = filteredUsers.slice(startIndex, startIndex + parseInt(limit as string));
-      
+
       res.json({ 
         users: paginatedUsers, 
         total: filteredUsers.length, 
@@ -342,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.id);
       const user = await storage.getPublicUserById(userId);
-      
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -366,7 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/access/users/:id/call-metrics", requireAdmin, async (req: any, res: any) => {
     try {
       const userId = parseInt(req.params.id);
-      
+
       // Mock call metrics data
       res.json({
         callsToday: Math.floor(Math.random() * 50),
@@ -388,7 +391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/access/users/:id/call-metrics/refresh", requireAdmin, async (req: any, res: any) => {
     try {
       const userId = parseInt(req.params.id);
-      
+
       // Mock refresh - in reality would fetch from dialer API
       res.json({ success: true, refreshedAt: new Date().toISOString() });
     } catch (error) {
@@ -400,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/access/users/:id/audit", requireAdmin, async (req: any, res: any) => {
     try {
       const userId = parseInt(req.params.id);
-      
+
       // Mock audit log data
       const mockAuditLogs = [
         {
@@ -425,7 +428,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString() // 15 minutes ago
         }
       ];
-      
+
       res.json(mockAuditLogs);
     } catch (error) {
       console.error("Error fetching audit logs:", error);
@@ -466,7 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/access/users/bulk", requireAdmin, async (req: any, res: any) => {
     try {
       const { userIds, action } = req.body;
-      
+
       let results = [];
       for (const userId of userIds) {
         try {
@@ -488,7 +491,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           results.push({ userId, success: false, error: error.message });
         }
       }
-      
+
       res.json({ results });
     } catch (error) {
       console.error("Error performing bulk action:", error);
@@ -503,7 +506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const actorId = req.user!.id;
 
       const user = await storage.updateUserRole(userId, role);
-      
+
       // Audit log
       await storage.auditLog({
         actorUserId: actorId,
@@ -528,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const actorId = req.user!.id;
 
       const user = await storage.updateUserPermissions(userId, permissions);
-      
+
       // Audit log
       await storage.auditLog({
         actorUserId: actorId,
@@ -553,7 +556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const actorId = req.user!.id;
 
       await storage.updateUserFeatureFlags(userId, flags);
-      
+
       // Audit log
       await storage.auditLog({
         actorUserId: actorId,
@@ -577,7 +580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const actorId = req.user!.id;
 
       await storage.revokeAllAccessControlSessions(userId);
-      
+
       // Audit log
       await storage.auditLog({
         actorUserId: actorId,
@@ -601,7 +604,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const actorId = req.user!.id;
 
       const policy = await storage.setAccessControlPaymentPolicy(userId, allowedMethods);
-      
+
       // Audit log
       await storage.auditLog({
         actorUserId: actorId,
@@ -661,7 +664,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const actorId = req.user!.id;
 
       const success = await storage.revokeApiKey(keyId);
-      
+
       // Audit log
       await storage.auditLog({
         actorUserId: actorId,
@@ -722,7 +725,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const users = await storage.getAllPublicUsers();
       const orders = await storage.getAllOrders();
-      
+
       const totalOrgs = new Set(users.filter(u => u.orgId).map(u => u.orgId)).size;
       const payingOrgs = Math.floor(totalOrgs * 0.8); // Mock 80% paying
       const activeAgents = users.filter(u => u.isActive && u.role !== 'SUPER_ADMIN').length;
@@ -730,7 +733,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mrr = orders.reduce((sum, order) => sum + parseFloat(order.total || '0'), 0);
       const mrrGrowth = '+12%';
       const apiCalls = Math.floor(Math.random() * 100000) + 50000;
-      
+
       res.json({
         totalOrgs,
         payingOrgs,
@@ -750,7 +753,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { search, page = 1, limit = 50 } = req.query;
       const users = await storage.getAllPublicUsers();
-      
+
       let filteredUsers = users;
       if (search) {
         filteredUsers = users.filter(user => 
@@ -759,10 +762,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           (user.role || '').toLowerCase().includes(search.toLowerCase())
         );
       }
-      
+
       const startIndex = (parseInt(page) - 1) * parseInt(limit);
       const paginatedUsers = filteredUsers.slice(startIndex, startIndex + parseInt(limit));
-      
+
       res.json({ 
         users: paginatedUsers.map(user => ({
           ...user,
@@ -783,7 +786,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { search } = req.query;
       const users = await storage.getAllPublicUsers();
-      
+
       // Group users by organization
       const orgMap = new Map();
       users.forEach(user => {
@@ -810,16 +813,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       });
-      
+
       let orgs = Array.from(orgMap.values());
-      
+
       if (search) {
         orgs = orgs.filter(org => 
           org.name.toLowerCase().includes(search.toLowerCase()) ||
           org.ownerEmail.toLowerCase().includes(search.toLowerCase())
         );
       }
-      
+
       res.json({ orgs, total: orgs.length });
     } catch (error) {
       console.error("Error fetching organizations:", error);
@@ -850,7 +853,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
         }
       ];
-      
+
       res.json(accessCodes);
     } catch (error) {
       console.error("Error fetching access codes:", error);
@@ -861,10 +864,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/access-codes", requireAdmin, async (req: any, res: any) => {
     try {
       const { orgId } = req.body;
-      
+
       // Generate UUID-like access code
       const code = `VS-${Math.random().toString(36).substr(2, 6).toUpperCase()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-      
+
       // Mock code creation
       const accessCode = {
         id: Date.now().toString(),
@@ -875,7 +878,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         createdAt: new Date().toISOString()
       };
-      
+
       res.json(accessCode);
     } catch (error) {
       console.error("Error generating access code:", error);
@@ -912,7 +915,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           environments: ['production']
         }
       ];
-      
+
       res.json(featureFlags);
     } catch (error) {
       console.error("Error fetching feature flags:", error);
@@ -964,7 +967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString()
         }
       ];
-      
+
       res.json(auditLogs);
     } catch (error) {
       console.error("Error fetching audit logs:", error);
@@ -975,7 +978,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/organizations", requireAdmin, async (req: any, res: any) => {
     try {
       const { name, subscriptionTier, maxSeats, ownerEmail } = req.body;
-      
+
       // Mock organization creation
       const org = {
         id: `org_${Date.now()}`,
@@ -990,7 +993,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         billingStatus: 'active',
         mrr: 0
       };
-      
+
       res.json(org);
     } catch (error) {
       console.error("Error creating organization:", error);
@@ -1052,17 +1055,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/users", requireAdmin, async (req: any, res: any) => {
     try {
       const { name, email, password, role, isActive } = req.body;
-      
+
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
-      
+
       // Hash password
       const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash(password, 10);
-      
+
       const user = await storage.createUser({
         name,
         email,
@@ -1070,7 +1073,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: role || 'user',
         isActive: isActive !== false
       });
-      
+
       res.json(user);
     } catch (error) {
       console.error("Error creating user:", error);
@@ -1306,12 +1309,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id;
       const { name, email } = req.body;
-      
+
       const updatedUser = await storage.updateUserProfile(userId, { name, email });
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       res.json(updatedUser);
     } catch (error) {
       console.error("Error updating user profile:", error);
@@ -1324,11 +1327,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id.toString();
       const orders = await storage.getUserOrders(userId);
-      
+
       const totalOrders = orders.length;
       const totalSpent = orders.reduce((sum: number, order: any) => sum + parseFloat(order.total || 0), 0);
       const avgOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
-      
+
       const kpis = {
         totalOrders,
         totalSpent,
@@ -1339,7 +1342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         conversionRate: '3.2%', // Mock data
         satisfactionScore: 4.8 // Mock data
       };
-      
+
       res.json(kpis);
     } catch (error) {
       console.error("Error fetching user KPIs:", error);
@@ -1363,7 +1366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id;
       const { type, name, apiKey, webhookUrl } = req.body;
-      
+
       const integration = await storage.createUserIntegration({
         userId,
         type,
@@ -1372,7 +1375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         webhookUrl,
         isActive: true
       });
-      
+
       res.json(integration);
     } catch (error) {
       console.error("Error creating integration:", error);
@@ -1384,12 +1387,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const integrationId = parseInt(req.params.id);
       const userId = req.user!.id;
-      
+
       const success = await storage.deleteUserIntegration(integrationId, userId);
       if (!success) {
         return res.status(404).json({ message: "Integration not found" });
       }
-      
+
       res.json({ message: "Integration deleted successfully" });
     } catch (error) {
       console.error("Error deleting integration:", error);
@@ -1401,14 +1404,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/packages', requireAdmin, async (req: any, res: any) => {
     try {
       const { name, price, description, features } = req.body;
-      
+
       const pkg = await storage.createPackage({
         name,
         price,
         description,
         features
       });
-      
+
       res.json(pkg);
     } catch (error) {
       console.error("Error creating package:", error);
@@ -1420,18 +1423,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const packageId = parseInt(req.params.id);
       const { name, price, description, features } = req.body;
-      
+
       const pkg = await storage.updatePackage(packageId, {
         name,
         price,
         description,
         features
       });
-      
+
       if (!pkg) {
         return res.status(404).json({ message: "Package not found" });
       }
-      
+
       res.json(pkg);
     } catch (error) {
       console.error("Error updating package:", error);
@@ -1442,12 +1445,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/admin/packages/:id', requireAdmin, async (req: any, res: any) => {
     try {
       const packageId = parseInt(req.params.id);
-      
+
       const success = await storage.deletePackage(packageId);
       if (!success) {
         return res.status(404).json({ message: "Package not found" });
       }
-      
+
       res.json({ message: "Package deleted successfully" });
     } catch (error) {
       console.error("Error deleting package:", error);
@@ -1459,7 +1462,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/users/bulk', requireAdmin, async (req: any, res: any) => {
     try {
       const { userIds, action, value } = req.body;
-      
+
       let results = [];
       for (const userId of userIds) {
         try {
@@ -1484,7 +1487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           results.push({ userId, success: false, error: error.message });
         }
       }
-      
+
       res.json({ results });
     } catch (error) {
       console.error("Error performing bulk action:", error);
@@ -1498,7 +1501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const users = await storage.getAllPublicUsers();
       const orders = await storage.getAllOrders();
       const packages = await storage.getPackages();
-      
+
       const analytics = {
         totalUsers: users.length,
         activeUsers: users.filter(u => u.isActive !== false).length,
@@ -1516,11 +1519,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
           orders: '+15%'
         }
       };
-      
+
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching analytics:", error);
       res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // Mount API routes
+  app.use('/api/auth', authRoutes);
+  app.use('/api/admin', adminRoutes); // TODO: Add admin auth middleware
+  app.use('/api/customer', customerRoutes); // TODO: Add auth middleware
+
+  // Legacy API routes
+  app.get("/api/guestbook", async (req, res) => {
+    const entries = await getGuestbookEntries();
+    res.json(entries);
+  });
+
+  app.post("/api/guestbook", async (req, res) => {
+    try {
+      const { name, message } = req.body;
+
+      if (!name || !message) {
+        return res.status(400).json({ error: "Name and message are required" });
+      }
+
+      const entry = await insertGuestbookEntry(name, message);
+      res.status(201).json(entry);
+    } catch (error) {
+      console.error("Error creating guestbook entry:", error);
+      res.status(500).json({ error: "Failed to create entry" });
     }
   });
 
@@ -1530,7 +1560,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 async function initializePackages() {
   const existingPackages = await storage.getPackages();
-  
+
   if (existingPackages.length === 0) {
     const defaultPackages = [
       {
@@ -1558,4 +1588,3 @@ async function initializePackages() {
     }
   }
 }
-

@@ -1,12 +1,10 @@
 
-import { neon } from '@neondatabase/serverless';
+import { neon, neonConfig } from '@neondatabase/serverless';
 
-const url = process.env.DATABASE_URL;
-if (!url) throw new Error('DATABASE_URL is not set');
-
-export const sql = neon(url);
-
-// quick health check helper
-export async function dbHealthcheck() {
-  await sql`select 1 as ok`;
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is not set');
 }
+
+neonConfig.fetchConnectionCache = true;
+export const sql = neon(process.env.DATABASE_URL);
+export default sql;
