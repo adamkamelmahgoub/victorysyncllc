@@ -1,0 +1,126 @@
+You are ONLY fixing the front-end so the real app UI renders instead of the temporary shell. Do NOT touch database, auth, API routes, or server code beyond what is listed here. If anything is unclear, STOP and ask.
+
+GOAL
+- Render the production UI at “/” with React Router (v6+).
+- Keep ErrorBoundary in place.
+- Use our existing Navigation and Footer components.
+- Lazy-load pages with a clean fallback.
+- No white screen; navigation works (Home, About, Services, Contact, Pricing, Sign In/Register, Dashboard if present).
+
+MAKE THESE EXACT FILE CHANGES:
+
+================================================
+1) client/src/App.tsx  (REPLACE ENTIRE FILE)
+================================================
+import React, { Suspense, lazy } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ErrorBoundary from "./components/ErrorBoundary";
+
+// Adjust these import paths if our components live elsewhere:
+import Navigation from "./components/navigation";
+import Footer from "./components/Footer";
+
+// Helper: scroll to top on route change
+function ScrollToTop() {
+  React.useEffect(() => {
+    const onHashChange = () => window.scrollTo({ top: 0, behavior: "instant" as any });
+    onHashChange();
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+  return null;
+}
+
+// Lazily import pages. IMPORTANT: If a path doesn’t exist in the repo,
+// create a minimal page in client/src/pages/<name>.tsx that exports default component.
+// Prefer existing files; only create stubs if missing.
+const Home = lazy(() => import("./pages/home"));            // or "./pages/Home"
+const About = lazy(() => import("./pages/about"));          // or "./pages/About"
+const Services = lazy(() => import("./pages/services"));    // or "./pages/Services"
+const Contact = lazy(() => import("./pages/contact"));      // or "./pages/Contact"
+const Pricing = lazy(() => import("./pages/pricing"));      // or "./pages/Pricing"
+const SignIn = lazy(() => import("./pages/login"));         // or "./pages/SignIn" / "./pages/Login"
+const Register = lazy(() => import("./pages/register"));    // or "./pages/Register"
+const Dashboard = lazy(() => import("./pages/customer-dashboard").catch(() => import("./pages/dashboard"))); // optional
+
+function PageFallback() {
+  return (
+    <div style={{ minHeight: "50vh", display: "grid", placeItems: "center" }}>
+      <div>Loading…</div>
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Navigation />
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/login" element={<SignIn />} />
+            <Route path="/register" element={<Register />} />
+            {/* OPTIONAL: only enable if the page exists */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            {/* Legacy/unknown paths -> home (adjust if we have a NotFound page) */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+        <Footer />
+      </BrowserRouter>
+    </ErrorBoundary>
+  );
+}
+
+=========================================================
+2) Ensure required pages/components exist (CREATE if missing)
+=========================================================
+// For any import above that fails, create the file under client/src/pages/ with a minimal, export default component.
+// Example stub (use for any missing page):
+// client/src/pages/home.tsx  (ONLY if no real Home page exists)
+import React from "react";
+export default function Home() {
+  return (
+    <main style={{ padding: "4rem 1rem" }}>
+      <h1>Home</h1>
+      <p>Replace this stub with the real Home content.</p>
+    </main>
+  );
+}
+
+// Do the same pattern for about.tsx, services.tsx, contact.tsx, pricing.tsx, login.tsx, register.tsx, customer-dashboard.tsx
+// BUT: If a real file exists with different casing (Home.tsx vs home.tsx), update the imports in App.tsx to match it
+// rather than creating new files.
+
+=========================================================
+3) Keep these files AS-IS from earlier fix (verify only)
+=========================================================
+// Do NOT change them unless the imports break.
+// - client/index.html  (must load /src/main.tsx)
+// - client/src/main.tsx  (boot logs stay)
+// - client/src/components/ErrorBoundary.tsx
+// - vite.config.ts (root "client", allowedHosts: true)
+// - server dev/prod catch-all already set by earlier step
+
+=========================================================
+4) RUN & VERIFY (Replit shell)
+=========================================================
+npm run dev
+
+Open the Preview, then:
+- Confirm the real Home UI renders (not “VictorySync app loaded” shell).
+- Click “About”, “Services”, “Contact”, “Pricing”, “Sign In”, “Register”, and (if present) “Dashboard” => each route loads without a white screen.
+- Browser console still shows “[VictorySync] BOOT:start” and “BOOT:mounted”.
+- On a thrown error, ErrorBoundary renders a friendly message instead of a blank page.
+
+ACCEPTANCE CRITERIA
+- The temporary “VictorySync app loaded” message is gone; real UI renders at “/”.
+- Navigation bar and footer are visible on all routes, links work, back/forward works.
+- No import errors; unknown paths redirect to “/” (or show NotFound if we add one later).
+- No changes were made outside the files/instructions above.
