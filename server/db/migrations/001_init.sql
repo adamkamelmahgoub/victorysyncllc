@@ -1,10 +1,10 @@
 
 -- users, orgs, roles, privileges, 2FA, payments, API keys, discount codes, calls
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Use gen_random_uuid() instead of uuid_generate_v4() (no extension needed)
 
 CREATE TABLE IF NOT EXISTS organizations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS organizations (
 CREATE TYPE user_role AS ENUM ('admin', 'staff', 'customer');
 
 CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email CITEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   role user_role NOT NULL DEFAULT 'customer',
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS access_codes (
 );
 
 CREATE TABLE IF NOT EXISTS api_keys (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
 );
 
 CREATE TABLE IF NOT EXISTS integrations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   key TEXT UNIQUE NOT NULL,            -- 'hubspot','zoho','aircall','twilio', etc
   name TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS packages (
 );
 
 CREATE TABLE IF NOT EXISTS orders (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   package_id INT REFERENCES packages(id),
   price NUMERIC(10,2) NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS discount_codes (
 );
 
 CREATE TABLE IF NOT EXISTS calls (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   org_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
   started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS calls (
 );
 
 CREATE TABLE IF NOT EXISTS audit_logs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   actor_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   action TEXT NOT NULL,
   target_type TEXT,
