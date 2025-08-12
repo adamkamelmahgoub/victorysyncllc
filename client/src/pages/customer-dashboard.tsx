@@ -64,7 +64,7 @@ export default function CustomerDashboard() {
   }
 
   const token = localStorage.getItem('auth_token');
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
   // Real-time data fetching
   const { data: profile, isLoading: profileLoading } = useQuery({

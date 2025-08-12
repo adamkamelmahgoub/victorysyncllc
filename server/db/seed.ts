@@ -1,5 +1,5 @@
 
-import sql from './index';
+import { sql } from './index';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 

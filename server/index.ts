@@ -2,9 +2,13 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { auth } from './routes/auth';
 import { admin } from './routes/admin';
 import { requireAuth, requireRole } from './middleware/auth';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors({ origin: true, credentials: true }));

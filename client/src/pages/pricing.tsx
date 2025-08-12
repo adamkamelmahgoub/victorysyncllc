@@ -48,7 +48,7 @@ export default function Pricing() {
       {/* Pricing Cards */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {packages && packages.length > 0 ? (
+          {packages && Array.isArray(packages) && packages.length > 0 ? (
             <div className="grid md:grid-cols-3 gap-8">
               {packages.map((pkg: any, index: number) => {
                 const isPopular = index === 1; // Make middle plan popular

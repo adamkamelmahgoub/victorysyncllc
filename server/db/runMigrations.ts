@@ -1,4 +1,3 @@
-
 // server/db/runMigrations.ts
 import fs from 'fs';
 import path from 'path';
@@ -12,8 +11,9 @@ async function run() {
   const dir = path.join(__dirname, 'migrations');
   const files = fs.readdirSync(dir).filter(f => f.endsWith('.sql')).sort();
   await sql`CREATE TABLE IF NOT EXISTS _migrations (id text primary key, ran_at timestamptz default now());`;
-  const ran = await sql<{id:string}>`SELECT id FROM _migrations`;
+  const ran = await sql`SELECT id FROM _migrations`;
   const ranSet = new Set(ran.map(r => r.id));
+
   for (const f of files) {
     if (ranSet.has(f)) continue;
     const ddl = fs.readFileSync(path.join(dir, f), 'utf8');
