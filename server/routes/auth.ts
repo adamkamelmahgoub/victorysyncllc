@@ -1,6 +1,6 @@
 
 import { Router } from 'express';
-import { sql } from '../db';
+import { sql } from '../db/index';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { authenticator } from 'otplib';

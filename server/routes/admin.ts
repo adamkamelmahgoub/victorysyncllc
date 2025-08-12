@@ -1,6 +1,6 @@
 
 import { Router } from 'express';
-import { sql } from '../db';
+import { sql } from '../db/index';
 
 const router = Router();
 
