@@ -47,6 +47,30 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
+
+// Initialize call metrics service
+import { callMetricsService } from './services/callMetricsService';
+
+// Start call metrics polling after server is ready
+process.nextTick(() => {
+  if (process.env.DIALER_PROVIDER) {
+    callMetricsService.startPolling();
+  }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  callMetricsService.stopPolling();
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully...');
+  callMetricsService.stopPolling();
+  process.exit(0);
+});
+
       log(logLine);
     }
   });

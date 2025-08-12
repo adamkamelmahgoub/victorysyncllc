@@ -147,3 +147,156 @@ export const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
+
+
+
+// Access Control Tables
+export const userFeatureFlags = pgTable('user_feature_flags', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => publicUsers.id, { onDelete: 'cascade' }),
+  flagKey: varchar('flag_key', { length: 100 }).notNull(),
+  value: boolean('value').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const userIntegrationPolicies = pgTable('user_integration_policies', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => publicUsers.id, { onDelete: 'cascade' }),
+  provider: varchar('provider', { length: 50 }).notNull(),
+  allowedScopes: jsonb('allowed_scopes').$type<string[]>().default([]),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const orgIntegrationPolicies = pgTable('org_integration_policies', {
+  id: serial('id').primaryKey(),
+  orgId: varchar('org_id', { length: 255 }).notNull(),
+  provider: varchar('provider', { length: 50 }).notNull(),
+  allowedScopes: jsonb('allowed_scopes').$type<string[]>().default([]),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const userPaymentPolicies = pgTable('user_payment_policies', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => publicUsers.id, { onDelete: 'cascade' }),
+  allowedMethods: jsonb('allowed_methods').$type<string[]>().default(['card']),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const orgPaymentPolicies = pgTable('org_payment_policies', {
+  id: serial('id').primaryKey(),
+  orgId: varchar('org_id', { length: 255 }).notNull(),
+  allowedMethods: jsonb('allowed_methods').$type<string[]>().default(['card']),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const userDialerMap = pgTable('user_dialer_map', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => publicUsers.id, { onDelete: 'cascade' }),
+  provider: varchar('provider', { length: 50 }).notNull(),
+  externalAgentId: varchar('external_agent_id', { length: 255 }).notNull(),
+  meta: jsonb('meta'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const auditLogs = pgTable('audit_logs', {
+  id: serial('id').primaryKey(),
+  actorUserId: integer('actor_user_id').notNull().references(() => publicUsers.id),
+  targetUserId: integer('target_user_id').references(() => publicUsers.id),
+  targetOrgId: varchar('target_org_id', { length: 255 }),
+  action: varchar('action', { length: 100 }).notNull(),
+  before: jsonb('before'),
+  after: jsonb('after'),
+  ip: varchar('ip', { length: 45 }),
+  userAgent: varchar('user_agent', { length: 500 }),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const apiKeys = pgTable('api_keys', {
+  id: serial('id').primaryKey(),
+  orgId: varchar('org_id', { length: 255 }),
+  userId: integer('user_id').references(() => publicUsers.id, { onDelete: 'cascade' }),
+  keyHash: varchar('key_hash', { length: 255 }).notNull(),
+  label: varchar('label', { length: 255 }).notNull(),
+  scopes: jsonb('scopes').$type<string[]>().default([]),
+  ipAllowlist: jsonb('ip_allowlist').$type<string[]>(),
+  rateLimitPerMin: integer('rate_limit_per_min'),
+  createdBy: integer('created_by').notNull().references(() => publicUsers.id),
+  lastUsedAt: timestamp('last_used_at'),
+  revokedAt: timestamp('revoked_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const coupons = pgTable('coupons', {
+  id: serial('id').primaryKey(),
+  code: varchar('code', { length: 50 }).unique().notNull(),
+  description: varchar('description', { length: 255 }),
+  discountType: varchar('discount_type', { length: 20 }).notNull(), // 'percentage' or 'fixed'
+  discountValue: decimal('discount_value', { precision: 10, scale: 2 }).notNull(),
+  maxUses: integer('max_uses'),
+  currentUses: integer('current_uses').default(0),
+  validFrom: timestamp('valid_from'),
+  validUntil: timestamp('valid_until'),
+  isActive: boolean('is_active').default(true),
+  createdBy: integer('created_by').notNull().references(() => publicUsers.id),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const couponRedemptions = pgTable('coupon_redemptions', {
+  id: serial('id').primaryKey(),
+  couponId: integer('coupon_id').notNull().references(() => coupons.id),
+  userId: integer('user_id').notNull().references(() => publicUsers.id),
+  orderId: integer('order_id').references(() => orders.id),
+  discountAmount: decimal('discount_amount', { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const callsCache = pgTable('calls_cache', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => publicUsers.id, { onDelete: 'cascade' }),
+  period: varchar('period', { length: 10 }).notNull(), // 'today', '7d', '30d'
+  callsCount: integer('calls_count').default(0),
+  avgHandleTime: integer('avg_handle_time'), // seconds
+  occupancy: decimal('occupancy', { precision: 5, scale: 2 }), // percentage
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Add role column to publicUsers
+export const publicUsersWithRole = pgTable('public_users', {
+  ...publicUsers,
+  role: varchar('role', { length: 50 }).default('customer'),
+  permissions: jsonb('permissions').$type<string[]>().default([]),
+  orgId: varchar('org_id', { length: 255 }),
+  isMfaEnabled: boolean('is_mfa_enabled').default(false),
+  lastLoginAt: timestamp('last_login_at'),
+  status: varchar('status', { length: 20 }).default('active'), // active, suspended, locked
+});
+
+// Types
+export type UserFeatureFlag = typeof userFeatureFlags.$inferSelect;
+export type InsertUserFeatureFlag = typeof userFeatureFlags.$inferInsert;
+export type UserIntegrationPolicy = typeof userIntegrationPolicies.$inferSelect;
+export type InsertUserIntegrationPolicy = typeof userIntegrationPolicies.$inferInsert;
+export type OrgIntegrationPolicy = typeof orgIntegrationPolicies.$inferSelect;
+export type InsertOrgIntegrationPolicy = typeof orgIntegrationPolicies.$inferInsert;
+export type UserPaymentPolicy = typeof userPaymentPolicies.$inferSelect;
+export type InsertUserPaymentPolicy = typeof userPaymentPolicies.$inferInsert;
+export type OrgPaymentPolicy = typeof orgPaymentPolicies.$inferSelect;
+export type InsertOrgPaymentPolicy = typeof orgPaymentPolicies.$inferInsert;
+export type UserDialerMap = typeof userDialerMap.$inferSelect;
+export type InsertUserDialerMap = typeof userDialerMap.$inferInsert;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertApiKey = typeof apiKeys.$inferInsert;
+export type Coupon = typeof coupons.$inferSelect;
+export type InsertCoupon = typeof coupons.$inferInsert;
+export type CouponRedemption = typeof couponRedemptions.$inferSelect;
+export type InsertCouponRedemption = typeof couponRedemptions.$inferInsert;
+export type CallsCache = typeof callsCache.$inferSelect;
+export type InsertCallsCache = typeof callsCache.$inferInsert;

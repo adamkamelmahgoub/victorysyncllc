@@ -32,6 +32,9 @@ import {
   UserX,
   Search,
   Filter,
+
+import AccessControlCenter from '@/admin/access-control/AccessControlCenter';
+
   ChevronDown,
   RefreshCw,
   Activity,
@@ -77,6 +80,18 @@ interface Order {
   userName: string;
   total: string;
   status: string;
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="packages">Packages</TabsTrigger>
+            <TabsTrigger value="access-control">Access Control</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="system">System</TabsTrigger>
+          </TabsList>
+
   createdAt: string;
   items: any[];
 }
@@ -485,6 +500,12 @@ const AdminPortal = () => {
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
+
+          {/* Access Control Tab */}
+          <TabsContent value="access-control" className="space-y-6">
+            <AccessControlCenter />
+          </TabsContent>
+
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{dashboardStats.conversionRate.toFixed(1)}%</div>
