@@ -278,6 +278,25 @@ BEGIN
   END IF;
 END $$;
 
+-- Drop audit_logs table if it exists with wrong column types
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables 
+    WHERE table_name = 'audit_logs'
+  ) THEN
+    -- Check if actor_user_id column has wrong type
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_name = 'audit_logs' 
+      AND column_name = 'actor_user_id' 
+      AND data_type != 'uuid'
+    ) THEN
+      DROP TABLE audit_logs CASCADE;
+    END IF;
+  END IF;
+END $$;
+
 CREATE TABLE IF NOT EXISTS audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   actor_user_id UUID,
