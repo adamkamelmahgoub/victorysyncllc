@@ -4,6 +4,17 @@ import {
   orders,
   orderItems,
   contactSubmissions,
+  userFeatureFlags,
+  userPaymentPolicies,
+  orgPaymentPolicies,
+  userIntegrationPolicies,
+  orgIntegrationPolicies,
+  auditLogs,
+  apiKeys,
+  userDialerMap,
+  callsCache,
+  coupons,
+  couponRedemptions,
   type PublicUser,
   type InsertPublicUser,
   type Package,
@@ -14,9 +25,18 @@ import {
   type InsertOrderItem,
   type ContactSubmission,
   type InsertContactSubmission,
+  type AuditLog,
+  type InsertAuditLog,
+  type ApiKey,
+  type InsertApiKey,
+  type UserDialerMap,
+  type InsertUserDialerMap,
+  type CallsCache,
+  type Coupon,
+  type InsertCoupon,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc, isNull, inArray, count, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Public user operations (JWT auth system)
@@ -273,30 +293,9 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateUserPrivileges(userId: number, privileges: any): Promise<any> {
-    try {
-      // Store privileges in the user record or a separate table
-      // For now, we'll store as JSON in a privileges column (would need migration)
-      const result = await db.update(publicUsers)
-        .set({ 
-          socialAccounts: [
-            ...(await this.getPublicUserById(userId))?.socialAccounts || [],
-            { type: 'privileges', data: privileges }
-          ]
-         })
-        .where(eq(publicUsers.id, userId))
-        .returning();
-      return result[0];
-    } catch (error) {
-      console.error("Error updating user privileges:", error);
-      return null;
-    }
   }
-}
 
-export const storage = new DatabaseStorage();
-
-  // Access Control Methods
+// Access Control Methods
   async getUserPermissions(userId: number): Promise<string[]> {
     try {
       const user = await this.getPublicUserById(userId);
@@ -662,3 +661,5 @@ export const storage = new DatabaseStorage();
     });
   }
 }
+
+export const storage = new DatabaseStorage();
