@@ -1,0 +1,796 @@
+Below is a single, copy-paste **MASTER PROMPT** you can give to Claude inside your Replit. It will (1) fix the **blank screen**, (2) replace legacy/buggy backend bits that caused “column `privileges` does not exist” and other build errors, and (3) implement the **full, production-quality** Admin Portal + Customer Dashboard with **access-code signup** and **email+SMS verification**, **fine-grained access controls**, **integration toggles**, **payment-method policies**, and **basic call analytics**.
+
+No demo/placeholder data. Do **not** change the navbar/UI styling.
+
+---
+
+# MASTER PROMPT FOR CLAUDE — VictorySync (Fix Blank Screen + Full Features)
+
+You’re in the VictorySync Replit. Follow these steps exactly. If any file already exists, **replace it** with the code provided. If a file was previously introduced that collides with these definitions (e.g., old `server/storage.ts`, duplicate service exports, or queries referencing a `privileges` column), **remove or refactor** as directed.
+
+## 0) Pre-flight
+
+1. Open **Console** and keep it visible for red errors; blank screens almost always come from front-end runtime errors (Vite/Babel) or missing routes.
+2. Install/ensure deps:
+
+```bash
+npm i react-router-dom zod bcrypt jsonwebtoken cookie-parser cors uuid @neondatabase/serverless nodemailer twilio
+npm i -D tsx jest ts-jest @types/jest supertest @types/supertest @types/cookie-parser @types/jsonwebtoken @types/bcrypt @types/node
+```
+
+## 1) Environment (Replit Secrets)
+
+Create/update these secrets (fail hard if missing):
+
+```
+DATABASE_URL=postgres://<user>:<pass>@<host>/<db>?sslmode=require
+JWT_SECRET=<strong-random>
+EMAIL_FROM="VictorySync <no-reply@victorysync.com>"
+SMTP_HOST=<smtp-host>
+SMTP_PORT=587
+SMTP_USER=<smtp-user>
+SMTP_PASS=<smtp-pass>
+TWILIO_ACCOUNT_SID=<twilio-sid>
+TWILIO_AUTH_TOKEN=<twilio-token>
+TWILIO_FROM=<verifiedNumberOrShortcode>
+```
+
+## 2) Fix Vite/SPA blank screen & router wiring
+
+### 2.1 Ensure SPA root exists
+
+**client/index.html** (verify or replace minimal essentials):
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VictorySync</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+### 2.2 Mount React Router and show errors instead of a white page
+
+**client/src/components/ErrorBoundary.tsx**:
+
+```tsx
+import React from 'react';
+
+type Props = { children: React.ReactNode };
+type State = { hasError: boolean; error?: any };
+
+export default class ErrorBoundary extends React.Component<Props, State> {
+  state: State = { hasError: false };
+  static getDerivedStateFromError(error: any) { return { hasError: true, error }; }
+  componentDidCatch(error: any, info: any) { console.error('UI crash:', error, info); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <main className="p-6">
+          <h1 className="text-xl font-semibold">Something went wrong</h1>
+          <pre className="mt-2 bg-gray-100 p-3 rounded">{String(this.state.error)}</pre>
+        </main>
+      );
+    }
+    return this.props.children;
+  }
+}
+```
+
+**client/src/main.tsx** (replace fully):
+
+```tsx
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
+import './index.css';
+
+const root = createRoot(document.getElementById('root')!);
+root.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </BrowserRouter>
+  </React.StrictMode>
+);
+```
+
+**client/src/App.tsx** (make sure routes are wired; do not change navbar component; just add routes):
+
+```tsx
+import { Routes, Route } from 'react-router-dom';
+import AdminPortal from '@/pages/admin-portal';
+import Register from '@/pages/register';
+// import Login from '@/pages/login'; // if you already have it
+// import Home from '@/pages/home';   // keep your existing home
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<div />} /> {/* your existing Home mounts above Navbar elsewhere */}
+      <Route path="/register" element={<Register />} />
+      <Route path="/admin" element={<AdminPortal />} />
+      <Route path="*" element={<div className="p-6">Not found</div>} />
+    </Routes>
+  );
+}
+```
+
+**client/tsconfig paths** are already fine; make sure Vite alias exists.
+
+### 2.3 Vite alias + proxy (to Express)
+
+**vite.config.ts** (replace content):
+
+```ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'client/src')
+    }
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': 'http://localhost:5000'
+    }
+  }
+});
+```
+
+> If your server starts Vite internally, this proxy still works; otherwise Vite dev server will forward `/api/*` to Express.
+
+---
+
+## 3) Backend: remove legacy bits & implement the real features
+
+### 3.1 Delete/disable conflicting legacy code
+
+* **Remove or comment out** any imports/uses of `server/storage.ts` and the “DatabaseStorage.getAllPublicUsers” path using a non-existent `privileges` column.
+* **Fix duplicate exports** in `server/services/callMetricsService.ts` (remove extra class/exports) or **delete that file** if unused; we’ll compute analytics via SQL.
+* Ensure **only** the routes we define below are mounted.
+
+### 3.2 DB connector & migration runner
+
+**server/db/index.ts**
+
+```ts
+import { neon, neonConfig } from '@neondatabase/serverless';
+neonConfig.fetchConnectionCache = true;
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not set');
+export const sql = neon(process.env.DATABASE_URL);
+export async function query<T=unknown>(strings: TemplateStringsArray, ...values: any[]): Promise<T[]> {
+  // @ts-ignore
+  return (await sql(strings, ...values)) as T[];
+}
+```
+
+**server/db/runMigrations.ts**
+
+```ts
+import fs from 'fs';
+import path from 'path';
+import { sql } from './index';
+
+async function run() {
+  await sql`CREATE TABLE IF NOT EXISTS _migrations (id text primary key, ran_at timestamptz default now());`;
+  const dir = path.join(__dirname, 'migrations');
+  const files = fs.readdirSync(dir).filter(f=>f.endsWith('.sql')).sort();
+  const ran = await sql<{id:string}>`SELECT id FROM _migrations`;
+  const ranSet = new Set(ran.map(r=>r.id));
+  for (const f of files) {
+    if (ranSet.has(f)) continue;
+    const ddl = fs.readFileSync(path.join(dir, f), 'utf8');
+    await sql`${ddl}` as any;
+    await sql`INSERT INTO _migrations (id) VALUES (${f});`;
+    console.log('Applied', f);
+  }
+  console.log('All migrations up to date.');
+}
+run().catch(e=>{ console.error(e); process.exit(1); });
+```
+
+**package.json** — add/ensure scripts:
+
+```json
+{
+  "scripts": {
+    "dev": "NODE_ENV=development tsx server/index.ts",
+    "db:migrate": "tsx server/db/runMigrations.ts",
+    "test": "jest --runInBand"
+  },
+  "jest": { "preset": "ts-jest", "testEnvironment": "node", "roots": ["<rootDir>/server"] }
+}
+```
+
+### 3.3 SQL migrations
+
+Create folder **server/db/migrations/** with:
+
+**001\_core.sql**
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS organizations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  email TEXT UNIQUE NOT NULL,
+  phone TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('admin','manager','agent','customer')),
+  password_hash TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  email_verified BOOLEAN DEFAULT false,
+  phone_verified BOOLEAN DEFAULT false,
+  twofa_enabled BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_org ON users(org_id);
+
+CREATE TABLE IF NOT EXISTS access_codes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code TEXT UNIQUE NOT NULL,
+  issued_to_email TEXT NOT NULL,
+  issued_to_phone TEXT NOT NULL,
+  issued_to_full_name TEXT NOT NULL,
+  issued_to_org_name TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  consumed BOOLEAN DEFAULT false,
+  consumed_by UUID REFERENCES users(id),
+  created_by UUID,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS user_permissions (
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  can_use_api BOOLEAN DEFAULT false,
+  can_manage_org BOOLEAN DEFAULT false,
+  can_view_billing BOOLEAN DEFAULT false,
+  integrations JSONB DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS user_payment_policies (
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  allow_card BOOLEAN DEFAULT true,
+  allow_paypal BOOLEAN DEFAULT false,
+  allow_wire BOOLEAN DEFAULT false,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS call_events (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  org_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  direction TEXT NOT NULL CHECK (direction IN ('inbound','outbound')),
+  duration_seconds INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id BIGSERIAL PRIMARY KEY,
+  actor_id UUID,
+  action TEXT NOT NULL,
+  target TEXT,
+  meta JSONB,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**002\_indexes.sql**
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_access_codes_code ON access_codes(code);
+CREATE INDEX IF NOT EXISTS idx_call_events_user ON call_events(user_id, created_at DESC);
+```
+
+Run:
+
+```bash
+npm run db:migrate
+```
+
+### 3.4 Libs & services
+
+**server/lib/email.ts**
+
+```ts
+import nodemailer from 'nodemailer';
+export async function sendEmail(to: string, subject: string, html: string) {
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM } = process.env;
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !EMAIL_FROM) {
+    throw new Error('Email not configured');
+  }
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST, port: Number(SMTP_PORT), secure: false,
+    auth: { user: SMTP_USER, pass: SMTP_PASS }
+  });
+  await transporter.sendMail({ from: EMAIL_FROM, to, subject, html });
+}
+```
+
+**server/lib/sms.ts**
+
+```ts
+import twilio from 'twilio';
+export async function sendSms(to: string, body: string) {
+  const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM } = process.env;
+  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM) throw new Error('SMS not configured');
+  const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+  await client.messages.create({ to, from: TWILIO_FROM, body });
+}
+```
+
+**server/lib/jwt.ts**
+
+```ts
+import jwt from 'jsonwebtoken';
+const SECRET = process.env.JWT_SECRET!;
+export function sign(payload: object, expires='7d') { return jwt.sign(payload, SECRET, { expiresIn: expires }); }
+export function verify<T=any>(token: string) { return jwt.verify(token, SECRET) as T; }
+```
+
+**server/services/users.ts**
+
+```ts
+import { query } from '../db';
+import bcrypt from 'bcrypt';
+
+export async function findUserByEmail(email: string) {
+  const r = await query<any>`SELECT * FROM users WHERE email=${email} LIMIT 1`; return r[0];
+}
+export async function createOrgIfNeeded(name: string) {
+  const e = await query<any>`SELECT id FROM organizations WHERE name=${name} LIMIT 1`;
+  if (e[0]) return e[0].id;
+  const ins = await query<any>`INSERT INTO organizations (name) VALUES (${name}) RETURNING id`;
+  return ins[0].id;
+}
+export async function createUser(data: {org_id:string; email:string; phone:string; full_name:string; role:string; password:string;}) {
+  const hash = await bcrypt.hash(data.password, 12);
+  const ins = await query<any>`
+    INSERT INTO users (org_id,email,phone,full_name,role,password_hash)
+    VALUES (${data.org_id}, ${data.email}, ${data.phone}, ${data.full_name}, ${data.role}, ${hash})
+    RETURNING id,email,role,org_id,full_name,phone;
+  `;
+  await query`INSERT INTO user_permissions (user_id) VALUES (${ins[0].id})`;
+  await query`INSERT INTO user_payment_policies (user_id) VALUES (${ins[0].id})`;
+  return ins[0];
+}
+export async function verifyPassword(user: any, pwd: string) { return bcrypt.compare(pwd, user.password_hash); }
+export async function setVerificationFlags(userId: string, flags:{email?:boolean; phone?:boolean}) {
+  if (flags.email !== undefined) await query`UPDATE users SET email_verified=${flags.email} WHERE id=${userId}`;
+  if (flags.phone !== undefined) await query`UPDATE users SET phone_verified=${flags.phone} WHERE id=${userId}`;
+}
+```
+
+**server/services/accessCodes.ts**
+
+```ts
+import { query } from '../db';
+import { randomBytes } from 'crypto';
+
+export async function issueAccessCode(adminId: string, data:{email:string;phone:string;full_name:string;org_name:string; ttlMinutes?:number;}) {
+  const code = randomBytes(6).toString('hex').toUpperCase();
+  const expires = new Date(Date.now() + (data.ttlMinutes ?? 120)*60*1000);
+  await query`
+    INSERT INTO access_codes (code, issued_to_email, issued_to_phone, issued_to_full_name, issued_to_org_name, expires_at, created_by)
+    VALUES (${code}, ${data.email}, ${data.phone}, ${data.full_name}, ${data.org_name}, ${expires.toISOString()}, ${adminId})
+  `;
+  return code;
+}
+export async function validateAccessCode(code:string, payload:{email:string;phone:string;full_name:string;org_name:string;}) {
+  const rows = await query<any>`SELECT * FROM access_codes WHERE code=${code} AND consumed=false AND expires_at>now() LIMIT 1`;
+  const ac = rows[0]; if (!ac) throw new Error('Invalid or expired access code');
+  if (ac.issued_to_email!==payload.email || ac.issued_to_phone!==payload.phone ||
+      ac.issued_to_full_name!==payload.full_name || ac.issued_to_org_name!==payload.org_name) {
+    throw new Error('Access code does not match submitted identity');
+  }
+  return ac;
+}
+export async function markConsumed(code:string, userId:string) {
+  await query`UPDATE access_codes SET consumed=true, consumed_by=${userId} WHERE code=${code}`;
+}
+```
+
+**server/services/otp.ts**
+
+```ts
+import { randomInt } from 'crypto';
+import { sendEmail } from '../lib/email';
+import { sendSms } from '../lib/sms';
+
+const cache = new Map<string,{e:string;s:string;exp:number}>();
+
+export function generate(email:string, phone:string) {
+  const key = `${email}:${phone}`;
+  const e = String(randomInt(100000,999999));
+  const s = String(randomInt(100000,999999));
+  cache.set(key, { e, s, exp: Date.now()+10*60*1000 });
+  return { key, eCode:e, sCode:s };
+}
+export async function dispatch(email:string, phone:string, eCode:string, sCode:string) {
+  await sendEmail(email, 'Your VictorySync Email Code', `<p>Your code: <b>${eCode}</b></p>`);
+  await sendSms(phone, `VictorySync SMS code: ${sCode}`);
+}
+export function verifyPair(key:string, e:string, s:string) {
+  const rec = cache.get(key); if (!rec) return false;
+  if (Date.now()>rec.exp) { cache.delete(key); return false; }
+  const ok = rec.e===e && rec.s===s; if (ok) cache.delete(key);
+  return ok;
+}
+```
+
+### 3.5 Middleware & routes
+
+**server/middleware/auth.ts**
+
+```ts
+import { verify } from '../lib/jwt';
+import type { Request, Response, NextFunction } from 'express';
+
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const token = (req as any).cookies?.vs_token;
+  if (!token) return res.status(401).json({message:'Unauthenticated'});
+  try { (req as any).user = verify(token); next(); } catch { return res.status(401).json({message:'Invalid session'}); }
+}
+export function requireRole(...roles: string[]) {
+  return (req:any,res:any,next:any)=> roles.includes(req.user?.role) ? next() : res.status(403).json({message:'Forbidden'});
+}
+```
+
+**server/routes/auth.ts**
+
+```ts
+import { Router } from 'express';
+import { z } from 'zod';
+import { sign } from '../lib/jwt';
+import { generate, dispatch, verifyPair } from '../services/otp';
+import { issueAccessCode, validateAccessCode, markConsumed } from '../services/accessCodes';
+import { createOrgIfNeeded, createUser, findUserByEmail, verifyPassword, setVerificationFlags } from '../services/users';
+
+export const auth = Router();
+
+// Admin: issue an access code
+auth.post('/api/admin/access-codes', async (req:any,res) => {
+  const adminId = req.user?.id; // protected in index via middleware
+  const b = z.object({
+    email:z.string().email(), phone:z.string().min(6), full_name:z.string().min(2), org_name:z.string().min(2),
+    ttlMinutes:z.number().min(5).max(1440).optional()
+  }).parse(req.body);
+  const code = await issueAccessCode(adminId, b);
+  res.json({code});
+});
+
+// Registration step 1
+auth.post('/api/auth/register/start', async (req,res) => {
+  const b = z.object({
+    code:z.string().min(8),
+    email:z.string().email(), phone:z.string().min(6), full_name:z.string().min(2), org_name:z.string().min(2),
+    password:z.string().min(8)
+  }).parse(req.body);
+  await validateAccessCode(b.code, b);
+  const { key, eCode, sCode } = generate(b.email, b.phone);
+  await dispatch(b.email, b.phone, eCode, sCode);
+  res.json({ token:key });
+});
+
+// Registration step 2
+auth.post('/api/auth/register/verify', async (req,res) => {
+  const b = z.object({
+    token:z.string(), code:z.string(),
+    email:z.string().email(), phone:z.string().min(6), full_name:z.string(), org_name:z.string(),
+    password:z.string().min(8), email_code:z.string().length(6), sms_code:z.string().length(6)
+  }).parse(req.body);
+  if (!verifyPair(b.token, b.email_code, b.sms_code)) return res.status(400).json({message:'Invalid codes'});
+  const orgId = await createOrgIfNeeded(b.org_name);
+  const user = await createUser({ org_id:orgId, email:b.email, phone:b.phone, full_name:b.full_name, role:'customer', password:b.password });
+  await setVerificationFlags(user.id, { email:true, phone:true });
+  await markConsumed(b.code, user.id);
+  const jwt = sign({ id:user.id, role:user.role, org_id:user.org_id });
+  res.cookie('vs_token', jwt, { httpOnly:true, sameSite:'lax', maxAge:7*24*3600*1000 });
+  res.json({ user });
+});
+
+// Login
+auth.post('/api/auth/login', async (req,res) => {
+  const b = z.object({ email:z.string().email(), password:z.string().min(8) }).parse(req.body);
+  const u = await findUserByEmail(b.email);
+  if (!u) return res.status(400).json({message:'Invalid credentials'});
+  if (!await verifyPassword(u, b.password)) return res.status(400).json({message:'Invalid credentials'});
+  const jwt = sign({ id:u.id, role:u.role, org_id:u.org_id });
+  res.cookie('vs_token', jwt, { httpOnly:true, sameSite:'lax', maxAge:7*24*3600*1000 });
+  res.json({ user: { id:u.id, email:u.email, role:u.role, org_id:u.org_id, full_name:u.full_name }});
+});
+```
+
+**server/routes/admin.ts**
+
+```ts
+import { Router } from 'express';
+import { z } from 'zod';
+import { query } from '../db';
+
+export const admin = Router();
+
+admin.get('/api/admin/users', async (_req,res) => {
+  const users = await query<any>`
+    SELECT u.id,u.email,u.phone,u.full_name,u.role,u.is_active,u.email_verified,u.phone_verified,
+           up.can_use_api, up.can_manage_org, up.can_view_billing, up.integrations,
+           pp.allow_card, pp.allow_paypal, pp.allow_wire, o.name as org_name
+    FROM users u
+    LEFT JOIN user_permissions up ON up.user_id=u.id
+    LEFT JOIN user_payment_policies pp ON pp.user_id=u.id
+    LEFT JOIN organizations o ON o.id=u.org_id
+    ORDER BY u.created_at DESC
+  `;
+  res.json(users);
+});
+
+admin.post('/api/admin/users/:id/policy', async (req,res) => {
+  const id = req.params.id;
+  const b = z.object({
+    can_use_api:z.boolean(), can_manage_org:z.boolean(), can_view_billing:z.boolean(),
+    integrations:z.record(z.boolean()), allow_card:z.boolean(), allow_paypal:z.boolean(),
+    allow_wire:z.boolean(), is_active:z.boolean()
+  }).parse(req.body);
+
+  await query`UPDATE user_permissions SET can_use_api=${b.can_use_api}, can_manage_org=${b.can_manage_org},
+    can_view_billing=${b.can_view_billing}, integrations=${JSON.stringify(b.integrations)}, updated_at=now() WHERE user_id=${id}`;
+  await query`UPDATE user_payment_policies SET allow_card=${b.allow_card}, allow_paypal=${b.allow_paypal},
+    allow_wire=${b.allow_wire}, updated_at=now() WHERE user_id=${id}`;
+  await query`UPDATE users SET is_active=${b.is_active} WHERE id=${id}`;
+  res.json({ok:true});
+});
+
+admin.get('/api/admin/analytics', async (_req,res) => {
+  const rows = await query<any>`
+    SELECT u.id, u.full_name,
+      SUM(CASE WHEN date_trunc('day', c.created_at)=date_trunc('day', now()) THEN 1 ELSE 0 END) AS calls_today,
+      SUM(CASE WHEN date_trunc('month', c.created_at)=date_trunc('month', now()) THEN 1 ELSE 0 END) AS calls_month
+    FROM users u LEFT JOIN call_events c ON c.user_id=u.id
+    GROUP BY u.id ORDER BY calls_month DESC NULLS LAST
+  `;
+  res.json(rows);
+});
+```
+
+**server/index.ts**
+
+```ts
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import path from 'path';
+import { auth } from './routes/auth';
+import { admin } from './routes/admin';
+import { requireAuth, requireRole } from './middleware/auth';
+
+const app = express();
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json());
+app.use(cookieParser());
+
+app.get('/api/health', (_req,res)=>res.json({ok:true}));
+
+// Public auth routes
+app.use(auth);
+
+// Admin protected
+app.use(requireAuth, requireRole('admin'), admin);
+
+// In production, serve built client
+if (process.env.NODE_ENV === 'production') {
+  const clientDist = path.join(__dirname, '../client/dist');
+  app.use(express.static(clientDist));
+  app.get(/^\/(?!api).*/, (_req,res)=>res.sendFile(path.join(clientDist, 'index.html')));
+}
+
+const PORT = Number(process.env.PORT || 5000);
+app.listen(PORT, ()=>console.log(`[express] serving on port ${PORT}`));
+```
+
+---
+
+## 4) Client API + pages (no placeholders)
+
+**client/src/api/client.ts**
+
+```ts
+export async function api(path: string, init?: RequestInit) {
+  const res = await fetch(path.startsWith('/api')? path : `/api${path}`, {
+    credentials: 'include',
+    headers: { 'Content-Type':'application/json', ...(init?.headers||{}) },
+    ...init
+  });
+  if (!res.ok) throw new Error((await res.json().catch(()=>({message:res.statusText}))).message);
+  return res.json();
+}
+```
+
+**client/src/pages/register.tsx**
+
+```tsx
+import React, { useState } from 'react';
+import { api } from '@/api/client';
+
+export default function Register() {
+  const [stage, setStage] = useState<'start'|'verify'>('start');
+  const [payload, setPayload] = useState({ code:'', email:'', phone:'', full_name:'', org_name:'', password:'' });
+  const [token, setToken] = useState(''); const [emailCode, setEmailCode] = useState(''); const [smsCode, setSmsCode] = useState('');
+  const [msg, setMsg] = useState(''); const [err, setErr] = useState('');
+
+  async function start(e:React.FormEvent){ e.preventDefault(); setErr(''); setMsg('');
+    const r = await api('/auth/register/start', { method:'POST', body:JSON.stringify(payload) });
+    setToken(r.token); setStage('verify');
+  }
+  async function verify(e:React.FormEvent){ e.preventDefault(); setErr(''); setMsg('');
+    const r = await api('/auth/register/verify',{ method:'POST', body:JSON.stringify({
+      token, code:payload.code, email:payload.email, phone:payload.phone, full_name:payload.full_name, org_name:payload.org_name, password:payload.password,
+      email_code:emailCode, sms_code:smsCode
+    })});
+    setMsg(`Welcome, ${r.user.full_name}!`); 
+  }
+
+  return (
+    <main className="max-w-xl mx-auto p-6">
+      <h1 className="text-2xl font-semibold mb-4">Create your VictorySync account</h1>
+      {stage==='start' ? (
+        <form onSubmit={start} className="space-y-3">
+          <input className="input" placeholder="Access code" value={payload.code} onChange={e=>setPayload({...payload, code:e.target.value})} required />
+          <input className="input" placeholder="Full name" value={payload.full_name} onChange={e=>setPayload({...payload, full_name:e.target.value})} required />
+          <input className="input" placeholder="Organization" value={payload.org_name} onChange={e=>setPayload({...payload, org_name:e.target.value})} required />
+          <input className="input" type="email" placeholder="Email" value={payload.email} onChange={e=>setPayload({...payload, email:e.target.value})} required />
+          <input className="input" placeholder="Phone" value={payload.phone} onChange={e=>setPayload({...payload, phone:e.target.value})} required />
+          <input className="input" type="password" placeholder="Password" value={payload.password} onChange={e=>setPayload({...payload, password:e.target.value})} required />
+          <button className="btn btn-primary w-full">Send verification codes</button>
+        </form>
+      ) : (
+        <form onSubmit={verify} className="space-y-3">
+          <p className="text-sm text-gray-600">Enter the 6-digit codes we sent to your email and phone.</p>
+          <input className="input" placeholder="Email code" value={emailCode} onChange={e=>setEmailCode(e.target.value)} required />
+          <input className="input" placeholder="SMS code" value={smsCode} onChange={e=>setSmsCode(e.target.value)} required />
+          <button className="btn btn-primary w-full">Complete registration</button>
+        </form>
+      )}
+      {err && <p className="text-red-600 mt-3">{err}</p>}
+      {msg && <p className="text-green-700 mt-3">{msg}</p>}
+    </main>
+  );
+}
+```
+
+**client/src/pages/admin-portal.tsx**
+(IMPORTANT: all imports at top to avoid the “Unexpected keyword import” error)
+
+```tsx
+import React, { useEffect, useState } from 'react';
+import { api } from '@/api/client';
+
+type UserRow = {
+  id:string; email:string; phone:string; full_name:string; role:string; is_active:boolean;
+  email_verified:boolean; phone_verified:boolean; org_name:string|null;
+  can_use_api:boolean; can_manage_org:boolean; can_view_billing:boolean; integrations:Record<string,boolean>;
+  allow_card:boolean; allow_paypal:boolean; allow_wire:boolean;
+};
+
+export default function AdminPortal(){
+  const [users,setUsers] = useState<UserRow[]>([]);
+  const [loading,setLoading] = useState(true);
+  const [error,setError] = useState('');
+
+  async function load(){ try{ setLoading(true); setUsers(await api('/admin/users')); } catch(e:any){ setError(e.message); } finally { setLoading(false); } }
+  useEffect(()=>{ load(); },[]);
+
+  async function save(u:UserRow){
+    await api(`/admin/users/${u.id}/policy`,{
+      method:'POST',
+      body:JSON.stringify({
+        can_use_api:u.can_use_api, can_manage_org:u.can_manage_org, can_view_billing:u.can_view_billing,
+        integrations:u.integrations, allow_card:u.allow_card, allow_paypal:u.allow_paypal, allow_wire:u.allow_wire, is_active:u.is_active
+      })
+    });
+  }
+
+  return (
+    <main className="max-w-6xl mx-auto p-6">
+      <h1 className="text-2xl font-semibold mb-4">Admin Portal</h1>
+      {loading && <p>Loading…</p>}
+      {error && <p className="text-red-600">{error}</p>}
+      {!loading && users.map(u=>(
+        <div key={u.id} className="rounded border p-4 mb-3 bg-white">
+          <div className="font-medium">{u.full_name} <span className="text-gray-500">({u.email})</span> — {u.org_name||'No org'}</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 my-3">
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.can_use_api} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,can_use_api:e.target.checked}:x))}/> API</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.can_manage_org} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,can_manage_org:e.target.checked}:x))}/> Manage Org</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.can_view_billing} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,can_view_billing:e.target.checked}:x))}/> View Billing</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.is_active} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,is_active:e.target.checked}:x))}/> Active</label>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 my-3">
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.allow_card} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,allow_card:e.target.checked}:x))}/> Card</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.allow_paypal} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,allow_paypal:e.target.checked}:x))}/> PayPal</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={u.allow_wire} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,allow_wire:e.target.checked}:x))}/> Wire</label>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 my-3">
+            {['hubspot','salesforce','zohocrm','five9','talkdesk','gohighlevel'].map(k=>(
+              <label key={k} className="flex items-center gap-2">
+                <input type="checkbox" checked={!!u.integrations?.[k]} onChange={e=>setUsers(p=>p.map(x=>x.id===u.id?{...x,integrations:{...x.integrations,[k]:e.target.checked}}:x))}/>{k}
+              </label>
+            ))}
+          </div>
+          <button className="btn btn-primary" onClick={()=>save(u)}>Save</button>
+        </div>
+      ))}
+    </main>
+  );
+}
+```
+
+**(Optional) Issue Access Code UI**: add a small form component on `/admin` that POSTs to `/api/admin/access-codes` and displays the returned code.
+
+---
+
+## 5) Run & verify
+
+1. **Migrate**: `npm run db:migrate`
+2. **Start**: `npm run dev`
+3. Open Preview. If you still see a white page, open the browser DevTools console in the Replit preview. Fix any red errors (imports must be at top; router must mount; vite proxy active).
+4. Admin flow:
+
+   * Authenticate as admin (use your existing admin login or temporarily create one via SQL insert if needed).
+   * `POST /api/admin/access-codes` to generate a code for a *specific* person (email/phone/full name/org must match).
+5. Customer flow:
+
+   * Visit `/register`, enter code + identity + password → receive email+SMS codes → verify → cookie set.
+6. Admin Portal:
+
+   * Visit `/admin` → users load (no placeholders). Toggle API/integrations/payment methods/active status and save.
+7. Analytics:
+
+   * Insert a few rows into `call_events` (or wire your dialer webhook later). `/api/admin/analytics` should return real counts.
+
+---
+
+## 6) Guardrails — Do NOT
+
+* Do **not** alter the navbar or global UI theme.
+* Do **not** insert demo or seed data.
+* Do **not** relax identity checks for access codes.
+* Do **not** bypass email+SMS verification.
+* Do **not** leave duplicate exports or legacy `privileges` queries anywhere.
+
+---
+
+## 7) Deliverable
+
+When finished, print a concise checklist confirming:
+
+* All files created/modified (paths).
+* `npm run db:migrate` runs successfully.
+* `npm run dev` logs Express on port 5000 and the Preview renders (no blank screen).
+* `/register` end-to-end works (access code → OTP → account).
+* `/admin` shows live users and policies save.
+* No TypeScript/Vite runtime errors.
