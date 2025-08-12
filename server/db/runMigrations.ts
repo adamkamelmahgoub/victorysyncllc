@@ -2,7 +2,11 @@
 // server/db/runMigrations.ts
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { sql } from './index';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function run() {
   const dir = path.join(__dirname, 'migrations');
