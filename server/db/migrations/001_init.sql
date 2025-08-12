@@ -64,16 +64,14 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Add unique constraint for case-insensitive email
+-- Add unique index for case-insensitive email
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM information_schema.table_constraints 
-    WHERE constraint_name = 'users_email_unique' 
-    AND table_name = 'users'
+    SELECT 1 FROM pg_indexes 
+    WHERE indexname = 'users_email_unique_idx'
   ) THEN
-    ALTER TABLE users ADD CONSTRAINT users_email_unique 
-    UNIQUE (LOWER(email));
+    CREATE UNIQUE INDEX users_email_unique_idx ON users (LOWER(email));
   END IF;
 END $$;
 
