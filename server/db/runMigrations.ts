@@ -49,4 +49,11 @@ async function main() {
   console.log('🎉 Migrations complete');
 }
 
-main();
+export async function runMigrations() {
+  return await main();
+}
+
+// Only run main() if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
