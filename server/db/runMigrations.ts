@@ -23,19 +23,8 @@ async function applied(): Promise<Set<string>> {
 async function applyMigration(name: string, sqlText: string) {
   await sql`BEGIN`;
   try {
-    // Split SQL text into individual statements
-    const statements = sqlText
-      .split(';')
-      .map(stmt => stmt.trim())
-      .filter(stmt => stmt.length > 0 && !stmt.match(/^\s*--/)); // Remove empty and comment-only lines
-    
-    // Execute each statement individually using Neon's raw query method
-    for (const statement of statements) {
-      if (statement.trim()) {
-        // Use the sql function with a raw string
-        await sql([statement] as any, ...[] as any[]);
-      }
-    }
+    // Execute the entire SQL text as one command to handle complex statements properly
+    await sql.unsafe(sqlText);
     
     await sql`INSERT INTO schema_migrations (name) VALUES (${name})`;
     await sql`COMMIT`;
