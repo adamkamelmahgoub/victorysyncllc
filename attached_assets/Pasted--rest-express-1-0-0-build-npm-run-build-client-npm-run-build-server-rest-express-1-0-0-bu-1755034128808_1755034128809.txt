@@ -1,0 +1,1889 @@
+
+> rest-express@1.0.0 build
+> npm run build:client && npm run build:server
+
+
+> rest-express@1.0.0 build:client
+vite v5.4.19 building for production...
+transforming (3) src/main.tsxBrowserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 1886 modules transformed.
+../dist/public/index.html                                             2.90 kB │ gzip:   1.03 kB
+../dist/public/assets/inter-vietnamese-400-normal-DMkecbls.woff2      4.97 kB
+../dist/public/assets/inter-vietnamese-300-normal-Bdr24Bqb.woff2      5.06 kB
+../dist/public/assets/inter-vietnamese-600-normal-Cc8MFFhd.woff2      5.10 kB
+../dist/public/assets/inter-vietnamese-500-normal-DOriooB6.woff2      5.11 kB
+../dist/public/assets/inter-vietnamese-800-normal-Cm7tD1pz.woff2      5.18 kB
+../dist/public/assets/inter-vietnamese-700-normal-CGpBpxLq.woff2      5.20 kB
+../dist/public/assets/inter-greek-ext-400-normal-Bput3-QP.woff2       5.23 kB
+../dist/public/assets/inter-greek-ext-300-normal-Bzbb9qoQ.woff2       5.39 kB
+../dist/public/assets/inter-greek-ext-500-normal-B6guLgqG.woff2       5.40 kB
+../dist/public/assets/inter-greek-ext-700-normal-SzCdnevJ.woff2       5.42 kB
+../dist/public/assets/inter-greek-ext-600-normal-Cnui8OiR.woff2       5.43 kB
+../dist/public/assets/inter-greek-ext-800-normal-JPzvdjtt.woff2       5.46 kB
+../dist/public/assets/inter-vietnamese-400-normal-Bbgyi5SW.woff       6.50 kB
+../dist/public/assets/inter-vietnamese-300-normal-DDGmYYdT.woff       6.59 kB
+../dist/public/assets/inter-vietnamese-500-normal-mJboJaSs.woff       6.60 kB
+../dist/public/assets/inter-vietnamese-700-normal-DL6eWghQ.woff       6.63 kB
+../dist/public/assets/inter-vietnamese-600-normal-BuLX-rYi.woff       6.64 kB
+../dist/public/assets/inter-vietnamese-800-normal-DDlpr_Ee.woff       6.64 kB
+../dist/public/assets/inter-greek-ext-400-normal-XIH6-K3k.woff        7.06 kB
+../dist/public/assets/inter-greek-ext-300-normal-BppC-wMA.woff        7.13 kB
+../dist/public/assets/inter-greek-ext-500-normal-1SJLBQ3N.woff        7.19 kB
+../dist/public/assets/inter-greek-ext-800-normal-CN1z_jol.woff        7.20 kB
+../dist/public/assets/inter-greek-ext-600-normal-CCFnzSpK.woff        7.21 kB
+../dist/public/assets/inter-greek-ext-700-normal-D0KHSs-V.woff        7.21 kB
+../dist/public/assets/inter-cyrillic-400-normal-BLGc9T1a.woff2        7.71 kB
+../dist/public/assets/inter-cyrillic-300-normal-DuKDqihX.woff2        7.81 kB
+../dist/public/assets/inter-greek-400-normal-DxZsaF_h.woff2           7.84 kB
+../dist/public/assets/inter-greek-300-normal-_k6LbL93.woff2           7.87 kB
+../dist/public/assets/inter-greek-500-normal-CeQXL5ds.woff2           7.90 kB
+../dist/public/assets/inter-cyrillic-500-normal-D4Vwzodn.woff2        7.90 kB
+../dist/public/assets/inter-greek-800-normal-C7uvZBs2.woff2           7.93 kB
+../dist/public/assets/inter-greek-700-normal-Cxpycf-U.woff2           7.93 kB
+../dist/public/assets/inter-greek-600-normal-Dhlb-90d.woff2           7.96 kB
+../dist/public/assets/inter-cyrillic-800-normal-Gn5VisWc.woff2        7.96 kB
+../dist/public/assets/inter-cyrillic-600-normal-BGBWG807.woff2        7.97 kB
+../dist/public/assets/inter-cyrillic-700-normal-bGtGjVdZ.woff2        8.00 kB
+../dist/public/assets/inter-cyrillic-400-normal-alAqRL36.woff         9.78 kB
+../dist/public/assets/inter-cyrillic-300-normal-DgBQIhyZ.woff         9.81 kB
+../dist/public/assets/inter-cyrillic-700-normal-oWiwobpV.woff         9.91 kB
+../dist/public/assets/inter-greek-400-normal-C3I71FoW.woff            9.92 kB
+../dist/public/assets/inter-cyrillic-600-normal-vZ-N8GHY.woff         9.94 kB
+../dist/public/assets/inter-cyrillic-500-normal-BoeW9iIj.woff         9.94 kB
+../dist/public/assets/inter-cyrillic-800-normal-B7tloZ-q.woff         9.94 kB
+../dist/public/assets/inter-greek-800-normal-rjLA_ShQ.woff            9.96 kB
+../dist/public/assets/inter-greek-700-normal-DtGkhywV.woff            9.98 kB
+../dist/public/assets/inter-greek-500-normal-CSBZZ4CI.woff            9.98 kB
+../dist/public/assets/inter-greek-300-normal-BvIEFsLZ.woff            9.99 kB
+../dist/public/assets/inter-greek-600-normal-BVGIV3oK.woff           10.03 kB
+../dist/public/assets/inter-cyrillic-ext-400-normal-Dc4VJyIJ.woff2   10.22 kB
+../dist/public/assets/inter-cyrillic-ext-300-normal-B8-SKPy6.woff2   10.34 kB
+../dist/public/assets/inter-cyrillic-ext-800-normal-DkJRRbRv.woff2   10.43 kB
+../dist/public/assets/inter-cyrillic-ext-500-normal-BShVwWPj.woff2   10.44 kB
+../dist/public/assets/inter-cyrillic-ext-600-normal-CaqZN2hq.woff2   10.46 kB
+../dist/public/assets/inter-cyrillic-ext-700-normal-ClVoMEGq.woff2   10.46 kB
+../dist/public/assets/inter-cyrillic-ext-400-normal-BE2fNs0E.woff    13.34 kB
+../dist/public/assets/inter-cyrillic-ext-300-normal-BIqOxSS1.woff    13.40 kB
+../dist/public/assets/inter-cyrillic-ext-700-normal-Cg0zx2i8.woff    13.44 kB
+../dist/public/assets/inter-cyrillic-ext-500-normal-NrhEyngK.woff    13.44 kB
+../dist/public/assets/inter-cyrillic-ext-600-normal-t7rHAwBu.woff    13.46 kB
+../dist/public/assets/inter-cyrillic-ext-800-normal-f7wAPxr8.woff    13.47 kB
+../dist/public/assets/inter-latin-400-normal-C38fXH4l.woff2          23.66 kB
+../dist/public/assets/inter-latin-300-normal-BVlfKGgI.woff2          23.92 kB
+../dist/public/assets/inter-latin-700-normal-Drs_5D37.woff2          24.25 kB
+../dist/public/assets/inter-latin-500-normal-Cerq10X2.woff2          24.27 kB
+../dist/public/assets/inter-latin-800-normal-BYj_oED-.woff2          24.40 kB
+../dist/public/assets/inter-latin-600-normal-LgqL8muc.woff2          24.45 kB
+../dist/public/assets/inter-latin-400-normal-CyCys3Eg.woff           30.70 kB
+../dist/public/assets/inter-latin-300-normal-i8F0SvXL.woff           31.01 kB
+../dist/public/assets/inter-latin-600-normal-CiBQ2DWP.woff           31.26 kB
+../dist/public/assets/inter-latin-500-normal-BL9OpVg8.woff           31.28 kB
+../dist/public/assets/inter-latin-800-normal-D1mf63XC.woff           31.30 kB
+../dist/public/assets/inter-latin-700-normal-KTwiWvO9.woff           31.30 kB
+../dist/public/assets/inter-latin-ext-400-normal-C1nco2VV.woff2      35.00 kB
+../dist/public/assets/inter-latin-ext-300-normal-CPgO9Ksf.woff2      35.88 kB
+../dist/public/assets/inter-latin-ext-500-normal-CV4jyFjo.woff2      36.02 kB
+../dist/public/assets/inter-latin-ext-800-normal-DZJjya6U.woff2      36.13 kB
+../dist/public/assets/inter-latin-ext-700-normal-CfWAu3Qq.woff2      36.24 kB
+../dist/public/assets/inter-latin-ext-600-normal-D2bJ5OIk.woff2      36.26 kB
+../dist/public/assets/inter-latin-ext-400-normal-77YHD8bZ.woff       47.56 kB
+../dist/public/assets/inter-latin-ext-500-normal-BxGbmqWO.woff       48.49 kB
+../dist/public/assets/inter-latin-ext-800-normal-BOMpwxm3.woff       48.59 kB
+../dist/public/assets/inter-latin-ext-300-normal-Dp1L8vcn.woff       48.61 kB
+../dist/public/assets/inter-latin-ext-700-normal-Z3s-4e5M.woff       48.63 kB
+../dist/public/assets/inter-latin-ext-600-normal-CIVaiw4L.woff       48.67 kB
+../dist/public/assets/index-Du2rzVhl.css                            105.84 kB │ gzip:  16.68 kB
+../dist/public/assets/index-kYeUgLdC.js                             718.73 kB │ gzip: 199.90 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 8.85s
+
+> rest-express@1.0.0 build:server
+> tsc -p tsconfig.json
+
+client/src/pages/customer-dashboard.tsx:73:59 - error TS2769: No overload matches this call.
+  Overload 1 of 2, '(input: string | URL | Request, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ Authorization: string; } | { Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ Authorization?: undefined; }' is not assignable to type 'Record<string, string>'.
+          Property 'Authorization' is incompatible with index signature.
+            Type 'undefined' is not assignable to type 'string'.
+  Overload 2 of 2, '(input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ Authorization: string; } | { Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ Authorization?: undefined; }' is not assignable to type 'Record<string, string>'.
+          Property 'Authorization' is incompatible with index signature.
+            Type 'undefined' is not assignable to type 'string'.
+
+73       const response = await fetch('/api/user/profile', { headers });
+                                                             ~~~~~~~
+
+
+client/src/pages/customer-dashboard.tsx:83:58 - error TS2769: No overload matches this call.
+  Overload 1 of 2, '(input: string | URL | Request, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ Authorization: string; } | { Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ Authorization?: undefined; }' is not assignable to type 'Record<string, string>'.
+          Property 'Authorization' is incompatible with index signature.
+            Type 'undefined' is not assignable to type 'string'.
+  Overload 2 of 2, '(input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ Authorization: string; } | { Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ Authorization?: undefined; }' is not assignable to type 'Record<string, string>'.
+          Property 'Authorization' is incompatible with index signature.
+            Type 'undefined' is not assignable to type 'string'.
+
+83       const response = await fetch('/api/user/orders', { headers });
+                                                            ~~~~~~~
+
+
+client/src/pages/customer-dashboard.tsx:93:56 - error TS2769: No overload matches this call.
+  Overload 1 of 2, '(input: string | URL | Request, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ Authorization: string; } | { Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ Authorization?: undefined; }' is not assignable to type 'Record<string, string>'.
+          Property 'Authorization' is incompatible with index signature.
+            Type 'undefined' is not assignable to type 'string'.
+  Overload 2 of 2, '(input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ Authorization: string; } | { Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ Authorization?: undefined; }' is not assignable to type 'Record<string, string>'.
+          Property 'Authorization' is incompatible with index signature.
+            Type 'undefined' is not assignable to type 'string'.
+
+93       const response = await fetch('/api/user/kpis', { headers });
+                                                          ~~~~~~~
+
+
+client/src/pages/customer-dashboard.tsx:103:64 - error TS2769: No overload matches this call.
+  Overload 1 of 2, '(input: string | URL | Request, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ Authorization: string; } | { Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ Authorization?: undefined; }' is not assignable to type 'Record<string, string>'.
+          Property 'Authorization' is incompatible with index signature.
+            Type 'undefined' is not assignable to type 'string'.
+  Overload 2 of 2, '(input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ Authorization: string; } | { Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ Authorization?: undefined; }' is not assignable to type 'Record<string, string>'.
+          Property 'Authorization' is incompatible with index signature.
+            Type 'undefined' is not assignable to type 'string'.
+
+103       const response = await fetch('/api/user/integrations', { headers });
+                                                                   ~~~~~~~
+
+
+client/src/pages/customer-dashboard.tsx:115:9 - error TS2769: No overload matches this call.
+  Overload 1 of 2, '(input: string | URL | Request, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ 'Content-Type': string; Authorization: string; } | { 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'undefined'.
+  Overload 2 of 2, '(input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ 'Content-Type': string; Authorization: string; } | { 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'undefined'.
+
+115         headers: { ...headers, 'Content-Type': 'application/json' },
+            ~~~~~~~
+
+
+client/src/pages/customer-dashboard.tsx:132:9 - error TS2769: No overload matches this call.
+  Overload 1 of 2, '(input: string | URL | Request, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ 'Content-Type': string; Authorization: string; } | { 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'undefined'.
+  Overload 2 of 2, '(input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ 'Content-Type': string; Authorization: string; } | { 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ 'Content-Type': string; Authorization?: undefined; }' is not assignable to type 'undefined'.
+
+132         headers: { ...headers, 'Content-Type': 'application/json' },
+            ~~~~~~~
+
+
+client/src/pages/customer-dashboard.tsx:149:9 - error TS2769: No overload matches this call.
+  Overload 1 of 2, '(input: string | URL | Request, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ Authorization: string; } | { Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ Authorization?: undefined; }' is not assignable to type 'Record<string, string>'.
+          Property 'Authorization' is incompatible with index signature.
+            Type 'undefined' is not assignable to type 'string'.
+  Overload 2 of 2, '(input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Type '{ Authorization: string; } | { Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+      Type '{ Authorization?: undefined; }' is not assignable to type 'HeadersInit | undefined'.
+        Type '{ Authorization?: undefined; }' is not assignable to type 'Record<string, string>'.
+          Property 'Authorization' is incompatible with index signature.
+            Type 'undefined' is not assignable to type 'string'.
+
+149         headers
+            ~~~~~~~
+
+
+client/src/pages/pricing.tsx:51:33 - error TS2339: Property 'length' does not exist on type '{}'.
+
+51           {packages && packages.length > 0 ? (
+                                   ~~~~~~
+
+client/src/pages/pricing.tsx:53:25 - error TS2339: Property 'map' does not exist on type '{}'.
+
+53               {packages.map((pkg: any, index: number) => {
+                           ~~~
+
+server/db/runMigrations.ts:15:25 - error TS2344: Type '{ id: string; }' does not satisfy the constraint 'boolean'.
+
+15   const ran = await sql<{id:string}>`SELECT id FROM _migrations`;
+                           ~~~~~~~~~~~
+
+server/db/runMigrations.ts:20:15 - error TS2339: Property 'unsafe' does not exist on type 'NeonQueryFunction<false, false>'.
+
+20     await sql.unsafe(ddl);
+                 ~~~~~~
+
+server/db/seed.ts:2:8 - error TS2613: Module '"/home/runner/workspace/server/db/index"' has no default export. Did you mean to use 'import { sql } from "/home/runner/workspace/server/db/index"' instead?
+
+2 import sql from './index';
+         ~~~
+
+server/lib/email.ts:6:34 - error TS2551: Property 'createTransporter' does not exist on type 'typeof import("/home/runner/workspace/node_modules/@types/nodemailer/index")'. Did you mean 'createTransport'?
+
+6   const transporter = nodemailer.createTransporter({
+                                   ~~~~~~~~~~~~~~~~~
+
+  node_modules/@types/nodemailer/index.d.ts:45:17
+    45 export function createTransport(
+                       ~~~~~~~~~~~~~~~
+    'createTransport' is declared here.
+
+server/lib/jwt.ts:5:14 - error TS2769: No overload matches this call.
+  Overload 1 of 5, '(payload: string | object | Buffer, secretOrPrivateKey: null, options?: (SignOptions & { algorithm: "none"; }) | undefined): string', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'null'.
+  Overload 2 of 5, '(payload: string | object | Buffer, secretOrPrivateKey: Secret | PrivateKeyInput | JsonWebKeyInput, options?: SignOptions | undefined): string', gave the following error.
+    Type 'string' is not assignable to type 'number | StringValue | undefined'.
+  Overload 3 of 5, '(payload: string | object | Buffer, secretOrPrivateKey: Secret | PrivateKeyInput | JsonWebKeyInput, callback: SignCallback): void', gave the following error.
+    Object literal may only specify known properties, and 'expiresIn' does not exist in type 'SignCallback'.
+
+5   return jwt.sign(payload, SECRET, { expiresIn: expires });
+               ~~~~
+
+
+server/middleware/accessControl.ts:2:10 - error TS2300: Duplicate identifier 'Request'.
+
+2 import { Request, Response, NextFunction } from 'express';
+           ~~~~~~~
+
+server/middleware/accessControl.ts:2:19 - error TS2300: Duplicate identifier 'Response'.
+
+2 import { Request, Response, NextFunction } from 'express';
+                    ~~~~~~~~
+
+server/middleware/accessControl.ts:2:29 - error TS2300: Duplicate identifier 'NextFunction'.
+
+2 import { Request, Response, NextFunction } from 'express';
+                              ~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:3:10 - error TS2300: Duplicate identifier 'storage'.
+
+3 import { storage } from '../storage';
+           ~~~~~~~
+
+server/middleware/accessControl.ts:5:8 - error TS2300: Duplicate identifier 'jwt'.
+
+5 import jwt from 'jsonwebtoken';
+         ~~~
+
+server/middleware/accessControl.ts:21:7 - error TS2717: Subsequent property declarations must have the same type.  Property 'user' must be of type 'User | undefined', but here has type 'AuthenticatedUser | undefined'.
+
+21       user?: AuthenticatedUser;
+         ~~~~
+
+  node_modules/@types/passport/index.d.ts:12:13
+    12             user?: User | undefined;
+                   ~~~~
+    'user' was also declared here.
+
+server/middleware/accessControl.ts:26:14 - error TS2451: Cannot redeclare block-scoped variable 'authenticateJWT'.
+
+26 export const authenticateJWT = async (req: Request, res: Response, next: NextFunction) => {
+                ~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:51:19 - error TS2339: Property 'orgId' does not exist on type 'PublicUser'.
+
+51       orgId: user.orgId,
+                     ~~~~~
+
+server/middleware/accessControl.ts:58:19 - error TS2339: Property 'updateLastLogin' does not exist on type 'DatabaseStorage'.
+
+58     await storage.updateLastLogin(user.id);
+                     ~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:66:14 - error TS2451: Cannot redeclare block-scoped variable 'authorize'.
+
+66 export const authorize = (requiredPermissions: string[] = [], requiredRoles: string[] = []) => {
+                ~~~~~~~~~
+
+server/middleware/accessControl.ts:73:18 - error TS2339: Property 'isSuperAdmin' does not exist on type 'User'.
+
+73     if (req.user.isSuperAdmin) {
+                    ~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:78:70 - error TS2339: Property 'role' does not exist on type 'User'.
+
+78     if (requiredRoles.length > 0 && !requiredRoles.includes(req.user.role)) {
+                                                                        ~~~~
+
+server/middleware/accessControl.ts:85:19 - error TS2339: Property 'permissions' does not exist on type 'User'.
+
+85         req.user!.permissions.includes(permission)
+                     ~~~~~~~~~~~
+
+server/middleware/accessControl.ts:96:14 - error TS2451: Cannot redeclare block-scoped variable 'enforceFeatureFlag'.
+
+96 export const enforceFeatureFlag = (flagKey: string) => {
+                ~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:102:18 - error TS2339: Property 'isSuperAdmin' does not exist on type 'User'.
+
+102     if (req.user.isSuperAdmin || req.user.featureFlags.includes(flagKey)) {
+                     ~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:102:43 - error TS2339: Property 'featureFlags' does not exist on type 'User'.
+
+102     if (req.user.isSuperAdmin || req.user.featureFlags.includes(flagKey)) {
+                                              ~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:110:14 - error TS2451: Cannot redeclare block-scoped variable 'enforcePaymentMethodAllowed'.
+
+110 export const enforcePaymentMethodAllowed = async (req: Request, res: Response, next: NextFunction) => {
+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:121:42 - error TS2339: Property 'getAllowedPaymentMethods' does not exist on type 'DatabaseStorage'.
+
+121     const allowedMethods = await storage.getAllowedPaymentMethods(req.user.id, req.user.orgId);
+                                             ~~~~~~~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:121:76 - error TS2339: Property 'id' does not exist on type 'User'.
+
+121     const allowedMethods = await storage.getAllowedPaymentMethods(req.user.id, req.user.orgId);
+                                                                               ~~
+
+server/middleware/accessControl.ts:121:89 - error TS2339: Property 'orgId' does not exist on type 'User'.
+
+121     const allowedMethods = await storage.getAllowedPaymentMethods(req.user.id, req.user.orgId);
+                                                                                            ~~~~~
+
+server/middleware/accessControl.ts:136:14 - error TS2451: Cannot redeclare block-scoped variable 'enforceIntegrationPolicy'.
+
+136 export const enforceIntegrationPolicy = (provider: string, scope: string) => {
+                 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:142:18 - error TS2339: Property 'isSuperAdmin' does not exist on type 'User'.
+
+142     if (req.user.isSuperAdmin) {
+                     ~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:147:43 - error TS2339: Property 'getAllowedIntegrationScopes' does not exist on type 'DatabaseStorage'.
+
+147       const allowedScopes = await storage.getAllowedIntegrationScopes(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:148:18 - error TS2339: Property 'id' does not exist on type 'User'.
+
+148         req.user.id,
+                     ~~
+
+server/middleware/accessControl.ts:149:18 - error TS2339: Property 'orgId' does not exist on type 'User'.
+
+149         req.user.orgId,
+                     ~~~~~
+
+server/middleware/accessControl.ts:176:17 - error TS2339: Property 'createAuditLog' does not exist on type 'DatabaseStorage'.
+
+176         storage.createAuditLog({
+                    ~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:177:33 - error TS2339: Property 'id' does not exist on type 'User'.
+
+177           actorUserId: req.user.id,
+                                    ~~
+
+server/middleware/accessControl.ts:204:40 - error TS2551: Property 'getApiKeyByHash' does not exist on type 'DatabaseStorage'. Did you mean 'getApiKeys'?
+
+204     const apiKeyRecord = await storage.getApiKeyByHash(keyHash);
+                                           ~~~~~~~~~~~~~~~
+
+  server/storage.ts:709:9
+    709   async getApiKeys(userId?: number, orgId?: number): Promise<ApiKey[]> {
+                ~~~~~~~~~~
+    'getApiKeys' is declared here.
+
+server/middleware/accessControl.ts:220:35 - error TS2551: Property 'getApiKeyUsage' does not exist on type 'DatabaseStorage'. Did you mean 'getApiKeys'?
+
+220       const usage = await storage.getApiKeyUsage(apiKeyRecord.id, 60); // last minute
+                                      ~~~~~~~~~~~~~~
+
+  server/storage.ts:709:9
+    709   async getApiKeys(userId?: number, orgId?: number): Promise<ApiKey[]> {
+                ~~~~~~~~~~
+    'getApiKeys' is declared here.
+
+server/middleware/accessControl.ts:227:19 - error TS2339: Property 'updateApiKeyLastUsed' does not exist on type 'DatabaseStorage'.
+
+227     await storage.updateApiKeyLastUsed(apiKeyRecord.id);
+                      ~~~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:277:10 - error TS2300: Duplicate identifier 'Request'.
+
+277 import { Request, Response, NextFunction } from 'express';
+             ~~~~~~~
+
+server/middleware/accessControl.ts:277:19 - error TS2300: Duplicate identifier 'Response'.
+
+277 import { Request, Response, NextFunction } from 'express';
+                      ~~~~~~~~
+
+server/middleware/accessControl.ts:277:29 - error TS2300: Duplicate identifier 'NextFunction'.
+
+277 import { Request, Response, NextFunction } from 'express';
+                                ~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:278:10 - error TS2300: Duplicate identifier 'storage'.
+
+278 import { storage } from '../storage';
+             ~~~~~~~
+
+server/middleware/accessControl.ts:279:8 - error TS2300: Duplicate identifier 'jwt'.
+
+279 import jwt from 'jsonwebtoken';
+           ~~~
+
+server/middleware/accessControl.ts:293:14 - error TS2451: Cannot redeclare block-scoped variable 'authenticateJWT'.
+
+293 export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+                 ~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:330:14 - error TS2451: Cannot redeclare block-scoped variable 'authorize'.
+
+330 export const authorize = (requiredPermissions: string[] = [], requiredRole?: string) => {
+                 ~~~~~~~~~
+
+server/middleware/accessControl.ts:362:14 - error TS2451: Cannot redeclare block-scoped variable 'enforceFeatureFlag'.
+
+362 export const enforceFeatureFlag = (flagKey: string) => {
+                 ~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:376:14 - error TS2451: Cannot redeclare block-scoped variable 'enforcePaymentMethodAllowed'.
+
+376 export const enforcePaymentMethodAllowed = (methodType: string) => {
+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:385:29 - error TS18047: 'paymentPolicy.allowedMethods' is possibly 'null'.
+
+385       if (!paymentPolicy || paymentPolicy.allowedMethods.includes(methodType)) {
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:399:14 - error TS2451: Cannot redeclare block-scoped variable 'enforceIntegrationPolicy'.
+
+399 export const enforceIntegrationPolicy = (provider: string, scope: string) => {
+                 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:417:11 - error TS18046: 'policy.deniedScopes' is of type 'unknown'.
+
+417       if (policy.deniedScopes.includes(scope)) {
+              ~~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:423:11 - error TS18046: 'policy.allowedScopes' is of type 'unknown'.
+
+423       if (policy.allowedScopes.length > 0 && !policy.allowedScopes.includes(scope)) {
+              ~~~~~~~~~~~~~~~~~~~~
+
+server/middleware/accessControl.ts:423:47 - error TS18046: 'policy.allowedScopes' is of type 'unknown'.
+
+423       if (policy.allowedScopes.length > 0 && !policy.allowedScopes.includes(scope)) {
+                                                  ~~~~~~~~~~~~~~~~~~~~
+
+server/publicAuth.ts:54:5 - error TS2740: Type 'PublicUser' is missing the following properties from type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }': lockReason, passwordHash, provider, providerId, and 9 more.
+
+54     req.user = user;
+       ~~~~~~~~
+
+server/publicAuth.ts:83:31 - error TS2345: Argument of type 'PublicUser' is not assignable to parameter of type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }'.
+  Type 'PublicUser' is missing the following properties from type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }': lockReason, passwordHash, provider, providerId, and 9 more.
+
+83     const token = generateJWT(newUser);
+                                 ~~~~~~~
+
+server/publicAuth.ts:92:13 - error TS2339: Property 'passwordHash' does not exist on type 'PublicUser'.
+
+92     const { passwordHash: _, ...userWithoutPassword } = newUser;
+               ~~~~~~~~~~~~
+
+server/publicAuth.ts:118:15 - error TS2339: Property 'passwordHash' does not exist on type 'PublicUser'.
+
+118     if (!user.passwordHash) {
+                  ~~~~~~~~~~~~
+
+server/publicAuth.ts:122:80 - error TS2339: Property 'passwordHash' does not exist on type 'PublicUser'.
+
+122     const isValidPassword = await comparePassword(validatedData.password, user.passwordHash);
+                                                                                   ~~~~~~~~~~~~
+
+server/publicAuth.ts:128:31 - error TS2345: Argument of type 'PublicUser' is not assignable to parameter of type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }'.
+  Type 'PublicUser' is missing the following properties from type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }': lockReason, passwordHash, provider, providerId, and 9 more.
+
+128     const token = generateJWT(user);
+                                  ~~~~
+
+server/publicAuth.ts:131:13 - error TS2339: Property 'passwordHash' does not exist on type 'PublicUser'.
+
+131     const { passwordHash: _, ...userWithoutPassword } = user;
+                ~~~~~~~~~~~~
+
+server/routes.ts:10:8 - error TS1192: Module '"/home/runner/workspace/server/routes/auth"' has no default export.
+
+10 import authRoutes from './routes/auth';
+          ~~~~~~~~~~
+
+server/routes.ts:11:8 - error TS1192: Module '"/home/runner/workspace/server/routes/admin"' has no default export.
+
+11 import adminRoutes from './routes/admin';
+          ~~~~~~~~~~~
+
+server/routes.ts:109:9 - error TS2353: Object literal may only specify known properties, and 'password' does not exist in type '{ name: string; email: string; id?: number | undefined; role?: string | null | undefined; isActive?: boolean | null | undefined; lockReason?: string | null | undefined; permissions?: unknown; createdAt?: Date | ... 1 more ... | undefined; ... 12 more ...; accountLocked?: boolean | ... 1 more ... | undefined; }'.
+
+109         password: hashedPassword,
+            ~~~~~~~~
+
+server/routes.ts:119:33 - error TS2345: Argument of type 'PublicUser' is not assignable to parameter of type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }'.
+  Type 'PublicUser' is missing the following properties from type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }': lockReason, passwordHash, provider, providerId, and 9 more.
+
+119       const token = generateJWT(user);
+                                    ~~~~
+
+server/routes.ts:139:23 - error TS2339: Property 'orgId' does not exist on type 'PublicUser'.
+
+139           orgId: user.orgId
+                          ~~~~~
+
+server/routes.ts:491:57 - error TS18046: 'error' is of type 'unknown'.
+
+491           results.push({ userId, success: false, error: error.message });
+                                                            ~~~~~
+
+server/routes.ts:729:53 - error TS2339: Property 'orgId' does not exist on type 'PublicUser'.
+
+729       const totalOrgs = new Set(users.filter(u => u.orgId).map(u => u.orgId)).size;
+                                                        ~~~~~
+
+server/routes.ts:729:71 - error TS2339: Property 'orgId' does not exist on type 'PublicUser'.
+
+729       const totalOrgs = new Set(users.filter(u => u.orgId).map(u => u.orgId)).size;
+                                                                          ~~~~~
+
+server/routes.ts:760:11 - error TS18047: 'user.name' is possibly 'null'.
+
+760           user.name.toLowerCase().includes(search.toLowerCase()) ||
+              ~~~~~~~~~
+
+server/routes.ts:774:28 - error TS2339: Property 'mfaEnabled' does not exist on type 'PublicUser'.
+
+774           mfaEnabled: user.mfaEnabled || false,
+                               ~~~~~~~~~~
+
+server/routes.ts:793:18 - error TS2339: Property 'orgId' does not exist on type 'PublicUser'.
+
+793         if (user.orgId) {
+                     ~~~~~
+
+server/routes.ts:794:32 - error TS2339: Property 'orgId' does not exist on type 'PublicUser'.
+
+794           if (!orgMap.has(user.orgId)) {
+                                   ~~~~~
+
+server/routes.ts:795:29 - error TS2339: Property 'orgId' does not exist on type 'PublicUser'.
+
+795             orgMap.set(user.orgId, {
+                                ~~~~~
+
+server/routes.ts:796:24 - error TS2339: Property 'orgId' does not exist on type 'PublicUser'.
+
+796               id: user.orgId,
+                           ~~~~~
+
+server/routes.ts:797:42 - error TS2339: Property 'orgId' does not exist on type 'PublicUser'.
+
+797               name: `Organization ${user.orgId}`,
+                                             ~~~~~
+
+server/routes.ts:809:39 - error TS2339: Property 'orgId' does not exist on type 'PublicUser'.
+
+809           const org = orgMap.get(user.orgId);
+                                          ~~~~~
+
+server/routes.ts:1042:54 - error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'PublicUser | { id: string; name: string; tier: string; seats: string; mrr: number; } | { timestamp: string; actor: string; action: string; target: string; }'.
+  No index signature with a parameter of type 'string' was found on type 'PublicUser | { id: string; name: string; tier: string; seats: string; mrr: number; } | { timestamp: string; actor: string; action: string; target: string; }'.
+
+1042         ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+                                                          ~~~~~~~~~~~
+
+server/routes.ts:1060:42 - error TS2339: Property 'getUserByEmail' does not exist on type 'DatabaseStorage'.
+
+1060       const existingUser = await storage.getUserByEmail(email);
+                                              ~~~~~~~~~~~~~~
+
+server/routes.ts:1069:34 - error TS2339: Property 'createUser' does not exist on type 'DatabaseStorage'.
+
+1069       const user = await storage.createUser({
+                                      ~~~~~~~~~~
+
+server/routes.ts:1232:47 - error TS2339: Property 'getUserById' does not exist on type 'DatabaseStorage'.
+
+1232       const userToImpersonate = await storage.getUserById(userId);
+                                                   ~~~~~~~~~~~
+
+server/routes.ts:1270:54 - error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ id: number; status: string | null; userId: string | null; total: string; createdAt: Date | null; stripePaymentIntentId: string | null; updatedAt: Date | null; } | PublicUser'.
+  No index signature with a parameter of type 'string' was found on type '{ id: number; status: string | null; userId: string | null; total: string; createdAt: Date | null; stripePaymentIntentId: string | null; updatedAt: Date | null; } | PublicUser'.
+
+1270         ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+                                                          ~~~~~~~~~~~
+
+server/routes.ts:1297:34 - error TS2339: Property 'getUserById' does not exist on type 'DatabaseStorage'.
+
+1297       const user = await storage.getUserById(userId);
+                                      ~~~~~~~~~~~
+
+server/routes.ts:1313:41 - error TS2551: Property 'updateUserProfile' does not exist on type 'DatabaseStorage'. Did you mean 'updateUserRole'?
+
+1313       const updatedUser = await storage.updateUserProfile(userId, { name, email });
+                                             ~~~~~~~~~~~~~~~~~
+
+  server/storage.ts:520:9
+    520   async updateUserRole(userId: number, role: string): Promise<PublicUser | null> {
+                ~~~~~~~~~~~~~~
+    'updateUserRole' is declared here.
+
+server/routes.ts:1357:42 - error TS2339: Property 'getUserIntegrations' does not exist on type 'DatabaseStorage'.
+
+1357       const integrations = await storage.getUserIntegrations(userId);
+                                              ~~~~~~~~~~~~~~~~~~~
+
+server/routes.ts:1370:41 - error TS2339: Property 'createUserIntegration' does not exist on type 'DatabaseStorage'.
+
+1370       const integration = await storage.createUserIntegration({
+                                             ~~~~~~~~~~~~~~~~~~~~~
+
+server/routes.ts:1391:37 - error TS2339: Property 'deleteUserIntegration' does not exist on type 'DatabaseStorage'.
+
+1391       const success = await storage.deleteUserIntegration(integrationId, userId);
+                                         ~~~~~~~~~~~~~~~~~~~~~
+
+server/routes.ts:1427:33 - error TS2339: Property 'updatePackage' does not exist on type 'DatabaseStorage'.
+
+1427       const pkg = await storage.updatePackage(packageId, {
+                                     ~~~~~~~~~~~~~
+
+server/routes.ts:1449:37 - error TS2551: Property 'deletePackage' does not exist on type 'DatabaseStorage'. Did you mean 'getPackage'?
+
+1449       const success = await storage.deletePackage(packageId);
+                                         ~~~~~~~~~~~~~
+
+  server/storage.ts:354:9
+    354   async getPackage(id: number): Promise<Package | undefined> {
+                ~~~~~~~~~~
+    'getPackage' is declared here.
+
+server/routes.ts:1487:57 - error TS18046: 'error' is of type 'unknown'.
+
+1487           results.push({ userId, success: false, error: error.message });
+                                                             ~~~~~
+
+server/routes.ts:1509:70 - error TS2345: Argument of type 'string | 0' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+
+1509         totalRevenue: orders.reduce((sum, order) => sum + parseFloat(order.total || 0), 0),
+                                                                          ~~~~~~~~~~~~~~~~
+
+server/routes.ts:1510:91 - error TS2345: Argument of type 'string | 0' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+
+1510         avgOrderValue: orders.length > 0 ? orders.reduce((sum, order) => sum + parseFloat(order.total || 0), 0) / orders.length : 0,
+                                                                                               ~~~~~~~~~~~~~~~~
+
+server/routes.ts:1514:48 - error TS2339: Property 'packageId' does not exist on type '{ id: number; status: string | null; userId: string | null; total: string; createdAt: Date | null; stripePaymentIntentId: string | null; updatedAt: Date | null; }'.
+
+1514           orders: orders.filter(order => order.packageId === pkg.id).length
+                                                    ~~~~~~~~~
+
+server/routes.ts:1537:27 - error TS2304: Cannot find name 'getGuestbookEntries'.
+
+1537     const entries = await getGuestbookEntries();
+                               ~~~~~~~~~~~~~~~~~~~
+
+server/routes.ts:1549:27 - error TS2304: Cannot find name 'insertGuestbookEntry'.
+
+1549       const entry = await insertGuestbookEntry(name, message);
+                               ~~~~~~~~~~~~~~~~~~~~
+
+server/routes/auth.ts:22:49 - error TS2345: Argument of type '{ email: string; phone: string; full_name: string; org_name: string; ttlMinutes?: number | undefined; }' is not assignable to parameter of type '{ email: string; phone: string; full_name: string; company_name: string; ttlMinutes?: number | undefined; }'.
+  Property 'company_name' is missing in type '{ email: string; phone: string; full_name: string; org_name: string; ttlMinutes?: number | undefined; }' but required in type '{ email: string; phone: string; full_name: string; company_name: string; ttlMinutes?: number | undefined; }'.
+
+22     const code = await issueAccessCode(adminId, body);
+                                                   ~~~~
+
+  server/services/accessCodes.ts:6:52
+    6   email: string; phone: string; full_name: string; company_name: string; ttlMinutes?: number;
+                                                         ~~~~~~~~~~~~
+    'company_name' is declared here.
+
+server/routes/auth.ts:40:37 - error TS2345: Argument of type '{ code: string; email: string; password: string; phone: string; full_name: string; org_name: string; }' is not assignable to parameter of type '{ company_name: string; }'.
+  Property 'company_name' is missing in type '{ code: string; email: string; password: string; phone: string; full_name: string; org_name: string; }' but required in type '{ company_name: string; }'.
+
+40     await consumeAccessCode(b.code, b);
+                                       ~
+
+  server/services/accessCodes.ts:18:3
+    18   company_name: string;
+         ~~~~~~~~~~~~
+    'company_name' is declared here.
+
+server/routes/customer.ts:21:10 - error TS2461: Type 'Record<string, any>' is not an array type.
+
+21   const [[{ calls }]] = await sql`SELECT COUNT(*)::int AS calls FROM calls WHERE user_id=${uid}`;
+            ~~~~~~~~~~~
+
+server/routes/customer.ts:22:10 - error TS2461: Type 'Record<string, any>' is not an array type.
+
+22   const [[{ seconds }]] = await sql`SELECT COALESCE(SUM(duration_seconds),0)::int AS seconds FROM calls WHERE user_id=${uid}`;
+            ~~~~~~~~~~~~~
+
+server/services/callMetricsService.ts:1:10 - error TS2300: Duplicate identifier 'storage'.
+
+1 import { storage } from '../storage';
+           ~~~~~~~
+
+server/services/callMetricsService.ts:48:44 - error TS2551: Property 'getAllDialerMappings' does not exist on type 'DatabaseStorage'. Did you mean 'getUserDialerMapping'?
+
+48       const dialerMappings = await storage.getAllDialerMappings();
+                                              ~~~~~~~~~~~~~~~~~~~~
+
+  server/storage.ts:654:9
+    654   async getUserDialerMapping(userId: number): Promise<UserDialerMap | null> {
+                ~~~~~~~~~~~~~~~~~~~~
+    'getUserDialerMapping' is declared here.
+
+server/services/callMetricsService.ts:70:21 - error TS2554: Expected 5 arguments, but got 3.
+
+70             storage.updateCallsCache(mapping.userId, 'today', {
+                       ~~~~~~~~~~~~~~~~
+
+  server/storage.ts:681:78
+    681   async updateCallsCache(userId: number, period: string, callsCount: number, avgHandleTime: number, occupancy: number): Promise<CallsCache> {
+                                                                                     ~~~~~~~~~~~~~~~~~~~~~
+    An argument for 'avgHandleTime' was not provided.
+
+server/services/callMetricsService.ts:75:21 - error TS2554: Expected 5 arguments, but got 3.
+
+75             storage.updateCallsCache(mapping.userId, '7d', {
+                       ~~~~~~~~~~~~~~~~
+
+  server/storage.ts:681:78
+    681   async updateCallsCache(userId: number, period: string, callsCount: number, avgHandleTime: number, occupancy: number): Promise<CallsCache> {
+                                                                                     ~~~~~~~~~~~~~~~~~~~~~
+    An argument for 'avgHandleTime' was not provided.
+
+server/services/callMetricsService.ts:80:21 - error TS2554: Expected 5 arguments, but got 3.
+
+80             storage.updateCallsCache(mapping.userId, '30d', {
+                       ~~~~~~~~~~~~~~~~
+
+  server/storage.ts:681:78
+    681   async updateCallsCache(userId: number, period: string, callsCount: number, avgHandleTime: number, occupancy: number): Promise<CallsCache> {
+                                                                                     ~~~~~~~~~~~~~~~~~~~~~
+    An argument for 'avgHandleTime' was not provided.
+
+server/services/callMetricsService.ts:98:37 - error TS2551: Property 'getDialerMapping' does not exist on type 'DatabaseStorage'. Did you mean 'getUserDialerMapping'?
+
+98       const mapping = await storage.getDialerMapping(userId);
+                                       ~~~~~~~~~~~~~~~~
+
+  server/storage.ts:654:9
+    654   async getUserDialerMapping(userId: number): Promise<UserDialerMap | null> {
+                ~~~~~~~~~~~~~~~~~~~~
+    'getUserDialerMapping' is declared here.
+
+server/services/callMetricsService.ts:110:17 - error TS2554: Expected 5 arguments, but got 3.
+
+110         storage.updateCallsCache(userId, 'today', {
+                    ~~~~~~~~~~~~~~~~
+
+  server/storage.ts:681:78
+    681   async updateCallsCache(userId: number, period: string, callsCount: number, avgHandleTime: number, occupancy: number): Promise<CallsCache> {
+                                                                                     ~~~~~~~~~~~~~~~~~~~~~
+    An argument for 'avgHandleTime' was not provided.
+
+server/services/callMetricsService.ts:115:17 - error TS2554: Expected 5 arguments, but got 3.
+
+115         storage.updateCallsCache(userId, '7d', {
+                    ~~~~~~~~~~~~~~~~
+
+  server/storage.ts:681:78
+    681   async updateCallsCache(userId: number, period: string, callsCount: number, avgHandleTime: number, occupancy: number): Promise<CallsCache> {
+                                                                                     ~~~~~~~~~~~~~~~~~~~~~
+    An argument for 'avgHandleTime' was not provided.
+
+server/services/callMetricsService.ts:120:17 - error TS2554: Expected 5 arguments, but got 3.
+
+120         storage.updateCallsCache(userId, '30d', {
+                    ~~~~~~~~~~~~~~~~
+
+  server/storage.ts:681:78
+    681   async updateCallsCache(userId: number, period: string, callsCount: number, avgHandleTime: number, occupancy: number): Promise<CallsCache> {
+                                                                                     ~~~~~~~~~~~~~~~~~~~~~
+    An argument for 'avgHandleTime' was not provided.
+
+server/services/callMetricsService.ts:140:37 - error TS2551: Property 'getDialerMapping' does not exist on type 'DatabaseStorage'. Did you mean 'getUserDialerMapping'?
+
+140       const mapping = await storage.getDialerMapping(userId);
+                                        ~~~~~~~~~~~~~~~~
+
+  server/storage.ts:654:9
+    654   async getUserDialerMapping(userId: number): Promise<UserDialerMap | null> {
+                ~~~~~~~~~~~~~~~~~~~~
+    'getUserDialerMapping' is declared here.
+
+server/services/callMetricsService.ts:158:55 - error TS18047: 'todayCache.updatedAt' is possibly 'null'.
+
+158       const isStale = !todayCache || (now.getTime() - todayCache.updatedAt.getTime()) > 10 * 60 * 1000;
+                                                          ~~~~~~~~~~~~~~~~~~~~
+
+server/services/callMetricsService.ts:180:10 - error TS2300: Duplicate identifier 'storage'.
+
+180 import { storage } from '../storage';
+             ~~~~~~~
+
+server/storage.ts:71:27 - error TS2307: Cannot find module 'postgres' or its corresponding type declarations.
+
+71 import type postgres from "postgres"; // Import type for postgres client
+                             ~~~~~~~~~~
+
+server/storage.ts:135:3 - error TS2322: Type '{ id: number; name: string; email: string; emailVerified: any; isActive: boolean; status: any; statusReason: any; role: string; permissions: {}; featureFlags: any; socialAccounts: {} | null; stripeCustomerId: any; forcePasswordReset: any; requireMfa: any; createdAt: Date | null; updatedAt: any; }[]' is not assignable to type 'PublicUser[]'.
+  Type '{ id: number; name: string; email: string; emailVerified: any; isActive: boolean; status: any; statusReason: any; role: string; permissions: {}; featureFlags: any; socialAccounts: {} | null; stripeCustomerId: any; forcePasswordReset: any; requireMfa: any; createdAt: Date | null; updatedAt: any; }' is not assignable to type 'PublicUser'.
+    Types of property 'permissions' are incompatible.
+      Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+135   return users.map(user => ({
+      ~~~~~~
+
+server/storage.ts:139:25 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+139     emailVerified: user.emailVerified ?? false, // Defaulting if not present
+                            ~~~~~~~~~~~~~
+
+server/storage.ts:141:18 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+141     status: user.status || 'active', // Default status
+                     ~~~~~~
+
+server/storage.ts:142:24 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+142     statusReason: user.statusReason || null,
+                           ~~~~~~~~~~~~
+
+server/storage.ts:145:24 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+145     featureFlags: user.featureFlags || [], // Default featureFlags
+                           ~~~~~~~~~~~~
+
+server/storage.ts:147:28 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+147     stripeCustomerId: user.stripeCustomerId || null,
+                               ~~~~~~~~~~~~~~~~
+
+server/storage.ts:148:30 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+148     forcePasswordReset: user.forcePasswordReset || false,
+                                 ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:149:22 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+149     requireMfa: user.requireMfa || false,
+                         ~~~~~~~~~~
+
+server/storage.ts:151:21 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+151     updatedAt: user.updatedAt,
+                        ~~~~~~~~~
+
+server/storage.ts:258:30 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }'.
+
+258       emailVerified: newUser.emailVerified ?? false,
+                                 ~~~~~~~~~~~~~
+
+server/storage.ts:260:23 - error TS2339: Property 'status' does not exist on type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }'.
+
+260       status: newUser.status || 'active',
+                          ~~~~~~
+
+server/storage.ts:261:29 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }'.
+
+261       statusReason: newUser.statusReason || null,
+                                ~~~~~~~~~~~~
+
+server/storage.ts:263:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+263       permissions: newUser.permissions || [],
+          ~~~~~~~~~~~
+
+  server/storage.ts:83:3
+    83   permissions: string[];
+         ~~~~~~~~~~~
+    The expected type comes from property 'permissions' which is declared here on type 'PublicUser'
+
+server/storage.ts:264:29 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }'.
+
+264       featureFlags: newUser.featureFlags || [],
+                                ~~~~~~~~~~~~
+
+server/storage.ts:265:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+265       socialAccounts: newUser.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+  server/storage.ts:85:3
+    85   socialAccounts: any[] | null;
+         ~~~~~~~~~~~~~~
+    The expected type comes from property 'socialAccounts' which is declared here on type 'PublicUser'
+
+server/storage.ts:266:33 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }'.
+
+266       stripeCustomerId: newUser.stripeCustomerId || null,
+                                    ~~~~~~~~~~~~~~~~
+
+server/storage.ts:267:35 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }'.
+
+267       forcePasswordReset: newUser.forcePasswordReset || false,
+                                      ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:268:27 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }'.
+
+268       requireMfa: newUser.requireMfa || false,
+                              ~~~~~~~~~~
+
+server/storage.ts:269:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+269       createdAt: newUser.createdAt,
+          ~~~~~~~~~
+
+  server/storage.ts:89:3
+    89   createdAt: Date;
+         ~~~~~~~~~
+    The expected type comes from property 'createdAt' which is declared here on type 'PublicUser'
+
+server/storage.ts:270:26 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; role: string | null; name: string; email: string; isActive: boolean | null; lockReason: string | null; permissions: unknown; createdAt: Date | null; passwordHash: string | null; ... 11 more ...; accountLocked: boolean | null; }'.
+
+270       updatedAt: newUser.updatedAt,
+                             ~~~~~~~~~
+
+server/storage.ts:282:27 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+282       emailVerified: user.emailVerified ?? false,
+                              ~~~~~~~~~~~~~
+
+server/storage.ts:284:20 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+284       status: user.status || 'active',
+                       ~~~~~~
+
+server/storage.ts:285:26 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+285       statusReason: user.statusReason || null,
+                             ~~~~~~~~~~~~
+
+server/storage.ts:287:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+287       permissions: user.permissions || [],
+          ~~~~~~~~~~~
+
+server/storage.ts:288:26 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+288       featureFlags: user.featureFlags || [],
+                             ~~~~~~~~~~~~
+
+server/storage.ts:289:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+289       socialAccounts: user.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+server/storage.ts:290:30 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+290       stripeCustomerId: user.stripeCustomerId || null,
+                                 ~~~~~~~~~~~~~~~~
+
+server/storage.ts:291:32 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+291       forcePasswordReset: user.forcePasswordReset || false,
+                                   ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:292:24 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+292       requireMfa: user.requireMfa || false,
+                           ~~~~~~~~~~
+
+server/storage.ts:293:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+293       createdAt: user.createdAt,
+          ~~~~~~~~~
+
+server/storage.ts:294:23 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+294       updatedAt: user.updatedAt,
+                          ~~~~~~~~~
+
+server/storage.ts:306:27 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+306       emailVerified: user.emailVerified ?? false,
+                              ~~~~~~~~~~~~~
+
+server/storage.ts:308:20 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+308       status: user.status || 'active',
+                       ~~~~~~
+
+server/storage.ts:309:26 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+309       statusReason: user.statusReason || null,
+                             ~~~~~~~~~~~~
+
+server/storage.ts:311:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+311       permissions: user.permissions || [],
+          ~~~~~~~~~~~
+
+server/storage.ts:312:26 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+312       featureFlags: user.featureFlags || [],
+                             ~~~~~~~~~~~~
+
+server/storage.ts:313:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+313       socialAccounts: user.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+server/storage.ts:314:30 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+314       stripeCustomerId: user.stripeCustomerId || null,
+                                 ~~~~~~~~~~~~~~~~
+
+server/storage.ts:315:32 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+315       forcePasswordReset: user.forcePasswordReset || false,
+                                   ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:316:24 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+316       requireMfa: user.requireMfa || false,
+                           ~~~~~~~~~~
+
+server/storage.ts:317:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+317       createdAt: user.createdAt,
+          ~~~~~~~~~
+
+server/storage.ts:318:23 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+318       updatedAt: user.updatedAt,
+                          ~~~~~~~~~
+
+server/storage.ts:333:27 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+333       emailVerified: user.emailVerified ?? false,
+                              ~~~~~~~~~~~~~
+
+server/storage.ts:335:20 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+335       status: user.status || 'active',
+                       ~~~~~~
+
+server/storage.ts:336:26 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+336       statusReason: user.statusReason || null,
+                             ~~~~~~~~~~~~
+
+server/storage.ts:338:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+338       permissions: user.permissions || [],
+          ~~~~~~~~~~~
+
+  server/storage.ts:83:3
+    83   permissions: string[];
+         ~~~~~~~~~~~
+    The expected type comes from property 'permissions' which is declared here on type 'PublicUser'
+
+server/storage.ts:339:26 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+339       featureFlags: user.featureFlags || [],
+                             ~~~~~~~~~~~~
+
+server/storage.ts:340:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+340       socialAccounts: user.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+  server/storage.ts:85:3
+    85   socialAccounts: any[] | null;
+         ~~~~~~~~~~~~~~
+    The expected type comes from property 'socialAccounts' which is declared here on type 'PublicUser'
+
+server/storage.ts:341:30 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+341       stripeCustomerId: user.stripeCustomerId || null,
+                                 ~~~~~~~~~~~~~~~~
+
+server/storage.ts:342:32 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+342       forcePasswordReset: user.forcePasswordReset || false,
+                                   ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:343:24 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+343       requireMfa: user.requireMfa || false,
+                           ~~~~~~~~~~
+
+server/storage.ts:344:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+344       createdAt: user.createdAt,
+          ~~~~~~~~~
+
+  server/storage.ts:89:3
+    89   createdAt: Date;
+         ~~~~~~~~~
+    The expected type comes from property 'createdAt' which is declared here on type 'PublicUser'
+
+server/storage.ts:345:23 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+345       updatedAt: user.updatedAt,
+                          ~~~~~~~~~
+
+server/storage.ts:430:27 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+430       emailVerified: user.emailVerified ?? false,
+                              ~~~~~~~~~~~~~
+
+server/storage.ts:432:20 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+432       status: user.status || 'active',
+                       ~~~~~~
+
+server/storage.ts:433:26 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+433       statusReason: user.statusReason || null,
+                             ~~~~~~~~~~~~
+
+server/storage.ts:435:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+435       permissions: user.permissions || [],
+          ~~~~~~~~~~~
+
+server/storage.ts:436:26 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+436       featureFlags: user.featureFlags || [],
+                             ~~~~~~~~~~~~
+
+server/storage.ts:437:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+437       socialAccounts: user.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+server/storage.ts:438:30 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+438       stripeCustomerId: user.stripeCustomerId || null,
+                                 ~~~~~~~~~~~~~~~~
+
+server/storage.ts:439:32 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+439       forcePasswordReset: user.forcePasswordReset || false,
+                                   ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:440:24 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+440       requireMfa: user.requireMfa || false,
+                           ~~~~~~~~~~
+
+server/storage.ts:441:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+441       createdAt: user.createdAt,
+          ~~~~~~~~~
+
+server/storage.ts:442:23 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+442       updatedAt: user.updatedAt,
+                          ~~~~~~~~~
+
+server/storage.ts:466:27 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+466       emailVerified: user.emailVerified ?? false,
+                              ~~~~~~~~~~~~~
+
+server/storage.ts:468:20 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+468       status: user.status || 'active',
+                       ~~~~~~
+
+server/storage.ts:469:26 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+469       statusReason: user.statusReason || null,
+                             ~~~~~~~~~~~~
+
+server/storage.ts:471:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+471       permissions: user.permissions || [],
+          ~~~~~~~~~~~
+
+server/storage.ts:472:26 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+472       featureFlags: user.featureFlags || [],
+                             ~~~~~~~~~~~~
+
+server/storage.ts:473:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+473       socialAccounts: user.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+server/storage.ts:474:30 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+474       stripeCustomerId: user.stripeCustomerId || null,
+                                 ~~~~~~~~~~~~~~~~
+
+server/storage.ts:475:32 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+475       forcePasswordReset: user.forcePasswordReset || false,
+                                   ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:476:24 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+476       requireMfa: user.requireMfa || false,
+                           ~~~~~~~~~~
+
+server/storage.ts:477:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+477       createdAt: user.createdAt,
+          ~~~~~~~~~
+
+server/storage.ts:478:23 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+478       updatedAt: user.updatedAt,
+                          ~~~~~~~~~
+
+server/storage.ts:500:18 - error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
+
+500       return [...new Set([...userPermissions, ...rolePerms])];
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:532:27 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+532       emailVerified: user.emailVerified ?? false,
+                              ~~~~~~~~~~~~~
+
+server/storage.ts:534:20 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+534       status: user.status || 'active',
+                       ~~~~~~
+
+server/storage.ts:535:26 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+535       statusReason: user.statusReason || null,
+                             ~~~~~~~~~~~~
+
+server/storage.ts:537:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+537       permissions: user.permissions || [],
+          ~~~~~~~~~~~
+
+server/storage.ts:538:26 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+538       featureFlags: user.featureFlags || [],
+                             ~~~~~~~~~~~~
+
+server/storage.ts:539:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+539       socialAccounts: user.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+server/storage.ts:540:30 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+540       stripeCustomerId: user.stripeCustomerId || null,
+                                 ~~~~~~~~~~~~~~~~
+
+server/storage.ts:541:32 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+541       forcePasswordReset: user.forcePasswordReset || false,
+                                   ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:542:24 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+542       requireMfa: user.requireMfa || false,
+                           ~~~~~~~~~~
+
+server/storage.ts:543:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+543       createdAt: user.createdAt,
+          ~~~~~~~~~
+
+server/storage.ts:544:23 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+544       updatedAt: user.updatedAt,
+                          ~~~~~~~~~
+
+server/storage.ts:560:27 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+560       emailVerified: user.emailVerified ?? false,
+                              ~~~~~~~~~~~~~
+
+server/storage.ts:562:20 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+562       status: user.status || 'active',
+                       ~~~~~~
+
+server/storage.ts:563:26 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+563       statusReason: user.statusReason || null,
+                             ~~~~~~~~~~~~
+
+server/storage.ts:565:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+565       permissions: user.permissions || [],
+          ~~~~~~~~~~~
+
+server/storage.ts:566:26 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+566       featureFlags: user.featureFlags || [],
+                             ~~~~~~~~~~~~
+
+server/storage.ts:567:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+567       socialAccounts: user.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+server/storage.ts:568:30 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+568       stripeCustomerId: user.stripeCustomerId || null,
+                                 ~~~~~~~~~~~~~~~~
+
+server/storage.ts:569:32 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+569       forcePasswordReset: user.forcePasswordReset || false,
+                                   ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:570:24 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+570       requireMfa: user.requireMfa || false,
+                           ~~~~~~~~~~
+
+server/storage.ts:571:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+571       createdAt: user.createdAt,
+          ~~~~~~~~~
+
+server/storage.ts:572:23 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+572       updatedAt: user.updatedAt,
+                          ~~~~~~~~~
+
+server/storage.ts:710:49 - error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "revoked_at"; tableName: "api_keys"; dataType: "date"; columnType: "PgTimestamp"; data: Date; driverParam: string; notNull: false; hasDefault: false; isPrimaryKey: false; ... 5 more ...; generated: undefined; }, {}, {}>, right: Date | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'null' is not assignable to parameter of type 'Date | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<null>, right: SQLWrapper | null): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "revoked_at"; tableName: "api_keys"; dataType: "date"; columnType: "PgTimestamp"; data: Date; driverParam: string; notNull: false; hasDefault: false; isPrimaryKey: false; isAutoincrement: false; ... 4 more ...; generated: undefined; }, {}, {}>' is not assignable to parameter of type 'Aliased<null>'.
+      Type 'PgColumn<{ name: "revoked_at"; tableName: "api_keys"; dataType: "date"; columnType: "PgTimestamp"; data: Date; driverParam: string; notNull: false; hasDefault: false; isPrimaryKey: false; isAutoincrement: false; ... 4 more ...; generated: undefined; }, {}, {}>' is missing the following properties from type 'Aliased<null>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "revoked_at"; tableName: "api_keys"; dataType: "date"; columnType: "PgTimestamp"; data: Date; driverParam: string; notNull: false; hasDefault: false; isPrimaryKey: false; isAutoincrement: false; ... 4 more ...; generated: undefined; }, {}, {}>' is not assignable to parameter of type 'never'.
+
+710     let query = db.select().from(apiKeys).where(eq(apiKeys.revokedAt, null));
+                                                    ~~
+
+
+server/storage.ts:713:21 - error TS2339: Property 'where' does not exist on type 'Omit<PgSelectBase<"api_keys", { id: PgColumn<{ name: "id"; tableName: "api_keys"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: true; ... 5 more ...; generated: undefined; }, {}, {}>; ... 10 more ...; createdAt: PgColumn<...>; }, ... 5 m...'.
+
+713       query = query.where(eq(apiKeys.userId, userId));
+                        ~~~~~
+
+server/storage.ts:716:21 - error TS2339: Property 'where' does not exist on type 'Omit<PgSelectBase<"api_keys", { id: PgColumn<{ name: "id"; tableName: "api_keys"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: true; ... 5 more ...; generated: undefined; }, {}, {}>; ... 10 more ...; createdAt: PgColumn<...>; }, ... 5 m...'.
+
+716       query = query.where(eq(apiKeys.orgId, orgId));
+                        ~~~~~
+
+server/storage.ts:745:7 - error TS2741: Property 'where' is missing in type 'Omit<import("/home/runner/workspace/node_modules/drizzle-orm/pg-core/query-builders/select").PgSelectBase<"audit_logs", { id: import("/home/runner/workspace/node_modules/drizzle-orm/pg-core/columns/common").PgColumn<{ name: "id"; tableName: "audit_logs"; dataType: "number"; columnType: "PgSerial"; data: number; driv...' but required in type 'Omit<import("/home/runner/workspace/node_modules/drizzle-orm/pg-core/query-builders/select").PgSelectBase<"audit_logs", { id: import("/home/runner/workspace/node_modules/drizzle-orm/pg-core/columns/common").PgColumn<{ name: "id"; tableName: "audit_logs"; dataType: "number"; columnType: "PgSerial"; data: number; driv...'.
+
+745       query = query.where(eq(auditLogs.targetUserId, userId));
+          ~~~~~
+
+  node_modules/drizzle-orm/pg-core/query-builders/select.d.ts:402:5
+    402     where(where: ((aliases: this['_']['selection']) => SQL | undefined) | SQL | undefined): PgSelectWithout<this, TDynamic, 'where'>;
+            ~~~~~
+    'where' is declared here.
+
+server/storage.ts:748:7 - error TS2741: Property 'where' is missing in type 'Omit<import("/home/runner/workspace/node_modules/drizzle-orm/pg-core/query-builders/select").PgSelectBase<"audit_logs", { id: import("/home/runner/workspace/node_modules/drizzle-orm/pg-core/columns/common").PgColumn<{ name: "id"; tableName: "audit_logs"; dataType: "number"; columnType: "PgSerial"; data: number; driv...' but required in type 'Omit<import("/home/runner/workspace/node_modules/drizzle-orm/pg-core/query-builders/select").PgSelectBase<"audit_logs", { id: import("/home/runner/workspace/node_modules/drizzle-orm/pg-core/columns/common").PgColumn<{ name: "id"; tableName: "audit_logs"; dataType: "number"; columnType: "PgSerial"; data: number; driv...'.
+
+748       query = query.where(eq(auditLogs.targetOrgId, orgId));
+          ~~~~~
+
+  node_modules/drizzle-orm/pg-core/query-builders/select.d.ts:402:5
+    402     where(where: ((aliases: this['_']['selection']) => SQL | undefined) | SQL | undefined): PgSelectWithout<this, TDynamic, 'where'>;
+            ~~~~~
+    'where' is declared here.
+
+server/storage.ts:784:37 - error TS2339: Property 'stripeCustomerId' does not exist on type 'PgTableWithColumns<{ name: "public_users"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; ... 7 more ...; generated: undefined; }, {}, {}>; ... 19 more ...; createdAt: PgColumn<...>; }; ...'.
+
+784       stripeCustomerId: publicUsers.stripeCustomerId,
+                                        ~~~~~~~~~~~~~~~~
+
+server/storage.ts:787:27 - error TS2339: Property 'status' does not exist on type 'PgTableWithColumns<{ name: "public_users"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; ... 7 more ...; generated: undefined; }, {}, {}>; ... 19 more ...; createdAt: PgColumn<...>; }; ...'.
+
+787       status: publicUsers.status,
+                              ~~~~~~
+
+server/storage.ts:790:33 - error TS2339: Property 'featureFlags' does not exist on type 'PgTableWithColumns<{ name: "public_users"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; ... 7 more ...; generated: undefined; }, {}, {}>; ... 19 more ...; createdAt: PgColumn<...>; }; ...'.
+
+790       featureFlags: publicUsers.featureFlags,
+                                    ~~~~~~~~~~~~
+
+server/storage.ts:795:7 - error TS2740: Type 'Omit<PgSelectBase<"public_users", { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: true; ... 5 more ...; generated: undefined; }, {}, {}>; ... 9 more ...; featureFlags: any; }, ... 5 m...' is missing the following properties from type 'PgSelectBase<"public_users", { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: true; ... 5 more ...; generated: undefined; }, {}, {}>; ... 9 more ...; featureFlags: any; }, ... 5 more ....': config, joinsNotNullableMap, tableName, isPartialSelect, and 5 more.
+
+795       query = query.where(
+          ~~~~~
+
+server/storage.ts:803:9 - error TS2740: Type 'Omit<PgSelectBase<"public_users", { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: true; ... 5 more ...; generated: undefined; }, {}, {}>; ... 9 more ...; featureFlags: any; }, ... 5 m...' is missing the following properties from type 'PgSelectBase<"public_users", { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: true; ... 5 more ...; generated: undefined; }, {}, {}>; ... 9 more ...; featureFlags: any; }, ... 5 more ....': config, joinsNotNullableMap, tableName, isPartialSelect, and 5 more.
+
+803         query = query.where(eq(publicUsers.isActive, filters.isActive));
+            ~~~~~
+
+server/storage.ts:806:9 - error TS2740: Type 'Omit<PgSelectBase<"public_users", { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: true; ... 5 more ...; generated: undefined; }, {}, {}>; ... 9 more ...; featureFlags: any; }, ... 5 m...' is missing the following properties from type 'PgSelectBase<"public_users", { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: true; ... 5 more ...; generated: undefined; }, {}, {}>; ... 9 more ...; featureFlags: any; }, ... 5 more ....': config, joinsNotNullableMap, tableName, isPartialSelect, and 5 more.
+
+806         query = query.where(eq(publicUsers.role, filters.role));
+            ~~~~~
+
+server/storage.ts:809:9 - error TS2740: Type 'Omit<PgSelectBase<"public_users", { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: true; ... 5 more ...; generated: undefined; }, {}, {}>; ... 9 more ...; featureFlags: any; }, ... 5 m...' is missing the following properties from type 'PgSelectBase<"public_users", { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: true; ... 5 more ...; generated: undefined; }, {}, {}>; ... 9 more ...; featureFlags: any; }, ... 5 more ....': config, joinsNotNullableMap, tableName, isPartialSelect, and 5 more.
+
+809         query = query.where(eq(publicUsers.status, filters.status));
+            ~~~~~
+
+server/storage.ts:809:44 - error TS2339: Property 'status' does not exist on type 'PgTableWithColumns<{ name: "public_users"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "public_users"; dataType: "number"; columnType: "PgSerial"; data: number; driverParam: number; notNull: true; ... 7 more ...; generated: undefined; }, {}, {}>; ... 19 more ...; createdAt: PgColumn<...>; }; ...'.
+
+809         query = query.where(eq(publicUsers.status, filters.status));
+                                               ~~~~~~
+
+server/storage.ts:846:29 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; createdAt: Date | null; stripeCustomerId: any; socialAccounts: unknown; isActive: boolean | null; status: any; role: string | null; permissions: unknown; featureFlags: any; }'.
+
+846         emailVerified: user.emailVerified ?? false,
+                                ~~~~~~~~~~~~~
+
+server/storage.ts:849:28 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; createdAt: Date | null; stripeCustomerId: any; socialAccounts: unknown; isActive: boolean | null; status: any; role: string | null; permissions: unknown; featureFlags: any; }'.
+
+849         statusReason: user.statusReason || null,
+                               ~~~~~~~~~~~~
+
+server/storage.ts:851:9 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+851         permissions: user.permissions || [],
+            ~~~~~~~~~~~
+
+  server/storage.ts:83:3
+    83   permissions: string[];
+         ~~~~~~~~~~~
+    The expected type comes from property 'permissions' which is declared here on type 'PublicUser'
+
+server/storage.ts:853:9 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+853         socialAccounts: user.socialAccounts || null,
+            ~~~~~~~~~~~~~~
+
+  server/storage.ts:85:3
+    85   socialAccounts: any[] | null;
+         ~~~~~~~~~~~~~~
+    The expected type comes from property 'socialAccounts' which is declared here on type 'PublicUser'
+
+server/storage.ts:855:34 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; createdAt: Date | null; stripeCustomerId: any; socialAccounts: unknown; isActive: boolean | null; status: any; role: string | null; permissions: unknown; featureFlags: any; }'.
+
+855         forcePasswordReset: user.forcePasswordReset || false,
+                                     ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:856:26 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; createdAt: Date | null; stripeCustomerId: any; socialAccounts: unknown; isActive: boolean | null; status: any; role: string | null; permissions: unknown; featureFlags: any; }'.
+
+856         requireMfa: user.requireMfa || false,
+                             ~~~~~~~~~~
+
+server/storage.ts:857:9 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+857         createdAt: user.createdAt,
+            ~~~~~~~~~
+
+  server/storage.ts:89:3
+    89   createdAt: Date;
+         ~~~~~~~~~
+    The expected type comes from property 'createdAt' which is declared here on type 'PublicUser'
+
+server/storage.ts:858:25 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; createdAt: Date | null; stripeCustomerId: any; socialAccounts: unknown; isActive: boolean | null; status: any; role: string | null; permissions: unknown; featureFlags: any; }'.
+
+858         updatedAt: user.updatedAt,
+                            ~~~~~~~~~
+
+server/storage.ts:877:14 - error TS2353: Object literal may only specify known properties, and 'status' does not exist in type '{ name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined; email?: string | SQL<unknown> | PgColumn<...> | undefined; ... 18 more ...; accountLocked?: boolean | ... 3 more ... | undefined; }'.
+
+877       .set({ status: 'locked', statusReason: reason, updatedAt: new Date() })
+                 ~~~~~~
+
+server/storage.ts:885:27 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+885       emailVerified: user.emailVerified ?? false,
+                              ~~~~~~~~~~~~~
+
+server/storage.ts:887:20 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+887       status: user.status || 'active',
+                       ~~~~~~
+
+server/storage.ts:888:26 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+888       statusReason: user.statusReason || null,
+                             ~~~~~~~~~~~~
+
+server/storage.ts:890:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+890       permissions: user.permissions || [],
+          ~~~~~~~~~~~
+
+  server/storage.ts:83:3
+    83   permissions: string[];
+         ~~~~~~~~~~~
+    The expected type comes from property 'permissions' which is declared here on type 'PublicUser'
+
+server/storage.ts:891:26 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+891       featureFlags: user.featureFlags || [],
+                             ~~~~~~~~~~~~
+
+server/storage.ts:892:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+892       socialAccounts: user.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+  server/storage.ts:85:3
+    85   socialAccounts: any[] | null;
+         ~~~~~~~~~~~~~~
+    The expected type comes from property 'socialAccounts' which is declared here on type 'PublicUser'
+
+server/storage.ts:893:30 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+893       stripeCustomerId: user.stripeCustomerId || null,
+                                 ~~~~~~~~~~~~~~~~
+
+server/storage.ts:894:32 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+894       forcePasswordReset: user.forcePasswordReset || false,
+                                   ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:895:24 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+895       requireMfa: user.requireMfa || false,
+                           ~~~~~~~~~~
+
+server/storage.ts:896:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+896       createdAt: user.createdAt,
+          ~~~~~~~~~
+
+  server/storage.ts:89:3
+    89   createdAt: Date;
+         ~~~~~~~~~
+    The expected type comes from property 'createdAt' which is declared here on type 'PublicUser'
+
+server/storage.ts:897:23 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+897       updatedAt: user.updatedAt,
+                          ~~~~~~~~~
+
+server/storage.ts:904:14 - error TS2353: Object literal may only specify known properties, and 'status' does not exist in type '{ name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined; email?: string | SQL<unknown> | PgColumn<...> | undefined; ... 18 more ...; accountLocked?: boolean | ... 3 more ... | undefined; }'.
+
+904       .set({ status: 'active', statusReason: null, updatedAt: new Date() })
+                 ~~~~~~
+
+server/storage.ts:912:27 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+912       emailVerified: user.emailVerified ?? false,
+                              ~~~~~~~~~~~~~
+
+server/storage.ts:914:20 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+914       status: user.status || 'active',
+                       ~~~~~~
+
+server/storage.ts:915:26 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+915       statusReason: user.statusReason || null,
+                             ~~~~~~~~~~~~
+
+server/storage.ts:917:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+917       permissions: user.permissions || [],
+          ~~~~~~~~~~~
+
+  server/storage.ts:83:3
+    83   permissions: string[];
+         ~~~~~~~~~~~
+    The expected type comes from property 'permissions' which is declared here on type 'PublicUser'
+
+server/storage.ts:918:26 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+918       featureFlags: user.featureFlags || [],
+                             ~~~~~~~~~~~~
+
+server/storage.ts:919:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+919       socialAccounts: user.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+  server/storage.ts:85:3
+    85   socialAccounts: any[] | null;
+         ~~~~~~~~~~~~~~
+    The expected type comes from property 'socialAccounts' which is declared here on type 'PublicUser'
+
+server/storage.ts:920:30 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+920       stripeCustomerId: user.stripeCustomerId || null,
+                                 ~~~~~~~~~~~~~~~~
+
+server/storage.ts:921:32 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+921       forcePasswordReset: user.forcePasswordReset || false,
+                                   ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:922:24 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+922       requireMfa: user.requireMfa || false,
+                           ~~~~~~~~~~
+
+server/storage.ts:923:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+923       createdAt: user.createdAt,
+          ~~~~~~~~~
+
+  server/storage.ts:89:3
+    89   createdAt: Date;
+         ~~~~~~~~~
+    The expected type comes from property 'createdAt' which is declared here on type 'PublicUser'
+
+server/storage.ts:924:23 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+924       updatedAt: user.updatedAt,
+                          ~~~~~~~~~
+
+server/storage.ts:933:14 - error TS2353: Object literal may only specify known properties, and 'forcePasswordReset' does not exist in type '{ name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined; email?: string | SQL<unknown> | PgColumn<...> | undefined; ... 18 more ...; accountLocked?: boolean | ... 3 more ... | undefined; }'.
+
+933       .set({ forcePasswordReset: true, updatedAt: new Date() })
+                 ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:941:27 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+941       emailVerified: user.emailVerified ?? false,
+                              ~~~~~~~~~~~~~
+
+server/storage.ts:943:20 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+943       status: user.status || 'active',
+                       ~~~~~~
+
+server/storage.ts:944:26 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+944       statusReason: user.statusReason || null,
+                             ~~~~~~~~~~~~
+
+server/storage.ts:946:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+946       permissions: user.permissions || [],
+          ~~~~~~~~~~~
+
+  server/storage.ts:83:3
+    83   permissions: string[];
+         ~~~~~~~~~~~
+    The expected type comes from property 'permissions' which is declared here on type 'PublicUser'
+
+server/storage.ts:947:26 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+947       featureFlags: user.featureFlags || [],
+                             ~~~~~~~~~~~~
+
+server/storage.ts:948:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+948       socialAccounts: user.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+  server/storage.ts:85:3
+    85   socialAccounts: any[] | null;
+         ~~~~~~~~~~~~~~
+    The expected type comes from property 'socialAccounts' which is declared here on type 'PublicUser'
+
+server/storage.ts:949:30 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+949       stripeCustomerId: user.stripeCustomerId || null,
+                                 ~~~~~~~~~~~~~~~~
+
+server/storage.ts:950:32 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+950       forcePasswordReset: user.forcePasswordReset || false,
+                                   ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:951:24 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+951       requireMfa: user.requireMfa || false,
+                           ~~~~~~~~~~
+
+server/storage.ts:952:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+952       createdAt: user.createdAt,
+          ~~~~~~~~~
+
+  server/storage.ts:89:3
+    89   createdAt: Date;
+         ~~~~~~~~~
+    The expected type comes from property 'createdAt' which is declared here on type 'PublicUser'
+
+server/storage.ts:953:23 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+953       updatedAt: user.updatedAt,
+                          ~~~~~~~~~
+
+server/storage.ts:960:14 - error TS2353: Object literal may only specify known properties, and 'requireMfa' does not exist in type '{ name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined; email?: string | SQL<unknown> | PgColumn<...> | undefined; ... 18 more ...; accountLocked?: boolean | ... 3 more ... | undefined; }'.
+
+960       .set({ requireMfa: true, updatedAt: new Date() })
+                 ~~~~~~~~~~
+
+server/storage.ts:968:27 - error TS2339: Property 'emailVerified' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+968       emailVerified: user.emailVerified ?? false,
+                              ~~~~~~~~~~~~~
+
+server/storage.ts:970:20 - error TS2339: Property 'status' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+970       status: user.status || 'active',
+                       ~~~~~~
+
+server/storage.ts:971:26 - error TS2339: Property 'statusReason' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+971       statusReason: user.statusReason || null,
+                             ~~~~~~~~~~~~
+
+server/storage.ts:973:7 - error TS2740: Type '{}' is missing the following properties from type 'string[]': length, pop, push, concat, and 35 more.
+
+973       permissions: user.permissions || [],
+          ~~~~~~~~~~~
+
+  server/storage.ts:83:3
+    83   permissions: string[];
+         ~~~~~~~~~~~
+    The expected type comes from property 'permissions' which is declared here on type 'PublicUser'
+
+server/storage.ts:974:26 - error TS2339: Property 'featureFlags' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+974       featureFlags: user.featureFlags || [],
+                             ~~~~~~~~~~~~
+
+server/storage.ts:975:7 - error TS2322: Type '{} | null' is not assignable to type 'any[] | null'.
+  Type '{}' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+
+975       socialAccounts: user.socialAccounts || null,
+          ~~~~~~~~~~~~~~
+
+  server/storage.ts:85:3
+    85   socialAccounts: any[] | null;
+         ~~~~~~~~~~~~~~
+    The expected type comes from property 'socialAccounts' which is declared here on type 'PublicUser'
+
+server/storage.ts:976:30 - error TS2339: Property 'stripeCustomerId' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+976       stripeCustomerId: user.stripeCustomerId || null,
+                                 ~~~~~~~~~~~~~~~~
+
+server/storage.ts:977:32 - error TS2339: Property 'forcePasswordReset' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+977       forcePasswordReset: user.forcePasswordReset || false,
+                                   ~~~~~~~~~~~~~~~~~~
+
+server/storage.ts:978:24 - error TS2339: Property 'requireMfa' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+978       requireMfa: user.requireMfa || false,
+                           ~~~~~~~~~~
+
+server/storage.ts:979:7 - error TS2322: Type 'Date | null' is not assignable to type 'Date'.
+  Type 'null' is not assignable to type 'Date'.
+
+979       createdAt: user.createdAt,
+          ~~~~~~~~~
+
+  server/storage.ts:89:3
+    89   createdAt: Date;
+         ~~~~~~~~~
+    The expected type comes from property 'createdAt' which is declared here on type 'PublicUser'
+
+server/storage.ts:980:23 - error TS2339: Property 'updatedAt' does not exist on type '{ id: number; name: string; email: string; passwordHash: string | null; provider: string | null; providerId: string | null; socialAccounts: unknown; privileges: unknown; isActive: boolean | null; role: string | null; ... 10 more ...; createdAt: Date | null; }'.
+
+980       updatedAt: user.updatedAt,
+                          ~~~~~~~~~
+
+server/storage.ts:1048:33 - error TS2339: Property 'where' does not exist on type 'Omit<PgDeleteBase<PgTableWithColumns<{ name: "access_control_user_roles"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "access_control_user_roles"; dataType: "number"; columnType: "PgSerial"; data: number; ... 9 more ...; generated: undefined; }, {}, {}>; userId: PgColumn<...>; roleId: PgColum...'.
+
+1048       deleteQuery = deleteQuery.where(eq(accessControlUserRoles.orgId, orgId));
+                                     ~~~~~
+
+server/vite.ts:39:5 - error TS2322: Type '{ middlewareMode: boolean; hmr: { server: Server<typeof IncomingMessage, typeof ServerResponse>; }; allowedHosts: boolean; }' is not assignable to type 'ServerOptions'.
+  Types of property 'allowedHosts' are incompatible.
+    Type 'boolean' is not assignable to type 'true | string[] | undefined'.
+
+39     server: serverOptions,
+       ~~~~~~
+
+
+Found 285 errors in 14 files.
+
+Errors  Files
+     7  client/src/pages/customer-dashboard.tsx:73
+     2  client/src/pages/pricing.tsx:51
+     2  server/db/runMigrations.ts:15
+     1  server/db/seed.ts:2
+     1  server/lib/email.ts:6
+     1  server/lib/jwt.ts:5
+    44  server/middleware/accessControl.ts:2
+     7  server/publicAuth.ts:54
+    34  server/routes.ts:10
+     2  server/routes/auth.ts:22
+     2  server/routes/customer.ts:21
+    12  server/services/callMetricsService.ts:1
+   169  server/storage.ts:71
+     1  server/vite.ts:39
