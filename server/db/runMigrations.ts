@@ -29,10 +29,11 @@ async function applyMigration(name: string, sqlText: string) {
       .map(stmt => stmt.trim())
       .filter(stmt => stmt.length > 0 && !stmt.match(/^\s*--/)); // Remove empty and comment-only lines
     
-    // Execute each statement individually
+    // Execute each statement individually using Neon's raw query method
     for (const statement of statements) {
       if (statement.trim()) {
-        await sql.unsafe(statement);
+        // Use the sql function with a raw string
+        await sql([statement] as any, ...[] as any[]);
       }
     }
     
