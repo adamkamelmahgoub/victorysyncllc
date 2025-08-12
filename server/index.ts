@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
 import passport from "./auth/passport";
 import { runMigrations } from './migrations';
+import { runMigrations as runSQLMigrations } from './db/runMigrations';
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -49,35 +50,15 @@ app.use((req, res, next) => {
       }
 
 
-// Initialize call metrics service
-import { callMetricsService } from './services/callMetricsService';
-
-// Start call metrics polling after server is ready
-process.nextTick(() => {
-  if (process.env.DIALER_PROVIDER) {
-    callMetricsService.startPolling();
-  }
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully...');
-  callMetricsService.stopPolling();
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully...');
-  callMetricsService.stopPolling();
-  process.exit(0);
-});
-
-      log(logLine);
+log(logLine);
     }
   });
 
   next();
 });
+
+// Initialize call metrics service
+import { callMetricsService } from './services/callMetricsService';
 
 (async () => {
   try {
@@ -97,6 +78,11 @@ process.on('SIGINT', () => {
     console.log('🔄 Running database migrations...');
     await runMigrations();
     console.log('✅ Database migrations completed');
+
+    // Run SQL migrations
+    console.log('🔄 Running SQL migrations...');
+    await runSQLMigrations();
+    console.log('✅ SQL migrations completed');
 
     const server = await registerRoutes(app);
     console.log(`✅ Routes registered successfully`);
@@ -143,9 +129,17 @@ process.on('SIGINT', () => {
       console.log(`Health check available at: http://0.0.0.0:${port}/health`);
     });
 
+    // Start call metrics polling after server is ready
+    process.nextTick(() => {
+      if (process.env.DIALER_PROVIDER) {
+        callMetricsService.startPolling();
+      }
+    });
+
     // Handle graceful shutdown
     process.on('SIGTERM', () => {
       console.log('SIGTERM received, shutting down gracefully');
+      callMetricsService.stopPolling();
       server.close(() => {
         console.log('Server closed');
         process.exit(0);
@@ -154,6 +148,7 @@ process.on('SIGINT', () => {
 
     process.on('SIGINT', () => {
       console.log('SIGINT received, shutting down gracefully');
+      callMetricsService.stopPolling();
       server.close(() => {
         console.log('Server closed');
         process.exit(0);
