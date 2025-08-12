@@ -1,150 +1,159 @@
+import { Request, Response, NextFunction } from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { registerUserSchema, loginSchema, type PublicUser } from "@shared/schema";
+import { storage } from "./storage";
+import { sendEmail } from "./utils/sendEmail";
 
-import { Router } from 'express';
-import argon2 from 'argon2';
-import { z } from 'zod';
-import { storage } from './storage';
-import { generateTokenPair } from './lib/jwt';
-import { loginSchema, registerUserSchema } from '../shared/schema';
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
-const router = Router();
+export interface AuthenticatedRequest extends Request {
+  user?: PublicUser;
+}
 
-// Register endpoint for public users
-router.post('/register', async (req, res) => {
+export const hashPassword = async (password: string): Promise<string> => {
+  return await bcrypt.hash(password, 10);
+};
+
+export const comparePassword = async (password: string, hash: string): Promise<boolean> => {
+  return await bcrypt.compare(password, hash);
+};
+
+export const generateJWT = (user: PublicUser): string => {
+  return jwt.sign(
+    { id: user.id, email: user.email, name: user.name },
+    JWT_SECRET,
+    { expiresIn: "30d" }
+  );
+};
+
+export const verifyJWT = (token: string): any => {
+  return jwt.verify(token, JWT_SECRET);
+};
+
+export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+
+    if (!token) {
+      return res.status(401).json({ error: "Access token required" });
+    }
+
+    const decoded = verifyJWT(token);
+    const user = await storage.getPublicUserById(decoded.id);
+    
+    if (!user) {
+      return res.status(401).json({ error: "Invalid token - user not found" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ error: "Account has been deactivated" });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: "Invalid or expired token" });
+  }
+};
+
+export const registerUser = async (req: Request, res: Response) => {
   try {
     const validatedData = registerUserSchema.parse(req.body);
     
+    // Check if user already exists
     const existingUser = await storage.getPublicUserByEmail(validatedData.email);
     if (existingUser) {
-      return res.status(400).json({
-        ok: false,
-        error: 'EMAIL_EXISTS',
-        message: 'Email already registered'
-      });
+      return res.status(400).json({ error: "User with this email already exists" });
     }
 
-    const passwordHash = await argon2.hash(validatedData.password);
+    // Hash password
+    const passwordHash = await hashPassword(validatedData.password);
     
-    const user = await storage.createPublicUser({
-      ...validatedData,
+    // Create user
+    const newUser = await storage.createPublicUser({
+      name: validatedData.name,
+      email: validatedData.email,
       passwordHash,
-      isActive: true,
-      socialAccounts: [],
+      provider: "local",
     });
 
-    const tokens = generateTokenPair({
-      userId: user.id,
-      orgId: undefined,
-      isSuperAdmin: false,
+    // Generate JWT
+    const token = generateJWT(newUser);
+
+    // Send email notification for new user signup
+    await sendEmail({
+      subject: "New User Signup",
+      text: `A new user just signed up:\n\nName: ${newUser.name}\nEmail: ${newUser.email}`
     });
 
-    res.cookie('accessToken', tokens.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
-
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    });
-
-    res.json({
-      ok: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      }
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        ok: false,
-        error: 'VALIDATION_ERROR',
-        message: 'Invalid input data',
-        details: error.errors
-      });
-    }
+    // Return user data without password hash
+    const { passwordHash: _, ...userWithoutPassword } = newUser;
     
-    console.error('Registration error:', error);
-    res.status(500).json({
-      ok: false,
-      error: 'SERVER_ERROR',
-      message: 'Registration failed'
+    res.status(201).json({
+      token,
+      user: userWithoutPassword,
     });
+  } catch (error: any) {
+    console.error("Registration error:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({ error: "Validation failed", details: error.errors });
+    }
+    res.status(500).json({ error: "Registration failed" });
   }
-});
+};
 
-// Login endpoint for public users
-router.post('/login', async (req, res) => {
+export const loginUser = async (req: Request, res: Response) => {
   try {
     const validatedData = loginSchema.parse(req.body);
     
+    // Find user by email
     const user = await storage.getPublicUserByEmail(validatedData.email);
-    if (!user || !user.isActive) {
-      return res.status(401).json({
-        ok: false,
-        error: 'INVALID_CREDENTIALS',
-        message: 'Invalid email or password'
-      });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const validPassword = await argon2.verify(user.passwordHash, validatedData.password);
-    if (!validPassword) {
-      return res.status(401).json({
-        ok: false,
-        error: 'INVALID_CREDENTIALS',
-        message: 'Invalid email or password'
-      });
-    }
-
-    const tokens = generateTokenPair({
-      userId: user.id,
-      orgId: undefined,
-      isSuperAdmin: false,
-    });
-
-    res.cookie('accessToken', tokens.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
-
-    res.json({
-      ok: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      }
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        ok: false,
-        error: 'VALIDATION_ERROR',
-        message: 'Invalid input data'
-      });
+    // Verify password (only for local auth users)
+    if (!user.passwordHash) {
+      return res.status(401).json({ error: "Please use social login for this account" });
     }
     
-    console.error('Login error:', error);
-    res.status(500).json({
-      ok: false,
-      error: 'SERVER_ERROR',
-      message: 'Login failed'
-    });
-  }
-});
+    const isValidPassword = await comparePassword(validatedData.password, user.passwordHash);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
 
-export default router;
+    // Generate JWT
+    const token = generateJWT(user);
+
+    // Return user data without password hash
+    const { passwordHash: _, ...userWithoutPassword } = user;
+    
+    res.json({
+      token,
+      user: userWithoutPassword,
+    });
+  } catch (error: any) {
+    console.error("Login error:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({ error: "Validation failed", details: error.errors });
+    }
+    res.status(500).json({ error: "Login failed" });
+  }
+};
+
+export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    // Return user data without password hash
+    const { passwordHash: _, ...userWithoutPassword } = req.user;
+    res.json({ user: userWithoutPassword });
+  } catch (error) {
+    console.error("Get current user error:", error);
+    res.status(500).json({ error: "Failed to get user data" });
+  }
+};

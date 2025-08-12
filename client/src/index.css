@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Remove all button outlines */
+button {
+  outline: none !important;
+  border: none !important;
+}
+
+button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Add white outline to all buttons */
 button {
   outline: 2px solid white !important;
@@ -100,7 +111,20 @@ button {
 
 @layer utilities {
   .victory-purple {
-    color: var(--victory-purple);
+    --victory-purple: #6B46C1;
+    --victory-purple-hover: #553C9A;
+    --victory-purple-light: #EDE9FE;
+  }
+
+  /* Prevent duplicate button outlines */
+  .bg-victory-purple {
+    border: none !important;
+    outline: none !important;
+  }
+
+  .bg-victory-purple:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(107, 70, 193, 0.2) !important;
   }
 
   .victory-blue {
@@ -154,28 +178,4 @@ button {
   .gradient-victory {
     background: linear-gradient(135deg, var(--victory-purple) 0%, var(--victory-blue) 100%);
   }
-}
-
-/* Custom button styles */
-.victory-button {
-  @apply bg-victory-purple hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors border-2 border-white/20;
-}
-
-/* Global button outline styling */
-button, .btn {
-  border: 2px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-button:hover, .btn:hover {
-  border-color: rgba(255, 255, 255, 0.4) !important;
-}
-
-/* Ensure admin portal buttons have white outlines */
-.admin-portal button {
-  border: 2px solid rgba(255, 255, 255, 0.3) !important;
-}
-
-/* Customer dashboard button styling */
-.customer-dashboard button {
-  border: 2px solid rgba(255, 255, 255, 0.2) !important;
 }

@@ -1,332 +1,428 @@
+
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
   Users, 
   Package, 
-  TrendingUp, 
+  Settings, 
+  BarChart3, 
   DollarSign, 
-  MoreVertical, 
-  Shield, 
-  Eye, 
-  Lock, 
-  Unlock, 
-  Trash2, 
-  Plus, 
+  TrendingUp, 
+  Download,
+  Plus,
   Edit,
-  CheckCircle,
-  Activity,
-  CreditCard,
-  BarChart3,
-  UserPlus,
+  Trash2,
+  Shield,
+  Globe,
+  Mail,
+  Bell,
+  Eye,
+  UserCheck,
+  UserX,
   Search,
-  AlertTriangle
+  Filter,
+  ChevronDown,
+  RefreshCw,
+  Activity,
+  Clock,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  MoreHorizontal,
+  Target,
+  Calendar,
+  FileText,
+  Database,
+  Zap,
+  Lock,
+  Unlock,
+  UserPlus,
+  ShoppingCart,
+  CreditCard,
+  Home,
+  LogOut
 } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from '@/hooks/use-toast';
+import { useLocation } from 'wouter';
 
 interface User {
   id: number;
-  name: string;
   email: string;
+  name: string;
   isActive: boolean;
   createdAt: string;
-  privileges?: {
-    subscriptionTier?: string;
-    accountStatus?: string;
-    priority?: string;
-  };
+  lastLogin?: string;
+  role: string;
+  subscriptionTier: string;
+  totalSpent: number;
+  orderCount: number;
 }
 
 interface Order {
   id: number;
   userId: string;
-  status: string;
+  userEmail: string;
+  userName: string;
   total: string;
+  status: string;
   createdAt: string;
+  items: any[];
 }
 
 interface Package {
   id: number;
   name: string;
-  description: string;
   price: string;
+  description: string;
   features: string[];
+  isActive: boolean;
+  createdAt: string;
 }
 
-interface AdminStats {
-  totalUsers: number;
-  activeUsers: number;
-  totalRevenue: number;
-  monthlyGrowth: number;
-  totalCalls: number;
-  avgSatisfaction: number;
-}
-
-export default function AdminPortal() {
-  const [, setLocation] = useLocation();
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isUserDetailOpen, setIsUserDetailOpen] = useState(false);
-  const [tierFilter, setTierFilter] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState("overview");
-  const [searchTerm, setSearchTerm] = useState("");
+const AdminPortal = () => {
+  const [location, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [userSearch, setUserSearch] = useState('');
+  const [orderSearch, setOrderSearch] = useState('');
+  const [packageSearch, setPackageSearch] = useState('');
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [isAddPackageModalOpen, setIsAddPackageModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingPackage, setEditingPackage] = useState<Package | null>(null);
+  const [bulkAction, setBulkAction] = useState('');
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [adminSettings, setAdminSettings] = useState({
+    siteName: 'VictorySync',
+    maintenanceMode: false,
+    registrationEnabled: true,
+    emailNotifications: true,
+    autoApproveOrders: true,
+    maxUsersPerAccount: 50,
+    defaultUserRole: 'user',
+    sessionTimeout: 30,
+    enableAnalytics: true,
+    enableLogging: true,
+    backupFrequency: 'daily',
+    emailProvider: 'smtp',
+    smtpSettings: {
+      host: '',
+      port: 587,
+      username: '',
+      password: '',
+      encryption: 'tls'
+    }
+  });
+
   const queryClient = useQueryClient();
 
   // Check admin authentication
+  const adminToken = localStorage.getItem('admin_token') || 'admin123';
+  const adminHeaders = { 'x-admin-auth': adminToken };
+
+  // Real-time refresh interval
   useEffect(() => {
-    const adminAuth = localStorage.getItem('adminAuth');
-    const adminToken = localStorage.getItem('adminToken');
-    if (adminAuth === 'admin123' || adminToken) {
-      setIsAuthenticated(true);
-    } else {
-      setLocation('/admin');
-    }
-  }, [setLocation]);
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-packages'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-analytics'] });
+    }, 3000); // Refresh every 3 seconds
 
-  const handleAdminLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (credentials.username === 'kimo8723' && credentials.password === 'Mshmsh7184365700!') {
-      localStorage.setItem('adminToken', 'admin-authenticated');
-      localStorage.setItem('adminAuth', 'admin123');
-      setIsAuthenticated(true);
-    } else {
-      alert('Invalid credentials');
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminAuth');
-    setIsAuthenticated(false);
-    setCredentials({ username: '', password: '' });
-  };
-
-  // API calls with admin headers
-  const adminRequest = async (method: string, url: string, data?: any) => {
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-auth': 'admin123',
-      },
-      body: data ? JSON.stringify(data) : undefined,
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
-  };
-
-  // Queries
-  const { data: adminStats } = useQuery<AdminStats>({
-    queryKey: ['admin-stats'],
-    queryFn: () => adminRequest('GET', '/api/admin/stats'),
-    enabled: isAuthenticated,
-    initialData: {
-      totalUsers: 0,
-      activeUsers: 0,
-      totalRevenue: 0,
-      monthlyGrowth: 0,
-      totalCalls: 0,
-      avgSatisfaction: 0
-    }
-  });
+    return () => clearInterval(interval);
+  }, [queryClient]);
 
   const { data: users = [], isLoading: usersLoading } = useQuery({
-    queryKey: ['/api/admin/users'],
+    queryKey: ['admin-users'],
     queryFn: async () => {
       const response = await fetch('/api/admin/users', {
-        headers: {
-          'x-admin-auth': 'admin123'
-        }
+        headers: adminHeaders
       });
-      if (!response.ok) throw new Error('Failed to fetch users');
+      if (!response.ok) {
+        if (response.status === 403) {
+          setLocation('/');
+          throw new Error('Admin access required');
+        }
+        throw new Error('Failed to fetch users');
+      }
       return response.json();
     },
-    enabled: isAuthenticated
+    refetchInterval: 5000 // Refetch every 5 seconds
   });
 
-  const { data: orders = [] } = useQuery({
-    queryKey: ['/api/admin/orders'],
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ['admin-orders'],
     queryFn: async () => {
       const response = await fetch('/api/admin/orders', {
-        headers: {
-          'x-admin-auth': 'admin123'
-        }
+        headers: adminHeaders
       });
       if (!response.ok) throw new Error('Failed to fetch orders');
       return response.json();
     },
-    enabled: isAuthenticated
+    refetchInterval: 5000 // Refetch every 5 seconds
   });
 
-  const { data: packages = [] } = useQuery({
-    queryKey: ['/api/packages'],
-    enabled: isAuthenticated
+  const { data: packages = [], isLoading: packagesLoading } = useQuery({
+    queryKey: ['admin-packages'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/packages', {
+        headers: adminHeaders
+      });
+      if (!response.ok) throw new Error('Failed to fetch packages');
+      return response.json();
+    },
+    refetchInterval: 5000 // Refetch every 5 seconds
   });
 
-  const { data: systemHealth } = useQuery({
-    queryKey: ['system-health'],
-    queryFn: () => adminRequest('GET', '/api/admin/health'),
-    enabled: isAuthenticated,
-    refetchInterval: 30000
+  const { data: analytics } = useQuery({
+    queryKey: ['admin-analytics'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/analytics', {
+        headers: adminHeaders
+      });
+      if (!response.ok) throw new Error('Failed to fetch analytics');
+      return response.json();
+    },
+    refetchInterval: 3000 // Refetch every 3 seconds for real-time stats
   });
 
   // Mutations
-  const updateUserMutation = useMutation({
-    mutationFn: ({ userId, data }: { userId: number; data: any }) =>
-      adminRequest('PATCH', `/api/admin/users/${userId}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      if (!response.ok) throw new Error('Failed to create user');
+      return response.json();
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      setIsAddUserModalOpen(false);
+      toast({ title: 'User created successfully' });
+    }
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ userId, data }: { userId: number; data: any }) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update user');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast({ title: 'User updated successfully' });
+    }
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: (userId: number) => adminRequest('DELETE', `/api/admin/users/${userId}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    mutationFn: async (userId: number) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: adminHeaders
+      });
+      if (!response.ok) throw new Error('Failed to delete user');
+      return response.json();
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast({ title: 'User deleted successfully' });
+    }
   });
 
-  // Login screen
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <img src="/LOGO_VS.png" alt="VictorySync" className="w-12 h-12 mx-auto mb-4" />
-            <CardTitle className="text-2xl">VictorySync Admin</CardTitle>
-            <p className="text-gray-600">Enter your admin credentials</p>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAdminLogin} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Username</label>
-                <Input
-                  type="text"
-                  value={credentials.username}
-                  onChange={(e) => setCredentials(prev => ({ ...prev, username: e.target.value }))}
-                  placeholder="Enter username"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Password</label>
-                <Input
-                  type="password"
-                  value={credentials.password}
-                  onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Enter password"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
-                Sign In
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Filter users based on tier
-  const filteredUsers = users.filter((user: User) => {
-    if (tierFilter === 'all') return true;
-    return user.privileges?.subscriptionTier === tierFilter;
+  const bulkActionMutation = useMutation({
+    mutationFn: async ({ userIds, action, value }: { userIds: number[]; action: string; value?: any }) => {
+      const response = await fetch('/api/admin/users/bulk', {
+        method: 'POST',
+        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds, action, value })
+      });
+      if (!response.ok) throw new Error('Failed to perform bulk action');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      setSelectedUsers([]);
+      toast({ title: 'Bulk action completed successfully' });
+    }
   });
 
-  const searchFilteredUsers = filteredUsers.filter((user: User) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const createPackageMutation = useMutation({
+    mutationFn: async (packageData: any) => {
+      const response = await fetch('/api/admin/packages', {
+        method: 'POST',
+        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify(packageData)
+      });
+      if (!response.ok) throw new Error('Failed to create package');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-packages'] });
+      setIsAddPackageModalOpen(false);
+      toast({ title: 'Package created successfully' });
+    }
+  });
+
+  const updatePackageMutation = useMutation({
+    mutationFn: async ({ packageId, data }: { packageId: number; data: any }) => {
+      const response = await fetch(`/api/admin/packages/${packageId}`, {
+        method: 'PUT',
+        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update package');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-packages'] });
+      setEditingPackage(null);
+      toast({ title: 'Package updated successfully' });
+    }
+  });
+
+  const deletePackageMutation = useMutation({
+    mutationFn: async (packageId: number) => {
+      const response = await fetch(`/api/admin/packages/${packageId}`, {
+        method: 'DELETE',
+        headers: adminHeaders
+      });
+      if (!response.ok) throw new Error('Failed to delete package');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-packages'] });
+      toast({ title: 'Package deleted successfully' });
+    }
+  });
+
+  // Filter functions
+  const filteredUsers = users.filter((user: User) =>
+    user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+    user.email.toLowerCase().includes(userSearch.toLowerCase())
   );
 
-  const handleUserClick = (user: User) => {
-    setSelectedUser(user);
-    setIsUserDetailOpen(true);
+  const filteredOrders = orders.filter((order: Order) =>
+    order.userEmail.toLowerCase().includes(orderSearch.toLowerCase()) ||
+    order.userName.toLowerCase().includes(orderSearch.toLowerCase()) ||
+    order.status.toLowerCase().includes(orderSearch.toLowerCase())
+  );
+
+  const filteredPackages = packages.filter((pkg: Package) =>
+    pkg.name.toLowerCase().includes(packageSearch.toLowerCase()) ||
+    pkg.description.toLowerCase().includes(packageSearch.toLowerCase())
+  );
+
+  // Handle bulk actions
+  const handleBulkAction = () => {
+    if (selectedUsers.length === 0 || !bulkAction) return;
+    
+    bulkActionMutation.mutate({
+      userIds: selectedUsers,
+      action: bulkAction
+    });
   };
 
-  const getTierColor = (tier: string) => {
-    switch (tier) {
-      case 'enterprise': return 'bg-purple-100 text-purple-800';
-      case 'premium': return 'bg-blue-100 text-blue-800';
-      case 'basic': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'suspended': return 'bg-red-100 text-red-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const toggleUserStatus = async (userId: number, currentStatus: boolean) => {
+  // Export functions
+  const handleExport = async (type: string) => {
     try {
-      await apiRequest('PUT', `/api/admin/users/${userId}/status`, { isActive: !currentStatus });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      const response = await fetch(`/api/admin/export/${type}`, {
+        headers: adminHeaders
+      });
+      if (!response.ok) throw new Error('Failed to export data');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${type}-export.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      toast({ title: `${type} exported successfully` });
     } catch (error) {
-      console.error('Error updating user status:', error);
+      toast({ title: 'Export failed', variant: 'destructive' });
     }
   };
 
-  const deleteUser = async (userId: number) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        await apiRequest('DELETE', `/api/admin/users/${userId}`);
-        queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      } catch (error) {
-        console.error('Error deleting user:', error);
-      }
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    setLocation('/');
   };
 
-  const impersonateUser = (userId: number) => {
-    console.log('Impersonating user:', userId);
-    // Implement impersonation logic
+  // Dashboard Stats
+  const dashboardStats = analytics ? {
+    totalUsers: analytics.totalUsers,
+    activeUsers: analytics.activeUsers,
+    totalOrders: analytics.totalOrders,
+    totalRevenue: analytics.totalRevenue,
+    avgOrderValue: analytics.avgOrderValue,
+    conversionRate: analytics.conversionRate,
+    monthlyGrowth: analytics.monthlyGrowth
+  } : {
+    totalUsers: users.length,
+    activeUsers: users.filter((u: User) => u.isActive).length,
+    totalOrders: orders.length,
+    totalRevenue: orders.reduce((sum: number, order: Order) => sum + parseFloat(order.total), 0),
+    avgOrderValue: orders.length > 0 ? orders.reduce((sum: number, order: Order) => sum + parseFloat(order.total), 0) / orders.length : 0,
+    conversionRate: users.length > 0 ? (orders.length / users.length) * 100 : 0,
+    monthlyGrowth: { users: '+12%', revenue: '+8%', orders: '+15%' }
   };
-
-  // Calculate stats
-  const totalRevenue = orders.reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0);
-  const activeUsers = users.filter((user: User) => user.isActive !== false).length;
-  const totalOrders = orders.length;
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <img src="/LOGO_VS.png" alt="VictorySync" className="w-8 h-8" />
+            <div className="flex items-center space-x-3">
+              <Shield className="h-8 w-8 text-purple-600" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">VictorySync Admin</h1>
-                <p className="text-sm text-gray-600">System Administration Portal</p>
+                <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
+                <p className="text-sm text-gray-500">VictorySync Management Dashboard</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <Badge variant="default" className="bg-green-100 text-green-800">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                All Systems Online
-              </Badge>
-              <Button onClick={handleLogout} variant="outline" size="sm">
-                <Shield className="w-4 h-4 mr-2" />
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsSettingsModalOpen(true)}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLocation('/')}
+              >
+                <Home className="h-4 w-4 mr-2" />
+                Back to Site
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
             </div>
@@ -334,81 +430,90 @@ export default function AdminPortal() {
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="packages">Packages</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            {/* Admin Stats Cards */}
+          {/* Dashboard Tab */}
+          <TabsContent value="dashboard" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="border-l-4 border-l-blue-500">
+              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                  <Users className="h-4 w-4 text-blue-600" />
+                  <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{adminStats.totalUsers}</div>
-                  <p className="text-xs text-gray-600">+{adminStats.monthlyGrowth}% this month</p>
+                  <div className="text-2xl font-bold">{dashboardStats.totalUsers}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {dashboardStats.activeUsers} active users
+                  </p>
                 </CardContent>
               </Card>
-
-              <Card className="border-l-4 border-l-green-500">
+              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-                  <Activity className="h-4 w-4 text-green-600" />
+                  <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                  <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{adminStats.activeUsers}</div>
-                  <p className="text-xs text-gray-600">Last 30 days</p>
+                  <div className="text-2xl font-bold">{dashboardStats.totalOrders}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {dashboardStats.monthlyGrowth.orders} from last month
+                  </p>
                 </CardContent>
               </Card>
-
-              <Card className="border-l-4 border-l-purple-500">
+              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                  <CreditCard className="h-4 w-4 text-purple-600" />
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${adminStats.totalRevenue.toLocaleString()}</div>
-                  <p className="text-xs text-gray-600">Monthly recurring</p>
+                  <div className="text-2xl font-bold">${dashboardStats.totalRevenue.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {dashboardStats.monthlyGrowth.revenue} from last month
+                  </p>
                 </CardContent>
               </Card>
-
-              <Card className="border-l-4 border-l-yellow-500">
+              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Avg Satisfaction</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-yellow-600" />
+                  <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{adminStats.avgSatisfaction}%</div>
-                  <p className="text-xs text-gray-600">Across all clients</p>
+                  <div className="text-2xl font-bold">{dashboardStats.conversionRate.toFixed(1)}%</div>
+                  <p className="text-xs text-muted-foreground">
+                    Avg order: ${dashboardStats.avgOrderValue.toFixed(0)}
+                  </p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Recent Activity & System Status */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent User Activity</CardTitle>
+                  <CardTitle>Recent Orders</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {users.slice(0, 5).map((user: User) => (
-                      <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    {orders.slice(0, 5).map((order: Order) => (
+                      <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div>
-                          <p className="font-medium text-sm">{user.name}</p>
-                          <p className="text-xs text-gray-500">Joined: {new Date(user.createdAt).toLocaleDateString()}</p>
+                          <p className="font-medium">{order.userName}</p>
+                          <p className="text-sm text-gray-500">{order.userEmail}</p>
                         </div>
-                        <Badge variant={user.isActive !== false ? 'default' : 'secondary'}>
-                          {user.isActive !== false ? 'Active' : 'Inactive'}
-                        </Badge>
+                        <div className="text-right">
+                          <p className="font-medium">${order.total}</p>
+                          <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
+                            {order.status}
+                          </Badge>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -417,191 +522,369 @@ export default function AdminPortal() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>System Health</CardTitle>
+                  <CardTitle>Recent Users</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Database Connection</span>
-                      <Badge className="bg-green-100 text-green-800">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Healthy
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">API Response Time</span>
-                      <Badge className="bg-green-100 text-green-800">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Fast
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Integration Status</span>
-                      <Badge className="bg-yellow-100 text-yellow-800">
-                        <AlertTriangle className="w-3 h-3 mr-1" />
-                        2 Warning
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Storage Usage</span>
-                      <span className="text-sm font-medium">67% of 1TB</span>
-                    </div>
+                  <div className="space-y-3">
+                    {users.slice(0, 5).map((user: User) => (
+                      <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant={user.isActive ? 'default' : 'secondary'}>
+                            {user.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
+          {/* Users Tab */}
           <TabsContent value="users" className="space-y-6">
-            {/* User Management Header */}
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-                <p className="text-gray-600">Manage customer accounts and subscriptions</p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search users..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
-                  />
-                </div>
-                <Select value={tierFilter} onValueChange={setTierFilter}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Filter by tier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Tiers</SelectItem>
-                    <SelectItem value="basic">Basic</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button>
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Add User
-                </Button>
-              </div>
-            </div>
-
-            {/* Users Table */}
             <Card>
-              <CardContent className="p-0">
-                {usersLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>User Management</CardTitle>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleExport('users')}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => setIsAddUserModalOpen(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add User
+                    </Button>
                   </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-50 border-b">
-                        <tr>
-                          <th className="text-left p-4 font-medium text-gray-900">User</th>
-                          <th className="text-left p-4 font-medium text-gray-900">Status</th>
-                          <th className="text-left p-4 font-medium text-gray-900">Tier</th>
-                          <th className="text-left p-4 font-medium text-gray-900">Orders</th>
-                          <th className="text-left p-4 font-medium text-gray-900">Spent</th>
-                          <th className="text-left p-4 font-medium text-gray-900">Joined</th>
-                          <th className="text-left p-4 font-medium text-gray-900">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {searchFilteredUsers.map((user: User) => (
-                          <tr key={user.id} className="border-b hover:bg-gray-50 cursor-pointer">
-                            <td className="p-4" onClick={() => handleUserClick(user)}>
-                              <div>
-                                <p className="font-medium">{user.name}</p>
-                                <p className="text-xs text-gray-500">{user.email}</p>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Search and Filters */}
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <Search className="h-4 w-4 text-gray-400" />
+                      <Input
+                        placeholder="Search users..."
+                        value={userSearch}
+                        onChange={(e) => setUserSearch(e.target.value)}
+                        className="w-80"
+                      />
+                    </div>
+                    {selectedUsers.length > 0 && (
+                      <div className="flex items-center space-x-2">
+                        <Select value={bulkAction} onValueChange={setBulkAction}>
+                          <SelectTrigger className="w-40">
+                            <SelectValue placeholder="Bulk action" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="activate">Activate</SelectItem>
+                            <SelectItem value="deactivate">Deactivate</SelectItem>
+                            <SelectItem value="delete">Delete</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          size="sm"
+                          onClick={handleBulkAction}
+                          disabled={!bulkAction}
+                        >
+                          Apply to {selectedUsers.length} users
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Users Table */}
+                  <div className="border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">
+                            <Checkbox
+                              checked={selectedUsers.length === filteredUsers.length}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedUsers(filteredUsers.map((u: User) => u.id));
+                                } else {
+                                  setSelectedUsers([]);
+                                }
+                              }}
+                            />
+                          </TableHead>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Orders</TableHead>
+                          <TableHead>Total Spent</TableHead>
+                          <TableHead>Created</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredUsers.map((user: User) => (
+                          <TableRow key={user.id}>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedUsers.includes(user.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedUsers([...selectedUsers, user.id]);
+                                  } else {
+                                    setSelectedUsers(selectedUsers.filter(id => id !== user.id));
+                                  }
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium">{user.name}</TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>
+                              <Badge variant={user.isActive ? 'default' : 'secondary'}>
+                                {user.isActive ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="capitalize">{user.role}</TableCell>
+                            <TableCell>{user.orderCount || 0}</TableCell>
+                            <TableCell>${user.totalSpent?.toFixed(2) || '0.00'}</TableCell>
+                            <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setEditingUser(user)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => updateUserMutation.mutate({
+                                    userId: user.id,
+                                    data: { isActive: !user.isActive }
+                                  })}
+                                >
+                                  {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => deleteUserMutation.mutate(user.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               </div>
-                            </td>
-                            <td className="p-4" onClick={() => handleUserClick(user)}>
-                              <Badge className={user.isActive !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                                {user.isActive !== false ? "Active" : "Inactive"}
-                              </Badge>
-                            </td>
-                            <td className="p-4" onClick={() => handleUserClick(user)}>
-                              <Badge className={getTierColor(user.privileges?.subscriptionTier || 'basic')}>
-                                {user.privileges?.subscriptionTier || 'basic'}
-                              </Badge>
-                            </td>
-                            <td className="p-4" onClick={() => handleUserClick(user)}>
-                              {orders.filter((order: Order) => order.userId === user.id.toString()).length}
-                            </td>
-                            <td className="p-4" onClick={() => handleUserClick(user)}>
-                              ${orders.filter((order: Order) => order.userId === user.id.toString())
-                                .reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0)
-                                .toLocaleString()}
-                            </td>
-                            <td className="p-4" onClick={() => handleUserClick(user)}>
-                              {new Date(user.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="p-4">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreVertical className="w-4 h-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem onClick={() => handleUserClick(user)}>
-                                    <Shield className="w-4 h-4 mr-2" />
-                                    Manage Privileges
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => impersonateUser(user.id)}>
-                                    <Eye className="w-4 h-4 mr-2" />
-                                    Impersonate
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem 
-                                    onClick={() => toggleUserStatus(user.id, user.isActive !== false)}
-                                    className={user.isActive !== false ? "text-yellow-600" : "text-green-600"}
-                                  >
-                                    {user.isActive !== false ? <Lock className="w-4 h-4 mr-2" /> : <Unlock className="w-4 h-4 mr-2" />}
-                                    {user.isActive !== false ? "Suspend" : "Activate"}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => deleteUser(user.id)}
-                                    className="text-red-600"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </td>
-                          </tr>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
+          {/* Orders Tab */}
+          <TabsContent value="orders" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Order Management</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleExport('orders')}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Search className="h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search orders..."
+                      value={orderSearch}
+                      onChange={(e) => setOrderSearch(e.target.value)}
+                      className="w-80"
+                    />
+                  </div>
+
+                  <div className="border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Order ID</TableHead>
+                          <TableHead>Customer</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredOrders.map((order: Order) => (
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">#{order.id}</TableCell>
+                            <TableCell>{order.userName}</TableCell>
+                            <TableCell>{order.userEmail}</TableCell>
+                            <TableCell>${order.total}</TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                order.status === 'completed' ? 'default' :
+                                order.status === 'pending' ? 'secondary' :
+                                'destructive'
+                              }>
+                                {order.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                            <TableCell>
+                              <Button variant="ghost" size="sm">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Packages Tab */}
+          <TabsContent value="packages" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Package Management</CardTitle>
+                  <Button
+                    size="sm"
+                    onClick={() => setIsAddPackageModalOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Package
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Search className="h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search packages..."
+                      value={packageSearch}
+                      onChange={(e) => setPackageSearch(e.target.value)}
+                      className="w-80"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredPackages.map((pkg: Package) => (
+                      <Card key={pkg.id} className="relative">
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle className="text-lg">{pkg.name}</CardTitle>
+                              <p className="text-2xl font-bold text-purple-600">${pkg.price}</p>
+                            </div>
+                            <div className="flex space-x-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setEditingPackage(pkg)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deletePackageMutation.mutate(pkg.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-gray-600 mb-4">{pkg.description}</p>
+                          <div className="space-y-2">
+                            {pkg.features.map((feature: string, index: number) => (
+                              <div key={index} className="flex items-center text-sm">
+                                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                                {feature}
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>User Analytics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span>Total Users</span>
+                      <span className="font-bold">{dashboardStats.totalUsers}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Active Users</span>
+                      <span className="font-bold">{dashboardStats.activeUsers}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Growth Rate</span>
+                      <span className="font-bold text-green-600">{dashboardStats.monthlyGrowth.users}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Revenue Analytics</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>Monthly Recurring Revenue</span>
-                      <span className="font-bold text-lg">${adminStats.totalRevenue.toLocaleString()}</span>
+                    <div className="flex justify-between">
+                      <span>Total Revenue</span>
+                      <span className="font-bold">${dashboardStats.totalRevenue.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between">
+                      <span>Avg Order Value</span>
+                      <span className="font-bold">${dashboardStats.avgOrderValue.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
                       <span>Growth Rate</span>
-                      <span className="font-bold text-green-600">+{adminStats.monthlyGrowth}%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Average Revenue Per User</span>
-                      <span className="font-bold">${adminStats.totalUsers > 0 ? Math.round(adminStats.totalRevenue / adminStats.totalUsers) : 0}</span>
+                      <span className="font-bold text-green-600">{dashboardStats.monthlyGrowth.revenue}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -609,21 +892,21 @@ export default function AdminPortal() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Usage Analytics</CardTitle>
+                  <CardTitle>Order Analytics</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>Total Calls This Month</span>
-                      <span className="font-bold text-lg">{adminStats.totalCalls.toLocaleString()}</span>
+                    <div className="flex justify-between">
+                      <span>Total Orders</span>
+                      <span className="font-bold">{dashboardStats.totalOrders}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span>Active Integrations</span>
-                      <span className="font-bold">47</span>
+                    <div className="flex justify-between">
+                      <span>Conversion Rate</span>
+                      <span className="font-bold">{dashboardStats.conversionRate.toFixed(1)}%</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span>Avg Satisfaction Score</span>
-                      <span className="font-bold text-green-600">{adminStats.avgSatisfaction}%</span>
+                    <div className="flex justify-between">
+                      <span>Growth Rate</span>
+                      <span className="font-bold text-green-600">{dashboardStats.monthlyGrowth.orders}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -631,36 +914,35 @@ export default function AdminPortal() {
             </div>
           </TabsContent>
 
+          {/* System Tab */}
           <TabsContent value="system" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>System Performance</CardTitle>
+                  <CardTitle>System Status</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>CPU Usage</span>
-                      <span className="font-medium">45%</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <span>Database</span>
+                      </div>
+                      <Badge variant="default">Online</Badge>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-green-600 h-2 rounded-full w-[45%]" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <span>API Server</span>
+                      </div>
+                      <Badge variant="default">Online</Badge>
                     </div>
-
-                    <div className="flex justify-between items-center">
-                      <span>Memory Usage</span>
-                      <span className="font-medium">67%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-yellow-600 h-2 rounded-full w-[67%]" />
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <span>Storage Usage</span>
-                      <span className="font-medium">34%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full w-[34%]" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <span>Email Service</span>
+                      </div>
+                      <Badge variant="default">Online</Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -668,138 +950,330 @@ export default function AdminPortal() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Logs</CardTitle>
+                  <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 text-sm font-mono">
-                    <div className="text-green-600">[INFO] Database backup completed</div>
-                    <div className="text-blue-600">[INFO] New user registration: john@example.com</div>
-                    <div className="text-yellow-600">[WARN] High API usage detected</div>
-                    <div className="text-green-600">[INFO] Integration sync successful</div>
-                    <div className="text-red-600">[ERROR] Failed to send email notification</div>
+                  <div className="space-y-3">
+                    <Button variant="outline" className="w-full justify-start">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh Cache
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Database className="h-4 w-4 mr-2" />
+                      Backup Database
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Activity className="h-4 w-4 mr-2" />
+                      View Logs
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Settings className="h-4 w-4 mr-2" />
+                      System Settings
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
-
-          <TabsContent value="settings" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Admin Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h3 className="font-medium mb-4">Security Settings</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Require 2FA for admin access</span>
-                      <input type="checkbox" className="rounded" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Auto-logout after inactivity</span>
-                      <input type="checkbox" defaultChecked className="rounded" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Log all admin actions</span>
-                      <input type="checkbox" defaultChecked className="rounded" />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-medium mb-4">Notification Settings</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Email alerts for new users</span>
-                      <input type="checkbox" defaultChecked className="rounded" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">SMS alerts for system issues</span>
-                      <input type="checkbox" className="rounded" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Weekly analytics reports</span>
-                      <input type="checkbox" defaultChecked className="rounded" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <Button>Save Settings</Button>
-                  <Button variant="outline">Export Data</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
+      </div>
 
-        {/* User Details Modal */}
-        <Dialog open={isUserDetailOpen} onOpenChange={setIsUserDetailOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center space-x-2">
-                <Shield className="w-5 h-5" />
-                <span>User Management: {selectedUser?.name}</span>
-              </DialogTitle>
-            </DialogHeader>
+      {/* Add User Modal */}
+      <Dialog open={isAddUserModalOpen} onOpenChange={setIsAddUserModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogDescription>Create a new user account</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            
+            createUserMutation.mutate({
+              name: formData.get('name'),
+              email: formData.get('email'),
+              password: formData.get('password'),
+              role: formData.get('role') || 'user',
+              isActive: formData.get('isActive') === 'on'
+            });
+          }}>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Full Name</Label>
+                <Input id="name" name="name" required />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" name="email" type="email" required />
+              </div>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" name="password" type="password" required />
+              </div>
+              <div>
+                <Label htmlFor="role">Role</Label>
+                <Select name="role">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="isActive" name="isActive" defaultChecked />
+                <Label htmlFor="isActive">Active</Label>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsAddUserModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Create User</Button>
+              </div>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-            {selectedUser && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Email</span>
-                          <span className="font-semibold">{selectedUser.email}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Status</span>
-                          <Badge className={getStatusColor(selectedUser.privileges?.accountStatus || 'active')}>
-                            {selectedUser.privileges?.accountStatus || 'active'}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Tier</span>
-                          <Badge className={getTierColor(selectedUser.privileges?.subscriptionTier || 'basic')}>
-                            {selectedUser.privileges?.subscriptionTier || 'basic'}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Joined</span>
-                          <span className="font-semibold">{new Date(selectedUser.createdAt).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+      {/* Add Package Modal */}
+      <Dialog open={isAddPackageModalOpen} onOpenChange={setIsAddPackageModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add New Package</DialogTitle>
+            <DialogDescription>Create a new service package</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const features = formData.get('features')?.toString().split('\n').filter(f => f.trim()) || [];
+            
+            createPackageMutation.mutate({
+              name: formData.get('name'),
+              price: formData.get('price'),
+              description: formData.get('description'),
+              features
+            });
+          }}>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Package Name</Label>
+                <Input id="name" name="name" required />
+              </div>
+              <div>
+                <Label htmlFor="price">Price</Label>
+                <Input id="price" name="price" type="number" step="0.01" required />
+              </div>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Input id="description" name="description" required />
+              </div>
+              <div>
+                <Label htmlFor="features">Features (one per line)</Label>
+                <Textarea id="features" name="features" rows={5} required />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsAddPackageModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Create Package</Button>
+              </div>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Orders</span>
-                          <span className="font-semibold">
-                            {orders.filter((order: Order) => order.userId === selectedUser.id.toString()).length}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Total Spent</span>
-                          <span className="font-semibold">
-                            ${orders.filter((order: Order) => order.userId === selectedUser.id.toString())
-                              .reduce((sum: number, order: Order) => sum + parseFloat(order.total || '0'), 0)
-                              .toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+      {/* Edit User Modal */}
+      <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>Update user information</DialogDescription>
+          </DialogHeader>
+          {editingUser && (
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              
+              updateUserMutation.mutate({
+                userId: editingUser.id,
+                data: {
+                  name: formData.get('name'),
+                  email: formData.get('email'),
+                  role: formData.get('role'),
+                  isActive: formData.get('isActive') === 'on'
+                }
+              });
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-user-name">Full Name</Label>
+                  <Input id="edit-user-name" name="name" defaultValue={editingUser.name} required />
+                </div>
+                <div>
+                  <Label htmlFor="edit-user-email">Email</Label>
+                  <Input id="edit-user-email" name="email" type="email" defaultValue={editingUser.email} required />
+                </div>
+                <div>
+                  <Label htmlFor="edit-user-role">Role</Label>
+                  <Select name="role" defaultValue={editingUser.role}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="edit-user-isActive" name="isActive" defaultChecked={editingUser.isActive} />
+                  <Label htmlFor="edit-user-isActive">Active</Label>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setEditingUser(null)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Update User</Button>
                 </div>
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
-      </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Package Modal */}
+      <Dialog open={!!editingPackage} onOpenChange={() => setEditingPackage(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Package</DialogTitle>
+            <DialogDescription>Update package information</DialogDescription>
+          </DialogHeader>
+          {editingPackage && (
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const features = formData.get('features')?.toString().split('\n').filter(f => f.trim()) || [];
+              
+              updatePackageMutation.mutate({
+                packageId: editingPackage.id,
+                data: {
+                  name: formData.get('name'),
+                  price: formData.get('price'),
+                  description: formData.get('description'),
+                  features
+                }
+              });
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-name">Package Name</Label>
+                  <Input id="edit-name" name="name" defaultValue={editingPackage.name} required />
+                </div>
+                <div>
+                  <Label htmlFor="edit-price">Price</Label>
+                  <Input id="edit-price" name="price" type="number" step="0.01" defaultValue={editingPackage.price} required />
+                </div>
+                <div>
+                  <Label htmlFor="edit-description">Description</Label>
+                  <Input id="edit-description" name="description" defaultValue={editingPackage.description} required />
+                </div>
+                <div>
+                  <Label htmlFor="edit-features">Features (one per line)</Label>
+                  <Textarea id="edit-features" name="features" rows={5} defaultValue={editingPackage.features.join('\n')} required />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setEditingPackage(null)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Update Package</Button>
+                </div>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Settings Modal */}
+      <Dialog open={isSettingsModalOpen} onOpenChange={setIsSettingsModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>System Settings</DialogTitle>
+            <DialogDescription>Configure system-wide settings and preferences</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h3 className="font-semibold">General Settings</h3>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="siteName">Site Name</Label>
+                    <Input id="siteName" value={adminSettings.siteName} onChange={(e) => setAdminSettings({...adminSettings, siteName: e.target.value})} />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="maintenance"
+                      checked={adminSettings.maintenanceMode}
+                      onCheckedChange={(checked) => setAdminSettings({...adminSettings, maintenanceMode: checked})}
+                    />
+                    <Label htmlFor="maintenance">Maintenance Mode</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="registration"
+                      checked={adminSettings.registrationEnabled}
+                      onCheckedChange={(checked) => setAdminSettings({...adminSettings, registrationEnabled: checked})}
+                    />
+                    <Label htmlFor="registration">Enable Registration</Label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold">Security Settings</h3>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="sessionTimeout">Session Timeout (minutes)</Label>
+                    <Input 
+                      id="sessionTimeout" 
+                      type="number"
+                      value={adminSettings.sessionTimeout}
+                      onChange={(e) => setAdminSettings({...adminSettings, sessionTimeout: parseInt(e.target.value)})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="maxUsers">Max Users Per Account</Label>
+                    <Input 
+                      id="maxUsers" 
+                      type="number"
+                      value={adminSettings.maxUsersPerAccount}
+                      onChange={(e) => setAdminSettings({...adminSettings, maxUsersPerAccount: parseInt(e.target.value)})}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsSettingsModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => {
+                // Save settings logic here
+                toast({ title: 'Settings saved successfully' });
+                setIsSettingsModalOpen(false);
+              }}>
+                Save Settings
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-}
+};
+
+export default AdminPortal;

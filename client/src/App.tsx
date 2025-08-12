@@ -1,73 +1,104 @@
+import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { CartProvider } from "@/contexts/CartContext";
+import { useState } from "react";
 
-import React, { Suspense, lazy, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import ErrorBoundary from "./components/ErrorBoundary";
+// Layout Components
+import Navigation from "@/components/navigation";
+import Footer from "@/components/footer";
+import CartModal from "@/components/cart-modal";
 
-// Adjust these import paths if our components live elsewhere:
-import Navigation from "./components/navigation";
-import Footer from "./components/footer";
-import CartModal from "./components/cart-modal";
-import { CartProvider } from "./contexts/CartContext";
+// Pages
+import Home from "@/pages/home";
+import Services from "@/pages/services";
+import Pricing from "@/pages/pricing";
+import About from "@/pages/about";
+import Contact from "@/pages/contact";
+import Checkout from "@/pages/checkout";
+import CustomerDashboard from "@/pages/customer-dashboard";
+import Register from "@/pages/register";
+import Login from "@/pages/login";
+import NotFound from "@/pages/not-found";
+import AdminPortal from "@/pages/admin-portal";
 
-// Helper: scroll to top on route change
-function ScrollToTop() {
-  React.useEffect(() => {
-    const onHashChange = () => window.scrollTo({ top: 0, behavior: "instant" as any });
-    onHashChange();
-    window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
-  }, []);
-  return null;
-}
+// Footer Pages
+import AboutUs from "@/pages/about-us";
+import Careers from "@/pages/careers";
+import Blog from "@/pages/blog";
+import HelpCenter from "@/pages/help-center";
+import Documentation from "@/pages/docs";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms";
 
-// Lazily import pages. IMPORTANT: If a path doesn't exist in the repo,
-// create a minimal page in client/src/pages/<name>.tsx that exports default component.
-// Prefer existing files; only create stubs if missing.
-const Home = lazy(() => import("./pages/home"));            // or "./pages/Home"
-const About = lazy(() => import("./pages/about"));          // or "./pages/About"
-const Services = lazy(() => import("./pages/services"));    // or "./pages/Services"
-const Contact = lazy(() => import("./pages/contact"));      // or "./pages/Contact"
-const Pricing = lazy(() => import("./pages/pricing"));      // or "./pages/Pricing"
-const SignIn = lazy(() => import("./pages/login"));         // or "./pages/SignIn" / "./pages/Login"
-const Register = lazy(() => import("./pages/register"));    // or "./pages/Register"
-const Dashboard = lazy(() => import("./pages/customer-dashboard")); // optional
+// Import Google Fonts
+import "@fontsource/inter/300.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/inter/800.css";
 
-function PageFallback() {
+function Router() {
+  const [cartModalOpen, setCartModalOpen] = useState(false);
+
+  const openCartModal = () => setCartModalOpen(true);
+  const closeCartModal = () => setCartModalOpen(false);
+
   return (
-    <div style={{ minHeight: "50vh", display: "grid", placeItems: "center" }}>
-      <div>Loading…</div>
+    <div className="min-h-screen flex flex-col">
+      <Navigation onCartClick={openCartModal} />
+
+      <main className="flex-1">
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/services" component={Services} />
+          <Route path="/pricing" component={Pricing} />
+          <Route path="/about" component={About} />
+          <Route path="/contact" component={Contact} />
+          <Route path="/checkout" component={Checkout} />
+          <Route path="/dashboard" component={CustomerDashboard} />
+          <Route path="/customer-dashboard" component={CustomerDashboard} />
+          <Route path="/register" component={Register} />
+          <Route path="/signup" component={Register} />
+          <Route path="/login" component={Login} />
+
+          {/* Footer Pages */}
+          <Route path="/about-us" component={AboutUs} />
+          <Route path="/careers" component={Careers} />
+          <Route path="/blog" component={Blog} />
+          <Route path="/help-center" component={HelpCenter} />
+          <Route path="/docs" component={Documentation} />
+          <Route path="/privacy-policy" component={PrivacyPolicy} />
+          <Route path="/terms" component={TermsOfService} />
+          <Route path="/admin" component={AdminPortal} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+
+      <Footer />
+
+      <CartModal 
+        isOpen={cartModalOpen} 
+        onClose={closeCartModal} 
+      />
     </div>
   );
 }
 
-export default function App() {
-  const [isCartOpen, setIsCartOpen] = useState(false);
-
+function App() {
   return (
-    <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <BrowserRouter>
-          <ScrollToTop />
-          <Navigation onCartClick={() => setIsCartOpen(true)} />
-          <Suspense fallback={<PageFallback />}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/login" element={<SignIn />} />
-              <Route path="/register" element={<Register />} />
-              {/* OPTIONAL: only enable if the page exists */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              {/* Legacy/unknown paths -> home (adjust if we have a NotFound page) */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-          <Footer />
-          <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-        </BrowserRouter>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
       </CartProvider>
-    </ErrorBoundary>
+    </QueryClientProvider>
   );
 }
+
+export default App;

@@ -1,10 +1,10 @@
-
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "wouter";
 import { ShoppingCart, User, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -15,7 +15,7 @@ interface NavigationProps {
 }
 
 export default function Navigation({ onCartClick }: NavigationProps) {
-  const location = useLocation();
+  const [location] = useLocation();
   const { getItemCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -26,7 +26,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
     { href: "/", label: "Home" },
     { href: "/services", label: "Services" },
     { href: "/pricing", label: "Pricing" },
-    { href: "/about", label: "About" },
+    { href: "/about-us", label: "About" },
     { href: "/contact", label: "Contact" },
   ];
 
@@ -35,7 +35,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" onClick={scrollToTop}>
+          <Link href="/" onClick={scrollToTop}>
             <div className="flex items-center space-x-3 cursor-pointer">
               <img 
             src="/LOGO_VS.png" 
@@ -51,10 +51,10 @@ export default function Navigation({ onCartClick }: NavigationProps) {
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <Link key={link.href} to={link.href}>
+              <Link key={link.href} href={link.href}>
                 <span
                   className={`font-medium transition-colors cursor-pointer ${
-                    location.pathname === link.href
+                    location === link.href
                       ? "victory-purple"
                       : "victory-gray hover:victory-purple"
                   }`}
@@ -81,7 +81,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
 
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
-                <Link to="/dashboard">
+                <Link href="/dashboard">
                   <Button variant="ghost" size="sm">
                     <User className="w-4 h-4 mr-2" />
                     Dashboard
@@ -97,11 +97,12 @@ export default function Navigation({ onCartClick }: NavigationProps) {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link to="/login">
+                <Link href="/login">
                   <Button variant="ghost" size="sm">
                     Sign In
                   </Button>
                 </Link>
+
               </div>
             )}
           </div>
@@ -137,10 +138,10 @@ export default function Navigation({ onCartClick }: NavigationProps) {
           <div className="md:hidden py-4 border-t border-slate-200">
             <div className="flex flex-col space-y-4">
               {navLinks.map((link) => (
-                <Link key={link.href} to={link.href}>
+                <Link key={link.href} href={link.href}>
                   <span
                     className={`font-medium transition-colors cursor-pointer block py-2 ${
-                      location.pathname === link.href
+                      location === link.href
                         ? "victory-purple"
                         : "victory-gray hover:victory-purple"
                     }`}
@@ -154,7 +155,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
               <div className="pt-4 border-t border-slate-200">
                 {isAuthenticated ? (
                   <div className="flex flex-col space-y-2">
-                    <Link to="/dashboard">
+                    <Link href="/dashboard">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -183,6 +184,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     >
                       Sign In
                     </Button>
+
                   </div>
                 )}
               </div>

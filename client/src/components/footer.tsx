@@ -1,5 +1,4 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'wouter';
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -21,7 +20,7 @@ export default function Footer() {
               <span className="text-xl brand-font">VictorySync</span>
             </div>
             <p className="text-gray-400 mb-6">
-              Professional contact center and AI automation services from Millstone, New Jersey. Helping US businesses reduce costs and improve customer satisfaction.
+              Professional call center and AI automation services from Millstone, New Jersey. Helping US businesses reduce costs and improve customer satisfaction.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-victory-purple transition-colors">
@@ -46,10 +45,10 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-6">Services</h4>
             <ul className="space-y-3 text-gray-400">
-              <li><Link to="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Inbound Support</span></Link></li>
-              <li><Link to="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Outbound Sales</span></Link></li>
-              <li><Link to="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">AI Automation</span></Link></li>
-              <li><Link to="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Digital Marketing</span></Link></li>
+              <li><Link href="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Inbound Support</span></Link></li>
+              <li><Link href="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Outbound Sales</span></Link></li>
+              <li><Link href="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">AI Automation</span></Link></li>
+              <li><Link href="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Digital Marketing</span></Link></li>
             </ul>
           </div>
 
@@ -57,9 +56,9 @@ export default function Footer() {
           <div id="about-us">
             <h4 className="font-semibold mb-6">Company</h4>
             <ul className="space-y-3 text-gray-400">
-              <li><Link to="/about-us"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">About Us</span></Link></li>
-              <li><Link to="/careers"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Careers</span></Link></li>
-              <li><Link to="/contact"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Contact</span></Link></li>
+              <li><Link href="/about-us"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">About Us</span></Link></li>
+              <li><Link href="/careers"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Careers</span></Link></li>
+              <li><Link href="/contact"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Contact</span></Link></li>
             </ul>
           </div>
 
@@ -67,9 +66,9 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-6">Support</h4>
             <ul className="space-y-3 text-gray-400">
-              <li><Link to="/help-center"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Help Center</span></Link></li>
-              <li><Link to="/privacy-policy"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Privacy Policy</span></Link></li>
-              <li><Link to="/terms"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Terms of Service</span></Link></li>
+              <li><Link href="/help-center"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Help Center</span></Link></li>
+              <li><Link href="/privacy-policy"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Privacy Policy</span></Link></li>
+              <li><Link href="/terms"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Terms of Service</span></Link></li>
             </ul>
           </div>
         </div>
