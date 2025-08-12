@@ -2,6 +2,8 @@
 import React, { Suspense, lazy, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ErrorBoundary from "./components/ErrorBoundary";
+
+// Adjust these import paths if our components live elsewhere:
 import Navigation from "./components/navigation";
 import Footer from "./components/footer";
 import CartModal from "./components/cart-modal";
@@ -18,15 +20,17 @@ function ScrollToTop() {
   return null;
 }
 
-// Lazily import pages
-const Home = lazy(() => import("./pages/home"));
-const About = lazy(() => import("./pages/about"));
-const Services = lazy(() => import("./pages/services"));
-const Contact = lazy(() => import("./pages/contact"));
-const Pricing = lazy(() => import("./pages/pricing"));
-const SignIn = lazy(() => import("./pages/login"));
-const Register = lazy(() => import("./pages/register"));
-const Dashboard = lazy(() => import("./pages/customer-dashboard"));
+// Lazily import pages. IMPORTANT: If a path doesn't exist in the repo,
+// create a minimal page in client/src/pages/<name>.tsx that exports default component.
+// Prefer existing files; only create stubs if missing.
+const Home = lazy(() => import("./pages/home"));            // or "./pages/Home"
+const About = lazy(() => import("./pages/about"));          // or "./pages/About"
+const Services = lazy(() => import("./pages/services"));    // or "./pages/Services"
+const Contact = lazy(() => import("./pages/contact"));      // or "./pages/Contact"
+const Pricing = lazy(() => import("./pages/pricing"));      // or "./pages/Pricing"
+const SignIn = lazy(() => import("./pages/login"));         // or "./pages/SignIn" / "./pages/Login"
+const Register = lazy(() => import("./pages/register"));    // or "./pages/Register"
+const Dashboard = lazy(() => import("./pages/customer-dashboard").catch(() => import("./pages/dashboard"))); // optional
 
 function PageFallback() {
   return (
@@ -39,20 +43,12 @@ function PageFallback() {
 export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const handleCartClick = () => {
-    setIsCartOpen(true);
-  };
-
-  const handleCartClose = () => {
-    setIsCartOpen(false);
-  };
-
   return (
     <ErrorBoundary>
       <CartProvider>
         <BrowserRouter>
           <ScrollToTop />
-          <Navigation onCartClick={handleCartClick} />
+          <Navigation onCartClick={() => setIsCartOpen(true)} />
           <Suspense fallback={<PageFallback />}>
             <Routes>
               <Route path="/" element={<Home />} />
@@ -62,12 +58,14 @@ export default function App() {
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/login" element={<SignIn />} />
               <Route path="/register" element={<Register />} />
+              {/* OPTIONAL: only enable if the page exists */}
               <Route path="/dashboard" element={<Dashboard />} />
+              {/* Legacy/unknown paths -> home (adjust if we have a NotFound page) */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
           <Footer />
-          <CartModal isOpen={isCartOpen} onClose={handleCartClose} />
+          <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         </BrowserRouter>
       </CartProvider>
     </ErrorBoundary>
