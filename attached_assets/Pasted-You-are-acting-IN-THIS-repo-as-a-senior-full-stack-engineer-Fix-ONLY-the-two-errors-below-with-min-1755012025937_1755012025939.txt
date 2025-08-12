@@ -1,0 +1,74 @@
+You are acting IN THIS repo as a senior full-stack engineer. Fix ONLY the two errors below, with minimal, auditable changes. Do NOT modify any UI, navbar, colors, copy, features, or routes beyond what’s required to resolve these errors.
+
+Errors to fix:
+1) Postgres 42703 “column "privileges" does not exist” from /api/admin/users and /api/admin/analytics
+   Stack shows server/storage.ts:getAllPublicUsers selecting a users.privileges column that the DB does not have.
+2) Vite/Babel parse error in client/src/pages/admin-portal.tsx:
+   “Unexpected keyword 'import' (36:0)” where an `import AccessControlCenter ...` line is incorrectly placed mid-file, inside other import syntax.
+
+========================================
+A) DATABASE: add users.privileges column
+========================================
+Goal: Create an idempotent migration to add a NOT NULL jsonb `privileges` column to "users" with default [] and make code/types consistent.
+
+Steps:
+1. Add a SQL migration file at server/db/migrations/XXXX_add_privileges_to_users.sql with EXACTLY:
+---
+ALTER TABLE "users"
+  ADD COLUMN IF NOT EXISTS "privileges" jsonb NOT NULL DEFAULT '[]'::jsonb;
+
+UPDATE "users" SET "privileges" = '[]'::jsonb WHERE "privileges" IS NULL;
+
+CREATE INDEX IF NOT EXISTS users_privileges_gin ON "users" USING GIN ("privileges");
+---
+
+2. Ensure migrations run on startup BEFORE routes register:
+   - If we already have a migration runner, register this migration in the runner.
+   - If not, in server/index.ts (or wherever startup occurs), import and run a tiny helper that executes the SQL above once using the existing Neon/Drizzle connection. Make it idempotent.
+
+3. Update the Drizzle users table model (in shared/schema.ts or wherever defined):
+   - Add `privileges: jsonb("privileges").notNull().$type<string[]>().default([]),`
+   - Re-export any related TS types to include `privileges: string[]`.
+
+4. In server/storage.ts `getAllPublicUsers` (and any analytics queries), coalesce when selecting:
+   - SQL/Drizzle projection should return `COALESCE(users.privileges, '[]'::jsonb) AS privileges`
+   - When mapping to DTOs, default to [] if null.
+
+5. Verify locally:
+   - Run the server so the migration applies.
+   - Manually check: `SELECT privileges FROM users LIMIT 1;` (via existing migration tooling or a quick dev script).
+   - Hit /api/admin/users and /api/admin/analytics — both must return 200 (no 42703).
+
+========================================================
+B) FRONTEND: fix misplaced import in admin-portal.tsx
+========================================================
+Goal: All imports must be at the top of the file. The AccessControlCenter import is currently in the middle of another import list.
+
+Steps:
+1. Open client/src/pages/admin-portal.tsx.
+2. Move this line:
+   `import AccessControlCenter from '@/admin/access-control/AccessControlCenter';`
+   to the very top import section with the other imports (above any code). Do not leave it inside a named import list or between trailing commas.
+3. Make sure all `lucide-react` named imports are well-formed, e.g.:
+   `import { Filter, ChevronDown, RefreshCw, ... } from 'lucide-react';`
+   There must be no stray commas or blank lines that split the import list incorrectly.
+4. Confirm that the component path exists at client/src/admin/access-control/AccessControlCenter.(tsx|jsx). If it doesn’t exist, create it with a minimal default export that renders null and the intended props. Do not add styles or change UI—just ensure the import resolves.
+
+========================================
+C) Non-functional hygiene (optional but safe)
+========================================
+- Do not alter UI/UX. Do not touch navbar, colors, or copy.
+- Ignore the Browserslist warning for now (it’s informational).
+- Don’t add new features or refactor beyond the minimal changes above.
+
+========================================
+D) Validation
+========================================
+1) Start the dev server and confirm logs show no 42703 errors.
+2) Call:
+   - GET /api/admin/users  -> 200 with JSON, not 500
+   - GET /api/admin/analytics -> 200 with JSON, not 500
+3) Load /admin portal route in the browser; ensure no Vite/Babel parse error and the page renders.
+4) Commit only the migration, minimal schema change, and the import fix.
+
+Make these changes now.
