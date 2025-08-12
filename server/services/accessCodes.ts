@@ -1,5 +1,5 @@
 
-import { sql } from '../db';
+import { sql } from '../db/index.js';
 import { randomBytes } from 'crypto';
 
 export async function issueAccessCode(adminId: string, data:{email:string;phone:string;full_name:string;org_name:string; ttlMinutes?:number;}) {
