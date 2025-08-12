@@ -1,0 +1,48 @@
+You are working in THIS repo. Do ONLY what is listed. Do NOT touch any client UI, navbar, routes, styles, copy, or unrelated files.
+
+Goal
+Fix the build error:
+Error [TransformError]: /server/storage.ts:300:26: Expected "=>" but found "("
+
+Hard constraints
+- Minimal diffs. No refactors.
+- Only edit server/storage.ts (and ONLY if necessary, server/index.ts to re-run after fixing).
+- Keep logic identical; this is a syntax fix.
+
+Steps
+
+1) Inspect the exact area
+- Open server/storage.ts.
+- Print lines 270–330 to the console so we can see the bad code location.
+- Identify any callback that starts with a parameter list followed by "(" instead of the arrow token.
+  Common broken patterns:
+  • `.map((x) ( ... ))`           -> must be `.map((x) => ( ... ))`
+  • `.reduce((acc, v) ( ... ), 0)`-> must be `.reduce((acc, v) => { ... }, 0)`
+  • `.filter((x) ( ... ))`        -> must be `.filter((x) => ( ... ))`
+  • `async (req, res) ( ... )`    -> must be `async (req, res) => { ... }`
+  • Object literal method accidentally written like an arrow without `=>`:
+      `handler(id) ( ... )` in a place expecting an arrow -> `handler: (id) => { ... }`
+
+2) Apply the minimal syntax fix
+- Add the missing `=>` ONLY where required.
+- If the callback body is multiple statements, use `{ ... }` with an explicit `return` where the original intended to return a value.
+- Ensure parens/braces match on the surrounding chain (e.g., `.select({...}).from(...).where(...).map(...)`).
+
+3) Check for similar typos nearby
+- Within lines 250–350, correct any other instances of `(params) (` missing `=>`.
+- Also check for a generic arrow that could confuse the parser (rare in .ts):
+  If you see `const fn = <T>(x: T) ( ... )` fix to `const fn = <T,>(x: T) => { ... }`.
+  (Only change if this exact pattern appears.)
+
+4) Save and verify
+- Run `npm run dev`.
+- The previous error MUST be gone. If a NEW "Expected '=>' but found '('" appears at a different column/line in server/storage.ts, repeat Steps 1–3 ONLY for that instance.
+
+5) DO NOT do the following
+- Do NOT change any function names, imports, exports, return types, or business logic.
+- Do NOT modify database code other than the minimal arrow fix.
+- Do NOT edit any other files or add dependencies.
+
+6) Report back
+- Paste the before/after snippet (10–15 lines around the fix) and the exact diff hunk(s).
+- Confirm `npm run dev` starts without the TransformError.
