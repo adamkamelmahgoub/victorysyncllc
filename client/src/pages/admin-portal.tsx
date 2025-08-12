@@ -7,11 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import {
   Users,
   Shield,
@@ -35,20 +36,26 @@ import {
   UserPlus,
   Home,
   LogOut,
-  Phone,
+  Copy,
+  Mail,
+  Building,
   CreditCard,
-  Globe,
-  Database,
+  Flag,
+  History,
+  FileText,
   AlertCircle,
   CheckCircle,
   XCircle,
   Clock,
-  Target,
-  Calendar,
-  FileText,
+  Database,
   Zap,
-  Mail,
-  Bell
+  Target,
+  TrendingDown,
+  Users2,
+  Server,
+  Globe,
+  Calendar,
+  ExternalLink
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
@@ -58,8 +65,8 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: string;
-  status: string;
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'ORG_OWNER' | 'ORG_USER';
+  status: 'active' | 'suspended' | 'locked';
   isActive: boolean;
   accountLocked: boolean;
   lockReason?: string;
@@ -71,26 +78,42 @@ interface User {
   orderCount: number;
   totalSpent: number;
   createdAt: string;
-  isLinkedToDialer: boolean;
+  forcePasswordReset?: boolean;
+  requireMfa?: boolean;
 }
 
-interface CallMetrics {
-  callsToday: number;
-  calls7d: number;
-  calls30d: number;
-  avgHandleTime: number;
-  occupancy: number;
-  liveStatus: string;
-  isLinked: boolean;
-  lastUpdated?: string;
-  isStale?: boolean;
+interface Organization {
+  id: string;
+  name: string;
+  subscriptionTier: 'starter' | 'professional' | 'enterprise';
+  maxSeats: number;
+  usedSeats: number;
+  features: string[];
+  isActive: boolean;
+  createdAt: string;
+  ownerEmail: string;
+  billingStatus: 'active' | 'past_due' | 'canceled';
+  mrr: number;
+}
+
+interface AccessCode {
+  id: string;
+  code: string;
+  orgId?: string;
+  used: boolean;
+  usedBy?: string;
+  expiresAt: string;
+  createdAt: string;
 }
 
 interface AuditLog {
   id: number;
   actorUserId: number;
+  actorEmail: string;
   targetUserId?: number;
+  targetEmail?: string;
   action: string;
+  entity: string;
   before?: any;
   after?: any;
   ip: string;
@@ -98,15 +121,31 @@ interface AuditLog {
   createdAt: string;
 }
 
+interface FeatureFlag {
+  key: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  rolloutPercentage: number;
+  environments: string[];
+}
+
 const AdminPortal = () => {
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [userSearch, setUserSearch] = useState('');
+  const [orgSearch, setOrgSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isUserDrawerOpen, setIsUserDrawerOpen] = useState(false);
-  const [userDetailTab, setUserDetailTab] = useState('overview');
+  const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
+  const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
+  const [isOrgDialogOpen, setIsOrgDialogOpen] = useState(false);
+  const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
+  const [isCreateOrgDialogOpen, setIsCreateOrgDialogOpen] = useState(false);
+  const [isAccessCodeDialogOpen, setIsAccessCodeDialogOpen] = useState(false);
+  const [isFeatureFlagDialogOpen, setIsFeatureFlagDialogOpen] = useState(false);
   const [bulkAction, setBulkAction] = useState('');
+  const [newAccessCode, setNewAccessCode] = useState('');
 
   const queryClient = useQueryClient();
 
@@ -114,84 +153,89 @@ const AdminPortal = () => {
   const adminToken = localStorage.getItem('admin_token') || 'admin123';
   const adminHeaders = { 'x-admin-auth': adminToken };
 
-  // Auto-refresh data
+  // Auto-refresh data every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-analytics'] });
-    }, 5000);
+      queryClient.invalidateQueries({ queryKey: ['admin-orgs'] });
+    }, 30000);
     return () => clearInterval(interval);
   }, [queryClient]);
 
-  // Data fetching
-  const { data: users = [], isLoading: usersLoading } = useQuery({
-    queryKey: ['admin-users'],
+  // Dashboard data
+  const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
+    queryKey: ['admin-dashboard'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/access/users', { headers: adminHeaders });
-      if (!response.ok) {
-        if (response.status === 403) {
-          setLocation('/');
-          throw new Error('Admin access required');
-        }
-        throw new Error('Failed to fetch users');
-      }
-      const data = await response.json();
-      return data.users || [];
-    },
-    refetchInterval: 5000
-  });
-
-  const { data: analytics } = useQuery({
-    queryKey: ['admin-analytics'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/analytics', { headers: adminHeaders });
-      if (!response.ok) throw new Error('Failed to fetch analytics');
+      const response = await fetch('/api/admin/dashboard', { headers: adminHeaders });
+      if (!response.ok) throw new Error('Failed to fetch dashboard data');
       return response.json();
     },
-    refetchInterval: 10000
+    refetchInterval: 30000
   });
 
-  // User details query
-  const { data: userDetails } = useQuery({
-    queryKey: ['user-details', selectedUser?.id],
+  // Users data
+  const { data: usersData = { users: [], total: 0 }, isLoading: usersLoading } = useQuery({
+    queryKey: ['admin-users', userSearch],
     queryFn: async () => {
-      if (!selectedUser) return null;
-      const response = await fetch(`/api/admin/access/users/${selectedUser.id}`, { headers: adminHeaders });
-      if (!response.ok) throw new Error('Failed to fetch user details');
+      const params = new URLSearchParams();
+      if (userSearch) params.append('search', userSearch);
+      const response = await fetch(`/api/admin/users?${params}`, { headers: adminHeaders });
+      if (!response.ok) throw new Error('Failed to fetch users');
       return response.json();
     },
-    enabled: !!selectedUser
+    refetchInterval: 30000
   });
 
-  // Call metrics query
-  const { data: callMetrics } = useQuery({
-    queryKey: ['user-call-metrics', selectedUser?.id],
+  // Organizations data
+  const { data: orgsData = { orgs: [], total: 0 }, isLoading: orgsLoading } = useQuery({
+    queryKey: ['admin-orgs', orgSearch],
     queryFn: async () => {
-      if (!selectedUser) return null;
-      const response = await fetch(`/api/admin/access/users/${selectedUser.id}/call-metrics`, { headers: adminHeaders });
-      if (!response.ok) throw new Error('Failed to fetch call metrics');
+      const params = new URLSearchParams();
+      if (orgSearch) params.append('search', orgSearch);
+      const response = await fetch(`/api/admin/organizations?${params}`, { headers: adminHeaders });
+      if (!response.ok) throw new Error('Failed to fetch organizations');
       return response.json();
     },
-    enabled: !!selectedUser && userDetailTab === 'calls',
-    refetchInterval: 10000
+    refetchInterval: 30000
   });
 
-  // Audit logs query
+  // Access codes data
+  const { data: accessCodes = [] } = useQuery({
+    queryKey: ['admin-access-codes'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/access-codes', { headers: adminHeaders });
+      if (!response.ok) throw new Error('Failed to fetch access codes');
+      return response.json();
+    },
+    refetchInterval: 30000
+  });
+
+  // Feature flags data
+  const { data: featureFlags = [] } = useQuery({
+    queryKey: ['admin-feature-flags'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/feature-flags', { headers: adminHeaders });
+      if (!response.ok) throw new Error('Failed to fetch feature flags');
+      return response.json();
+    }
+  });
+
+  // Audit logs data
   const { data: auditLogs = [] } = useQuery({
-    queryKey: ['user-audit-logs', selectedUser?.id],
+    queryKey: ['admin-audit-logs'],
     queryFn: async () => {
-      if (!selectedUser) return [];
-      const response = await fetch(`/api/admin/access/users/${selectedUser.id}/audit`, { headers: adminHeaders });
+      const response = await fetch('/api/admin/audit-logs', { headers: adminHeaders });
       if (!response.ok) throw new Error('Failed to fetch audit logs');
       return response.json();
     },
-    enabled: !!selectedUser && userDetailTab === 'audit'
+    refetchInterval: 30000
   });
 
   // Mutations
   const updateUserMutation = useMutation({
     mutationFn: async ({ userId, updates }: { userId: number; updates: any }) => {
-      const response = await fetch(`/api/admin/access/users/${userId}`, {
+      const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers: { ...adminHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify(updates)
@@ -201,128 +245,157 @@ const AdminPortal = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      queryClient.invalidateQueries({ queryKey: ['user-details'] });
-      toast({ title: 'User updated successfully' });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+      toast({ title: 'User updated successfully', variant: 'default' });
+    }
+  });
+
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      if (!response.ok) throw new Error('Failed to create user');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+      setIsCreateUserDialogOpen(false);
+      toast({ title: 'User created successfully', variant: 'default' });
+    }
+  });
+
+  const createOrgMutation = useMutation({
+    mutationFn: async (orgData: any) => {
+      const response = await fetch('/api/admin/organizations', {
+        method: 'POST',
+        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify(orgData)
+      });
+      if (!response.ok) throw new Error('Failed to create organization');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orgs'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+      setIsCreateOrgDialogOpen(false);
+      toast({ title: 'Organization created successfully', variant: 'default' });
+    }
+  });
+
+  const generateAccessCodeMutation = useMutation({
+    mutationFn: async (orgId?: string) => {
+      const response = await fetch('/api/admin/access-codes', {
+        method: 'POST',
+        headers: { ...adminHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orgId })
+      });
+      if (!response.ok) throw new Error('Failed to generate access code');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-access-codes'] });
+      setNewAccessCode(data.code);
+      setIsAccessCodeDialogOpen(true);
+      toast({ title: 'Access code generated successfully', variant: 'default' });
     }
   });
 
   const bulkActionMutation = useMutation({
-    mutationFn: async ({ userIds, action, value }: { userIds: number[]; action: string; value?: any }) => {
-      const response = await fetch('/api/admin/access/users/bulk', {
+    mutationFn: async ({ userIds, action }: { userIds: number[]; action: string }) => {
+      const response = await fetch('/api/admin/users/bulk', {
         method: 'POST',
         headers: { ...adminHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userIds, action, value })
+        body: JSON.stringify({ userIds, action })
       });
       if (!response.ok) throw new Error('Failed to perform bulk action');
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
       setSelectedUsers([]);
-      toast({ title: 'Bulk action completed successfully' });
+      toast({ title: 'Bulk action completed successfully', variant: 'default' });
     }
   });
 
-  const refreshCallMetricsMutation = useMutation({
-    mutationFn: async (userId: number) => {
-      const response = await fetch(`/api/admin/access/users/${userId}/call-metrics/refresh`, {
-        method: 'POST',
-        headers: adminHeaders
-      });
-      if (!response.ok) throw new Error('Failed to refresh call metrics');
-      return response.json();
+  const exportDataMutation = useMutation({
+    mutationFn: async (type: string) => {
+      const response = await fetch(`/api/admin/export/${type}`, { headers: adminHeaders });
+      if (!response.ok) throw new Error('Failed to export data');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `${type}-export-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-call-metrics'] });
-      toast({ title: 'Call metrics refreshed' });
+      toast({ title: 'Export completed successfully', variant: 'default' });
     }
   });
 
-  // Filter users
-  const filteredUsers = users.filter((user: User) =>
-    user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-    user.email.toLowerCase().includes(userSearch.toLowerCase()) ||
-    user.role.toLowerCase().includes(userSearch.toLowerCase()) ||
-    user.status.toLowerCase().includes(userSearch.toLowerCase())
-  );
-
-  // Handle user selection
-  const handleUserSelect = (user: User) => {
-    setSelectedUser(user);
-    setIsUserDrawerOpen(true);
-    setUserDetailTab('overview');
+  // Helper functions
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      active: 'default',
+      suspended: 'secondary',
+      locked: 'destructive'
+    };
+    return <Badge variant={variants[status] as any} className="capitalize">{status}</Badge>;
   };
 
-  // Handle bulk actions
-  const handleBulkAction = () => {
-    if (selectedUsers.length === 0 || !bulkAction) return;
-    bulkActionMutation.mutate({ userIds: selectedUsers, action: bulkAction });
+  const getRoleBadge = (role: string) => {
+    const colors = {
+      SUPER_ADMIN: 'bg-red-100 text-red-800 border-red-200',
+      ADMIN: 'bg-purple-100 text-purple-800 border-purple-200',
+      ORG_OWNER: 'bg-blue-100 text-blue-800 border-blue-200',
+      ORG_USER: 'bg-green-100 text-green-800 border-green-200'
+    };
+    return <Badge className={`${colors[role] || colors.ORG_USER} border`}>{role.replace('_', ' ')}</Badge>;
   };
 
-  // Handle logout
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: 'Copied to clipboard', variant: 'default' });
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
     setLocation('/');
   };
 
-  // Status and role badge helpers
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, string> = {
-      active: 'default',
-      suspended: 'secondary',
-      locked: 'destructive'
-    };
-    return <Badge variant={variants[status] as any}>{status}</Badge>;
-  };
+  const filteredUsers = usersData.users.filter((user: User) =>
+    user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+    user.email.toLowerCase().includes(userSearch.toLowerCase()) ||
+    user.role.toLowerCase().includes(userSearch.toLowerCase())
+  );
 
-  const getRoleBadge = (role: string) => {
-    const colors: Record<string, string> = {
-      superAdmin: 'bg-red-100 text-red-800',
-      admin: 'bg-purple-100 text-purple-800',
-      manager: 'bg-blue-100 text-blue-800',
-      agent: 'bg-green-100 text-green-800',
-      customer: 'bg-gray-100 text-gray-800'
-    };
-    return <Badge className={colors[role] || colors.customer}>{role}</Badge>;
-  };
-
-  // Permission and feature flag lists
-  const permissionsList = [
-    'users:read', 'users:write', 'orders:read', 'orders:write',
-    'billing:read', 'billing:write', 'exports:run', 'reports:read',
-    'apiKeys:read', 'apiKeys:write', 'integrations:connect',
-    'integrations:sync', 'webhooks:read', 'webhooks:write',
-    'coupons:write', 'support:impersonate'
-  ];
-
-  const featureFlagsList = [
-    'dashboard', 'reports', 'exports', 'webhook_manage',
-    'coupon_manage', 'api_access', 'integration_connect',
-    'advanced_analytics', 'bulk_operations'
-  ];
-
-  // Dashboard stats
-  const dashboardStats = analytics || {
-    totalUsers: users.length,
-    activeUsers: users.filter((u: User) => u.isActive).length,
-    totalOrders: 0,
-    totalRevenue: 0,
-    avgOrderValue: 0,
-    conversionRate: 0,
-    monthlyGrowth: { users: '+12%', revenue: '+8%', orders: '+15%' }
-  };
+  const filteredOrgs = orgsData.orgs.filter((org: Organization) =>
+    org.name.toLowerCase().includes(orgSearch.toLowerCase()) ||
+    org.ownerEmail.toLowerCase().includes(orgSearch.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-3">
-              <Shield className="h-8 w-8 text-purple-600" />
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg flex items-center justify-center">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Access Control Center</h1>
-                <p className="text-sm text-gray-500">VictorySync User Management & Security</p>
+                <h1 className="text-2xl font-bold text-gray-900">VictorySync Admin Portal</h1>
+                <p className="text-sm text-gray-500">Super Admin Control Center</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -342,65 +415,89 @@ const AdminPortal = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="users">User Management</TabsTrigger>
-            <TabsTrigger value="roles">Roles & Permissions</TabsTrigger>
-            <TabsTrigger value="security">Security & Audit</TabsTrigger>
-            <TabsTrigger value="system">System Health</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-7 bg-white border border-gray-200">
+            <TabsTrigger value="dashboard" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="users" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">
+              Users
+            </TabsTrigger>
+            <TabsTrigger value="organizations" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">
+              Organizations
+            </TabsTrigger>
+            <TabsTrigger value="access-codes" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">
+              Access Codes
+            </TabsTrigger>
+            <TabsTrigger value="feature-flags" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">
+              Feature Flags
+            </TabsTrigger>
+            <TabsTrigger value="audit-logs" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">
+              Audit Logs
+            </TabsTrigger>
+            <TabsTrigger value="system" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">
+              System
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
+              <Card className="border-l-4 border-l-purple-500">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <CardTitle className="text-sm font-medium">Total Organizations</CardTitle>
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-600">
+                    {dashboardData?.totalOrgs || orgsData.total || 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {dashboardData?.payingOrgs || 0} paying
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-green-500">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Agents</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{dashboardStats.totalUsers}</div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {dashboardData?.activeAgents || filteredUsers.filter(u => u.status === 'active').length}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    {dashboardStats.activeUsers} active
+                    +{dashboardData?.newAgentsToday || 0} today
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-l-4 border-l-yellow-500">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Security Events</CardTitle>
-                  <Shield className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">Monthly Recurring Revenue</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">23</div>
+                  <div className="text-2xl font-bold text-yellow-600">
+                    ${dashboardData?.mrr?.toLocaleString() || '0'}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    Last 24 hours
+                    +{dashboardData?.mrrGrowth || '0%'} this month
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-l-4 border-l-blue-500">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Active Sessions</CardTitle>
-                  <Activity className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">API Usage</CardTitle>
+                  <Zap className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">156</div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {dashboardData?.apiCalls?.toLocaleString() || '0'}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    Across all users
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">System Health</CardTitle>
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">98.9%</div>
-                  <p className="text-xs text-muted-foreground">
-                    Uptime this month
+                    calls this month
                   </p>
                 </CardContent>
               </Card>
@@ -408,83 +505,100 @@ const AdminPortal = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
-                <CardHeader>
-                  <CardTitle>Recent Security Events</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Recent Activity</CardTitle>
+                  <Activity className="h-5 w-5 text-purple-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-yellow-800">Failed Login Attempts</p>
-                        <p className="text-sm text-yellow-600">user@example.com</p>
+                  <div className="space-y-4">
+                    {auditLogs.slice(0, 5).map((log: AuditLog, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{log.action}</p>
+                          <p className="text-xs text-gray-500">
+                            {log.actorEmail} → {log.targetEmail || log.entity}
+                          </p>
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {new Date(log.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
-                      <Badge variant="secondary">5 attempts</Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-red-800">Account Locked</p>
-                        <p className="text-sm text-red-600">suspicious.user@example.com</p>
-                      </div>
-                      <Badge variant="destructive">Auto-locked</Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-green-800">Permission Updated</p>
-                        <p className="text-sm text-green-600">manager@company.com</p>
-                      </div>
-                      <Badge variant="default">Admin action</Badge>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader>
-                  <CardTitle>User Activity Trends</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>System Health</CardTitle>
+                  <Server className="h-5 w-5 text-green-500" />
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>New Registrations</span>
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <span className="font-bold">+24</span>
-                        <TrendingUp className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <span>Database</span>
                       </div>
+                      <Badge variant="default">Healthy</Badge>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span>Active Sessions</span>
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <span className="font-bold">156</span>
-                        <Activity className="h-4 w-4 text-blue-500" />
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <span>API Gateway</span>
                       </div>
+                      <Badge variant="default">Healthy</Badge>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span>Permission Changes</span>
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <span className="font-bold">8</span>
-                        <Settings className="h-4 w-4 text-orange-500" />
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <span>Authentication</span>
                       </div>
+                      <Badge variant="default">Healthy</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Clock className="h-5 w-5 text-yellow-500" />
+                        <span>Billing System</span>
+                      </div>
+                      <Badge variant="secondary">Maintenance</Badge>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Quick Actions</CardTitle>
+                <div className="flex space-x-2">
+                  <Button size="sm" onClick={() => exportDataMutation.mutate('users')}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Users
+                  </Button>
+                  <Button size="sm" onClick={() => exportDataMutation.mutate('organizations')}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Orgs
+                  </Button>
+                </div>
+              </CardHeader>
+            </Card>
           </TabsContent>
 
-          {/* User Management Tab */}
+          {/* Users Tab */}
           <TabsContent value="users" className="space-y-6">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>User Directory</CardTitle>
+                  <CardTitle>User Management</CardTitle>
                   <div className="flex space-x-2">
+                    <Button size="sm" onClick={() => setIsCreateUserDialogOpen(true)}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Add User
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-users'] })}>
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Refresh
-                    </Button>
-                    <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add User
                     </Button>
                   </div>
                 </div>
@@ -493,13 +607,13 @@ const AdminPortal = () => {
                 <div className="space-y-4">
                   {/* Search and Filters */}
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 flex-1 max-w-md">
                       <Search className="h-4 w-4 text-gray-400" />
                       <Input
-                        placeholder="Search users..."
+                        placeholder="Search users by name, email, or role..."
                         value={userSearch}
                         onChange={(e) => setUserSearch(e.target.value)}
-                        className="w-96"
+                        className="flex-1"
                       />
                     </div>
                     
@@ -512,12 +626,18 @@ const AdminPortal = () => {
                           <SelectContent>
                             <SelectItem value="activate">Activate</SelectItem>
                             <SelectItem value="suspend">Suspend</SelectItem>
-                            <SelectItem value="lock">Lock</SelectItem>
-                            <SelectItem value="unlock">Unlock</SelectItem>
-                            <SelectItem value="delete">Delete</SelectItem>
+                            <SelectItem value="lock">Lock Account</SelectItem>
+                            <SelectItem value="unlock">Unlock Account</SelectItem>
+                            <SelectItem value="force_password_reset">Force Password Reset</SelectItem>
+                            <SelectItem value="enable_mfa">Enable MFA</SelectItem>
+                            <SelectItem value="disable_mfa">Disable MFA</SelectItem>
                           </SelectContent>
                         </Select>
-                        <Button onClick={handleBulkAction} disabled={!bulkAction}>
+                        <Button 
+                          onClick={() => bulkActionMutation.mutate({ userIds: selectedUsers, action: bulkAction })} 
+                          disabled={!bulkAction}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
                           Apply to {selectedUsers.length} users
                         </Button>
                       </div>
@@ -525,10 +645,10 @@ const AdminPortal = () => {
                   </div>
 
                   {/* Users Table */}
-                  <div className="border rounded-lg">
+                  <div className="border rounded-lg bg-white">
                     <Table>
                       <TableHeader>
-                        <TableRow>
+                        <TableRow className="bg-gray-50">
                           <TableHead className="w-12">
                             <Checkbox
                               checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
@@ -544,16 +664,15 @@ const AdminPortal = () => {
                           <TableHead>User</TableHead>
                           <TableHead>Role</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead>Orders</TableHead>
-                          <TableHead>Spent</TableHead>
-                          <TableHead>Dialer</TableHead>
+                          <TableHead>Organization</TableHead>
+                          <TableHead>MFA</TableHead>
                           <TableHead>Last Login</TableHead>
                           <TableHead>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {filteredUsers.map((user: User) => (
-                          <TableRow key={user.id}>
+                          <TableRow key={user.id} className="hover:bg-gray-50">
                             <TableCell>
                               <Checkbox
                                 checked={selectedUsers.includes(user.id)}
@@ -567,31 +686,44 @@ const AdminPortal = () => {
                               />
                             </TableCell>
                             <TableCell>
-                              <div>
-                                <p className="font-medium">{user.name}</p>
-                                <p className="text-sm text-gray-500">{user.email}</p>
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                  <span className="text-purple-600 font-medium text-xs">
+                                    {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                  </span>
+                                </div>
+                                <div>
+                                  <p className="font-medium text-sm">{user.name}</p>
+                                  <p className="text-xs text-gray-500">{user.email}</p>
+                                </div>
                               </div>
                             </TableCell>
                             <TableCell>{getRoleBadge(user.role)}</TableCell>
                             <TableCell>{getStatusBadge(user.status)}</TableCell>
-                            <TableCell>{user.orderCount || 0}</TableCell>
-                            <TableCell>${user.totalSpent?.toFixed(2) || '0.00'}</TableCell>
                             <TableCell>
-                              {user.isLinkedToDialer ? (
-                                <Badge variant="default">Linked</Badge>
+                              <span className="text-sm text-gray-600">{user.orgId || 'No Organization'}</span>
+                            </TableCell>
+                            <TableCell>
+                              {user.mfaEnabled ? (
+                                <Badge variant="default" className="bg-green-100 text-green-800">Enabled</Badge>
                               ) : (
-                                <Badge variant="secondary">Not Linked</Badge>
+                                <Badge variant="secondary">Disabled</Badge>
                               )}
                             </TableCell>
                             <TableCell>
-                              {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never'}
+                              <span className="text-sm text-gray-600">
+                                {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never'}
+                              </span>
                             </TableCell>
                             <TableCell>
-                              <div className="flex space-x-2">
+                              <div className="flex space-x-1">
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleUserSelect(user)}
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setIsUserDialogOpen(true);
+                                  }}
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
@@ -605,6 +737,29 @@ const AdminPortal = () => {
                                 >
                                   {user.status === 'active' ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                                 </Button>
+                                {user.accountLocked ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => updateUserMutation.mutate({
+                                      userId: user.id,
+                                      updates: { accountLocked: false }
+                                    })}
+                                  >
+                                    <Unlock className="h-4 w-4" />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => updateUserMutation.mutate({
+                                      userId: user.id,
+                                      updates: { accountLocked: true, lockReason: 'Admin locked' }
+                                    })}
+                                  >
+                                    <Lock className="h-4 w-4" />
+                                  </Button>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -617,147 +772,284 @@ const AdminPortal = () => {
             </Card>
           </TabsContent>
 
-          {/* Roles & Permissions Tab */}
-          <TabsContent value="roles" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>System Roles</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {['superAdmin', 'admin', 'manager', 'agent', 'customer'].map(role => (
-                      <div key={role} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <p className="font-medium capitalize">{role}</p>
-                          <p className="text-sm text-gray-500">
-                            {users.filter((u: User) => u.role === role).length} users
+          {/* Organizations Tab */}
+          <TabsContent value="organizations" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Organization Management</CardTitle>
+                  <div className="flex space-x-2">
+                    <Button size="sm" onClick={() => setIsCreateOrgDialogOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Organization
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-orgs'] })}>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Search */}
+                  <div className="flex items-center space-x-2 max-w-md">
+                    <Search className="h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search organizations..."
+                      value={orgSearch}
+                      onChange={(e) => setOrgSearch(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Organizations Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredOrgs.map((org: Organization) => (
+                      <Card key={org.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                        <CardHeader className="pb-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle className="text-lg">{org.name}</CardTitle>
+                              <p className="text-sm text-gray-500">{org.ownerEmail}</p>
+                            </div>
+                            <Badge className={`capitalize ${
+                              org.billingStatus === 'active' ? 'bg-green-100 text-green-800' :
+                              org.billingStatus === 'past_due' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {org.billingStatus}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="flex justify-between text-sm">
+                            <span>Subscription:</span>
+                            <Badge className="capitalize">{org.subscriptionTier}</Badge>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Seats:</span>
+                            <span>{org.usedSeats}/{org.maxSeats}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>MRR:</span>
+                            <span className="font-medium">${org.mrr}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Created:</span>
+                            <span>{new Date(org.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex space-x-2 pt-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={() => {
+                                setSelectedOrg(org);
+                                setIsOrgDialogOpen(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => generateAccessCodeMutation.mutate(org.id)}
+                            >
+                              <Key className="h-4 w-4 mr-1" />
+                              Code
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Access Codes Tab */}
+          <TabsContent value="access-codes" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Access Code Management</CardTitle>
+                  <Button size="sm" onClick={() => generateAccessCodeMutation.mutate()}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Generate Code
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="border rounded-lg bg-white">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead>Code</TableHead>
+                        <TableHead>Organization</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Used By</TableHead>
+                        <TableHead>Expires</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {accessCodes.map((code: AccessCode) => (
+                        <TableRow key={code.id}>
+                          <TableCell>
+                            <code className="bg-gray-100 px-2 py-1 rounded text-sm">{code.code}</code>
+                          </TableCell>
+                          <TableCell>{code.orgId || 'Any'}</TableCell>
+                          <TableCell>
+                            {code.used ? (
+                              <Badge variant="secondary">Used</Badge>
+                            ) : new Date(code.expiresAt) < new Date() ? (
+                              <Badge variant="destructive">Expired</Badge>
+                            ) : (
+                              <Badge variant="default">Active</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>{code.usedBy || '-'}</TableCell>
+                          <TableCell>{new Date(code.expiresAt).toLocaleDateString()}</TableCell>
+                          <TableCell>{new Date(code.createdAt).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(code.code)}
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Feature Flags Tab */}
+          <TabsContent value="feature-flags" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Feature Flag Management</CardTitle>
+                  <Button size="sm" onClick={() => setIsFeatureFlagDialogOpen(true)}>
+                    <Flag className="h-4 w-4 mr-2" />
+                    Add Flag
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {featureFlags.map((flag: FeatureFlag) => (
+                    <Card key={flag.key} className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <h3 className="font-medium">{flag.name}</h3>
+                            <Badge variant={flag.enabled ? "default" : "secondary"}>
+                              {flag.enabled ? 'Enabled' : 'Disabled'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{flag.description}</p>
+                          <p className="text-xs text-gray-500">
+                            Rollout: {flag.rolloutPercentage}% | Environments: {flag.environments.join(', ')}
                           </p>
                         </div>
-                        {getRoleBadge(role)}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Permission Matrix</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {permissionsList.slice(0, 6).map(permission => (
-                      <div key={permission} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                        <span className="text-sm">{permission}</span>
-                        <div className="flex space-x-1">
-                          <Badge variant="outline" className="text-xs">Admin</Badge>
-                          <Badge variant="outline" className="text-xs">Manager</Badge>
+                        <div className="flex items-center space-x-2">
+                          <Switch checked={flag.enabled} />
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Security & Audit Tab */}
-          <TabsContent value="security" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Security Policies</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Enforce MFA for Admins</Label>
-                        <p className="text-sm text-gray-500">Require multi-factor authentication</p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Auto-lock Failed Logins</Label>
-                        <p className="text-sm text-gray-500">Lock after 5 failed attempts</p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Session Timeout</Label>
-                        <p className="text-sm text-gray-500">Auto-logout inactive users</p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Audit Trail</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium">User Role Changed</p>
-                        <p className="text-sm text-gray-500">admin@company.com</p>
-                      </div>
-                      <span className="text-sm text-gray-500">2 min ago</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium">Permission Updated</p>
-                        <p className="text-sm text-gray-500">user@example.com</p>
-                      </div>
-                      <span className="text-sm text-gray-500">5 min ago</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium">Account Locked</p>
-                        <p className="text-sm text-gray-500">suspicious@email.com</p>
-                      </div>
-                      <span className="text-sm text-gray-500">12 min ago</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          {/* Audit Logs Tab */}
+          <TabsContent value="audit-logs" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Audit Trail</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="border rounded-lg bg-white">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead>Timestamp</TableHead>
+                        <TableHead>Actor</TableHead>
+                        <TableHead>Action</TableHead>
+                        <TableHead>Target</TableHead>
+                        <TableHead>IP Address</TableHead>
+                        <TableHead>Details</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {auditLogs.map((log: AuditLog) => (
+                        <TableRow key={log.id}>
+                          <TableCell className="text-sm">
+                            {new Date(log.createdAt).toLocaleString()}
+                          </TableCell>
+                          <TableCell className="text-sm">{log.actorEmail}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">{log.action}</Badge>
+                          </TableCell>
+                          <TableCell className="text-sm">{log.targetEmail || log.entity}</TableCell>
+                          <TableCell className="text-sm font-mono">{log.ip}</TableCell>
+                          <TableCell>
+                            {(log.before || log.after) && (
+                              <Button variant="ghost" size="sm">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* System Health Tab */}
+          {/* System Tab */}
           <TabsContent value="system" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>System Status</CardTitle>
+                  <CardTitle>System Information</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        <span>Database</span>
-                      </div>
-                      <Badge variant="default">Healthy</Badge>
+                    <div className="flex justify-between">
+                      <span>Application Version:</span>
+                      <span className="font-mono">v2.1.0</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        <span>Authentication Service</span>
-                      </div>
-                      <Badge variant="default">Healthy</Badge>
+                    <div className="flex justify-between">
+                      <span>Database:</span>
+                      <span className="text-green-600">Connected</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <AlertCircle className="h-5 w-5 text-yellow-500" />
-                        <span>Call Metrics Service</span>
-                      </div>
-                      <Badge variant="secondary">Degraded</Badge>
+                    <div className="flex justify-between">
+                      <span>Cache:</span>
+                      <span className="text-green-600">Redis Online</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Background Jobs:</span>
+                      <span className="text-green-600">Running</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Last Backup:</span>
+                      <span>2 hours ago</span>
                     </div>
                   </div>
                 </CardContent>
@@ -765,26 +1057,26 @@ const AdminPortal = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Performance Metrics</CardTitle>
+                  <CardTitle>Quick Tools</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span>Response Time</span>
-                      <span className="font-bold">245ms</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>CPU Usage</span>
-                      <span className="font-bold">34%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Memory Usage</span>
-                      <span className="font-bold">67%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Active Connections</span>
-                      <span className="font-bold">1,234</span>
-                    </div>
+                  <div className="space-y-3">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Database className="h-4 w-4 mr-2" />
+                      Run Database Backup
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Clear Cache
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Logs
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Generate Report
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -793,360 +1085,119 @@ const AdminPortal = () => {
         </Tabs>
       </div>
 
-      {/* User Detail Drawer */}
-      <Dialog open={isUserDrawerOpen} onOpenChange={setIsUserDrawerOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      {/* User Detail Dialog */}
+      <Dialog open={isUserDialogOpen} onOpenChange={setIsUserDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>User Details: {selectedUser?.name}</DialogTitle>
             <DialogDescription>
-              Manage user access, permissions, and security settings
+              Manage user settings, permissions, and security
             </DialogDescription>
           </DialogHeader>
-
+          
           {selectedUser && (
-            <Tabs value={userDetailTab} onValueChange={setUserDetailTab}>
-              <TabsList className="grid w-full grid-cols-6">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="security">Security</TabsTrigger>
-                <TabsTrigger value="permissions">Permissions</TabsTrigger>
-                <TabsTrigger value="integrations">Integrations</TabsTrigger>
-                <TabsTrigger value="calls">Call Metrics</TabsTrigger>
-                <TabsTrigger value="audit">Audit Log</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="overview" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>User Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex justify-between">
-                        <span>Status:</span>
-                        {getStatusBadge(selectedUser.status)}
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Role:</span>
-                        {getRoleBadge(selectedUser.role)}
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Organization:</span>
-                        <span>{selectedUser.orgId || 'None'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Total Orders:</span>
-                        <span>{selectedUser.orderCount}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Total Spent:</span>
-                        <span>${selectedUser.totalSpent.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Last Login:</span>
-                        <span>{selectedUser.lastLoginAt ? new Date(selectedUser.lastLoginAt).toLocaleDateString() : 'Never'}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Quick Actions</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span>Account Status</span>
-                        <Switch
-                          checked={selectedUser.status === 'active'}
-                          onCheckedChange={(checked) => updateUserMutation.mutate({
-                            userId: selectedUser.id,
-                            updates: { status: checked ? 'active' : 'suspended' }
-                          })}
-                        />
-                      </div>
-                      <Button variant="outline" className="w-full">
-                        <Key className="h-4 w-4 mr-2" />
-                        Force Password Reset
-                      </Button>
-                      <Button variant="outline" className="w-full">
-                        <Shield className="h-4 w-4 mr-2" />
-                        Require MFA Next Login
-                      </Button>
-                      <Button variant="outline" className="w-full">
-                        <Lock className="h-4 w-4 mr-2" />
-                        Sign Out Everywhere
-                      </Button>
-                    </CardContent>
-                  </Card>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <Label>Name</Label>
+                  <Input value={selectedUser.name} readOnly />
                 </div>
-              </TabsContent>
-
-              <TabsContent value="security" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Security Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Enforce MFA</Label>
-                        <p className="text-sm text-gray-500">Require multi-factor authentication</p>
-                      </div>
-                      <Switch checked={selectedUser.mfaEnabled} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Account Lock</Label>
-                        <p className="text-sm text-gray-500">Lock account access</p>
-                      </div>
-                      <Switch checked={selectedUser.accountLocked} />
-                    </div>
-                    <div>
-                      <Label>IP Allowlist</Label>
-                      <Textarea placeholder="Enter IP addresses (one per line)" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="permissions" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Role & Permissions</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label>Role</Label>
-                        <Select
-                          value={selectedUser.role}
-                          onValueChange={(value) => updateUserMutation.mutate({
-                            userId: selectedUser.id,
-                            updates: { role: value }
-                          })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="customer">Customer</SelectItem>
-                            <SelectItem value="agent">Agent</SelectItem>
-                            <SelectItem value="manager">Manager</SelectItem>
-                            <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="superAdmin">Super Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <Label>Permissions</Label>
-                        <div className="grid grid-cols-2 gap-2 mt-2 max-h-48 overflow-y-auto">
-                          {permissionsList.map(permission => (
-                            <div key={permission} className="flex items-center space-x-2">
-                              <Checkbox
-                                checked={selectedUser.permissions.includes(permission)}
-                                onCheckedChange={(checked) => {
-                                  const newPermissions = checked 
-                                    ? [...selectedUser.permissions, permission]
-                                    : selectedUser.permissions.filter(p => p !== permission);
-                                  
-                                  updateUserMutation.mutate({
-                                    userId: selectedUser.id,
-                                    updates: { permissions: newPermissions }
-                                  });
-                                }}
-                              />
-                              <Label className="text-sm">{permission}</Label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Feature Flags</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-                        {featureFlagsList.map(flag => (
-                          <div key={flag} className="flex items-center space-x-2">
-                            <Checkbox
-                              checked={selectedUser.featureFlags.includes(flag)}
-                              onCheckedChange={(checked) => {
-                                toast({ title: `Feature flag ${flag} ${checked ? 'enabled' : 'disabled'}` });
-                              }}
-                            />
-                            <Label className="text-sm">{flag.replace('_', ' ')}</Label>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div>
+                  <Label>Email</Label>
+                  <Input value={selectedUser.email} readOnly />
                 </div>
-              </TabsContent>
-
-              <TabsContent value="calls" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                      <CardTitle>Call Metrics</CardTitle>
-                      <Button
-                        size="sm"
-                        onClick={() => refreshCallMetricsMutation.mutate(selectedUser.id)}
-                        disabled={refreshCallMetricsMutation.isPending}
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Refresh
-                      </Button>
-                    </CardHeader>
-                    <CardContent>
-                      {callMetrics ? (
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span>Calls Today:</span>
-                            <span className="font-bold">{callMetrics.callsToday}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Calls (7d):</span>
-                            <span className="font-bold">{callMetrics.calls7d}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Calls (30d):</span>
-                            <span className="font-bold">{callMetrics.calls30d}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Avg Handle Time:</span>
-                            <span className="font-bold">{Math.floor(callMetrics.avgHandleTime / 60)}m {callMetrics.avgHandleTime % 60}s</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Occupancy:</span>
-                            <span className="font-bold">{callMetrics.occupancy}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Status:</span>
-                            <Badge variant={callMetrics.liveStatus === 'available' ? 'default' : 'secondary'}>
-                              {callMetrics.liveStatus}
-                            </Badge>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <Phone className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                          <p className="text-gray-600">
-                            {selectedUser.isLinkedToDialer ? 'Loading call metrics...' : 'User not linked to dialer system'}
-                          </p>
-                          {!selectedUser.isLinkedToDialer && (
-                            <Button className="mt-4" size="sm">
-                              <Plus className="h-4 w-4 mr-2" />
-                              Link to Dialer
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Dialer Configuration</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {selectedUser.isLinkedToDialer ? (
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span>Provider:</span>
-                            <span>Twilio</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Agent ID:</span>
-                            <span className="font-mono text-sm">WK123456789</span>
-                          </div>
-                          <Button variant="outline" size="sm" className="w-full">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Unlink Dialer
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <div>
-                            <Label>Provider</Label>
-                            <Select>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select provider" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="twilio">Twilio</SelectItem>
-                                <SelectItem value="five9">Five9</SelectItem>
-                                <SelectItem value="ringcentral">RingCentral</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label>External Agent ID</Label>
-                            <Input placeholder="e.g., WK123456789" />
-                          </div>
-                          <Button size="sm" className="w-full">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Link Dialer
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                <div>
+                  <Label>Role</Label>
+                  <Select value={selectedUser.role}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                      <SelectItem value="ADMIN">Admin</SelectItem>
+                      <SelectItem value="ORG_OWNER">Org Owner</SelectItem>
+                      <SelectItem value="ORG_USER">Org User</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="audit" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Audit Log</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
-                      {auditLogs.map((log: AuditLog, index: number) => (
-                        <div key={index} className="border-b pb-3">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-medium">{log.action}</p>
-                              <p className="text-sm text-gray-600">
-                                by User #{log.actorUserId} from {log.ip}
-                              </p>
-                            </div>
-                            <span className="text-sm text-gray-500">
-                              {new Date(log.createdAt).toLocaleString()}
-                            </span>
-                          </div>
-                          {log.before && log.after && (
-                            <div className="mt-2 text-xs">
-                              <details>
-                                <summary className="cursor-pointer text-gray-600">Show changes</summary>
-                                <div className="mt-2 bg-gray-50 p-2 rounded">
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <strong>Before:</strong>
-                                      <pre>{JSON.stringify(log.before, null, 2)}</pre>
-                                    </div>
-                                    <div>
-                                      <strong>After:</strong>
-                                      <pre>{JSON.stringify(log.after, null, 2)}</pre>
-                                    </div>
-                                  </div>
-                                </div>
-                              </details>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {auditLogs.length === 0 && (
-                        <p className="text-center text-gray-600 py-8">No audit logs found</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                <div>
+                  <Label>Status</Label>
+                  <Select value={selectedUser.status}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
+                      <SelectItem value="locked">Locked</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Multi-Factor Authentication</Label>
+                  <Switch checked={selectedUser.mfaEnabled} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label>Account Locked</Label>
+                  <Switch checked={selectedUser.accountLocked} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label>Force Password Reset</Label>
+                  <Switch checked={selectedUser.forcePasswordReset} />
+                </div>
+                <div>
+                  <Label>Last Login</Label>
+                  <Input 
+                    value={selectedUser.lastLoginAt ? new Date(selectedUser.lastLoginAt).toLocaleString() : 'Never'} 
+                    readOnly 
+                  />
+                </div>
+              </div>
+            </div>
           )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsUserDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button className="bg-purple-600 hover:bg-purple-700">
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Access Code Dialog */}
+      <Dialog open={isAccessCodeDialogOpen} onOpenChange={setIsAccessCodeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Access Code Generated</DialogTitle>
+            <DialogDescription>
+              Share this code with the organization owner to complete registration
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-100 rounded-lg text-center">
+              <code className="text-lg font-mono font-bold">{newAccessCode}</code>
+            </div>
+            <p className="text-sm text-gray-600">
+              This code expires in 24 hours and can only be used once.
+            </p>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAccessCodeDialogOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={() => copyToClipboard(newAccessCode)} className="bg-purple-600 hover:bg-purple-700">
+              <Copy className="h-4 w-4 mr-2" />
+              Copy Code
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

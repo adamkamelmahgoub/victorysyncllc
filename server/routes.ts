@@ -70,6 +70,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: 'Logged out successfully' });
   });
 
+  // Access code registration route
+  app.post('/api/auth/register-with-code', async (req, res) => {
+    try {
+      const { name, email, password, accessCode } = req.body;
+
+      // Validate input
+      if (!name || !email || !password || !accessCode) {
+        return res.status(400).json({ message: 'All fields are required' });
+      }
+
+      // Mock access code validation (in production, check database)
+      const validCodes = ['VS-ABC123-DEF456', 'VS-XYZ789-GHI012'];
+      if (!validCodes.includes(accessCode)) {
+        return res.status(400).json({ message: 'Invalid or expired access code' });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getPublicUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: 'User already exists with this email' });
+      }
+
+      // Hash password
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      // Create organization ID
+      const orgId = `org_${Date.now()}`;
+
+      // Create user as ORG_OWNER
+      const user = await storage.createPublicUser({
+        name,
+        email,
+        password: hashedPassword,
+        role: 'ORG_OWNER',
+        orgId,
+        isActive: true,
+        status: 'active',
+        permissions: ['org:manage', 'users:manage', 'billing:read'],
+        featureFlags: ['dashboard', 'integrations', 'billing']
+      });
+
+      // Generate JWT token
+      const token = generateJWT(user);
+
+      // Set HTTP-only cookie
+      res.cookie('auth-token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+
+      // Mock: Mark access code as used
+      console.log(`Access code ${accessCode} used by ${email} to create org ${orgId}`);
+
+      res.json({
+        message: 'Registration successful',
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          orgId: user.orgId
+        }
+      });
+    } catch (error) {
+      console.error('Registration with code error:', error);
+      res.status(500).json({ message: 'Registration failed' });
+    }
+  });
+
 
 
 
@@ -642,6 +714,337 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating role:", error);
       res.status(500).json({ message: "Failed to create role" });
+    }
+  });
+
+  // Enhanced Admin Dashboard API
+  app.get("/api/admin/dashboard", requireAdmin, async (req: any, res: any) => {
+    try {
+      const users = await storage.getAllPublicUsers();
+      const orders = await storage.getAllOrders();
+      
+      const totalOrgs = new Set(users.filter(u => u.orgId).map(u => u.orgId)).size;
+      const payingOrgs = Math.floor(totalOrgs * 0.8); // Mock 80% paying
+      const activeAgents = users.filter(u => u.isActive && u.role !== 'SUPER_ADMIN').length;
+      const newAgentsToday = Math.floor(Math.random() * 10);
+      const mrr = orders.reduce((sum, order) => sum + parseFloat(order.total || '0'), 0);
+      const mrrGrowth = '+12%';
+      const apiCalls = Math.floor(Math.random() * 100000) + 50000;
+      
+      res.json({
+        totalOrgs,
+        payingOrgs,
+        activeAgents,
+        newAgentsToday,
+        mrr,
+        mrrGrowth,
+        apiCalls
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard data" });
+    }
+  });
+
+  app.get("/api/admin/users", requireAdmin, async (req: any, res: any) => {
+    try {
+      const { search, page = 1, limit = 50 } = req.query;
+      const users = await storage.getAllPublicUsers();
+      
+      let filteredUsers = users;
+      if (search) {
+        filteredUsers = users.filter(user => 
+          user.name.toLowerCase().includes(search.toLowerCase()) ||
+          user.email.toLowerCase().includes(search.toLowerCase()) ||
+          (user.role || '').toLowerCase().includes(search.toLowerCase())
+        );
+      }
+      
+      const startIndex = (parseInt(page) - 1) * parseInt(limit);
+      const paginatedUsers = filteredUsers.slice(startIndex, startIndex + parseInt(limit));
+      
+      res.json({ 
+        users: paginatedUsers.map(user => ({
+          ...user,
+          role: user.role || 'ORG_USER',
+          status: user.isActive ? 'active' : 'suspended',
+          mfaEnabled: user.mfaEnabled || false,
+          accountLocked: user.status === 'locked'
+        })), 
+        total: filteredUsers.length 
+      });
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/admin/organizations", requireAdmin, async (req: any, res: any) => {
+    try {
+      const { search } = req.query;
+      const users = await storage.getAllPublicUsers();
+      
+      // Group users by organization
+      const orgMap = new Map();
+      users.forEach(user => {
+        if (user.orgId) {
+          if (!orgMap.has(user.orgId)) {
+            orgMap.set(user.orgId, {
+              id: user.orgId,
+              name: `Organization ${user.orgId}`,
+              subscriptionTier: ['starter', 'professional', 'enterprise'][Math.floor(Math.random() * 3)],
+              maxSeats: Math.floor(Math.random() * 50) + 10,
+              usedSeats: 0,
+              features: ['basic_crm', 'email_marketing', 'analytics'],
+              isActive: true,
+              createdAt: user.createdAt,
+              ownerEmail: user.email,
+              billingStatus: ['active', 'past_due', 'canceled'][Math.floor(Math.random() * 3)],
+              mrr: Math.floor(Math.random() * 1000) + 100
+            });
+          }
+          const org = orgMap.get(user.orgId);
+          org.usedSeats++;
+          if (user.role === 'ORG_OWNER') {
+            org.ownerEmail = user.email;
+          }
+        }
+      });
+      
+      let orgs = Array.from(orgMap.values());
+      
+      if (search) {
+        orgs = orgs.filter(org => 
+          org.name.toLowerCase().includes(search.toLowerCase()) ||
+          org.ownerEmail.toLowerCase().includes(search.toLowerCase())
+        );
+      }
+      
+      res.json({ orgs, total: orgs.length });
+    } catch (error) {
+      console.error("Error fetching organizations:", error);
+      res.status(500).json({ message: "Failed to fetch organizations" });
+    }
+  });
+
+  app.get("/api/admin/access-codes", requireAdmin, async (req: any, res: any) => {
+    try {
+      // Mock access codes data
+      const accessCodes = [
+        {
+          id: '1',
+          code: 'VS-ABC123-DEF456',
+          orgId: null,
+          used: false,
+          usedBy: null,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: '2',
+          code: 'VS-XYZ789-GHI012',
+          orgId: 'org_123',
+          used: true,
+          usedBy: 'user@example.com',
+          expiresAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+      
+      res.json(accessCodes);
+    } catch (error) {
+      console.error("Error fetching access codes:", error);
+      res.status(500).json({ message: "Failed to fetch access codes" });
+    }
+  });
+
+  app.post("/api/admin/access-codes", requireAdmin, async (req: any, res: any) => {
+    try {
+      const { orgId } = req.body;
+      
+      // Generate UUID-like access code
+      const code = `VS-${Math.random().toString(36).substr(2, 6).toUpperCase()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+      
+      // Mock code creation
+      const accessCode = {
+        id: Date.now().toString(),
+        code,
+        orgId: orgId || null,
+        used: false,
+        usedBy: null,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        createdAt: new Date().toISOString()
+      };
+      
+      res.json(accessCode);
+    } catch (error) {
+      console.error("Error generating access code:", error);
+      res.status(500).json({ message: "Failed to generate access code" });
+    }
+  });
+
+  app.get("/api/admin/feature-flags", requireAdmin, async (req: any, res: any) => {
+    try {
+      // Mock feature flags data
+      const featureFlags = [
+        {
+          key: 'advanced_analytics',
+          name: 'Advanced Analytics',
+          description: 'Enable advanced analytics dashboard with detailed metrics',
+          enabled: true,
+          rolloutPercentage: 100,
+          environments: ['production', 'staging']
+        },
+        {
+          key: 'beta_integrations',
+          name: 'Beta Integrations',
+          description: 'Access to beta integration features',
+          enabled: false,
+          rolloutPercentage: 25,
+          environments: ['staging']
+        },
+        {
+          key: 'ai_insights',
+          name: 'AI Insights',
+          description: 'AI-powered call insights and recommendations',
+          enabled: true,
+          rolloutPercentage: 50,
+          environments: ['production']
+        }
+      ];
+      
+      res.json(featureFlags);
+    } catch (error) {
+      console.error("Error fetching feature flags:", error);
+      res.status(500).json({ message: "Failed to fetch feature flags" });
+    }
+  });
+
+  app.get("/api/admin/audit-logs", requireAdmin, async (req: any, res: any) => {
+    try {
+      // Mock audit logs data
+      const auditLogs = [
+        {
+          id: 1,
+          actorUserId: 1,
+          actorEmail: 'admin@victorysync.com',
+          targetUserId: 2,
+          targetEmail: 'user@example.com',
+          action: 'user.role.update',
+          entity: 'user',
+          before: { role: 'ORG_USER' },
+          after: { role: 'ORG_OWNER' },
+          ip: '192.168.1.100',
+          userAgent: 'Mozilla/5.0...',
+          createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString()
+        },
+        {
+          id: 2,
+          actorUserId: 1,
+          actorEmail: 'admin@victorysync.com',
+          targetUserId: 3,
+          targetEmail: 'manager@company.com',
+          action: 'user.status.suspend',
+          entity: 'user',
+          before: { status: 'active' },
+          after: { status: 'suspended' },
+          ip: '192.168.1.100',
+          userAgent: 'Mozilla/5.0...',
+          createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString()
+        },
+        {
+          id: 3,
+          actorUserId: 1,
+          actorEmail: 'admin@victorysync.com',
+          action: 'organization.create',
+          entity: 'organization',
+          after: { name: 'New Corp', tier: 'professional' },
+          ip: '192.168.1.100',
+          userAgent: 'Mozilla/5.0...',
+          createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+        }
+      ];
+      
+      res.json(auditLogs);
+    } catch (error) {
+      console.error("Error fetching audit logs:", error);
+      res.status(500).json({ message: "Failed to fetch audit logs" });
+    }
+  });
+
+  app.post("/api/admin/organizations", requireAdmin, async (req: any, res: any) => {
+    try {
+      const { name, subscriptionTier, maxSeats, ownerEmail } = req.body;
+      
+      // Mock organization creation
+      const org = {
+        id: `org_${Date.now()}`,
+        name,
+        subscriptionTier,
+        maxSeats,
+        usedSeats: 0,
+        features: ['basic_crm', 'email_marketing'],
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        ownerEmail,
+        billingStatus: 'active',
+        mrr: 0
+      };
+      
+      res.json(org);
+    } catch (error) {
+      console.error("Error creating organization:", error);
+      res.status(500).json({ message: "Failed to create organization" });
+    }
+  });
+
+  app.get("/api/admin/export/:type", requireAdmin, async (req: any, res: any) => {
+    try {
+      const { type } = req.params;
+      let data = [];
+      let filename = '';
+
+      switch (type) {
+        case 'users':
+          data = await storage.getAllPublicUsers();
+          filename = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+          break;
+        case 'organizations':
+          // Mock organizations export
+          data = [
+            { id: 'org_1', name: 'Company A', tier: 'professional', seats: '10/25', mrr: 299 },
+            { id: 'org_2', name: 'Company B', tier: 'enterprise', seats: '45/50', mrr: 599 }
+          ];
+          filename = `organizations-export-${new Date().toISOString().split('T')[0]}.csv`;
+          break;
+        case 'audit-logs':
+          // Mock audit logs export
+          data = [
+            { timestamp: new Date().toISOString(), actor: 'admin@victorysync.com', action: 'user.create', target: 'user@example.com' }
+          ];
+          filename = `audit-logs-export-${new Date().toISOString().split('T')[0]}.csv`;
+          break;
+        default:
+          return res.status(400).json({ message: 'Invalid export type' });
+      }
+
+      // Simple CSV generation
+      if (data.length === 0) {
+        return res.status(404).json({ message: 'No data to export' });
+      }
+
+      const headers = Object.keys(data[0]);
+      const csvContent = [
+        headers.join(','),
+        ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+      ].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(csvContent);
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      res.status(500).json({ message: "Failed to export data" });
     }
   });
 

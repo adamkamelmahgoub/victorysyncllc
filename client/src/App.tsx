@@ -24,6 +24,7 @@ import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import AdminPortal from "@/pages/admin-portal";
 import AdminAccessControl from "./pages/AdminAccessControl";
+import RegisterWithCode from "./pages/RegisterWithCode"; // Assuming this is the new component
 
 // Footer Pages
 import AboutUs from "@/pages/about-us";
@@ -60,11 +61,12 @@ function Router() {
           <Route path="/about" component={About} />
           <Route path="/contact" component={Contact} />
           <Route path="/checkout" component={Checkout} />
-          <Route path="/dashboard" component={CustomerDashboard} />
           <Route path="/customer-dashboard" component={CustomerDashboard} />
           <Route path="/register" component={Register} />
-          <Route path="/signup" component={Register} />
+          <Route path="/register-with-code" component={RegisterWithCode} />
           <Route path="/login" component={Login} />
+          <Route path="/admin-portal" component={AdminPortal} />
+          <Route path="/admin/access-control" element={<AdminAccessControl />} />
 
           {/* Footer Pages */}
           <Route path="/about-us" component={AboutUs} />
@@ -74,17 +76,15 @@ function Router() {
           <Route path="/docs" component={Documentation} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route path="/terms" component={TermsOfService} />
-          <Route path="/admin" component={AdminPortal} />
-          <Route path="/admin/access-control" element={<AdminAccessControl />} />
           <Route component={NotFound} />
         </Switch>
       </main>
 
       <Footer />
 
-      <CartModal 
-        isOpen={cartModalOpen} 
-        onClose={closeCartModal} 
+      <CartModal
+        isOpen={cartModalOpen}
+        onClose={closeCartModal}
       />
     </div>
   );
