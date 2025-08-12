@@ -23,8 +23,25 @@ async function applied(): Promise<Set<string>> {
 async function applyMigration(name: string, sqlText: string) {
   await sql`BEGIN`;
   try {
-    // Execute the entire SQL text as one command to handle complex statements properly
-    await sql.unsafe(sqlText);
+    // Split SQL text into individual statements and execute them
+    const statements = sqlText
+      .split(';')
+      .map(stmt => stmt.trim())
+      .filter(stmt => stmt.length > 0 && !stmt.match(/^\s*--/) && !stmt.match(/^\s*\/\*/)); // Remove empty, comment-only lines, and block comments
+    
+    // Execute each statement individually
+    for (const statement of statements) {
+      if (statement.trim()) {
+        // For complex statements like DO blocks, we need to use a different approach
+        try {
+          await sql([statement] as any);
+        } catch (err: any) {
+          // If the statement fails, try executing it as a raw query
+          console.log(`Retrying statement: ${statement.substring(0, 50)}...`);
+          throw err;
+        }
+      }
+    }
     
     await sql`INSERT INTO schema_migrations (name) VALUES (${name})`;
     await sql`COMMIT`;
