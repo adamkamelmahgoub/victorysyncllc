@@ -19,12 +19,12 @@ app.use('/api', auth);
 // Admin-protected routes
 app.use('/api', requireAuth, requireRole('admin'), admin);
 
-// Serve static files in production
-if (process.env.NODE_ENV==='production') {
-  const clientDist = path.join(__dirname, '../client/dist');
-  app.use(express.static(clientDist));
-  app.get(/^\/(?!api).*/, (_req,res)=>res.sendFile(path.join(clientDist,'index.html')));
-}
+// Serve static files in development and production
+const clientDist = path.join(__dirname, '../client/dist');
+app.use(express.static(clientDist));
+
+// Catch-all handler: send back React's index.html file for any non-API routes
+app.get(/^\/(?!api).*/, (_req,res)=>res.sendFile(path.join(clientDist,'index.html')));
 
 const PORT = Number(process.env.PORT || 5000);
-app.listen(PORT, ()=>console.log(`[express] serving on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', ()=>console.log(`[express] serving on port ${PORT}`));
