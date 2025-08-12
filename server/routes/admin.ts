@@ -1,62 +1,60 @@
 
 import { Router } from 'express';
-import { sql } from '../db/index';
+import { z } from 'zod';
+import { query } from '../db';
 
-const router = Router();
+export const admin = Router();
 
-// Users list
-router.get('/users', async (_req, res) => {
-  const rows = await sql`
-    SELECT id, email, role, is_active, org_id,
-           privileges, allowed_payment_methods, created_at
-    FROM users ORDER BY created_at DESC`;
+/** Users list */
+admin.get('/admin/users', async (_req,res) => {
+  const users = await query<any>`
+    SELECT u.id,u.email,u.phone,u.full_name,u.role,u.is_active,u.email_verified,u.phone_verified,
+           up.can_use_api, up.can_manage_org, up.can_view_billing, up.integrations,
+           pp.allow_card, pp.allow_paypal, pp.allow_wire,
+           o.name as org_name
+    FROM users u
+    LEFT JOIN user_permissions up ON up.user_id=u.id
+    LEFT JOIN user_payment_policies pp ON pp.user_id=u.id
+    LEFT JOIN organizations o ON o.id=u.org_id
+    ORDER BY u.created_at DESC
+  `;
+  res.json(users);
+});
+
+/** Update user permissions + payments */
+admin.post('/admin/users/:id/policy', async (req,res) => {
+  const id = req.params.id;
+  const body = z.object({
+    can_use_api:z.boolean(),
+    can_manage_org:z.boolean(),
+    can_view_billing:z.boolean(),
+    integrations:z.record(z.boolean()),
+    allow_card:z.boolean(),
+    allow_paypal:z.boolean(),
+    allow_wire:z.boolean(),
+    is_active:z.boolean()
+  }).parse(req.body);
+
+  await query`UPDATE user_permissions SET can_use_api=${body.can_use_api}, can_manage_org=${body.can_manage_org},
+    can_view_billing=${body.can_view_billing}, integrations=${JSON.stringify(body.integrations)},
+    updated_at=now() WHERE user_id=${id}`;
+
+  await query`UPDATE user_payment_policies SET allow_card=${body.allow_card}, allow_paypal=${body.allow_paypal},
+    allow_wire=${body.allow_wire}, updated_at=now() WHERE user_id=${id}`;
+
+  await query`UPDATE users SET is_active=${body.is_active} WHERE id=${id}`;
+
+  res.json({ok:true});
+});
+
+/** Lightweight analytics: calls today + month per user */
+admin.get('/admin/analytics', async (_req,res) => {
+  const rows = await query<any>`
+    SELECT u.id, u.full_name,
+      SUM(CASE WHEN date_trunc('day', c.created_at)=date_trunc('day', now()) THEN 1 ELSE 0 END) AS calls_today,
+      SUM(CASE WHEN date_trunc('month', c.created_at)=date_trunc('month', now()) THEN 1 ELSE 0 END) AS calls_month
+    FROM users u LEFT JOIN call_events c ON c.user_id=u.id
+    GROUP BY u.id ORDER BY calls_month DESC NULLS LAST
+  `;
   res.json(rows);
 });
-
-// Set role/privileges/payment methods
-router.post('/users/:id/access', async (req, res) => {
-  const { role, privileges, allowedPaymentMethods, isActive } = req.body;
-  await sql`
-    UPDATE users
-    SET role = COALESCE(${role}, role),
-        privileges = COALESCE(${JSON.stringify(privileges ?? null)}::jsonb, privileges),
-        allowed_payment_methods = COALESCE(${JSON.stringify(allowedPaymentMethods ?? null)}::jsonb, allowed_payment_methods),
-        is_active = COALESCE(${isActive}, is_active)
-    WHERE id=${req.params.id}`;
-  res.json({ ok: true });
-});
-
-// Toggle integration for user
-router.post('/users/:id/integrations/:key/toggle', async (req, res) => {
-  const { id, key } = req.params;
-  const [intg] = await sql`SELECT id FROM integrations WHERE key=${key}`;
-  if (!intg) return res.status(404).json({message:'integration not found'});
-  await sql`
-    INSERT INTO user_integrations (user_id, integration_id, is_enabled)
-    VALUES (${id}, ${intg.id}, true)
-    ON CONFLICT (user_id, integration_id)
-    DO UPDATE SET is_enabled = NOT user_integrations.is_enabled
-  `;
-  res.json({ ok: true });
-});
-
-// Discount codes
-router.post('/discounts/issue', async (req, res) => {
-  const { code, percentOff, maxRedemptions, validFrom, validTo } = req.body;
-  await sql`
-    INSERT INTO discount_codes (code, percent_off, max_redemptions, valid_from, valid_to)
-    VALUES (${code}, ${percentOff}, ${maxRedemptions}, ${validFrom}, ${validTo})
-    ON CONFLICT (code) DO UPDATE
-    SET percent_off=${percentOff}, max_redemptions=${maxRedemptions}, valid_from=${validFrom}, valid_to=${validTo}`;
-  res.json({ ok: true });
-});
-
-// Analytics (example KPIs)
-router.get('/analytics', async (_req, res) => {
-  const [[{ users }]] = await sql`SELECT COUNT(*)::int AS users FROM users`;
-  const [[{ orders }]] = await sql`SELECT COUNT(*)::int AS orders FROM orders`;
-  const [[{ minutes }]] = await sql`SELECT COALESCE(SUM(duration_seconds),0)::int AS minutes FROM calls`;
-  res.json({ users, orders, minutes });
-});
-
-export default router;

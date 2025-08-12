@@ -1,20 +1,10 @@
 
+// server/db/index.ts
 import { neon, neonConfig } from '@neondatabase/serverless';
-
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is not set');
-}
-
 neonConfig.fetchConnectionCache = true;
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not set');
 export const sql = neon(process.env.DATABASE_URL);
-export default sql;
-
-export async function dbHealthcheck() {
-  try {
-    await sql`SELECT 1`;
-    return true;
-  } catch (error) {
-    console.error('Database health check failed:', error);
-    throw error;
-  }
+export async function query<T=unknown>(strings: TemplateStringsArray, ...values: any[]): Promise<T[]> {
+  // @ts-ignore
+  return (await sql(strings, ...values)) as T[];
 }
