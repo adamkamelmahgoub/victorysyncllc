@@ -4,7 +4,7 @@ import { sql } from './index';
 
 async function run() {
   await sql`CREATE TABLE IF NOT EXISTS _migrations (id text primary key, ran_at timestamptz default now());`;
-  const dir = path.join(__dirname, 'migrations');
+  const dir = path.join(import.meta.dirname, 'migrations');
   const files = fs.readdirSync(dir).filter(f=>f.endsWith('.sql')).sort();
   const ran = await sql<{id:string}>`SELECT id FROM _migrations`;
   const ranSet = new Set(ran.map(r=>r.id));
