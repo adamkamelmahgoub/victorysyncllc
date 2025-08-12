@@ -34,7 +34,19 @@ export async function runMigrations() {
     const full = join(MIGRATIONS_DIR, file);
     const sqlText = readFileSync(full, 'utf8');
     console.log('Applying migration:', file);
-    await sql(sqlText as any);
+    
+    // Split SQL statements and execute them individually
+    const statements = sqlText
+      .split(';')
+      .map(stmt => stmt.trim())
+      .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+    
+    for (const statement of statements) {
+      if (statement.trim()) {
+        await sql(statement as any);
+      }
+    }
+    
     await sql`insert into schema_migrations (name) values (${file})`;
   }
 
