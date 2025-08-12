@@ -52,7 +52,7 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email CITEXT UNIQUE NOT NULL,
+  email TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   role user_role NOT NULL DEFAULT 'customer',
   org_id UUID,
@@ -63,6 +63,19 @@ CREATE TABLE IF NOT EXISTS users (
   twofa_secret TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Add unique constraint for case-insensitive email
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints 
+    WHERE constraint_name = 'users_email_unique' 
+    AND table_name = 'users'
+  ) THEN
+    ALTER TABLE users ADD CONSTRAINT users_email_unique 
+    UNIQUE (LOWER(email));
+  END IF;
+END $$;
 
 -- Add foreign key for users.org_id after both tables are created
 DO $$
