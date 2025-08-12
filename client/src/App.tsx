@@ -66,6 +66,7 @@ function Router() {
           <Route path="/register-with-code" component={RegisterWithCode} />
           <Route path="/login" component={Login} />
           <Route path="/admin-portal" component={AdminPortal} />
+          <Route path="/admin" component={AdminPortal} />
           <Route path="/admin/access-control" component={AdminAccessControl} />
 
           {/* Footer Pages */}

@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import path from 'path';
 import { registerRoutes } from "./routes.js";
 import { setupVite, serveStatic, log } from "./vite.js";
 import { dbHealthcheck } from "./db/index.ts";
