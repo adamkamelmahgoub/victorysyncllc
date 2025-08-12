@@ -698,3 +698,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  const httpServer = createServer(app);
+  return httpServer;
+}
+
+async function initializePackages() {
+  const existingPackages = await storage.getPackages();
+  
+  if (existingPackages.length === 0) {
+    const defaultPackages = [
+      {
+        name: "Starter Package",
+        price: "99.00",
+        description: "Perfect for small businesses getting started with customer engagement",
+        features: ["Basic CRM Integration", "Email Marketing", "Customer Support"]
+      },
+      {
+        name: "Professional Package", 
+        price: "299.00",
+        description: "Comprehensive solution for growing businesses",
+        features: ["Advanced CRM Integration", "Multi-channel Marketing", "Analytics Dashboard", "Priority Support"]
+      },
+      {
+        name: "Enterprise Package",
+        price: "599.00", 
+        description: "Full-featured solution for large organizations",
+        features: ["Custom CRM Integration", "AI-Powered Analytics", "White-label Solution", "Dedicated Account Manager"]
+      }
+    ];
+
+    for (const pkg of defaultPackages) {
+      await storage.createPackage(pkg);
+    }
+  }
+}
+
