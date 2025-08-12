@@ -1,0 +1,743 @@
+Got it. Here’s a single, copy-paste “master prompt” you can give Claude in Replit. It tells it exactly what to change, which files to add, and includes production-quality code blocks to fix your current errors, implement the admin/customer features you requested (2FA with access code, orgs, API permissions, integrations toggles, discount codes, payments allow/deny, call tracking), and validate everything.
+
+---
+
+# MASTER IMPLEMENTATION PROMPT FOR REPLIT (CLAUDE)
+
+You are working in this Replit: **VictorySync**.
+Follow these instructions **exactly**. Do not change the Navbar, global branding, or existing UI styling. Only do what’s listed. If something already exists, reconcile instead of duplicating. Ensure **zero TypeScript errors** and **no runtime errors**.
+
+## Goals (must all be done)
+
+1. Fix backend startup/migration errors and make DB schema complete.
+2. Implement admin & customer features:
+
+   * Access-code signup + email/OTP 2FA
+   * Full per-user access controls (enable/disable features, API keys, integrations, org membership, allowed payment methods)
+   * Admin: list/search/suspend users, set privileges/roles, issue & track discount codes, view analytics (calls, usage, revenue), toggle integrations per org/user
+   * Customer dashboard: view package, usage (calls/mins), invoices, allowed payment methods, manage API key, enable/disable installed integrations (placeholders OK), update 2FA
+3. Keep UI chrome the same; add only the screens/components needed and wire to routes.
+4. Provide validation: migrations run, seeds load, API endpoints tested, front-end renders without blank screens or import errors.
+
+---
+
+## 0) Pre-flight
+
+* Ensure Node 20 is used (already).
+* In `.env` verify:
+
+```
+DATABASE_URL=<your Neon/PG url>
+JWT_SECRET=<long random>
+ACCESS_CODE_SIGNUP=ENABLED
+ACCESS_CODE_MASTER=<set-one-for-internal-signups>
+EMAIL_FROM=noreply@victorysync.com
+```
+
+* Do **not** remove any existing envs.
+
+---
+
+## 1) package.json scripts
+
+**Edit** `package.json` to add missing scripts (keep existing ones):
+
+```json
+{
+  "scripts": {
+    "dev": "NODE_ENV=development tsx server/index.ts",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "tsx server/db/runMigrations.ts",
+    "db:seed": "tsx server/db/seed.ts",
+    "lint": "eslint . --ext .ts,.tsx",
+    "build:client": "vite build",
+    "build:server": "tsc -p tsconfig.json"
+  }
+}
+```
+
+---
+
+## 2) Fix bad imports & duplicate exports
+
+* In `server/index.ts`, **replace any** `import './db/index.js'` with:
+
+```ts
+import './db/index';
+```
+
+* In `server/services/callMetricsService.ts`, ensure only **one** class and **one** export:
+
+```ts
+// server/services/callMetricsService.ts
+export class CallMetricsService {
+  // ... keep existing implementation (merge if needed)
+}
+export const callMetricsService = new CallMetricsService();
+```
+
+Remove any duplicate class or export statements.
+
+---
+
+## 3) Add DB driver + migration harness
+
+### 3.1 `server/db/index.ts`
+
+Create the file:
+
+```ts
+// server/db/index.ts
+import { neon, neonConfig } from '@neondatabase/serverless';
+
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is not set');
+}
+
+neonConfig.fetchConnectionCache = true;
+export const sql = neon(process.env.DATABASE_URL);
+export default sql;
+```
+
+### 3.2 Migration runner `server/db/runMigrations.ts`
+
+Create:
+
+```ts
+// server/db/runMigrations.ts
+import fs from 'fs';
+import path from 'path';
+import sql from './index';
+
+const MIGRATIONS_DIR = path.join(process.cwd(), 'server', 'db', 'migrations');
+
+async function ensureTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      id SERIAL PRIMARY KEY,
+      name TEXT UNIQUE NOT NULL,
+      applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+}
+
+async function applied(): Promise<Set<string>> {
+  const rows = await sql`SELECT name FROM schema_migrations`;
+  return new Set(rows.map((r: any) => r.name));
+}
+
+async function applyMigration(name: string, sqlText: string) {
+  await sql`BEGIN`;
+  try {
+    await sql(sqlText as any);
+    await sql`INSERT INTO schema_migrations (name) VALUES (${name})`;
+    await sql`COMMIT`;
+    console.log(`✅ Applied ${name}`);
+  } catch (err) {
+    await sql`ROLLBACK`;
+    console.error(`❌ Failed ${name}`, err);
+    process.exit(1);
+  }
+}
+
+async function main() {
+  await ensureTable();
+  const done = await applied();
+  const files = fs.readdirSync(MIGRATIONS_DIR)
+    .filter(f => f.endsWith('.sql'))
+    .sort();
+  for (const f of files) {
+    if (!done.has(f)) {
+      const text = fs.readFileSync(path.join(MIGRATIONS_DIR, f), 'utf8');
+      await applyMigration(f, text);
+    }
+  }
+  console.log('🎉 Migrations complete');
+}
+
+main();
+```
+
+### 3.3 Initial schema migration `server/db/migrations/001_init.sql`
+
+Create folder `server/db/migrations` and file `001_init.sql`:
+
+```sql
+-- users, orgs, roles, privileges, 2FA, payments, API keys, discount codes, calls
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE IF NOT EXISTS organizations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TYPE user_role AS ENUM ('admin', 'staff', 'customer');
+
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  email CITEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role user_role NOT NULL DEFAULT 'customer',
+  org_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  privileges JSONB NOT NULL DEFAULT '[]'::jsonb, -- array of strings
+  allowed_payment_methods JSONB NOT NULL DEFAULT '["card"]'::jsonb,
+  twofa_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  twofa_secret TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS access_codes (
+  code TEXT PRIMARY KEY,
+  description TEXT,
+  max_uses INT,
+  used INT NOT NULL DEFAULT 0,
+  expires_at TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS api_keys (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  token_hash TEXT NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  scopes TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS integrations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  key TEXT UNIQUE NOT NULL,            -- 'hubspot','zoho','aircall','twilio', etc
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS user_integrations (
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  integration_id UUID REFERENCES integrations(id) ON DELETE CASCADE,
+  is_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+  PRIMARY KEY (user_id, integration_id)
+);
+
+CREATE TABLE IF NOT EXISTS packages (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  price NUMERIC(10,2) NOT NULL,
+  minutes_included INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  package_id INT REFERENCES packages(id),
+  price NUMERIC(10,2) NOT NULL,
+  discount_code TEXT,
+  status TEXT NOT NULL DEFAULT 'paid',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS discount_codes (
+  code TEXT PRIMARY KEY,
+  percent_off INT CHECK (percent_off BETWEEN 0 AND 100),
+  max_redemptions INT,
+  redemption_count INT NOT NULL DEFAULT 0,
+  valid_from TIMESTAMPTZ,
+  valid_to TIMESTAMPTZ,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE IF NOT EXISTS calls (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  org_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  duration_seconds INT NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'completed'
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  actor_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  action TEXT NOT NULL,
+  target_type TEXT,
+  target_id TEXT,
+  details JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### 3.4 Seed (`server/db/seed.ts`)
+
+Create:
+
+```ts
+// server/db/seed.ts
+import sql from './index';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+
+async function main() {
+  // packages
+  await sql`INSERT INTO packages (name, price, minutes_included)
+            VALUES ('Starter', 1200, 2000),
+                   ('Growth', 2500, 5000),
+                   ('Scale', 4500, 12000)
+            ON CONFLICT DO NOTHING`;
+
+  // org
+  const [org] = await sql`INSERT INTO organizations (name)
+                          VALUES ('VictorySync LLC')
+                          ON CONFLICT DO NOTHING
+                          RETURNING *`;
+
+  // admin user
+  const email = 'admin@victorysync.com';
+  const pass = await bcrypt.hash('ChangeMeNow!42', 10);
+  await sql`
+    INSERT INTO users (email, password_hash, role, org_id, privileges, allowed_payment_methods, twofa_enabled)
+    VALUES (${email}, ${pass}, 'admin', ${org?.id ?? null}, ${JSON.stringify([
+      'users:read','users:write','billing:read','billing:write',
+      'integrations:write','discounts:write','analytics:read'
+    ])}::jsonb, '["card","wire","paypal"]'::jsonb, false)
+    ON CONFLICT (email) DO NOTHING
+  `;
+
+  // access code
+  await sql`INSERT INTO access_codes (code, description, max_uses)
+            VALUES ('TEAM-ACCESS', 'Internal access', 100)
+            ON CONFLICT DO NOTHING`;
+
+  // base integrations
+  await sql`INSERT INTO integrations (key,name)
+            VALUES ('hubspot','HubSpot'),('zoho','Zoho CRM'),
+                   ('aircall','Aircall'),('twilio','Twilio')
+            ON CONFLICT DO NOTHING`;
+
+  console.log('✅ Seed complete');
+}
+main();
+```
+
+---
+
+## 4) Storage layer fixes
+
+Open `server/storage.ts` and ensure functions reference the **real columns** (including `privileges`). Add/replace the following **minimal** queryset helpers (merge if present):
+
+```ts
+// server/storage.ts (add near top)
+import sql from './db';
+export type PublicUser = {
+  id: string;
+  email: string;
+  role: 'admin' | 'staff' | 'customer';
+  is_active: boolean;
+  org_id: string | null;
+  privileges: string[]; // from jsonb
+  allowed_payment_methods: string[];
+  created_at: string;
+};
+
+export async function getAllPublicUsers(): Promise<PublicUser[]> {
+  const rows = await sql`
+    SELECT id, email, role, is_active, org_id,
+           COALESCE(privileges, '[]'::jsonb) AS privileges,
+           COALESCE(allowed_payment_methods, '[]'::jsonb) AS allowed_payment_methods,
+           created_at
+    FROM users
+    ORDER BY created_at DESC
+  `;
+  return rows.map((r: any) => ({
+    ...r,
+    privileges: Array.isArray(r.privileges) ? r.privileges : JSON.parse(r.privileges),
+    allowed_payment_methods: Array.isArray(r.allowed_payment_methods)
+      ? r.allowed_payment_methods : JSON.parse(r.allowed_payment_methods)
+  }));
+}
+```
+
+If any other query mentions missing columns, update them to match `001_init.sql`.
+
+---
+
+## 5) Auth: access-code signup + 2FA
+
+Add simple endpoints (merge into your existing `server/routes.ts` or `server/auth.ts`). If you have a router already, add these handlers; otherwise create `server/routes/auth.ts` and mount it.
+
+```ts
+// server/routes/auth.ts
+import { Router } from 'express';
+import sql from '../db';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { authenticator } from 'otplib';
+
+const router = Router();
+
+router.post('/signup-with-code', async (req, res) => {
+  try {
+    const { email, password, accessCode } = req.body;
+    if (process.env.ACCESS_CODE_SIGNUP !== 'ENABLED') return res.status(403).json({message:'disabled'});
+    const [code] = await sql`SELECT * FROM access_codes WHERE code=${accessCode}`;
+    if (!code) return res.status(400).json({message:'invalid code'});
+    if (code.expires_at && new Date(code.expires_at) < new Date()) return res.status(400).json({message:'expired'});
+    if (code.max_uses && code.used >= code.max_uses) return res.status(400).json({message:'max uses reached'});
+
+    const hash = await bcrypt.hash(password, 10);
+    const [u] = await sql`
+      INSERT INTO users (email, password_hash)
+      VALUES (${email}, ${hash})
+      ON CONFLICT (email) DO NOTHING
+      RETURNING id,email,role,is_active,twofa_enabled
+    `;
+    if (!u) return res.status(409).json({message:'email exists'});
+
+    await sql`UPDATE access_codes SET used=used+1 WHERE code=${accessCode}`;
+
+    const token = jwt.sign({ sub: u.id, role: u.role }, process.env.JWT_SECRET!, { expiresIn: '12h' });
+    res.json({ token, user: u });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({message:'signup failed'});
+  }
+});
+
+router.post('/login', async (req, res) => {
+  const { email, password, otp } = req.body;
+  const [u] = await sql`SELECT * FROM users WHERE email=${email}`;
+  if (!u) return res.status(401).json({message:'bad creds'});
+  const ok = await bcrypt.compare(password, u.password_hash);
+  if (!ok) return res.status(401).json({message:'bad creds'});
+
+  if (u.twofa_enabled) {
+    if (!otp || !u.twofa_secret || !authenticator.check(otp, u.twofa_secret)) {
+      return res.status(401).json({message:'otp required or invalid'});
+    }
+  }
+  const token = jwt.sign({ sub: u.id, role: u.role }, process.env.JWT_SECRET!, { expiresIn: '12h' });
+  res.json({ token, user: { id: u.id, email: u.email, role: u.role, twofa_enabled: u.twofa_enabled } });
+});
+
+router.post('/2fa/setup', async (req, res) => {
+  const userId = (req as any).user?.sub; // assume auth middleware sets this
+  if (!userId) return res.status(401).end();
+  const secret = authenticator.generateSecret();
+  const otpauth = authenticator.keyuri('VictorySync', 'VictorySync', secret);
+  await sql`UPDATE users SET twofa_secret=${secret}, twofa_enabled=true WHERE id=${userId}`;
+  res.json({ otpauth });
+});
+
+export default router;
+```
+
+**Mount it** in your main server router (e.g., `server/routes.ts` or `server/index.ts`):
+
+```ts
+import authRoutes from './routes/auth';
+app.use('/api/auth', authRoutes);
+```
+
+Add (or ensure) an auth middleware to set `req.user` from JWT for protected routes.
+
+---
+
+## 6) Admin routes (users, privileges, discount codes, analytics)
+
+Add to your main routes file (merge carefully):
+
+```ts
+// server/routes/admin.ts
+import { Router } from 'express';
+import sql from '../db';
+
+const router = Router();
+
+// Users list
+router.get('/users', async (_req, res) => {
+  const rows = await sql`
+    SELECT id, email, role, is_active, org_id,
+           privileges, allowed_payment_methods, created_at
+    FROM users ORDER BY created_at DESC`;
+  res.json(rows);
+});
+
+// Set role/privileges/payment methods
+router.post('/users/:id/access', async (req, res) => {
+  const { role, privileges, allowedPaymentMethods, isActive } = req.body;
+  await sql`
+    UPDATE users
+    SET role = COALESCE(${role}, role),
+        privileges = COALESCE(${JSON.stringify(privileges ?? null)}::jsonb, privileges),
+        allowed_payment_methods = COALESCE(${JSON.stringify(allowedPaymentMethods ?? null)}::jsonb, allowed_payment_methods),
+        is_active = COALESCE(${isActive}, is_active)
+    WHERE id=${req.params.id}`;
+  res.json({ ok: true });
+});
+
+// Toggle integration for user
+router.post('/users/:id/integrations/:key/toggle', async (req, res) => {
+  const { id, key } = req.params;
+  const [intg] = await sql`SELECT id FROM integrations WHERE key=${key}`;
+  if (!intg) return res.status(404).json({message:'integration not found'});
+  await sql`
+    INSERT INTO user_integrations (user_id, integration_id, is_enabled)
+    VALUES (${id}, ${intg.id}, true)
+    ON CONFLICT (user_id, integration_id)
+    DO UPDATE SET is_enabled = NOT user_integrations.is_enabled
+  `;
+  res.json({ ok: true });
+});
+
+// Discount codes
+router.post('/discounts/issue', async (req, res) => {
+  const { code, percentOff, maxRedemptions, validFrom, validTo } = req.body;
+  await sql`
+    INSERT INTO discount_codes (code, percent_off, max_redemptions, valid_from, valid_to)
+    VALUES (${code}, ${percentOff}, ${maxRedemptions}, ${validFrom}, ${validTo})
+    ON CONFLICT (code) DO UPDATE
+    SET percent_off=${percentOff}, max_redemptions=${maxRedemptions}, valid_from=${validFrom}, valid_to=${validTo}`;
+  res.json({ ok: true });
+});
+
+// Analytics (example KPIs)
+router.get('/analytics', async (_req, res) => {
+  const [[{ users }]] = await sql`SELECT COUNT(*)::int AS users FROM users`;
+  const [[{ orders }]] = await sql`SELECT COUNT(*)::int AS orders FROM orders`;
+  const [[{ minutes }]] = await sql`SELECT COALESCE(SUM(duration_seconds),0)::int AS minutes FROM calls`;
+  res.json({ users, orders, minutes });
+});
+
+export default router;
+```
+
+Mount:
+
+```ts
+import adminRoutes from './routes/admin';
+app.use('/api/admin', /*auth+admin guard*/, adminRoutes);
+```
+
+Admin guard should verify `req.user.role==='admin'`.
+
+---
+
+## 7) Customer routes (dashboard data, API key, payments allow/deny)
+
+```ts
+// server/routes/customer.ts
+import { Router } from 'express';
+import sql from '../db';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+
+const router = Router();
+
+router.get('/me', async (req, res) => {
+  const uid = (req as any).user?.sub;
+  if (!uid) return res.status(401).end();
+  const [u] = await sql`
+    SELECT id, email, role, privileges, allowed_payment_methods, twofa_enabled
+    FROM users WHERE id=${uid}`;
+  res.json(u);
+});
+
+router.get('/usage', async (req, res) => {
+  const uid = (req as any).user?.sub;
+  if (!uid) return res.status(401).end();
+  const [[{ calls }]] = await sql`SELECT COUNT(*)::int AS calls FROM calls WHERE user_id=${uid}`;
+  const [[{ seconds }]] = await sql`SELECT COALESCE(SUM(duration_seconds),0)::int AS seconds FROM calls WHERE user_id=${uid}`;
+  res.json({ calls, minutes: Math.round(seconds/60) });
+});
+
+router.post('/apikey/rotate', async (req, res) => {
+  const uid = (req as any).user?.sub;
+  if (!uid) return res.status(401).end();
+  const token = crypto.randomBytes(32).toString('hex');
+  const hash = await bcrypt.hash(token, 10);
+  const [org] = await sql`SELECT org_id FROM users WHERE id=${uid}`;
+  await sql`
+    INSERT INTO api_keys (user_id, org_id, name, token_hash, is_active, scopes)
+    VALUES (${uid}, ${org?.org_id ?? null}, 'Primary', ${hash}, true, ARRAY['read','write'])
+    ON CONFLICT DO NOTHING
+  `;
+  res.json({ token });
+});
+
+router.post('/payments/allow', async (req, res) => {
+  const uid = (req as any).user?.sub;
+  if (!uid) return res.status(401).end();
+  const { methods } = req.body; // array of strings
+  await sql`
+    UPDATE users SET allowed_payment_methods=${JSON.stringify(methods)}::jsonb
+    WHERE id=${uid}`;
+  res.json({ ok: true });
+});
+
+export default router;
+```
+
+Mount:
+
+```ts
+import customerRoutes from './routes/customer';
+app.use('/api/customer', /*auth guard*/, customerRoutes);
+```
+
+---
+
+## 8) Front-end: fix admin import error & add Access Control Center
+
+### 8.1 Fix `admin-portal.tsx` import error
+
+Move the stray `import AccessControlCenter ...` to the **top** with other imports and ensure there’s no extra text around it. Example:
+
+```tsx
+// client/src/pages/admin-portal.tsx
+import React from 'react';
+import AccessControlCenter from '@/admin/access-control/AccessControlCenter';
+// keep other imports here...
+```
+
+Remove any `import` accidentally placed mid-object or inside another import list.
+
+### 8.2 Add component
+
+Create file `client/src/admin/access-control/AccessControlCenter.tsx`:
+
+```tsx
+import React, { useEffect, useState } from 'react';
+
+type User = {
+  id: string;
+  email: string;
+  role: 'admin'|'staff'|'customer';
+  is_active: boolean;
+  privileges: string[];
+  allowed_payment_methods: string[];
+};
+
+async function jfetch(url: string, opts: RequestInit = {}) {
+  const r = await fetch(url, { headers: { 'Content-Type':'application/json' }, ...opts });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+export default function AccessControlCenter() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    const data = await jfetch('/api/admin/users');
+    setUsers(data);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const toggleActive = async (u: User) => {
+    await jfetch(`/api/admin/users/${u.id}/access`, {
+      method:'POST',
+      body: JSON.stringify({ isActive: !u.is_active })
+    });
+    load();
+  };
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Access Control</h2>
+      {loading ? <div>Loading…</div> : (
+        <table className="w-full text-sm">
+          <thead><tr>
+            <th className="text-left">Email</th>
+            <th>Role</th>
+            <th>Active</th>
+            <th>Payments</th>
+            <th>Privileges</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            {users.map(u => (
+              <tr key={u.id} className="border-t">
+                <td className="py-2">{u.email}</td>
+                <td className="text-center">{u.role}</td>
+                <td className="text-center">{u.is_active ? 'Yes' : 'No'}</td>
+                <td className="text-center">{u.allowed_payment_methods.join(', ')}</td>
+                <td className="text-center">{u.privileges.join(', ')}</td>
+                <td className="text-center">
+                  <button className="px-2 py-1 border rounded" onClick={()=>toggleActive(u)}>
+                    {u.is_active ? 'Suspend' : 'Activate'}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+```
+
+Then, in `client/src/pages/admin-portal.tsx`, **render** `<AccessControlCenter />` where the admin content area goes (do not alter the navbar).
+
+---
+
+## 9) Tests / validation
+
+Add a very small smoke test using supertest (optional but recommended). If repo already uses another runner, adapt.
+
+`npm i -D supertest vitest @types/supertest`
+
+`server/tests/smoke.test.ts`:
+
+```ts
+import request from 'supertest';
+import app from '../app'; // if you export express app; otherwise skip tests
+
+test('health', async () => {
+  const res = await request(app).get('/health');
+  expect(res.status).toBe(200);
+});
+```
+
+Add script:
+
+```json
+"test": "vitest run"
+```
+
+---
+
+## 10) Run steps and confirm
+
+1. `npm i @neondatabase/serverless bcryptjs otplib jsonwebtoken`
+   `npm i -D vitest supertest @types/supertest`
+2. `npm run db:migrate`  → must print `🎉 Migrations complete`
+3. `npm run db:seed`     → must print `✅ Seed complete`
+4. `npm run typecheck`   → 0 errors
+5. `npm run dev`         → server starts, “Routes registered” and Vite ready
+6. Visit `/api/admin/users` → 200 JSON
+7. Open Admin portal → Access Control table loads; can toggle active
+8. Customer: login, view `/api/customer/me`, rotate API key, update allowed payments
+9. Create a discount code at `/api/admin/discounts/issue` and verify in DB
+
+If any step fails, **fix instead of removing** functionality. Post the console output and diffs of changed files.
+
+**Do NOT:**
+
+* Change Navbar, theme, or existing visual design, beyond inserting the new admin/customer sections.
+* Remove existing routes; extend them.
+* Introduce breaking changes to `tsconfig.json` path aliases.
+* Add experimental packages that aren’t listed above.
+
+Deliverables: committed code, successful migrations & seeds, screenshots or logs showing the endpoints working, and the admin page rendering without the previous `import` error.
+
+---
+
+Use the code blocks above exactly. If something conflicts with an existing file, merge carefully and keep the finished build **error-free**.
