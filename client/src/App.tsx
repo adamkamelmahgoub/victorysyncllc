@@ -30,7 +30,7 @@ const Contact = lazy(() => import("./pages/contact"));      // or "./pages/Conta
 const Pricing = lazy(() => import("./pages/pricing"));      // or "./pages/Pricing"
 const SignIn = lazy(() => import("./pages/login"));         // or "./pages/SignIn" / "./pages/Login"
 const Register = lazy(() => import("./pages/register"));    // or "./pages/Register"
-const Dashboard = lazy(() => import("./pages/customer-dashboard").catch(() => import("./pages/dashboard"))); // optional
+const Dashboard = lazy(() => import("./pages/customer-dashboard")); // optional
 
 function PageFallback() {
   return (
