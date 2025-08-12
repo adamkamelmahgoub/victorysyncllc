@@ -17,7 +17,7 @@ async function run() {
   for (const f of files) {
     if (ranSet.has(f)) continue;
     const ddl = fs.readFileSync(path.join(dir, f), 'utf8');
-    await sql`${ddl}` as any;
+    await sql.unsafe(ddl);
     await sql`INSERT INTO _migrations (id) VALUES (${f});`;
     console.log('Applied', f);
   }
