@@ -1,46 +1,55 @@
-import { useQuery } from "@tanstack/react-query";
+
+import { useState, useEffect } from 'react';
+
+interface User {
+  id: number;
+  email: string;
+  name: string;
+}
 
 export function useAuth() {
-  const token = localStorage.getItem('auth_token');
-  
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["/api/auth/me"],
-    queryFn: async () => {
-      if (!token) {
-        return null;
-      }
-      
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check for existing token/session
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      // In a real app, verify the token with the server
+      setIsAuthenticated(true);
+      // Mock user data for now
+      setUser({
+        id: 1,
+        email: 'user@example.com',
+        name: 'Test User'
       });
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Token is invalid, remove it
-          localStorage.removeItem('auth_token');
-          return null;
-        }
-        throw new Error('Failed to fetch user data');
-      }
-      
-      const data = await response.json();
-      return data.user;
-    },
-    retry: false,
-    enabled: !!token,
-  });
+    }
+    setIsLoading(false);
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    // Mock login - replace with actual API call
+    localStorage.setItem('authToken', 'mock-token');
+    setIsAuthenticated(true);
+    setUser({
+      id: 1,
+      email,
+      name: 'Test User'
+    });
+  };
 
   const logout = () => {
-    localStorage.removeItem('auth_token');
-    window.location.href = '/';
+    localStorage.removeItem('authToken');
+    setIsAuthenticated(false);
+    setUser(null);
   };
 
   return {
     user,
+    isAuthenticated,
     isLoading,
-    isAuthenticated: !!user && !!token,
-    logout,
+    login,
+    logout
   };
 }
