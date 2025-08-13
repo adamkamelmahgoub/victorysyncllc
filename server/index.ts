@@ -39,7 +39,7 @@ app.use(auth);
 app.use('/api/admin', requireAuth, requireRole('admin'), admin);
 
 // Serve built client files
-const clientDist = path.join(__dirname, '../dist/public');
+const clientDist = path.join(import.meta.dirname, '../dist/public');
 app.use(express.static(clientDist));
 
 // Handle React routing - serve index.html for all non-API routes
