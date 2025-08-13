@@ -11,6 +11,7 @@ import cors from 'cors';
 import { auth } from './routes/auth.js';
 import { admin } from './routes/admin.js';
 import { authenticateJWT } from './lib/authenticate.js';
+import { requireAuth, requireRole } from './middleware/auth.js';
 import { createOrgIfNeeded, createUser, findUserByEmail } from './services/users';
 
 const app = express();
