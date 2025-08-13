@@ -1,97 +1,93 @@
-// ESM-safe __dirname shim
-import { fileURLToPath } from 'url';
-import { dirname, resolve, join } from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
+import 'dotenv/config';
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import cors from 'cors';
-import { auth } from './routes/auth.js';
-import { admin } from './routes/admin.js';
-import { authenticateJWT } from './lib/authenticate.js';
-import { requireAuth, requireRole } from './middleware/auth.js';
-import { createOrgIfNeeded, createUser, findUserByEmail } from './services/users';
+
+// ESM dirname helpers
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
+const PORT = Number(process.env.PORT || 5000);
 
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+// CORS for Replit Preview
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
+
 app.use(cookieParser());
+app.use(express.json({ limit: '1mb' }));
 
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
+// Health check
+app.get('/health', (_req, res) => res.status(200).send('ok'));
 
-// Debug endpoint to list available routes
-app.get('/api/debug/routes', (_req, res) => {
-  const routes = {
-    public: [
-      'GET /api/health',
-      'GET /api/debug/routes',
-      'POST /api/auth/login',
-      'POST /api/auth/register/start',
-      'POST /api/auth/register/verify',
-      'GET /api/auth/me (requires auth)'
-    ],
-    protected: [
-      'POST /api/admin/access-codes (admin only)',
-      '/api/admin/* (admin only)'
-    ]
-  };
-  res.json(routes);
-});
+// Import routes
+import { auth } from './routes/auth.js';
+import { admin } from './routes/admin.js';
+import { requireAuth, requireRole } from './middleware/auth.js';
 
-// Auth routes (public)
-app.use(auth);
+// API routes
+app.use('/api', auth);
+app.use('/api', requireAuth, requireRole('admin'), admin);
 
-// Admin routes (protected)
-app.use(requireAuth, requireRole('admin'), admin);
+// Vite dev server setup
+async function setupVite(app: express.Express) {
+  if (process.env.NODE_ENV === 'development') {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      root: path.resolve(__dirname, '../client'),
+      server: {
+        middlewareMode: true,
+        hmr: { overlay: true },
+        allowedHosts: true,
+      },
+      appType: 'custom',
+    });
+    
+    app.use(vite.middlewares);
 
-// Bootstrap first admin if not present (idempotent)
-async function bootstrapAdmin() {
-  const {
-    ADMIN_BOOTSTRAP_EMAIL,
-    ADMIN_BOOTSTRAP_PASSWORD,
-    ADMIN_BOOTSTRAP_ORG,
-    ADMIN_BOOTSTRAP_PHONE,
-    ADMIN_BOOTSTRAP_NAME
-  } = process.env;
-
-  if (!ADMIN_BOOTSTRAP_EMAIL || !ADMIN_BOOTSTRAP_PASSWORD) {
-    return;
+    // SPA fallback for non-API routes
+    app.use('*', async (req, res, next) => {
+      if (req.originalUrl.startsWith('/api')) return next();
+      
+      try {
+        const url = req.originalUrl;
+        const template = await vite.transformIndexHtml(url, `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VictorySync</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+        `);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
+  } else {
+    const dist = path.resolve(__dirname, '../client/dist');
+    app.use(express.static(dist));
+    app.get('*', (req, res) => {
+      if (req.path.startsWith('/api')) return res.status(404).json({ message: 'Not found' });
+      res.sendFile(path.join(dist, 'index.html'));
+    });
   }
-
-  const existing = await findUserByEmail(ADMIN_BOOTSTRAP_EMAIL);
-  if (existing) return;
-
-  const orgId = await createOrgIfNeeded(ADMIN_BOOTSTRAP_ORG || 'VictorySync');
-  await createUser({
-    org_id: orgId,
-    email: ADMIN_BOOTSTRAP_EMAIL,
-    phone: ADMIN_BOOTSTRAP_PHONE || '+10000000000',
-    full_name: ADMIN_BOOTSTRAP_NAME || 'Owner',
-    role: 'admin',
-    password: ADMIN_BOOTSTRAP_PASSWORD
-  });
-
-  console.log('[bootstrap] Admin created:', ADMIN_BOOTSTRAP_EMAIL);
 }
 
-bootstrapAdmin().catch(console.error);
-
-// Serve built client files
-const clientDist = join(__dirname, '../dist/public');
-app.use(express.static(clientDist));
-
-// Handle React routing - serve index.html for all non-API routes
-app.get(/^\/(?!api).*/, (_req, res) => {
-  try {
-    res.sendFile(join(clientDist, 'index.html'));
-  } catch (error) {
-    console.error('Error serving index.html:', error);
-    res.status(404).send('Page not found');
-  }
+setupVite(app).then(() => {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[express] serving on port ${PORT}`);
+  });
 });
-
-const PORT = Number(process.env.PORT || 5000);
-app.listen(PORT, '0.0.0.0', () => console.log(`[express] serving on port ${PORT}`));

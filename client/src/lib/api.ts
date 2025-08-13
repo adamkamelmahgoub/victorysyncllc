@@ -1,16 +1,27 @@
 
-export async function apiRequest<T = any>(method: string, url: string, body?: any): Promise<T> {
-  const token = localStorage.getItem('vs_token');
-  const res = await fetch(url, {
+export async function api<T>(method: string, url: string, body?: unknown): Promise<T> {
+  const res = await fetch(`/api${url}`, {
     method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    },
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
-    credentials: 'include'
   });
-  if (res.status === 401) throw new Error('Unauthenticated');
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+
+  if (res.status === 401) {
+    // Redirect to login on unauthorized
+    if (!location.pathname.startsWith('/login')) {
+      sessionStorage.setItem('postLoginRedirect', location.pathname + location.search);
+      location.assign('/login');
+    }
+    throw new Error('Unauthorized');
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+
+  // Return JSON if any, else undefined
+  const ct = res.headers.get('content-type') || '';
+  return ct.includes('application/json') ? (await res.json()) as T : (undefined as T);
 }

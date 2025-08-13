@@ -1,90 +1,78 @@
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+-- Core tables with all required columns
 CREATE TABLE IF NOT EXISTS organizations (
   id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  name TEXT NOT NULL,
+  domain TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
-  org_id INTEGER REFERENCES organizations(id) ON DELETE SET NULL,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
+  org_id INTEGER REFERENCES organizations(id),
+  email TEXT UNIQUE NOT NULL,
   phone TEXT,
+  full_name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  role TEXT NOT NULL DEFAULT 'customer',
+  is_active BOOLEAN DEFAULT true,
+  email_verified BOOLEAN DEFAULT false,
+  phone_verified BOOLEAN DEFAULT false,
+  two_factor_enabled BOOLEAN DEFAULT false,
+  two_factor_secret TEXT,
+  backup_codes TEXT[],
+  privileges JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- roles & permissions
-CREATE TABLE IF NOT EXISTS permissions (
+CREATE TABLE IF NOT EXISTS user_permissions (
   id SERIAL PRIMARY KEY,
-  key TEXT NOT NULL UNIQUE,
-  description TEXT
-);
-
-CREATE TABLE IF NOT EXISTS roles (
-  id SERIAL PRIMARY KEY,
-  key TEXT NOT NULL UNIQUE,
-  name TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS role_permissions (
-  role_id INTEGER REFERENCES roles(id) ON DELETE CASCADE,
-  permission_id INTEGER REFERENCES permissions(id) ON DELETE CASCADE,
-  PRIMARY KEY (role_id, permission_id)
-);
-
-CREATE TABLE IF NOT EXISTS user_roles (
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-  role_id INTEGER REFERENCES roles(id) ON DELETE CASCADE,
-  PRIMARY KEY (user_id, role_id)
+  can_use_api BOOLEAN DEFAULT true,
+  can_manage_org BOOLEAN DEFAULT false,
+  can_view_billing BOOLEAN DEFAULT true,
+  integrations JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- access codes for controlled signup
+CREATE TABLE IF NOT EXISTS user_payment_policies (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  allow_card BOOLEAN DEFAULT true,
+  allow_paypal BOOLEAN DEFAULT true,
+  allow_wire BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS access_codes (
   id SERIAL PRIMARY KEY,
-  code TEXT NOT NULL UNIQUE,
+  code TEXT UNIQUE NOT NULL,
   email TEXT NOT NULL,
   phone TEXT,
-  org_name TEXT NOT NULL,
-  created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-  expires_at TIMESTAMPTZ NOT NULL,
-  consumed_at TIMESTAMPTZ
+  full_name TEXT NOT NULL,
+  organization TEXT NOT NULL,
+  used BOOLEAN DEFAULT false,
+  used_at TIMESTAMP WITH TIME ZONE,
+  expires_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- basic orders/packages (already referenced by server)
-CREATE TABLE IF NOT EXISTS packages (
+CREATE TABLE IF NOT EXISTS call_events (
   id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE,
-  price NUMERIC(12,2) NOT NULL,
-  description TEXT,
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  user_id INTEGER REFERENCES users(id),
+  type TEXT NOT NULL,
+  duration INTEGER,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS orders (
-  id SERIAL PRIMARY KEY,
-  org_id INTEGER REFERENCES organizations(id) ON DELETE SET NULL,
-  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-  status TEXT NOT NULL CHECK (status IN ('pending','processing','completed','cancelled','refunded')) DEFAULT 'pending',
-  amount NUMERIC(12,2) NOT NULL DEFAULT 0,
-  currency TEXT NOT NULL DEFAULT 'USD',
-  external_id TEXT,
-  customer_name TEXT,
-  customer_email TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS order_items (
-  id SERIAL PRIMARY KEY,
-  order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
-  package_id INTEGER REFERENCES packages(id) ON DELETE SET NULL,
-  quantity INTEGER DEFAULT 1,
-  price_at_time NUMERIC(12,2) NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_org_id ON users(org_id);
+CREATE INDEX IF NOT EXISTS idx_access_codes_code ON access_codes(code);
+CREATE INDEX IF NOT EXISTS idx_call_events_user_id ON call_events(user_id);
