@@ -23,7 +23,8 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   try {
     (req as any).user = verify(token);
     next();
-  } catch {
+  } catch (error) {
+    console.error('JWT verification error:', error);
     return res.status(401).json({ message: 'Invalid session' });
   }
 }
