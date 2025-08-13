@@ -4,13 +4,11 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "build": "npm run build:client && npm run build:server",
-    "build:client": "cd client && npm run build",
-    "build:server": "tsc -p server",
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "start": "NODE_ENV=production tsx server/index.ts",
     "db:migrate": "tsx server/db/runMigrations.ts",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "build:client": "npm run build",
+    "build:server": ""
   },
   "jest": {
     "preset": "ts-jest",

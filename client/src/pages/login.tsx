@@ -4,13 +4,13 @@ import { api } from '@/api/client';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
+  const nav = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -21,46 +21,59 @@ export default function Login() {
         body: JSON.stringify({ email, password })
       });
       
-      if (result.user.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
-    } catch (err: any) {
-      setError(err.message);
+      localStorage.setItem('vs_token', result.token);
+      nav('/admin');
+    } catch (e: any) {
+      setError(e.message);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="max-w-md mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Login to VictorySync</h1>
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          className="w-full px-3 py-2 border rounded-md"
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-        />
-        <input
-          className="w-full px-3 py-2 border rounded-md"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        />
-        <button
-          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+    <main className="max-w-md mx-auto p-6 mt-12">
+      <h1 className="text-2xl font-semibold mb-6">Sign in to VictorySync</h1>
+      
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Email</label>
+          <input 
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            type="email" 
+            placeholder="your@email.com"
+            value={email} 
+            onChange={e => setEmail(e.target.value)} 
+            required
+            disabled={loading}
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1">Password</label>
+          <input 
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            type="password" 
+            placeholder="Password"
+            value={password} 
+            onChange={e => setPassword(e.target.value)} 
+            required
+            disabled={loading}
+          />
+        </div>
+        
+        <button 
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           disabled={loading}
         >
-          {loading ? 'Signing in...' : 'Sign In'}
+          {loading ? 'Signing in...' : 'Sign in'}
         </button>
       </form>
-      {error && <p className="text-red-600 mt-3">{error}</p>}
+      
+      {error && <p className="text-red-600 mt-3 text-sm">{error}</p>}
+      
+      <p className="mt-4 text-sm text-gray-600">
+        Need to register? Contact your admin for an access code.
+      </p>
     </main>
   );
 }

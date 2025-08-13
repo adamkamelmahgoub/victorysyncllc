@@ -1,17 +1,19 @@
+
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
-import { auth } from './routes/auth.js';
-import { admin } from './routes/admin.js';
-import { requireAuth, requireRole } from './middleware/auth.js';
+import { auth } from './routes/auth';
+import { admin } from './routes/admin';
+import { requireAuth, requireRole } from './middleware/auth';
+import { createOrgIfNeeded, createUser, findUserByEmail } from './services/users';
 
 const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.get('/api/health', (_req,res)=>res.json({ok:true}));
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 // Debug endpoint to list available routes
 app.get('/api/debug/routes', (_req, res) => {
@@ -32,11 +34,43 @@ app.get('/api/debug/routes', (_req, res) => {
   res.json(routes);
 });
 
-// Public auth routes
+// Auth routes (public)
 app.use(auth);
 
-// Protected admin routes
-app.use('/api/admin', requireAuth, requireRole('admin'), admin);
+// Admin routes (protected)
+app.use(requireAuth, requireRole('admin'), admin);
+
+// Bootstrap first admin if not present (idempotent)
+async function bootstrapAdmin() {
+  const {
+    ADMIN_BOOTSTRAP_EMAIL,
+    ADMIN_BOOTSTRAP_PASSWORD,
+    ADMIN_BOOTSTRAP_ORG,
+    ADMIN_BOOTSTRAP_PHONE,
+    ADMIN_BOOTSTRAP_NAME
+  } = process.env;
+  
+  if (!ADMIN_BOOTSTRAP_EMAIL || !ADMIN_BOOTSTRAP_PASSWORD) {
+    return;
+  }
+  
+  const existing = await findUserByEmail(ADMIN_BOOTSTRAP_EMAIL);
+  if (existing) return;
+  
+  const orgId = await createOrgIfNeeded(ADMIN_BOOTSTRAP_ORG || 'VictorySync');
+  await createUser({
+    org_id: orgId,
+    email: ADMIN_BOOTSTRAP_EMAIL,
+    phone: ADMIN_BOOTSTRAP_PHONE || '+10000000000',
+    full_name: ADMIN_BOOTSTRAP_NAME || 'Owner',
+    role: 'admin',
+    password: ADMIN_BOOTSTRAP_PASSWORD
+  });
+  
+  console.log('[bootstrap] Admin created:', ADMIN_BOOTSTRAP_EMAIL);
+}
+
+bootstrapAdmin().catch(console.error);
 
 // Serve built client files
 const clientDist = path.join(import.meta.dirname, '../dist/public');
@@ -53,4 +87,4 @@ app.get(/^\/(?!api).*/, (_req, res) => {
 });
 
 const PORT = Number(process.env.PORT || 5000);
-app.listen(PORT, '0.0.0.0', ()=>console.log(`[express] serving on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`[express] serving on port ${PORT}`));
