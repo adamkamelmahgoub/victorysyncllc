@@ -1,103 +1,103 @@
 
 import { Router } from 'express';
-import { z } from 'zod';
-import { sign } from '../lib/jwt';
-import { generate, dispatch, verifyPair } from '../services/otp';
-import { issueAccessCode, validateAccessCode, markConsumed } from '../services/accessCodes';
-import { createOrgIfNeeded, createUser, findUserByEmail, verifyPassword, setVerificationFlags } from '../services/users';
+import argon2 from 'argon2';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import { db, sql } from '../db/index.js';
+import { authenticateJWT } from '../lib/authenticate.js';
 
-export const auth = Router();
+export const router = Router();
 
-// Admin: issue an access code
-auth.post('/api/admin/access-codes', async (req: any, res) => {
-  const adminId = req.user?.id; // protected in index via middleware
-  const b = z.object({
-    email: z.string().email(),
-    phone: z.string().min(6),
-    full_name: z.string().min(2),
-    org_name: z.string().min(2),
-    ttlMinutes: z.number().min(5).max(1440).optional()
-  }).parse(req.body);
-  const code = await issueAccessCode(adminId, b);
-  res.json({ code });
+/** Admin issues an access code tied to an email/phone/org */
+router.post('/admin/access-codes', authenticateJWT, async (req, res) => {
+  // @ts-ignore
+  if (!req.user?.permissions?.includes('manage_access_codes')) return res.status(403).json({ message: 'Forbidden' });
+  const { email, phone, orgName, expiresAt } = req.body;
+  if (!email || !orgName) return res.status(400).json({ message: 'Missing fields' });
+  const code = crypto.randomUUID().replace(/-/g, '').slice(0, 10);
+  const q = await db.execute(sql`
+    INSERT INTO access_codes (code, email, phone, org_name, created_by, expires_at)
+    VALUES (${code}, ${email}, ${phone || null}, ${orgName}, ${req.user.id}, ${expiresAt ? new Date(expiresAt) : sql`NOW() + interval '7 days'`})
+    RETURNING code
+  `);
+  // @ts-ignore
+  const result = Array.isArray(q) ? q[0] : q.rows[0];
+  res.json({ code: result.code });
 });
 
-// Registration step 1
-auth.post('/api/auth/register/start', async (req, res) => {
-  const b = z.object({
-    code: z.string().min(8),
-    email: z.string().email(),
-    phone: z.string().min(6),
-    full_name: z.string().min(2),
-    org_name: z.string().min(2),
-    password: z.string().min(8)
-  }).parse(req.body);
-  
-  await validateAccessCode(b.code, b);
-  const { key, eCode, sCode } = generate(b.email, b.phone);
-  await dispatch(b.email, b.phone, eCode, sCode);
-  res.json({ token: key });
-});
+/** Customer registers using access code; verifies email/phone/orgName match */
+router.post('/register-with-code', async (req, res) => {
+  const { name, email, phone, orgName, password, accessCode } = req.body;
+  if (!name || !email || !orgName || !password || !accessCode) return res.status(400).json({ message: 'Missing fields' });
 
-// Registration step 2
-auth.post('/api/auth/register/verify', async (req, res) => {
-  const b = z.object({
-    token: z.string(),
-    code: z.string(),
-    email: z.string().email(),
-    phone: z.string().min(6),
-    full_name: z.string(),
-    org_name: z.string(),
-    password: z.string().min(8),
-    email_code: z.string().length(6),
-    sms_code: z.string().length(6)
-  }).parse(req.body);
-  
-  if (!verifyPair(b.token, b.email_code, b.sms_code)) {
-    return res.status(400).json({ message: 'Invalid codes' });
+  const { rows } = await db.execute(sql`
+    SELECT * FROM access_codes
+    WHERE code = ${accessCode}
+      AND consumed_at IS NULL
+      AND expires_at > NOW()
+    LIMIT 1
+  `);
+  const ac = rows?.[0];
+  if (!ac) return res.status(400).json({ message: 'Invalid or expired access code' });
+  if (ac.email !== email || (ac.phone && phone && ac.phone !== phone) || ac.org_name !== orgName) {
+    return res.status(400).json({ message: 'Details do not match access code' });
   }
-  
-  const orgId = await createOrgIfNeeded(b.org_name);
-  const user = await createUser({
-    org_id: orgId,
-    email: b.email,
-    phone: b.phone,
-    full_name: b.full_name,
-    role: 'customer',
-    password: b.password
-  });
-  
-  await setVerificationFlags(user.id, { email: true, phone: true });
-  await markConsumed(b.code, user.id);
-  
-  const jwt = sign({ id: user.id, role: user.role, org_id: user.org_id });
-  res.cookie('vs_token', jwt, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 3600 * 1000 });
-  res.json({ user });
+
+  // Ensure org exists or create
+  const orgRes = await db.execute(sql`
+    INSERT INTO organizations (name)
+    VALUES (${orgName})
+    ON CONFLICT (name) DO UPDATE SET name=EXCLUDED.name
+    RETURNING id
+  `);
+  const orgId = (orgRes.rows?.[0]?.id) ?? orgRes[0]?.id;
+
+  const passwordHash = await argon2.hash(password);
+  const userRes = await db.execute(sql`
+    INSERT INTO users (org_id, name, email, phone, password_hash)
+    VALUES (${orgId}, ${name}, ${email}, ${phone || null}, ${passwordHash})
+    RETURNING id
+  `);
+  const userId = (userRes.rows?.[0]?.id) ?? userRes[0]?.id;
+
+  // Default org_admin role for first user in org
+  const r = await db.execute(sql`SELECT id FROM roles WHERE key='org_admin' LIMIT 1`);
+  const roleId = (r.rows?.[0]?.id) ?? r[0]?.id;
+  await db.execute(sql`INSERT INTO user_roles (user_id, role_id) VALUES (${userId}, ${roleId}) ON CONFLICT DO NOTHING`);
+
+  await db.execute(sql`UPDATE access_codes SET consumed_at = NOW() WHERE id = ${ac.id}`);
+
+  const token = jwt.sign(
+    { id: userId, orgId, isSuperAdmin: false, permissions: ['manage_orgs','manage_integrations','manage_billing','view_kpis','manage_access_codes'] },
+    process.env.JWT_SECRET!, { expiresIn: '12h' }
+  );
+  res.json({ token });
 });
 
-// Login
-auth.post('/api/auth/login', async (req, res) => {
-  const b = z.object({
-    email: z.string().email(),
-    password: z.string().min(8)
-  }).parse(req.body);
-  
-  const u = await findUserByEmail(b.email);
-  if (!u) return res.status(400).json({ message: 'Invalid credentials' });
-  
-  if (!await verifyPassword(u, b.password)) {
-    return res.status(400).json({ message: 'Invalid credentials' });
-  }
-  
-  const jwt = sign({ id: u.id, role: u.role, org_id: u.org_id });
-  res.cookie('vs_token', jwt, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 3600 * 1000 });
-  res.json({
-    user: {
-      id: u.id,
-      email: u.email,
-      role: u.role,
-      org_id: u.org_id,
-      full_name: u.full_name
-    }
-  });
+/** Login + /me remain; ensure /me returns permissions derived from roles */
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const { rows } = await db.execute(sql`SELECT * FROM users WHERE email = ${email} LIMIT 1`);
+  const u = rows?.[0];
+  if (!u || !(await argon2.verify(u.password_hash, password))) return res.status(401).json({ message: 'Invalid credentials' });
+
+  const permsQ = await db.execute(sql`
+    SELECT DISTINCT p.key FROM user_roles ur
+      JOIN role_permissions rp ON rp.role_id = ur.role_id
+      JOIN permissions p ON p.id = rp.permission_id
+    WHERE ur.user_id = ${u.id}
+  `);
+  const permissions = (permsQ.rows ?? permsQ).map((r:any)=>r.key);
+  const isSuperAdmin = permissions.length > 0 && permissions.every(Boolean) && permissions.includes('manage_admins');
+
+  const token = jwt.sign({ id: u.id, orgId: u.org_id, isSuperAdmin, permissions }, process.env.JWT_SECRET!, { expiresIn: '12h' });
+  res.json({ token });
 });
+
+router.get('/me', authenticateJWT, async (req, res) => {
+  // @ts-ignore
+  const user = req.user;
+  res.json(user);
+});
+
+export { router as auth };

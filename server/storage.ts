@@ -407,8 +407,74 @@ export class DatabaseStorage implements IStorage {
 
   // Admin operations
   async getAllPublicUsers(): Promise<PublicUser[]> {
-    // Use the helper function for fetching users with enhanced details
-    return await getPublicUsersFromDb();
+    // Using the Drizzle ORM client to fetch users with their associated roles and permissions
+    const usersWithRolesAndPermissions = await db.select({
+      id: publicUsers.id,
+      name: publicUsers.name,
+      email: publicUsers.email,
+      emailVerified: publicUsers.emailVerified,
+      isActive: publicUsers.isActive,
+      status: publicUsers.status,
+      statusReason: publicUsers.statusReason,
+      role: publicUsers.role, // This is the base role, we will merge specific role names
+      permissions: publicUsers.permissions, // This is the base permissions, we will merge specific permissions
+      featureFlags: publicUsers.featureFlags,
+      socialAccounts: publicUsers.socialAccounts,
+      stripeCustomerId: publicUsers.stripeCustomerId,
+      forcePasswordReset: publicUsers.forcePasswordReset,
+      requireMfa: publicUsers.requireMfa,
+      createdAt: publicUsers.createdAt,
+      updatedAt: publicUsers.updatedAt,
+      // Aggregating roles and permissions from the join
+      roles: sql<string[]>`COALESCE(json_agg(DISTINCT ${accessControlRoles.key}) FILTER (WHERE ${accessControlRoles.key} IS NOT NULL), '[]'::json)`,
+      permissionsFromRoles: sql<string[]>`COALESCE(json_agg(DISTINCT ${accessControlPermissions.key}) FILTER (WHERE ${accessControlPermissions.key} IS NOT NULL), '[]'::json)`
+    })
+      .from(publicUsers)
+      .leftJoin(accessControlUserRoles, eq(publicUsers.id, accessControlUserRoles.userId))
+      .leftJoin(accessControlRoles, eq(accessControlUserRoles.roleId, accessControlRoles.id))
+      .leftJoin(accessControlRolePermissions, eq(accessControlRoles.id, accessControlRolePermissions.roleId))
+      .leftJoin(accessControlPermissions, eq(accessControlRolePermissions.permissionId, accessControlPermissions.id))
+      .groupBy(
+        publicUsers.id,
+        publicUsers.name,
+        publicUsers.email,
+        publicUsers.emailVerified,
+        publicUsers.isActive,
+        publicUsers.status,
+        publicUsers.statusReason,
+        publicUsers.role,
+        publicUsers.permissions,
+        publicUsers.featureFlags,
+        publicUsers.socialAccounts,
+        publicUsers.stripeCustomerId,
+        publicUsers.forcePasswordReset,
+        publicUsers.requireMfa,
+        publicUsers.createdAt,
+        publicUsers.updatedAt
+      )
+      .orderBy(desc(publicUsers.createdAt));
+
+    // Map the database results to the PublicUser type, merging roles and permissions
+    return usersWithRolesAndPermissions.map(user => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified ?? false,
+      isActive: user.isActive ?? true,
+      status: user.status || 'active',
+      statusReason: user.statusReason || null,
+      // Use the base role from the user table, but the aggregated roles from joins can be used for more granular logic if needed
+      role: user.role || 'customer',
+      // Combine base permissions with permissions from roles
+      permissions: Array.from(new Set([...(user.permissions || []), ...(user.permissionsFromRoles || [])])),
+      featureFlags: user.featureFlags || [],
+      socialAccounts: user.socialAccounts || null,
+      stripeCustomerId: user.stripeCustomerId || null,
+      forcePasswordReset: user.forcePasswordReset || false,
+      requireMfa: user.requireMfa || false,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    }));
   }
 
   async getAllOrders(): Promise<Order[]> {

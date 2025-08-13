@@ -8,9 +8,9 @@ const __dirname = dirname(__filename);
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import { auth } from './routes/auth';
-import { admin } from './routes/admin';
-import { requireAuth, requireRole } from './middleware/auth';
+import { auth } from './routes/auth.js';
+import { admin } from './routes/admin.js';
+import { authenticateJWT } from './lib/authenticate.js';
 import { createOrgIfNeeded, createUser, findUserByEmail } from './services/users';
 
 const app = express();

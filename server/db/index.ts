@@ -1,15 +1,10 @@
 
-import { neon, neonConfig } from '@neondatabase/serverless';
+import 'dotenv/config';
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 
-neonConfig.fetchConnectionCache = true;
+const DATABASE_URL = process.env.DATABASE_URL!;
+if (!DATABASE_URL) throw new Error('DATABASE_URL is missing');
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL not set');
-}
-
-export const sql = neon(process.env.DATABASE_URL);
-
-export async function query<T = unknown>(strings: TemplateStringsArray, ...values: any[]): Promise<T[]> {
-  // @ts-ignore
-  return (await sql(strings, ...values)) as T[];
-}
+export const sql = neon(DATABASE_URL, { fetchConnectionCache: true });
+export const db = drizzle(sql);
