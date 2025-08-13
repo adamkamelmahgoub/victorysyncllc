@@ -1,7 +1,13 @@
+// ESM-safe __dirname shim
+import { fileURLToPath } from 'url';
+import { dirname, resolve, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import path from 'path';
 import { auth } from './routes/auth';
 import { admin } from './routes/admin';
 import { requireAuth, requireRole } from './middleware/auth';
@@ -73,13 +79,13 @@ async function bootstrapAdmin() {
 bootstrapAdmin().catch(console.error);
 
 // Serve built client files
-const clientDist = path.join(__dirname, '../dist/public');
+const clientDist = join(__dirname, '../dist/public');
 app.use(express.static(clientDist));
 
 // Handle React routing - serve index.html for all non-API routes
 app.get(/^\/(?!api).*/, (_req, res) => {
   try {
-    res.sendFile(path.join(clientDist, 'index.html'));
+    res.sendFile(join(clientDist, 'index.html'));
   } catch (error) {
     console.error('Error serving index.html:', error);
     res.status(404).send('Page not found');
