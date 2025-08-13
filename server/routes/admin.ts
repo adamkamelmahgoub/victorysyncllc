@@ -1,7 +1,7 @@
 
 import { Router } from 'express';
 import { z } from 'zod';
-import { query } from '../db';
+import { query } from '../db/index.js';
 
 export const admin = Router();
 
