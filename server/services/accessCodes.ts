@@ -1,5 +1,5 @@
 
-import { query } from '../db';
+import { query } from '../db/index.js';
 import { randomBytes } from 'crypto';
 
 export async function issueAccessCode(adminId: string, data: {
