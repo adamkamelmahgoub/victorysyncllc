@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -9,6 +8,7 @@ import { requireAuth, requireRole } from './middleware/auth';
 import { createOrgIfNeeded, createUser, findUserByEmail } from './services/users';
 
 const app = express();
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -22,7 +22,7 @@ app.get('/api/debug/routes', (_req, res) => {
       'GET /api/health',
       'GET /api/debug/routes',
       'POST /api/auth/login',
-      'POST /api/auth/register/start', 
+      'POST /api/auth/register/start',
       'POST /api/auth/register/verify',
       'GET /api/auth/me (requires auth)'
     ],
@@ -49,14 +49,14 @@ async function bootstrapAdmin() {
     ADMIN_BOOTSTRAP_PHONE,
     ADMIN_BOOTSTRAP_NAME
   } = process.env;
-  
+
   if (!ADMIN_BOOTSTRAP_EMAIL || !ADMIN_BOOTSTRAP_PASSWORD) {
     return;
   }
-  
+
   const existing = await findUserByEmail(ADMIN_BOOTSTRAP_EMAIL);
   if (existing) return;
-  
+
   const orgId = await createOrgIfNeeded(ADMIN_BOOTSTRAP_ORG || 'VictorySync');
   await createUser({
     org_id: orgId,
@@ -66,14 +66,14 @@ async function bootstrapAdmin() {
     role: 'admin',
     password: ADMIN_BOOTSTRAP_PASSWORD
   });
-  
+
   console.log('[bootstrap] Admin created:', ADMIN_BOOTSTRAP_EMAIL);
 }
 
 bootstrapAdmin().catch(console.error);
 
 // Serve built client files
-const clientDist = path.join(import.meta.dirname, '../dist/public');
+const clientDist = path.join(__dirname, '../dist/public');
 app.use(express.static(clientDist));
 
 // Handle React routing - serve index.html for all non-API routes
