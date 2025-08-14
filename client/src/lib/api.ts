@@ -17,5 +17,5 @@ export async function api<T>(method: string, url: string, body?: unknown): Promi
 
   if (!res.ok) throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
   const ct = res.headers.get('content-type') || '';
-  return ct.includes('application/json') ? (await res.json() as T) : (undefined as T);
+  return ct.includes('application/json') ? await res.json() as T : (undefined as T);
 }
