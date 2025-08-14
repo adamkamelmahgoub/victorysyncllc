@@ -73,7 +73,10 @@ async function start() {
       root: path.resolve(__dirname, '../client'),
       server: {
         middlewareMode: true,
-        hmr: { port: 24678 },
+        hmr: { 
+          port: 24678,
+          host: '0.0.0.0'
+        },
         watch: { usePolling: true, interval: 150 }
       },
       appType: 'custom'
@@ -85,11 +88,12 @@ async function start() {
     app.use('*', async (req, res) => {
       try {
         const url = req.originalUrl
-        const template = await vite.transformIndexHtml(url, '')
+        let template = await fs.readFile(path.resolve(__dirname, '../client/index.html'), 'utf-8')
+        template = await vite.transformIndexHtml(url, template)
         res.status(200).set({ 'Content-Type': 'text/html' }).end(template)
       } catch (e) {
         vite.ssrFixStacktrace(e)
-        console.error(e)
+        console.error('Vite SSR Error:', e)
         res.status(500).end(e.message)
       }
     })
