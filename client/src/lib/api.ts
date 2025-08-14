@@ -8,7 +8,6 @@ export async function api<T>(method: string, url: string, body?: unknown): Promi
   });
 
   if (res.status === 401) {
-    // Redirect to login on unauthorized
     if (!location.pathname.startsWith('/login')) {
       sessionStorage.setItem('postLoginRedirect', location.pathname + location.search);
       location.assign('/login');
@@ -16,12 +15,7 @@ export async function api<T>(method: string, url: string, body?: unknown): Promi
     throw new Error('Unauthorized');
   }
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(text || `HTTP ${res.status}`);
-  }
-
-  // Return JSON if any, else undefined
+  if (!res.ok) throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
   const ct = res.headers.get('content-type') || '';
-  return ct.includes('application/json') ? (await res.json()) as T : (undefined as T);
+  return ct.includes('application/json') ? (await res.json() as T) : (undefined as T);
 }
