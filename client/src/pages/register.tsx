@@ -1,131 +1,180 @@
+import { useState } from "react";
+import { Link, useLocation } from "wouter";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { registerUserSchema } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import { z } from "zod";
 
-import React, { useState } from 'react';
-import { api } from '@/api/client';
+type RegisterFormData = z.infer<typeof registerUserSchema>;
 
 export default function Register() {
-  const [stage, setStage] = useState<'start' | 'verify'>('start');
-  const [payload, setPayload] = useState({ code: '', email: '', phone: '', full_name: '', org_name: '', password: '' });
-  const [token, setToken] = useState('');
-  const [emailCode, setEmailCode] = useState('');
-  const [smsCode, setSmsCode] = useState('');
-  const [msg, setMsg] = useState('');
-  const [err, setErr] = useState('');
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
 
-  async function start(e: React.FormEvent) {
-    e.preventDefault();
-    setErr('');
-    setMsg('');
-    try {
-      const r = await api('/auth/register/start', { method: 'POST', body: JSON.stringify(payload) });
-      setToken(r.token);
-      setStage('verify');
-    } catch (error: any) {
-      setErr(error.message);
-    }
-  }
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerUserSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+  });
 
-  async function verify(e: React.FormEvent) {
-    e.preventDefault();
-    setErr('');
-    setMsg('');
-    try {
-      const r = await api('/auth/register/verify', {
+  const registerMutation = useMutation({
+    mutationFn: async (data: RegisterFormData) => {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
-        body: JSON.stringify({
-          token,
-          code: payload.code,
-          email: payload.email,
-          phone: payload.phone,
-          full_name: payload.full_name,
-          org_name: payload.org_name,
-          password: payload.password,
-          email_code: emailCode,
-          sms_code: smsCode
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
-      setMsg(`Welcome, ${r.user.full_name}!`);
-    } catch (error: any) {
-      setErr(error.message);
-    }
-  }
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Registration failed');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Store the JWT token
+      localStorage.setItem('auth_token', data.token);
+      
+      toast({
+        title: "Account created successfully!",
+        description: "Welcome to VictorySync. You can now access all features.",
+      });
+      
+      // Redirect to dashboard or home
+      setLocation('/customer-dashboard');
+    },
+    onError: (error: any) => {
+      console.error('Registration error:', error);
+      toast({
+        title: "Registration failed",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (data: RegisterFormData) => {
+    registerMutation.mutate(data);
+  };
 
   return (
-    <main className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Create your VictorySync account</h1>
-      {stage === 'start' ? (
-        <form onSubmit={start} className="space-y-3">
-          <input 
-            className="w-full px-3 py-2 border border-gray-300 rounded-md" 
-            placeholder="Access code" 
-            value={payload.code} 
-            onChange={e => setPayload({ ...payload, code: e.target.value })} 
-            required 
-          />
-          <input 
-            className="w-full px-3 py-2 border border-gray-300 rounded-md" 
-            placeholder="Full name" 
-            value={payload.full_name} 
-            onChange={e => setPayload({ ...payload, full_name: e.target.value })} 
-            required 
-          />
-          <input 
-            className="w-full px-3 py-2 border border-gray-300 rounded-md" 
-            placeholder="Organization" 
-            value={payload.org_name} 
-            onChange={e => setPayload({ ...payload, org_name: e.target.value })} 
-            required 
-          />
-          <input 
-            className="w-full px-3 py-2 border border-gray-300 rounded-md" 
-            type="email" 
-            placeholder="Email" 
-            value={payload.email} 
-            onChange={e => setPayload({ ...payload, email: e.target.value })} 
-            required 
-          />
-          <input 
-            className="w-full px-3 py-2 border border-gray-300 rounded-md" 
-            placeholder="Phone" 
-            value={payload.phone} 
-            onChange={e => setPayload({ ...payload, phone: e.target.value })} 
-            required 
-          />
-          <input 
-            className="w-full px-3 py-2 border border-gray-300 rounded-md" 
-            type="password" 
-            placeholder="Password" 
-            value={payload.password} 
-            onChange={e => setPayload({ ...payload, password: e.target.value })} 
-            required 
-          />
-          <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
-            Send verification codes
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={verify} className="space-y-3">
-          <p className="text-sm text-gray-600">Enter the 6-digit codes we sent to your email and phone.</p>
-          <input 
-            className="w-full px-3 py-2 border border-gray-300 rounded-md" 
-            placeholder="Email code" 
-            value={emailCode} 
-            onChange={e => setEmailCode(e.target.value)} 
-            required 
-          />
-          <input 
-            className="w-full px-3 py-2 border border-gray-300 rounded-md" 
-            placeholder="SMS code" 
-            value={smsCode} 
-            onChange={e => setSmsCode(e.target.value)} 
-            required 
-          />
-          <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
-            Complete registration
-          </button>
-        </form>
-      )}
-      {err && <p className="text-red-600 mt-3">{err}</p>}
-      {msg && <p className="text-green-700 mt-3">{msg}</p>}
-    </main>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-victory-purple">
+            Create Your Account
+          </CardTitle>
+          <CardDescription>
+            Join VictorySync and start saving on customer service costs
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter your full name"
+                {...form.register("name")}
+                className={form.formState.errors.name ? "border-red-500" : ""}
+              />
+              {form.formState.errors.name && (
+                <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                {...form.register("email")}
+                className={form.formState.errors.email ? "border-red-500" : ""}
+              />
+              {form.formState.errors.email && (
+                <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Create a password"
+                  {...form.register("password")}
+                  className={form.formState.errors.password ? "border-red-500 pr-10" : "pr-10"}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {form.formState.errors.password && (
+                <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
+              )}
+              <p className="text-xs text-gray-500">
+                Password must be at least 8 characters and contain at least one number
+              </p>
+            </div>
+
+            {registerMutation.error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {(registerMutation.error as any)?.message || "Registration failed. Please try again."}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <Button 
+              type="submit" 
+              className="w-full bg-[#6950f0] hover:bg-[#5d4cdb] text-white"
+              disabled={registerMutation.isPending}
+            >
+              {registerMutation.isPending ? "Creating Account..." : "Create Account"}
+            </Button>
+          </form>
+
+
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{" "}
+              <Link href="/login" className="text-victory-purple hover:underline font-medium">
+                Sign in here
+              </Link>
+            </p>
+          </div>
+
+          <div className="mt-4 text-center">
+            <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
+              ← Back to home
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

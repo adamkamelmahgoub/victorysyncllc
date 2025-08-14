@@ -1,40 +1,35 @@
+import type { Request, Response, NextFunction } from "express";
+import jwt from 'jsonwebtoken';
+import type { PublicUser } from "@shared/schema";
 
-import type { Request, Response, NextFunction } from 'express';
-import { verify } from '../lib/jwt';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-export function extractToken(req: Request) {
-  const header = req.headers['authorization'];
-  if (header && typeof header === 'string' && header.startsWith('Bearer ')) {
-    return header.slice(7);
-  }
-  
-  // Fallback to cookie
-  // @ts-ignore
-  const cookie = req.cookies?.vs_token;
-  return cookie;
+export interface AuthenticatedRequest extends Request {
+  user?: PublicUser;
 }
 
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const token = extractToken(req);
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthenticated' });
-  }
-  
+export const requireAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
-    (req as any).user = verify(token);
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    
+    // You could add database lookup here if needed
+    // For now, we'll just use the decoded token data
+    req.user = {
+      id: decoded.userId,
+      email: decoded.email,
+      name: decoded.name || '',
+      socialAccounts: []
+    } as PublicUser;
+
     next();
   } catch (error) {
-    console.error('JWT verification error:', error);
-    return res.status(401).json({ message: 'Invalid session' });
+    console.error('Auth middleware error:', error);
+    return res.status(401).json({ error: 'Invalid token' });
   }
-}
-
-export function requireRole(...roles: string[]) {
-  return (req: any, res: Response, next: NextFunction) => {
-    if (roles.includes(req.user?.role)) {
-      next();
-    } else {
-      res.status(403).json({ message: 'Forbidden' });
-    }
-  };
-}
+};

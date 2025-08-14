@@ -2,14 +2,21 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
-import { registerUser, loginUser, getCurrentUser, authenticateJWT, generateJWT, type AuthenticatedRequest } from "./publicAuth";
+import { registerUser, loginUser, getCurrentUser, authenticateJWT, type AuthenticatedRequest } from "./publicAuth";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
-import authRoutes from './routes/auth';
-import adminRoutes from './routes/admin';
-import customerRoutes from './routes/customer';
+import { db } from "./db";
+import { publicUsers, orders, integrations } from "@shared/schema";
+import { eq, and } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { requireAuth } from "./middleware/auth";
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
 
 let stripe: Stripe | null = null;
 
@@ -18,15 +25,6 @@ if (process.env.STRIPE_SECRET_KEY) {
     apiVersion: "2025-05-28.basil",
   });
 }
-
-// Admin middleware
-const requireAdmin = (req: any, res: any, next: any) => {
-  // Simple admin check - in production this should be more robust
-  if (req.headers['x-admin-auth'] !== 'admin123') {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-  next();
-};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint - must be first to avoid being caught by other routes
@@ -58,6 +56,408 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Features management routes
+  app.get("/api/features", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const customerId = req.query.customer_id || req.user?.id;
+
+      const features = await db.execute(sql`
+        SELECT feature_key 
+        FROM features_enabled 
+        WHERE customer_id = ${customerId} AND enabled = true
+      `);
+
+      const featureKeys = features.map((f: any) => f[0].feature_key);
+      res.json({ features: featureKeys });
+    } catch (error) {
+      console.error('Error fetching features:', error);
+      res.status(500).json({ error: 'Failed to fetch features' });
+    }
+  });
+
+  // Admin authentication routes
+  app.post("/api/admin/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      const results = await db.execute(sql`
+        SELECT * FROM public_users WHERE email = ${email}
+      `);
+
+       const users = results.rows;
+
+      if (users.length === 0) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+
+      const user = users[0];
+       // Check if user has password hash for admin access
+      if (!user.password_hash) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      const isValid = await bcrypt.compare(password, user.password_hash);
+
+      if (!isValid) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
+  app.get("/api/admin/auth/me", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+      }
+
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      // For now, any authenticated user can access admin endpoints
+      // You can add role-based access control later
+
+      const results = await db.execute(sql`
+        SELECT id, name, email FROM public_users WHERE id = ${decoded.userId}
+      `);
+
+      const users = results.rows;
+
+      if (users.length === 0) {
+        return res.status(404).json({ error: 'Admin user not found' });
+      }
+
+      res.json({ user: users[0] });
+    } catch (error) {
+      console.error('Admin auth check error:', error);
+      res.status(401).json({ error: 'Invalid token' });
+    }
+  });
+
+  app.get("/api/admin/stats", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+      }
+
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      // For now, any authenticated user can access admin endpoints
+      // You can add role-based access control later
+
+      const [customerCountResult] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM public_users
+      `);
+       const customerCount = customerCountResult.rows[0].count;
+
+      const [integrationCountResult] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM integrations
+      `);
+      const integrationCount = integrationCountResult.rows[0].count;
+
+
+      res.json({
+        totalCustomers: customerCount,
+        totalIntegrations: integrationCount,
+        monthlyRevenue: '12,847'
+      });
+    } catch (error) {
+      console.error('Admin stats error:', error);
+      res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+  });
+
+  app.get("/api/admin/customers", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+      }
+
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+
+      const customers = await db.execute(sql`
+        SELECT id, name, email, created_at FROM public_users ORDER BY created_at DESC
+      `);
+
+      res.json(customers.rows);
+    } catch (error) {
+      console.error('Admin customers error:', error);
+      res.status(500).json({ error: 'Failed to fetch customers' });
+    }
+  });
+
+  // Team management routes
+  app.get("/api/team-members", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const customerId = req.user?.id;
+
+      const members = await db.execute(sql`
+        SELECT * FROM team_members 
+        WHERE customer_id = ${customerId} 
+        ORDER BY created_at DESC
+      `);
+
+      res.json(members.rows);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      res.status(500).json({ error: 'Failed to fetch team members' });
+    }
+  });
+
+  app.post("/api/team-members", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const customerId = req.user?.id;
+      const { email, role } = req.body;
+
+      if (!email || !role) {
+        return res.status(400).json({ error: 'Email and role are required' });
+      }
+
+      // Check if member already exists
+      const existingMember = await db.execute(sql`
+        SELECT id FROM team_members 
+        WHERE customer_id = ${customerId} AND email = ${email}
+      `);
+
+      if (existingMember.rows.length > 0) {
+        return res.status(400).json({ error: 'User is already a team member' });
+      }
+
+      // Insert new team member
+      const newMember = await db.execute(sql`
+        INSERT INTO team_members (customer_id, email, role)
+        VALUES (${customerId}, ${email}, ${role})
+        RETURNING *
+      `);
+
+      res.json(newMember.rows[0]);
+    } catch (error) {
+      console.error('Error adding team member:', error);
+      res.status(500).json({ error: 'Failed to add team member' });
+    }
+  });
+
+  app.delete("/api/team-members/:id", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const customerId = req.user?.id;
+      const memberId = req.params.id;
+
+      await db.execute(sql`
+        DELETE FROM team_members 
+        WHERE id = ${memberId} AND customer_id = ${customerId}
+      `);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error removing team member:', error);
+      res.status(500).json({ error: 'Failed to remove team member' });
+    }
+  });
+
+  // Dashboard stats
+  app.get("/api/dashboard/stats", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const customerId = req.user?.id;
+
+      const [teamCount] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM team_members WHERE customer_id = ${customerId}
+      `);
+
+      const [integrationCount] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM integrations WHERE customer_id = ${customerId} AND is_active = true
+      `);
+
+      res.json({
+        teamMembers: teamCount.rows[0].count,
+        integrations: integrationCount.rows[0].count,
+        monthlyKpis: 142,
+        plan: 'Starter'
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+    }
+  });
+
+  app.get("/api/dashboard/activity", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      // For now, return empty array - can be expanded later
+      res.json([]);
+    } catch (error) {
+      console.error('Error fetching dashboard activity:', error);
+      res.status(500).json({ error: 'Failed to fetch dashboard activity' });
+    }
+  });
+
+  // Integration management routes
+  app.get("/api/integrations", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = req.user!.id.toString();
+
+      const userIntegrations = await db.query.integrations.findMany({
+        where: eq(integrations.customer_id, userId)
+      });
+
+      res.json(userIntegrations);
+    } catch (error) {
+      console.error("Error fetching integrations:", error);
+      res.status(500).json({ error: "Failed to fetch integrations" });
+    }
+  });
+
+  app.get("/api/integrations/available", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const { getAllConnectors } = await import('./integrations/registry');
+      const availableConnectors = getAllConnectors().map(connector => ({
+        type: connector.type,
+        name: connector.name
+      }));
+
+      res.json(availableConnectors);
+    } catch (error) {
+      console.error("Error fetching available integrations:", error);
+      res.status(500).json({ error: "Failed to fetch available integrations" });
+    }
+  });
+
+  app.get("/api/integrations/:type/connect", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const { type } = req.params;
+      const userId = req.user!.id.toString();
+
+      const { getConnector } = await import('./integrations/registry');
+      const connector = getConnector(type);
+
+      if (!connector) {
+        return res.status(404).json({ error: "Integration type not found" });
+      }
+
+      const oauthUrl = connector.getOAuthUrl(userId);
+      res.json({ url: oauthUrl });
+    } catch (error) {
+      console.error("Error generating OAuth URL:", error);
+      res.status(500).json({ error: "Failed to generate OAuth URL" });
+    }
+  });
+
+  app.get("/api/integrations/:type/callback", async (req, res) => {
+    try {
+      const { type } = req.params;
+      const { code, state: customerId } = req.query;
+
+      if (!code || !customerId) {
+        return res.status(400).json({ error: "Missing code or customer ID" });
+      }
+
+      const { getConnector } = await import('./integrations/registry');
+      const connector = getConnector(type);
+
+      if (!connector) {
+        return res.status(404).json({ error: "Integration type not found" });
+      }
+
+      const tokens = await connector.handleOAuthCallback(code as string, customerId as string);
+
+      // Store integration in database
+      await db.insert(integrations).values({
+        customer_id: customerId as string,
+        type,
+        access_token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+        is_active: true
+      }).onConflictDoUpdate({
+        target: [integrations.customer_id, integrations.type],
+        set: {
+          access_token: tokens.accessToken,
+          refresh_token: tokens.refreshToken,
+          is_active: true,
+          updated_at: new Date()
+        }
+      });
+
+      res.redirect('/dashboard?integration_added=true');
+    } catch (error) {
+      console.error("Error handling OAuth callback:", error);
+      res.status(500).json({ error: "Failed to complete integration" });
+    }
+  });
+
+  app.get("/api/dashboard/metrics", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const userId = req.user!.id.toString();
+
+      // Get user's active integrations
+      const userIntegrations = await db.query.integrations.findMany({
+        where: and(
+          eq(integrations.customer_id, userId),
+          eq(integrations.is_active, true)
+        )
+      });
+
+      if (userIntegrations.length === 0) {
+        return res.json({ 
+          metrics: [], 
+          message: "No integrations configured. Connect a CRM or dialer to see live KPIs." 
+        });
+      }
+
+      const { getConnector } = await import('./integrations/registry');
+      const allMetrics = [];
+
+      // Fetch metrics from each configured integration
+      for (const integration of userIntegrations) {
+        try {
+          const connector = getConnector(integration.type);
+          if (connector) {
+            const metrics = await connector.fetchKPIs(userId, integration.access_token);
+            allMetrics.push(...metrics.map(metric => ({
+              ...metric,
+              source: connector.name
+            })));
+          }
+        } catch (error) {
+          console.error(`Error fetching metrics from ${integration.type}:`, error);
+          // Continue with other integrations even if one fails
+        }
+      }
+
+      res.json({ metrics: allMetrics });
+    } catch (error) {
+      console.error("Error fetching dashboard metrics:", error);
+      res.status(500).json({ error: "Failed to fetch dashboard metrics" });
+    }
+  });
+
+  app.delete("/api/integrations/:type", authenticateJWT as any, async (req: any, res: any) => {
+    try {
+      const { type } = req.params;
+      const userId = req.user!.id.toString();
+
+      await db.update(integrations)
+        .set({ is_active: false })
+        .where(and(
+          eq(integrations.customer_id, userId),
+          eq(integrations.type, type)
+        ));
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error disconnecting integration:", error);
+      res.status(500).json({ error: "Failed to disconnect integration" });
+    }
+  });
+
+
+
 
 
   // Initialize default packages
@@ -71,78 +471,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Since we're using JWT tokens, logout is handled client-side
     // by removing the token from storage
     res.json({ message: 'Logged out successfully' });
-  });
-
-  // Access code registration route
-  app.post('/api/auth/register-with-code', async (req, res) => {
-    try {
-      const { name, email, password, accessCode } = req.body;
-
-      // Validate input
-      if (!name || !email || !password || !accessCode) {
-        return res.status(400).json({ message: 'All fields are required' });
-      }
-
-      // Mock access code validation (in production, check database)
-      const validCodes = ['VS-ABC123-DEF456', 'VS-XYZ789-GHI012'];
-      if (!validCodes.includes(accessCode)) {
-        return res.status(400).json({ message: 'Invalid or expired access code' });
-      }
-
-      // Check if user already exists
-      const existingUser = await storage.getPublicUserByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ message: 'User already exists with this email' });
-      }
-
-      // Hash password
-      const bcrypt = require('bcryptjs');
-      const hashedPassword = await bcrypt.hash(password, 12);
-
-      // Create organization ID
-      const orgId = `org_${Date.now()}`;
-
-      // Create user as ORG_OWNER
-      const user = await storage.createPublicUser({
-        name,
-        email,
-        password: hashedPassword,
-        role: 'ORG_OWNER',
-        orgId,
-        isActive: true,
-        status: 'active',
-        permissions: ['org:manage', 'users:manage', 'billing:read'],
-        featureFlags: ['dashboard', 'integrations', 'billing']
-      });
-
-      // Generate JWT token
-      const token = generateJWT(user);
-
-      // Set HTTP-only cookie
-      res.cookie('auth-token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-      });
-
-      // Mock: Mark access code as used
-      console.log(`Access code ${accessCode} used by ${email} to create org ${orgId}`);
-
-      res.json({
-        message: 'Registration successful',
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          orgId: user.orgId
-        }
-      });
-    } catch (error) {
-      console.error('Registration with code error:', error);
-      res.status(500).json({ message: 'Registration failed' });
-    }
   });
 
 
@@ -297,1261 +625,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Access Control Center API Routes
-  app.get("/api/admin/access/users", requireAdmin, async (req: any, res: any) => {
-    try {
-      const { page = 1, limit = 50, search = '', role, status } = req.query;
-      const users = await storage.getAllPublicUsers();
-
-      // Filter users based on search and filters
-      let filteredUsers = users.filter((user: any) => {
-        const matchesSearch = !search || 
-          user.name.toLowerCase().includes(search.toLowerCase()) ||
-          user.email.toLowerCase().includes(search.toLowerCase());
-        const matchesRole = !role || user.role === role;
-        const matchesStatus = !status || user.status === status;
-
-        return matchesSearch && matchesRole && matchesStatus;
-      });
-
-      // Add calculated fields
-      filteredUsers = filteredUsers.map((user: any) => ({
-        ...user,
-        orderCount: user.orderCount || 0,
-        totalSpent: user.totalSpent || 0,
-        permissions: user.permissions || [],
-        featureFlags: user.featureFlags || [],
-        isLinkedToDialer: false, // TODO: Get from dialer mapping
-        accountLocked: user.status === 'locked',
-        mfaEnabled: user.mfaEnabled || false
-      }));
-
-      const startIndex = (parseInt(page as string) - 1) * parseInt(limit as string);
-      const paginatedUsers = filteredUsers.slice(startIndex, startIndex + parseInt(limit as string));
-
-      res.json({ 
-        users: paginatedUsers, 
-        total: filteredUsers.length, 
-        page: parseInt(page as string), 
-        limit: parseInt(limit as string) 
-      });
-    } catch (error) {
-      console.error("Error fetching access control users:", error);
-      res.status(500).json({ message: "Failed to fetch users" });
-    }
-  });
-
-  app.get("/api/admin/access/users/:id", requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const user = await storage.getPublicUserById(userId);
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Get basic user details with mock data for features not yet implemented
-      res.json({
-        ...user,
-        sessions: [],
-        integrations: [],
-        apiKeys: [],
-        callMetrics: null,
-        paymentPolicy: null,
-        auditLogs: []
-      });
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-      res.status(500).json({ message: "Failed to fetch user details" });
-    }
-  });
-
-  app.get("/api/admin/access/users/:id/call-metrics", requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-
-      // Mock call metrics data
-      res.json({
-        callsToday: Math.floor(Math.random() * 50),
-        calls7d: Math.floor(Math.random() * 200),
-        calls30d: Math.floor(Math.random() * 800),
-        avgHandleTime: Math.floor(Math.random() * 300) + 120, // 2-7 minutes
-        occupancy: Math.floor(Math.random() * 80) + 20, // 20-100%
-        liveStatus: ['available', 'busy', 'offline'][Math.floor(Math.random() * 3)],
-        isLinked: Math.random() > 0.5,
-        lastUpdated: new Date().toISOString(),
-        isStale: Math.random() > 0.8
-      });
-    } catch (error) {
-      console.error("Error fetching call metrics:", error);
-      res.status(500).json({ message: "Failed to fetch call metrics" });
-    }
-  });
-
-  app.post("/api/admin/access/users/:id/call-metrics/refresh", requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-
-      // Mock refresh - in reality would fetch from dialer API
-      res.json({ success: true, refreshedAt: new Date().toISOString() });
-    } catch (error) {
-      console.error("Error refreshing call metrics:", error);
-      res.status(500).json({ message: "Failed to refresh call metrics" });
-    }
-  });
-
-  app.get("/api/admin/access/users/:id/audit", requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-
-      // Mock audit log data
-      const mockAuditLogs = [
-        {
-          id: 1,
-          actorUserId: 1,
-          targetUserId: userId,
-          action: 'user.status.update',
-          before: { status: 'suspended' },
-          after: { status: 'active' },
-          ip: '192.168.1.1',
-          userAgent: 'Mozilla/5.0...',
-          createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString() // 5 minutes ago
-        },
-        {
-          id: 2,
-          actorUserId: 1,
-          targetUserId: userId,
-          action: 'user.permissions.update',
-          after: { permissions: ['users:read', 'orders:read'] },
-          ip: '192.168.1.1',
-          userAgent: 'Mozilla/5.0...',
-          createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString() // 15 minutes ago
-        }
-      ];
-
-      res.json(mockAuditLogs);
-    } catch (error) {
-      console.error("Error fetching audit logs:", error);
-      res.status(500).json({ message: "Failed to fetch audit logs" });
-    }
-  });
-
-  app.patch("/api/admin/access/users/:id", requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const updates = req.body;
-
-      // Handle status updates
-      if (updates.status) {
-        const user = await storage.updateUserStatus(userId, updates.status === 'active');
-        return res.json(user);
-      }
-
-      // Handle role updates
-      if (updates.role) {
-        const user = await storage.updateUserRole(userId, updates.role);
-        return res.json(user);
-      }
-
-      // Handle permission updates
-      if (updates.permissions) {
-        const user = await storage.updateUserPermissions(userId, updates.permissions);
-        return res.json(user);
-      }
-
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error updating user:", error);
-      res.status(500).json({ message: "Failed to update user" });
-    }
-  });
-
-  app.post("/api/admin/access/users/bulk", requireAdmin, async (req: any, res: any) => {
-    try {
-      const { userIds, action } = req.body;
-
-      let results = [];
-      for (const userId of userIds) {
-        try {
-          switch (action) {
-            case 'activate':
-              await storage.updateUserStatus(userId, true);
-              break;
-            case 'suspend':
-              await storage.updateUserStatus(userId, false);
-              break;
-            case 'delete':
-              await storage.deleteUser(userId);
-              break;
-            default:
-              throw new Error(`Unknown action: ${action}`);
-          }
-          results.push({ userId, success: true });
-        } catch (error) {
-          results.push({ userId, success: false, error: error.message });
-        }
-      }
-
-      res.json({ results });
-    } catch (error) {
-      console.error("Error performing bulk action:", error);
-      res.status(500).json({ message: "Failed to perform bulk action" });
-    }
-  });
-
-  app.patch("/api/admin/access/users/:id/role", authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { role } = req.body;
-      const actorId = req.user!.id;
-
-      const user = await storage.updateUserRole(userId, role);
-
-      // Audit log
-      await storage.auditLog({
-        actorUserId: actorId,
-        targetUserId: userId,
-        action: 'user.role.update',
-        after: { role },
-        ip: req.ip,
-        userAgent: req.get('User-Agent')
-      });
-
-      res.json(user);
-    } catch (error) {
-      console.error("Error updating user role:", error);
-      res.status(500).json({ message: "Failed to update user role" });
-    }
-  });
-
-  app.patch("/api/admin/access/users/:id/permissions", authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { permissions } = req.body;
-      const actorId = req.user!.id;
-
-      const user = await storage.updateUserPermissions(userId, permissions);
-
-      // Audit log
-      await storage.auditLog({
-        actorUserId: actorId,
-        targetUserId: userId,
-        action: 'user.permissions.update',
-        after: { permissions },
-        ip: req.ip,
-        userAgent: req.get('User-Agent')
-      });
-
-      res.json(user);
-    } catch (error) {
-      console.error("Error updating user permissions:", error);
-      res.status(500).json({ message: "Failed to update user permissions" });
-    }
-  });
-
-  app.patch("/api/admin/access/users/:id/feature-flags", authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { flags } = req.body;
-      const actorId = req.user!.id;
-
-      await storage.updateUserFeatureFlags(userId, flags);
-
-      // Audit log
-      await storage.auditLog({
-        actorUserId: actorId,
-        targetUserId: userId,
-        action: 'user.feature_flags.update',
-        after: { flags },
-        ip: req.ip,
-        userAgent: req.get('User-Agent')
-      });
-
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error updating user feature flags:", error);
-      res.status(500).json({ message: "Failed to update feature flags" });
-    }
-  });
-
-  app.post("/api/admin/access/users/:id/sessions/revoke-all", authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const actorId = req.user!.id;
-
-      await storage.revokeAllAccessControlSessions(userId);
-
-      // Audit log
-      await storage.auditLog({
-        actorUserId: actorId,
-        targetUserId: userId,
-        action: 'user.sessions.revoke_all',
-        ip: req.ip,
-        userAgent: req.get('User-Agent')
-      });
-
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error revoking user sessions:", error);
-      res.status(500).json({ message: "Failed to revoke sessions" });
-    }
-  });
-
-  app.patch("/api/admin/access/users/:id/payment-policy", authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { allowedMethods } = req.body;
-      const actorId = req.user!.id;
-
-      const policy = await storage.setAccessControlPaymentPolicy(userId, allowedMethods);
-
-      // Audit log
-      await storage.auditLog({
-        actorUserId: actorId,
-        targetUserId: userId,
-        action: 'user.payment_policy.update',
-        after: { allowedMethods },
-        ip: req.ip,
-        userAgent: req.get('User-Agent')
-      });
-
-      res.json(policy);
-    } catch (error) {
-      console.error("Error updating payment policy:", error);
-      res.status(500).json({ message: "Failed to update payment policy" });
-    }
-  });
-
-  app.post("/api/admin/access/users/:id/api-keys", authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { label, scopes } = req.body;
-      const actorId = req.user!.id;
-
-      // Generate API key
-      const crypto = await import('crypto');
-      const apiKey = crypto.randomBytes(32).toString('hex');
-      const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
-
-      const createdKey = await storage.createApiKey({
-        userId,
-        keyHash,
-        label,
-        scopes,
-        createdBy: actorId
-      });
-
-      // Audit log
-      await storage.auditLog({
-        actorUserId: actorId,
-        targetUserId: userId,
-        action: 'user.api_key.create',
-        after: { label, scopes },
-        ip: req.ip,
-        userAgent: req.get('User-Agent')
-      });
-
-      res.json({ ...createdKey, apiKey }); // Return key only once
-    } catch (error) {
-      console.error("Error creating API key:", error);
-      res.status(500).json({ message: "Failed to create API key" });
-    }
-  });
-
-  app.delete("/api/admin/access/api-keys/:keyId", authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const keyId = parseInt(req.params.keyId);
-      const actorId = req.user!.id;
-
-      const success = await storage.revokeApiKey(keyId);
-
-      // Audit log
-      await storage.auditLog({
-        actorUserId: actorId,
-        action: 'api_key.revoke',
-        after: { keyId },
-        ip: req.ip,
-        userAgent: req.get('User-Agent')
-      });
-
-      res.json({ success });
-    } catch (error) {
-      console.error("Error revoking API key:", error);
-      res.status(500).json({ message: "Failed to revoke API key" });
-    }
-  });
-
-  // Roles management
-  app.get("/api/admin/access/roles", authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const roles = await storage.getAccessControlRoles();
-      res.json(roles);
-    } catch (error) {
-      console.error("Error fetching roles:", error);
-      res.status(500).json({ message: "Failed to fetch roles" });
-    }
-  });
-
-  app.post("/api/admin/access/roles", authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const { name, description, permissions } = req.body;
-      const actorId = req.user!.id;
-
-      const role = await storage.createAccessControlRole({
-        name,
-        description,
-        permissions,
-        isSystem: false
-      });
-
-      // Audit log
-      await storage.auditLog({
-        actorUserId: actorId,
-        action: 'role.create',
-        after: { name, description, permissions },
-        ip: req.ip,
-        userAgent: req.get('User-Agent')
-      });
-
-      res.json(role);
-    } catch (error) {
-      console.error("Error creating role:", error);
-      res.status(500).json({ message: "Failed to create role" });
-    }
-  });
-
-  // Enhanced Admin Dashboard API
-  app.get("/api/admin/dashboard", requireAdmin, async (req: any, res: any) => {
-    try {
-      const users = await storage.getAllPublicUsers();
-      const orders = await storage.getAllOrders();
-
-      const totalOrgs = new Set(users.filter(u => u.orgId).map(u => u.orgId)).size;
-      const payingOrgs = Math.floor(totalOrgs * 0.8); // Mock 80% paying
-      const activeAgents = users.filter(u => u.isActive && u.role !== 'SUPER_ADMIN').length;
-      const newAgentsToday = Math.floor(Math.random() * 10);
-      const mrr = orders.reduce((sum, order) => sum + parseFloat(order.total || '0'), 0);
-      const mrrGrowth = '+12%';
-      const apiCalls = Math.floor(Math.random() * 100000) + 50000;
-
-      res.json({
-        totalOrgs,
-        payingOrgs,
-        activeAgents,
-        newAgentsToday,
-        mrr,
-        mrrGrowth,
-        apiCalls
-      });
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      res.status(500).json({ message: "Failed to fetch dashboard data" });
-    }
-  });
-
-  app.get("/api/admin/users", requireAdmin, async (req: any, res: any) => {
-    try {
-      const { search, page = 1, limit = 50 } = req.query;
-      const users = await storage.getAllPublicUsers();
-
-      let filteredUsers = users;
-      if (search) {
-        filteredUsers = users.filter(user => 
-          user.name.toLowerCase().includes(search.toLowerCase()) ||
-          user.email.toLowerCase().includes(search.toLowerCase()) ||
-          (user.role || '').toLowerCase().includes(search.toLowerCase())
-        );
-      }
-
-      const startIndex = (parseInt(page) - 1) * parseInt(limit);
-      const paginatedUsers = filteredUsers.slice(startIndex, startIndex + parseInt(limit));
-
-      res.json({ 
-        users: paginatedUsers.map(user => ({
-          ...user,
-          role: user.role || 'ORG_USER',
-          status: user.isActive ? 'active' : 'suspended',
-          mfaEnabled: user.mfaEnabled || false,
-          accountLocked: user.status === 'locked'
-        })), 
-        total: filteredUsers.length 
-      });
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      res.status(500).json({ message: "Failed to fetch users" });
-    }
-  });
-
-  app.get("/api/admin/organizations", requireAdmin, async (req: any, res: any) => {
-    try {
-      const { search } = req.query;
-      const users = await storage.getAllPublicUsers();
-
-      // Group users by organization
-      const orgMap = new Map();
-      users.forEach(user => {
-        if (user.orgId) {
-          if (!orgMap.has(user.orgId)) {
-            orgMap.set(user.orgId, {
-              id: user.orgId,
-              name: `Organization ${user.orgId}`,
-              subscriptionTier: ['starter', 'professional', 'enterprise'][Math.floor(Math.random() * 3)],
-              maxSeats: Math.floor(Math.random() * 50) + 10,
-              usedSeats: 0,
-              features: ['basic_crm', 'email_marketing', 'analytics'],
-              isActive: true,
-              createdAt: user.createdAt,
-              ownerEmail: user.email,
-              billingStatus: ['active', 'past_due', 'canceled'][Math.floor(Math.random() * 3)],
-              mrr: Math.floor(Math.random() * 1000) + 100
-            });
-          }
-          const org = orgMap.get(user.orgId);
-          org.usedSeats++;
-          if (user.role === 'ORG_OWNER') {
-            org.ownerEmail = user.email;
-          }
-        }
-      });
-
-      let orgs = Array.from(orgMap.values());
-
-      if (search) {
-        orgs = orgs.filter(org => 
-          org.name.toLowerCase().includes(search.toLowerCase()) ||
-          org.ownerEmail.toLowerCase().includes(search.toLowerCase())
-        );
-      }
-
-      res.json({ orgs, total: orgs.length });
-    } catch (error) {
-      console.error("Error fetching organizations:", error);
-      res.status(500).json({ message: "Failed to fetch organizations" });
-    }
-  });
-
-  app.get("/api/admin/access-codes", requireAdmin, async (req: any, res: any) => {
-    try {
-      // Mock access codes data
-      const accessCodes = [
-        {
-          id: '1',
-          code: 'VS-ABC123-DEF456',
-          orgId: null,
-          used: false,
-          usedBy: null,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: '2',
-          code: 'VS-XYZ789-GHI012',
-          orgId: 'org_123',
-          used: true,
-          usedBy: 'user@example.com',
-          expiresAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
-        }
-      ];
-
-      res.json(accessCodes);
-    } catch (error) {
-      console.error("Error fetching access codes:", error);
-      res.status(500).json({ message: "Failed to fetch access codes" });
-    }
-  });
-
-  app.post("/api/admin/access-codes", requireAdmin, async (req: any, res: any) => {
-    try {
-      const { orgId } = req.body;
-
-      // Generate UUID-like access code
-      const code = `VS-${Math.random().toString(36).substr(2, 6).toUpperCase()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-
-      // Mock code creation
-      const accessCode = {
-        id: Date.now().toString(),
-        code,
-        orgId: orgId || null,
-        used: false,
-        usedBy: null,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        createdAt: new Date().toISOString()
-      };
-
-      res.json(accessCode);
-    } catch (error) {
-      console.error("Error generating access code:", error);
-      res.status(500).json({ message: "Failed to generate access code" });
-    }
-  });
-
-  app.get("/api/admin/feature-flags", requireAdmin, async (req: any, res: any) => {
-    try {
-      // Mock feature flags data
-      const featureFlags = [
-        {
-          key: 'advanced_analytics',
-          name: 'Advanced Analytics',
-          description: 'Enable advanced analytics dashboard with detailed metrics',
-          enabled: true,
-          rolloutPercentage: 100,
-          environments: ['production', 'staging']
-        },
-        {
-          key: 'beta_integrations',
-          name: 'Beta Integrations',
-          description: 'Access to beta integration features',
-          enabled: false,
-          rolloutPercentage: 25,
-          environments: ['staging']
-        },
-        {
-          key: 'ai_insights',
-          name: 'AI Insights',
-          description: 'AI-powered call insights and recommendations',
-          enabled: true,
-          rolloutPercentage: 50,
-          environments: ['production']
-        }
-      ];
-
-      res.json(featureFlags);
-    } catch (error) {
-      console.error("Error fetching feature flags:", error);
-      res.status(500).json({ message: "Failed to fetch feature flags" });
-    }
-  });
-
-  app.get("/api/admin/audit-logs", requireAdmin, async (req: any, res: any) => {
-    try {
-      // Mock audit logs data
-      const auditLogs = [
-        {
-          id: 1,
-          actorUserId: 1,
-          actorEmail: 'admin@victorysync.com',
-          targetUserId: 2,
-          targetEmail: 'user@example.com',
-          action: 'user.role.update',
-          entity: 'user',
-          before: { role: 'ORG_USER' },
-          after: { role: 'ORG_OWNER' },
-          ip: '192.168.1.100',
-          userAgent: 'Mozilla/5.0...',
-          createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString()
-        },
-        {
-          id: 2,
-          actorUserId: 1,
-          actorEmail: 'admin@victorysync.com',
-          targetUserId: 3,
-          targetEmail: 'manager@company.com',
-          action: 'user.status.suspend',
-          entity: 'user',
-          before: { status: 'active' },
-          after: { status: 'suspended' },
-          ip: '192.168.1.100',
-          userAgent: 'Mozilla/5.0...',
-          createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString()
-        },
-        {
-          id: 3,
-          actorUserId: 1,
-          actorEmail: 'admin@victorysync.com',
-          action: 'organization.create',
-          entity: 'organization',
-          after: { name: 'New Corp', tier: 'professional' },
-          ip: '192.168.1.100',
-          userAgent: 'Mozilla/5.0...',
-          createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString()
-        }
-      ];
-
-      res.json(auditLogs);
-    } catch (error) {
-      console.error("Error fetching audit logs:", error);
-      res.status(500).json({ message: "Failed to fetch audit logs" });
-    }
-  });
-
-  app.post("/api/admin/organizations", requireAdmin, async (req: any, res: any) => {
-    try {
-      const { name, subscriptionTier, maxSeats, ownerEmail } = req.body;
-
-      // Mock organization creation
-      const org = {
-        id: `org_${Date.now()}`,
-        name,
-        subscriptionTier,
-        maxSeats,
-        usedSeats: 0,
-        features: ['basic_crm', 'email_marketing'],
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        ownerEmail,
-        billingStatus: 'active',
-        mrr: 0
-      };
-
-      res.json(org);
-    } catch (error) {
-      console.error("Error creating organization:", error);
-      res.status(500).json({ message: "Failed to create organization" });
-    }
-  });
-
-  app.get("/api/admin/export/:type", requireAdmin, async (req: any, res: any) => {
-    try {
-      const { type } = req.params;
-      let data = [];
-      let filename = '';
-
-      switch (type) {
-        case 'users':
-          data = await storage.getAllPublicUsers();
-          filename = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
-          break;
-        case 'organizations':
-          // Mock organizations export
-          data = [
-            { id: 'org_1', name: 'Company A', tier: 'professional', seats: '10/25', mrr: 299 },
-            { id: 'org_2', name: 'Company B', tier: 'enterprise', seats: '45/50', mrr: 599 }
-          ];
-          filename = `organizations-export-${new Date().toISOString().split('T')[0]}.csv`;
-          break;
-        case 'audit-logs':
-          // Mock audit logs export
-          data = [
-            { timestamp: new Date().toISOString(), actor: 'admin@victorysync.com', action: 'user.create', target: 'user@example.com' }
-          ];
-          filename = `audit-logs-export-${new Date().toISOString().split('T')[0]}.csv`;
-          break;
-        default:
-          return res.status(400).json({ message: 'Invalid export type' });
-      }
-
-      // Simple CSV generation
-      if (data.length === 0) {
-        return res.status(404).json({ message: 'No data to export' });
-      }
-
-      const headers = Object.keys(data[0]);
-      const csvContent = [
-        headers.join(','),
-        ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
-      ].join('\n');
-
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.send(csvContent);
-    } catch (error) {
-      console.error("Error exporting data:", error);
-      res.status(500).json({ message: "Failed to export data" });
-    }
-  });
-
-  // Admin routes - protected by authentication
-  app.post("/api/admin/users", requireAdmin, async (req: any, res: any) => {
-    try {
-      const { name, email, password, role, isActive } = req.body;
-
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ message: "User already exists" });
-      }
-
-      // Hash password
-      const bcrypt = require('bcryptjs');
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      const user = await storage.createUser({
-        name,
-        email,
-        password: hashedPassword,
-        role: role || 'user',
-        isActive: isActive !== false
-      });
-
-      res.json(user);
-    } catch (error) {
-      console.error("Error creating user:", error);
-      res.status(500).json({ message: "Failed to create user" });
-    }
-  });
-
-  app.get("/api/admin/users", requireAdmin, async (req: any, res: any) => {
-    try {
-      const users = await storage.getAllPublicUsers();
-      res.json(users);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      res.status(500).json({ message: "Failed to fetch users" });
-    }
-  });
-
-  app.get("/api/admin/orders", requireAdmin, async (req: any, res: any) => {
-    try {
-      const orders = await storage.getAllOrders();
-      res.json(orders);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      res.status(500).json({ message: "Failed to fetch orders" });
-    }
-  });
-
-  app.get("/api/admin/packages", requireAdmin, async (req: any, res: any) => {
-    try {
-      const packages = await storage.getPackages();
-      res.json(packages);
-    } catch (error) {
-      console.error("Error fetching packages:", error);
-      res.status(500).json({ message: "Failed to fetch packages" });
-    }
-  });
-
-  app.patch('/api/admin/users/:id', requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { isActive } = req.body;
-
-      const user = await storage.updateUserStatus(userId, isActive);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json(user);
-    } catch (error) {
-      console.error("Error updating user status:", error);
-      res.status(500).json({ message: "Failed to update user status" });
-    }
-  });
-
-  app.delete('/api/admin/users/:id', requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-
-      const success = await storage.deleteUser(userId);
-      if (!success) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json({ message: "User deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      res.status(500).json({ message: "Failed to delete user" });
-    }
-  });
-
-  app.put('/api/admin/users/:id/status', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { isActive } = req.body;
-
-      const user = await storage.updateUserStatus(userId, isActive);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json(user);
-    } catch (error) {
-      console.error("Error updating user status:", error);
-      res.status(500).json({ message: "Failed to update user status" });
-    }
-  });
-
-  app.delete('/api/admin/users/:id', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-
-      const success = await storage.deleteUser(userId);
-      if (!success) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json({ message: "User deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      res.status(500).json({ message: "Failed to delete user" });
-    }
-  });
-
-  app.post('/api/admin/users/:id/orders', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = req.params.id;
-      const { packageId, quantity } = req.body;
-
-      const pkg = await storage.getPackage(packageId);
-      if (!pkg) {
-        return res.status(400).json({ message: "Package not found" });
-      }
-
-      const total = parseFloat(pkg.price) * quantity;
-
-      const order = await storage.createOrder({
-        userId,
-        total: total.toString(),
-        status: 'admin_created',
-      });
-
-      await storage.createOrderItem({
-        orderId: order.id,
-        packageId,
-        quantity,
-        price: pkg.price,
-      });
-
-      res.json(order);
-    } catch (error) {
-      console.error("Error creating order for user:", error);
-      res.status(500).json({ message: "Failed to create order" });
-    }
-  });
-
-  app.put('/api/admin/users/:id/privileges', requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { privileges } = req.body;
-
-      const user = await storage.updateUserPrivileges(userId, privileges);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json(user);
-    } catch (error) {
-      console.error("Error updating user privileges:", error);
-      res.status(500).json({ message: "Failed to update user privileges" });
-    }
-  });
-
-  app.post('/api/admin/users/:id/impersonate', requireAdmin, async (req: any, res: any) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const userToImpersonate = await storage.getUserById(userId);
-
-      if (!userToImpersonate) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Generate JWT token for impersonation
-      const token = generateJWT(userToImpersonate);
-      res.json({ token, user: userToImpersonate });
-    } catch (error) {
-      console.error("Error impersonating user:", error);
-      res.status(500).json({ message: "Failed to impersonate user" });
-    }
-  });
-
-  app.get('/api/admin/export/:type', requireAdmin, async (req: any, res: any) => {
-    try {
-      const { type } = req.params;
-      let data = [];
-      let filename = '';
-
-      switch (type) {
-        case 'users':
-          data = await storage.getAllPublicUsers();
-          filename = 'users-export.csv';
-          break;
-        case 'orders':
-          data = await storage.getAllOrders();
-          filename = 'orders-export.csv';
-          break;
-        default:
-          return res.status(400).json({ message: 'Invalid export type' });
-      }
-
-      // Simple CSV generation
-      const headers = Object.keys(data[0] || {});
-      const csvContent = [
-        headers.join(','),
-        ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
-      ].join('\n');
-
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.send(csvContent);
-    } catch (error) {
-      console.error("Error exporting data:", error);
-      res.status(500).json({ message: "Failed to export data" });
-    }
-  });
-
-  // User routes for customer dashboard
-  app.get('/api/user/orders', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = req.user!.id.toString();
-      const orders = await storage.getUserOrders(userId);
-      res.json(orders);
-    } catch (error) {
-      console.error("Error fetching user orders:", error);
-      res.status(500).json({ message: "Failed to fetch orders" });
-    }
-  });
-
-  app.get('/api/user/profile', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = req.user!.id;
-      const user = await storage.getUserById(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-      res.status(500).json({ message: "Failed to fetch profile" });
-    }
-  });
-
-  app.put('/api/user/profile', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = req.user!.id;
-      const { name, email } = req.body;
-
-      const updatedUser = await storage.updateUserProfile(userId, { name, email });
-      if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json(updatedUser);
-    } catch (error) {
-      console.error("Error updating user profile:", error);
-      res.status(500).json({ message: "Failed to update profile" });
-    }
-  });
-
-  // KPI and analytics routes
-  app.get('/api/user/kpis', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = req.user!.id.toString();
-      const orders = await storage.getUserOrders(userId);
-
-      const totalOrders = orders.length;
-      const totalSpent = orders.reduce((sum: number, order: any) => sum + parseFloat(order.total || 0), 0);
-      const avgOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
-
-      const kpis = {
-        totalOrders,
-        totalSpent,
-        avgOrderValue,
-        lastOrderDate: orders.length > 0 ? orders[0].createdAt : null,
-        orderTrend: '+12%', // Mock data - would calculate from historical data
-        spendingTrend: '+8%', // Mock data
-        conversionRate: '3.2%', // Mock data
-        satisfactionScore: 4.8 // Mock data
-      };
-
-      res.json(kpis);
-    } catch (error) {
-      console.error("Error fetching user KPIs:", error);
-      res.status(500).json({ message: "Failed to fetch KPIs" });
-    }
-  });
-
-  // CRM Integration routes
-  app.get('/api/user/integrations', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = req.user!.id;
-      const integrations = await storage.getUserIntegrations(userId);
-      res.json(integrations);
-    } catch (error) {
-      console.error("Error fetching integrations:", error);
-      res.status(500).json({ message: "Failed to fetch integrations" });
-    }
-  });
-
-  app.post('/api/user/integrations', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = req.user!.id;
-      const { type, name, apiKey, webhookUrl } = req.body;
-
-      const integration = await storage.createUserIntegration({
-        userId,
-        type,
-        name,
-        apiKey,
-        webhookUrl,
-        isActive: true
-      });
-
-      res.json(integration);
-    } catch (error) {
-      console.error("Error creating integration:", error);
-      res.status(500).json({ message: "Failed to create integration" });
-    }
-  });
-
-  app.delete('/api/user/integrations/:id', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const integrationId = parseInt(req.params.id);
-      const userId = req.user!.id;
-
-      const success = await storage.deleteUserIntegration(integrationId, userId);
-      if (!success) {
-        return res.status(404).json({ message: "Integration not found" });
-      }
-
-      res.json({ message: "Integration deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting integration:", error);
-      res.status(500).json({ message: "Failed to delete integration" });
-    }
-  });
-
-  // Admin package management
-  app.post('/api/admin/packages', requireAdmin, async (req: any, res: any) => {
-    try {
-      const { name, price, description, features } = req.body;
-
-      const pkg = await storage.createPackage({
-        name,
-        price,
-        description,
-        features
-      });
-
-      res.json(pkg);
-    } catch (error) {
-      console.error("Error creating package:", error);
-      res.status(500).json({ message: "Failed to create package" });
-    }
-  });
-
-  app.put('/api/admin/packages/:id', requireAdmin, async (req: any, res: any) => {
-    try {
-      const packageId = parseInt(req.params.id);
-      const { name, price, description, features } = req.body;
-
-      const pkg = await storage.updatePackage(packageId, {
-        name,
-        price,
-        description,
-        features
-      });
-
-      if (!pkg) {
-        return res.status(404).json({ message: "Package not found" });
-      }
-
-      res.json(pkg);
-    } catch (error) {
-      console.error("Error updating package:", error);
-      res.status(500).json({ message: "Failed to update package" });
-    }
-  });
-
-  app.delete('/api/admin/packages/:id', requireAdmin, async (req: any, res: any) => {
-    try {
-      const packageId = parseInt(req.params.id);
-
-      const success = await storage.deletePackage(packageId);
-      if (!success) {
-        return res.status(404).json({ message: "Package not found" });
-      }
-
-      res.json({ message: "Package deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting package:", error);
-      res.status(500).json({ message: "Failed to delete package" });
-    }
-  });
-
-  // Admin bulk operations
-  app.post('/api/admin/users/bulk', requireAdmin, async (req: any, res: any) => {
-    try {
-      const { userIds, action, value } = req.body;
-
-      let results = [];
-      for (const userId of userIds) {
-        try {
-          switch (action) {
-            case 'activate':
-              await storage.updateUserStatus(userId, true);
-              break;
-            case 'deactivate':
-              await storage.updateUserStatus(userId, false);
-              break;
-            case 'delete':
-              await storage.deleteUser(userId);
-              break;
-            case 'updateTier':
-              await storage.updateUserPrivileges(userId, { subscriptionTier: value });
-              break;
-            default:
-              throw new Error(`Unknown action: ${action}`);
-          }
-          results.push({ userId, success: true });
-        } catch (error) {
-          results.push({ userId, success: false, error: error.message });
-        }
-      }
-
-      res.json({ results });
-    } catch (error) {
-      console.error("Error performing bulk action:", error);
-      res.status(500).json({ message: "Failed to perform bulk action" });
-    }
-  });
-
-  // Analytics and reporting
-  app.get('/api/admin/analytics', requireAdmin, async (req: any, res: any) => {
-    try {
-      const users = await storage.getAllPublicUsers();
-      const orders = await storage.getAllOrders();
-      const packages = await storage.getPackages();
-
-      const analytics = {
-        totalUsers: users.length,
-        activeUsers: users.filter(u => u.isActive !== false).length,
-        totalOrders: orders.length,
-        totalRevenue: orders.reduce((sum, order) => sum + parseFloat(order.total || 0), 0),
-        avgOrderValue: orders.length > 0 ? orders.reduce((sum, order) => sum + parseFloat(order.total || 0), 0) / orders.length : 0,
-        conversionRate: users.length > 0 ? (orders.length / users.length) * 100 : 0,
-        topPackages: packages.map(pkg => ({
-          ...pkg,
-          orders: orders.filter(order => order.packageId === pkg.id).length
-        })).sort((a, b) => b.orders - a.orders),
-        monthlyGrowth: {
-          users: '+12%',
-          revenue: '+8%',
-          orders: '+15%'
-        }
-      };
-
-      res.json(analytics);
-    } catch (error) {
-      console.error("Error fetching analytics:", error);
-      res.status(500).json({ message: "Failed to fetch analytics" });
-    }
-  });
-
-  // Mount API routes
-  app.use('/api/auth', authRoutes);
-  app.use('/api/admin', adminRoutes); // TODO: Add admin auth middleware
-  app.use('/api/customer', customerRoutes); // TODO: Add auth middleware
-
-  // Legacy API routes
-  app.get("/api/guestbook", async (req, res) => {
-    const entries = await getGuestbookEntries();
-    res.json(entries);
-  });
-
-  app.post("/api/guestbook", async (req, res) => {
-    try {
-      const { name, message } = req.body;
-
-      if (!name || !message) {
-        return res.status(400).json({ error: "Name and message are required" });
-      }
-
-      const entry = await insertGuestbookEntry(name, message);
-      res.status(201).json(entry);
-    } catch (error) {
-      console.error("Error creating guestbook entry:", error);
-      res.status(500).json({ error: "Failed to create entry" });
-    }
+  // Add 404 handler for API routes that don't exist
+  app.use('/api/*', (req, res) => {
+    res.status(404).json({ error: 'API endpoint not found' });
   });
 
   const httpServer = createServer(app);
@@ -1559,32 +635,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 async function initializePackages() {
-  const existingPackages = await storage.getPackages();
+  try {
+    console.log('📦 Initializing default packages...');
+    const existingPackages = await storage.getPackages();
+    console.log(`Found ${existingPackages.length} existing packages`);
 
-  if (existingPackages.length === 0) {
-    const defaultPackages = [
-      {
-        name: "Starter Package",
-        price: "99.00",
-        description: "Perfect for small businesses getting started with customer engagement",
-        features: ["Basic CRM Integration", "Email Marketing", "Customer Support"]
-      },
-      {
-        name: "Professional Package", 
-        price: "299.00",
-        description: "Comprehensive solution for growing businesses",
-        features: ["Advanced CRM Integration", "Multi-channel Marketing", "Analytics Dashboard", "Priority Support"]
-      },
-      {
-        name: "Enterprise Package",
-        price: "599.00", 
-        description: "Full-featured solution for large organizations",
-        features: ["Custom CRM Integration", "AI-Powered Analytics", "White-label Solution", "Dedicated Account Manager"]
-      }
-    ];
+    if (existingPackages.length === 0) {
+      console.log('Creating default packages...');
+      // Create default packages
+      await storage.createPackage({
+        name: "Starter",
+        price: "1200.00",
+        description: "Perfect for small businesses",
+        features: [
+          "1 Dedicated Agent",
+          "Business Hours Support",
+          "Basic CRM Integration",
+          "Email Support",
+          "Monthly Reports"
+        ],
+      });
 
-    for (const pkg of defaultPackages) {
-      await storage.createPackage(pkg);
+      await storage.createPackage({
+        name: "Growth",
+        price: "2500.00",
+        description: "For growing companies",
+        features: [
+          "2 Dedicated Agents",
+          "Extended Hours Support",
+          "Appointment Setting",
+          "Advanced CRM Integration",
+          "Live Chat Support",
+          "Weekly Reports"
+        ],
+      });
+
+      await storage.createPackage({
+        name: "Scale",
+        price: "4500.00",
+        description: "For enterprise needs",
+        features: [
+          "24/7 Blended Team",
+          "AI Automation Suite",
+          "Dedicated Success Manager",
+          "Custom Integrations",
+          "Priority Support",
+          "Real-time Analytics"
+        ],
+      });
+      console.log('✅ Default packages created successfully');
+    } else {
+      console.log('✅ Packages already exist, skipping initialization');
     }
+  } catch (error) {
+    console.error("❌ Error initializing packages:", error);
+    throw error; // Re-throw to prevent server from starting with invalid state
   }
 }
