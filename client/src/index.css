@@ -1,137 +1,151 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
-  }
+:root {
+  --background: hsl(210, 40%, 98%);
+  --foreground: hsl(222.2, 84%, 4.9%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222.2, 84%, 4.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222.2, 84%, 4.9%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --primary: hsl(262.1, 83.3%, 57.8%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(222.2, 84%, 4.9%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(262.1, 83.3%, 57.8%);
+  --radius: 0.5rem;
+  --chart-1: hsl(12, 76%, 61%);
+  --chart-2: hsl(173, 58%, 39%);
+  --chart-3: hsl(197, 37%, 24%);
+  --chart-4: hsl(43, 74%, 66%);
+  --chart-5: hsl(27, 87%, 67%);
+  
+  /* Victory Sync Brand Colors */
+  --victory-purple: hsl(262.1, 83.3%, 57.8%);
+  --victory-blue: hsl(217.2, 91.2%, 59.8%);
+  --victory-light-purple: hsl(270, 95.2%, 75.3%);
+  --victory-dark: hsl(222.2, 47.4%, 11.2%);
+  --victory-gray: hsl(215, 13.8%, 34.1%);
+}
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
+.dark {
+  --background: hsl(222.2, 84%, 4.9%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217.2, 32.6%, 17.5%);
+  --muted-foreground: hsl(215, 20.2%, 65.1%);
+  --popover: hsl(222.2, 84%, 4.9%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222.2, 84%, 4.9%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217.2, 32.6%, 17.5%);
+  --input: hsl(217.2, 32.6%, 17.5%);
+  --primary: hsl(262.1, 83.3%, 57.8%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(217.2, 32.6%, 17.5%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(217.2, 32.6%, 17.5%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(262.1, 83.3%, 57.8%);
+  --chart-1: hsl(220, 70%, 50%);
+  --chart-2: hsl(160, 60%, 45%);
+  --chart-3: hsl(30, 80%, 55%);
+  --chart-4: hsl(280, 65%, 60%);
+  --chart-5: hsl(340, 75%, 55%);
+  
+  /* Victory Sync Brand Colors - Dark Mode */
+  --victory-purple: hsl(262.1, 83.3%, 57.8%);
+  --victory-blue: hsl(217.2, 91.2%, 59.8%);
+  --victory-light-purple: hsl(270, 95.2%, 75.3%);
+  --victory-dark: hsl(210, 40%, 98%);
+  --victory-gray: hsl(215, 20.2%, 65.1%);
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-  
-  body {
-    @apply bg-background text-foreground font-sans;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
 
   html {
     scroll-behavior: smooth;
   }
 
-  .victory-gray {
-    @apply text-victory-gray;
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   }
-
-  .victory-purple {
-    @apply text-victory-purple;
-  }
-
-  .bg-victory-gradient {
-    background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%);
-  }
-
-  .bg-victory-gradient-light {
-    background: linear-gradient(135deg, #A855F7 0%, #60A5FA 100%);
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.2s ease-out;
-  }
-
-  .animate-slide-in {
-    animation: slide-in 0.2s ease-out;
+  
+  .brand-font {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 }
 
-@layer components {
-  .victory-btn-primary {
-    @apply bg-victory-purple hover:bg-victory-light-purple text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-victory-card;
+@layer utilities {
+  .victory-purple {
+    color: var(--victory-purple);
   }
-
-  .victory-btn-secondary {
-    @apply bg-white border-2 border-victory-purple text-victory-purple hover:bg-victory-purple hover:text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-victory-card;
+  
+  .victory-blue {
+    color: var(--victory-blue);
   }
-
-  .victory-btn-outline {
-    @apply border border-gray-300 hover:border-victory-purple text-gray-700 hover:text-victory-purple font-semibold py-3 px-6 rounded-lg transition-all duration-200;
+  
+  .victory-light-purple {
+    color: var(--victory-light-purple);
   }
-
-  .victory-card {
-    @apply bg-white rounded-xl shadow-victory-card border border-gray-100 p-6;
+  
+  .victory-dark {
+    color: var(--victory-dark);
   }
-
-  .victory-section {
-    @apply py-16 lg:py-24;
+  
+  .victory-gray {
+    color: var(--victory-gray);
   }
-
-  .victory-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  
+  .bg-victory-purple {
+    background-color: var(--victory-purple);
   }
-
-  .victory-heading-xl {
-    @apply text-4xl lg:text-6xl font-bold text-victory-black leading-tight;
+  
+  .bg-victory-blue {
+    background-color: var(--victory-blue);
   }
-
-  .victory-heading-lg {
-    @apply text-3xl lg:text-4xl font-bold text-victory-black leading-tight;
+  
+  .bg-victory-light-purple {
+    background-color: var(--victory-light-purple);
   }
-
-  .victory-heading-md {
-    @apply text-2xl lg:text-3xl font-bold text-victory-black leading-tight;
+  
+  .bg-victory-dark {
+    background-color: var(--victory-dark);
   }
-
-  .victory-text-lg {
-    @apply text-lg lg:text-xl text-victory-gray leading-relaxed;
+  
+  .bg-victory-gray {
+    background-color: var(--victory-gray);
   }
-
-  .victory-text-base {
-    @apply text-base lg:text-lg text-victory-gray leading-relaxed;
+  
+  .border-victory-purple {
+    border-color: var(--victory-purple);
+  }
+  
+  .hover\:bg-victory-purple:hover {
+    background-color: var(--victory-purple);
+  }
+  
+  .hover\:text-victory-purple:hover {
+    color: var(--victory-purple);
+  }
+  
+  .gradient-victory {
+    background: linear-gradient(135deg, var(--victory-purple) 0%, var(--victory-blue) 100%);
   }
 }

@@ -1,56 +1,118 @@
+import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { CartProvider } from "@/contexts/CartContext";
+import { useState, Suspense, lazy } from "react";
 
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { CartProvider } from './contexts/CartContext';
-import { Toaster } from './components/ui/toaster';
+// Layout Components
+import { SiteLayout } from "@/layouts/SiteLayout";
+import CartModal from "@/components/cart-modal";
+import ScrollToTop from "@/components/ScrollToTop";
 
 // Pages
-import HomePage from './pages/home';
-import ServicesPage from './pages/services';
-import PricingPage from './pages/pricing';
-import AboutPage from './pages/about-us';
-import ContactPage from './pages/contact';
-import LoginPage from './pages/login';
-import RegisterPage from './pages/register';
-import DashboardPage from './pages/dashboard';
-import CustomerDashboard from './pages/customer-dashboard';
-import AdminPortal from './pages/admin-portal';
-import PrivacyPolicy from './pages/privacy-policy';
-import TermsPage from './pages/terms';
-import HelpCenter from './pages/help-center';
-import BlogPage from './pages/blog';
-import CareersPage from './pages/careers';
-import DocsPage from './pages/docs';
-import CheckoutPage from './pages/checkout';
-import NotFoundPage from './pages/not-found';
+import Home from "@/pages/home";
+import Services from "@/pages/services";
+import Pricing from "@/pages/pricing";
+import About from "@/pages/about";
+import Contact from "@/pages/contact";
+import Checkout from "@/pages/checkout";
+import CustomerDashboard from "@/pages/customer-dashboard";
+import Dashboard from "@/pages/dashboard";
+import AdminPortal from "@/pages/admin-portal";
+import Register from "@/pages/register";
+import Login from "@/pages/login";
+import NotFound from "@/pages/not-found";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-});
+// Footer Pages
+import AboutUs from "@/pages/about-us";
+import Careers from "@/pages/careers";
+import Blog from "@/pages/blog";
+import HelpCenter from "@/pages/help-center";
+import Documentation from "@/pages/docs";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms";
 
-// Component to handle scroll reset on route change
-function ScrollToTop() {
-  const { pathname } = useLocation();
+// Lazy load admin components
+const AdminLogin = lazy(() => import('./pages/admin/Login'));
+const IntegrationsSettings = lazy(() => import('./pages/dashboard/Settings/Integrations'));
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [pathname]);
+// Import Google Fonts
+import "@fontsource/inter/300.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/inter/800.css";
 
-  return null;
-}
+function Router() {
+  const [cartModalOpen, setCartModalOpen] = useState(false);
 
-// Component to handle page transitions
-function PageTransition({ children }: { children: React.ReactNode }) {
+  const openCartModal = () => setCartModalOpen(true);
+  const closeCartModal = () => setCartModalOpen(false);
+
   return (
-    <div className="animate-fade-in">
-      {children}
+    <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
+      
+      <Switch>
+        {/* Admin routes without main layout */}
+        <Route path="/admin/login">
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <AdminLogin />
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin*" component={AdminPortal} />
+        
+        {/* Dashboard routes without cart */}
+        <Route path="/dashboard*">
+          <SiteLayout showCart={false}>
+            <Switch>
+              <Route path="/dashboard" component={Dashboard} />
+              <Route path="/dashboard/settings/integrations">
+                <Suspense fallback={<div className="text-center py-8">Loading...</div>}>
+                  <IntegrationsSettings />
+                </Suspense>
+              </Route>
+            </Switch>
+          </SiteLayout>
+        </Route>
+
+        {/* Main site routes with cart */}
+        <Route>
+          <SiteLayout onCartClick={openCartModal}>
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/services" component={Services} />
+              <Route path="/pricing" component={Pricing} />
+              <Route path="/about" component={About} />
+              <Route path="/contact" component={Contact} />
+              <Route path="/checkout" component={Checkout} />
+              <Route path="/register" component={Register} />
+              <Route path="/signup" component={Register} />
+              <Route path="/login" component={Login} />
+
+              {/* Footer Pages */}
+              <Route path="/about-us" component={AboutUs} />
+              <Route path="/careers" component={Careers} />
+              <Route path="/blog" component={Blog} />
+              <Route path="/help-center" component={HelpCenter} />
+              <Route path="/docs" component={Documentation} />
+              <Route path="/privacy-policy" component={PrivacyPolicy} />
+              <Route path="/terms" component={TermsOfService} />
+
+              <Route component={NotFound} />
+            </Switch>
+          </SiteLayout>
+        </Route>
+      </Switch>
+
+      <CartModal 
+        isOpen={cartModalOpen} 
+        onClose={closeCartModal} 
+      />
     </div>
   );
 }
@@ -59,158 +121,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <Router>
-          <ScrollToTop />
-          <div className="min-h-screen">
-            <Routes>
-              <Route 
-                path="/" 
-                element={
-                  <PageTransition>
-                    <HomePage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/services" 
-                element={
-                  <PageTransition>
-                    <ServicesPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/pricing" 
-                element={
-                  <PageTransition>
-                    <PricingPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/about" 
-                element={
-                  <PageTransition>
-                    <AboutPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/contact" 
-                element={
-                  <PageTransition>
-                    <ContactPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/login" 
-                element={
-                  <PageTransition>
-                    <LoginPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/register" 
-                element={
-                  <PageTransition>
-                    <RegisterPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/dashboard" 
-                element={
-                  <PageTransition>
-                    <DashboardPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/customer-dashboard" 
-                element={
-                  <PageTransition>
-                    <CustomerDashboard />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/admin-portal" 
-                element={
-                  <PageTransition>
-                    <AdminPortal />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/privacy-policy" 
-                element={
-                  <PageTransition>
-                    <PrivacyPolicy />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/terms" 
-                element={
-                  <PageTransition>
-                    <TermsPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/help-center" 
-                element={
-                  <PageTransition>
-                    <HelpCenter />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/blog" 
-                element={
-                  <PageTransition>
-                    <BlogPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/careers" 
-                element={
-                  <PageTransition>
-                    <CareersPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/docs" 
-                element={
-                  <PageTransition>
-                    <DocsPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="/checkout" 
-                element={
-                  <PageTransition>
-                    <CheckoutPage />
-                  </PageTransition>
-                } 
-              />
-              <Route 
-                path="*" 
-                element={
-                  <PageTransition>
-                    <NotFoundPage />
-                  </PageTransition>
-                } 
-              />
-            </Routes>
-          </div>
+        <TooltipProvider>
           <Toaster />
-        </Router>
+          <Router />
+        </TooltipProvider>
       </CartProvider>
     </QueryClientProvider>
   );

@@ -1,24 +1,25 @@
-
-import React from 'react';
+import logoImage from '../assets/logo-vs-3d.png';
 
 interface LogoProps {
-  className?: string;
-  variant?: 'default' | 'white';
+  size?: number;
+  showText?: boolean;
 }
 
-const Logo: React.FC<LogoProps> = ({ className = '', variant = 'default' }) => {
-  const textColor = variant === 'white' ? 'text-white' : 'text-victory-black';
-  
+export function Logo({ size = 32, showText = true }: LogoProps) {
   return (
-    <div className={`flex items-center space-x-2 ${className}`}>
-      <div className="flex items-center justify-center w-8 h-8 bg-victory-gradient rounded-lg">
-        <span className="text-white font-bold text-xl">V</span>
-      </div>
-      <span className={`font-bold text-xl ${textColor}`}>
-        VictorySync
-      </span>
+    <div className="flex items-center space-x-2">
+      <img 
+        src={logoImage} 
+        alt="VictorySync" 
+        className={`h-${Math.floor(size/4)} w-auto`}
+        style={{ height: `${size}px` }}
+      />
+      {showText && (
+        <span className="text-xl font-bold brand-font">
+          <span className="victory-purple">Victory</span>
+          <span className="victory-blue">Sync</span>
+        </span>
+      )}
     </div>
   );
-};
-
-export default Logo;
+}

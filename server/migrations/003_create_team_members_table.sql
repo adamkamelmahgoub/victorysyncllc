@@ -1,3 +1,4 @@
+
 -- Create team_members table for seat-based billing
 CREATE TABLE IF NOT EXISTS team_members (
   id SERIAL PRIMARY KEY,
@@ -18,5 +19,16 @@ CREATE INDEX IF NOT EXISTS idx_team_members_customer_id ON team_members(customer
 CREATE INDEX IF NOT EXISTS idx_team_members_email ON team_members(email);
 CREATE INDEX IF NOT EXISTS idx_team_members_status ON team_members(status);
 
--- Trigger functions removed due to migration parsing issues
--- The updated_at field will have a default value but won't auto-update
+-- Create trigger to update updated_at
+CREATE OR REPLACE FUNCTION update_team_members_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_team_members_updated_at
+  BEFORE UPDATE ON team_members
+  FOR EACH ROW
+  EXECUTE FUNCTION update_team_members_updated_at();

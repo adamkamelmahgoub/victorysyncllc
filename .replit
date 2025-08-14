@@ -31,15 +31,6 @@ task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
 
-[[workflows.workflow]]
-name = "VictorySync Server"
-author = 44496704
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-
 [[ports]]
 localPort = 5000
 externalPort = 80
