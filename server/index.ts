@@ -20,8 +20,8 @@ app.use(express.json({ limit: '1mb' }));
 app.get('/health', (_req, res) => res.status(200).send('ok'));
 
 // ---- API routes under /api only ----
-import apiRouter from './routes.js'; // keep your existing router export
-app.use('/api', apiRouter);
+import { registerRoutes } from './routes.js';
+await registerRoutes(app);
 
 // ---- Vite dev or static prod ----
 async function setupVite(app: express.Express) {
