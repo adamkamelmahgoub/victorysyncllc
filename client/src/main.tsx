@@ -1,19 +1,25 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './index.css'
-import { ErrorBoundary } from './components/error-boundary'
 
-const rootEl = document.getElementById('root')
-if (!rootEl) { 
-  throw new Error('Root element #root not found') 
-}
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter, HashRouter } from 'react-router-dom';
+import { AuthProvider } from '@/hooks/useAuth';
+import GlobalErrorBoundary from '@/components/GlobalErrorBoundary';
+import App from './App';
+import './index.css';
 
-ReactDOM.createRoot(rootEl).render(
+// In Replit preview, server fallbacks can be flaky. Use HashRouter in DEV to avoid blank screens.
+// In production we use BrowserRouter.
+const Router: React.ComponentType<{ children: React.ReactNode }> =
+  import.meta.env.DEV ? (HashRouter as any) : (BrowserRouter as any);
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <div data-smoke="true" style={{display:'none'}}>SMOKE TEST OK</div>
-      <App />
-    </ErrorBoundary>
+    <GlobalErrorBoundary>
+      <Router>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </Router>
+    </GlobalErrorBoundary>
   </React.StrictMode>
-)
+);

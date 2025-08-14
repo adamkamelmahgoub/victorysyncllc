@@ -14,6 +14,9 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
 
 // Import API routes
 import { router as healthRouter } from './routes/health.js'

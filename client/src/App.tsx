@@ -1,10 +1,11 @@
-
 import React from 'react';
-import { Router, Route, Switch } from 'wouter';
+import { Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/contexts/CartContext';
 import { ErrorBoundary } from '@/components/error-boundary';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Navigation from '@/components/navigation';
 
 // Pages
 import HomePage from '@/pages/home';
@@ -39,27 +40,40 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <CartProvider>
-          <Router>
-            <Switch>
-              <Route path="/" component={HomePage} />
-              <Route path="/about" component={AboutPage} />
-              <Route path="/services" component={ServicesPage} />
-              <Route path="/pricing" component={PricingPage} />
-              <Route path="/contact" component={ContactPage} />
-              <Route path="/login" component={LoginPage} />
-              <Route path="/register" component={RegisterPage} />
-              <Route path="/dashboard" component={CustomerDashboard} />
-              <Route path="/admin" component={AdminPortal} />
-              <Route path="/checkout" component={CheckoutPage} />
-              <Route path="/terms" component={TermsPage} />
-              <Route path="/privacy" component={PrivacyPolicyPage} />
-              <Route path="/help" component={HelpCenterPage} />
-              <Route path="/careers" component={CareersPage} />
-              <Route path="/blog" component={BlogPage} />
-              <Route path="/docs" component={DocsPage} />
-              <Route component={NotFoundPage} />
-            </Switch>
-          </Router>
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/dashboard/*"
+              element={
+                <ProtectedRoute>
+                  <CustomerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/*"
+              element={
+                <ProtectedRoute>
+                  <AdminPortal />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/help" element={<HelpCenterPage />} />
+            <Route path="/careers" element={<CareersPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/docs" element={<DocsPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
           <Toaster />
         </CartProvider>
       </QueryClientProvider>
