@@ -1,21 +1,45 @@
 
-export async function api<T>(method: string, url: string, body?: unknown): Promise<T> {
-  const res = await fetch(`/api${url}`, {
+export type HttpMethod = 'GET'|'POST'|'PUT'|'PATCH'|'DELETE';
+
+export async function apiRequest<T>(
+  method: HttpMethod,
+  path: string,
+  body?: unknown,
+  init?: RequestInit
+): Promise<T> {
+  const url = path.startsWith('/api') ? path : `/api${path}`;
+  const res = await fetch(url, {
     method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers || {}),
+    },
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: body ? JSON.stringify(body) : undefined,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+    ...init,
   });
 
   if (res.status === 401) {
-    if (!location.pathname.startsWith('/login')) {
-      sessionStorage.setItem('postLoginRedirect', location.pathname + location.search);
-      location.assign('/login');
-    }
-    throw new Error('Unauthorized');
+    // Don't replace DOM with raw JSON — let pages handle auth redirect
+    const err = new Error('UNAUTHENTICATED');
+    (err as any).status = 401;
+    throw err;
   }
 
-  if (!res.ok) throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
-  const ct = res.headers.get('content-type') || '';
-  return ct.includes('application/json') ? await res.json() as T : (undefined as T);
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    const err = new Error(text || `HTTP ${res.status}`);
+    (err as any).status = res.status;
+    throw err;
+  }
+
+  // 204 no content
+  if (res.status === 204) return undefined as T;
+
+  const ctype = res.headers.get('content-type') || '';
+  if (ctype.includes('application/json')) {
+    return (await res.json()) as T;
+  }
+  // Fallback to text if backend returns text
+  return (await res.text()) as unknown as T;
 }

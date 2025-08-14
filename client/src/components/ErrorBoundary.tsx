@@ -1,24 +1,21 @@
+
 import React from 'react';
 
-type State = { hasError: boolean; error?: Error };
+type Props = { children: React.ReactNode };
+type State = { hasError: boolean; message?: string };
 
-export default class ErrorBoundary extends React.Component<React.PropsWithChildren, State> {
+export class ErrorBoundary extends React.Component<Props, State> {
   state: State = { hasError: false };
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
+  static getDerivedStateFromError(err: unknown) {
+    return { hasError: true, message: err instanceof Error ? err.message : String(err) };
   }
-
-  componentDidCatch(error: Error, info: unknown) {
-    console.error('UI Error:', error, info);
-  }
-
+  componentDidCatch(err: unknown) { console.error('UI error:', err); }
   render() {
     if (this.state.hasError) {
       return (
         <div style={{ padding: 24 }}>
-          <h2>Something went wrong.</h2>
-          <p>Open DevTools → Console for details.</p>
+          <h2>Something went wrong</h2>
+          <pre style={{ whiteSpace: 'pre-wrap' }}>{this.state.message}</pre>
         </div>
       );
     }
