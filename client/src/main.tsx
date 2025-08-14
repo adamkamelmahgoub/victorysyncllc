@@ -5,8 +5,13 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import ScrollToTop from './components/ScrollToTop';
+import './index.css';
+import './hmr-keepalive';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const rootEl = document.getElementById('root');
+if (!rootEl) throw new Error('Root element #root not found');
+
+ReactDOM.createRoot(rootEl).render(
   <React.StrictMode>
     <BrowserRouter>
       <ErrorBoundary>
