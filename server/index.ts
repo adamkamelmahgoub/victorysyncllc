@@ -14,8 +14,7 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
-import fs from 'fs';
-import { fileURLToPath } from 'url';
+import fs from 'fs/promises'
 
 
 // Import API routes
@@ -92,9 +91,11 @@ async function start() {
         template = await vite.transformIndexHtml(url, template)
         res.status(200).set({ 'Content-Type': 'text/html' }).end(template)
       } catch (e) {
-        vite.ssrFixStacktrace(e)
+        if (vite?.ssrFixStacktrace) {
+          vite.ssrFixStacktrace(e)
+        }
         console.error('Vite SSR Error:', e)
-        res.status(500).end(e.message)
+        res.status(500).end(e?.message || 'Internal Server Error')
       }
     })
   } else {
