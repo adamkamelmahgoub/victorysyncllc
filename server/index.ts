@@ -22,7 +22,7 @@ app.use(express.json({ limit: '1mb' }));
 app.get('/health', (_req, res) => res.status(200).send('ok'));
 
 // ---------- API ----------
-import apiRouter from './routes.js'; // keep existing export as default
+import apiRouter from './routes.js';
 app.use('/api', apiRouter);
 
 // ---------- Vite / Static ----------
