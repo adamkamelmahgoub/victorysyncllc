@@ -1,10 +1,10 @@
 
 import { Route } from 'wouter';
-import Home from '@/pages/home';
-import Pricing from '@/pages/pricing';
-import Register from '@/pages/register';
-import Login from '@/pages/login';
-import AdminPortal from '@/pages/admin-portal';
+import Home from '@/pages/home.tsx';
+import Pricing from '@/pages/pricing.tsx';
+import Register from '@/pages/register.tsx';
+import Login from '@/pages/login.tsx';
+import AdminPortal from '@/pages/admin-portal.tsx';
 
 export default function App() {
   return (
