@@ -1,0 +1,274 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are **Claude**, operating inside **Replit** as a **100000× senior full-stack engineer** on a **Vite (React + TS) + Node/Express** repo.
+Fix the **port conflict (EADDRINUSE: 5000)** and make sure **all pages render perfectly** with correct routing, persistent Navbar/Footer, and SPA fallback. **Edit exactly the files below and run the listed shell commands.** Do not add demo/placeholder data.
+
+---
+
+## 0) Shell: clean any stuck processes & verify ports
+
+Run these in the Replit shell **before** changing code:
+
+```bash
+# kill any lingering node/vite servers (safe in Replit)
+pkill -f "node" || true
+pkill -f "vite" || true
+sleep 1
+# verify nothing is listening on 5000/5173
+ss -lptn | grep -E ':5000|:5173' || true
+```
+
+---
+
+## 1) Unify dev/prod ports & remove hardcoded 5000
+
+### Edit: `server/index.ts`  (create if missing; serve SPA in prod)
+
+```ts
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = Number(process.env.PORT) || 3000; // ✅ no hardcoded 5000
+
+const dist = path.join(__dirname, "..", "client", "dist"); // adjust if layout differs
+app.use(express.static(dist));
+app.get("*", (_, res) => res.sendFile(path.join(dist, "index.html")));
+
+app.listen(PORT, () => console.log(`✅ SPA server listening on :${PORT}`));
+```
+
+### Edit: `vite.config.ts`  (ensure Vite uses 5173; add alias & base)
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { fileURLToPath, URL } from "node:url";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
+  server: { host: "0.0.0.0", port: 5173 },   // ✅ dev server only
+  preview: { host: "0.0.0.0", port: 5173 },
+  base: "/"
+});
+```
+
+### Edit: `tsconfig.json`  (confirm alias to avoid duplicate modules)
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "baseUrl": "client/src",
+    "paths": { "@/*": ["./*"] }
+  }
+}
+```
+
+> If your `src` is at `client/src`, keep `baseUrl: "client/src"`. If it’s just `src`, set `"baseUrl": "src"` and leave `paths` as `@/*`: \["./\*"].
+
+### Edit: `package.json`  (scripts must NOT start two servers on same port)
+
+```json
+{
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "vite build",
+    "serve": "node server/index.js",         // serve built SPA (prod/preview)
+    "preview": "vite preview --host 0.0.0.0 --port 5173"
+  },
+  "type": "module"
+}
+```
+
+> Remove any `concurrently` script that launches both Vite and Express in dev. Dev = **Vite only**. Prod/Preview = **Express only**.
+
+### Edit: `.replit`  (ensure Run button doesn’t double-start)
+
+```
+run = "npm run dev"
+```
+
+> For production preview on Replit, temporarily set: `run = "npm run build && npm run serve"`.
+
+---
+
+## 2) Fix routing: single router + SPA fallback (no 404 on refresh, no flicker)
+
+### Edit: `client/src/layouts/RootLayout.tsx`  (global Navbar/Footer)
+
+```tsx
+import { Outlet } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+
+export default function RootLayout() {
+  return (
+    <>
+      <Navbar />
+      <main className="min-h-[calc(100vh-64px)]">
+        <Outlet />
+      </main>
+      <Footer />
+    </>
+  );
+}
+```
+
+### Edit: `client/src/pages/NotFound.tsx`
+
+```tsx
+export default function NotFound() {
+  return (
+    <section className="px-4 py-12">
+      <h1 className="text-2xl font-bold">404 — Page Not Found</h1>
+      <p className="mt-2">Check the URL or use the navigation.</p>
+    </section>
+  );
+}
+```
+
+### Edit: `client/src/router.tsx`  (single source of truth)
+
+```tsx
+import { Routes, Route, Navigate } from "react-router-dom";
+import RootLayout from "@/layouts/RootLayout";
+import Home from "@/pages/Home";
+import Pricing from "@/pages/Pricing";
+import Contact from "@/pages/Contact";
+import NotFound from "@/pages/NotFound";
+
+export default function AppRouter() {
+  return (
+    <Routes>
+      <Route element={<RootLayout />}>
+        <Route index element={<Home />} />
+        <Route path="pricing" element={<Pricing />} />
+        <Route path="contact" element={<Contact />} />
+        <Route path="404" element={<NotFound />} />
+        <Route path="*" element={<Navigate to="/404" replace />} />
+      </Route>
+    </Routes>
+  );
+}
+```
+
+### Edit: `client/src/main.tsx`  (BrowserRouter mounted once)
+
+```tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import AppRouter from "./router";
+import { CartProvider } from "@/context/cart";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <CartProvider>
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
+    </CartProvider>
+  </React.StrictMode>
+);
+```
+
+> **Search & fix:** Convert all internal links `<a href="/...">` → `<Link>`/`<NavLink>`.
+> Ensure **Navbar/Footer** contain **no `<Routes>`/`<Navigate>`** and do not conditionally unmount.
+
+---
+
+## 3) Fix `/pricing` crash (Cart provider)
+
+### Edit: `client/src/context/cart.tsx`
+
+```tsx
+import React, { createContext, useContext, useState } from "react";
+type Item = { id: string; qty: number };
+type Ctx = { items: Item[]; addItem: (id: string, qty?: number) => void; clear: () => void; };
+const C = createContext<Ctx | undefined>(undefined);
+
+export const CartProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const [items, set] = useState<Item[]>([]);
+  const addItem = (id: string, qty = 1) =>
+    set(prev => {
+      const i = prev.findIndex(x => x.id === id);
+      if (i > -1) { const copy = [...prev]; copy[i] = { ...copy[i], qty: copy[i].qty + qty }; return copy; }
+      return [...prev, { id, qty }];
+    });
+  return <C.Provider value={{ items, addItem, clear: () => set([]) }}>{children}</C.Provider>;
+};
+
+export const useCartContext = () => {
+  const v = useContext(C);
+  if (!v) throw new Error("useCartContext must be used within a CartProvider");
+  return v;
+};
+```
+
+### Edit: `client/src/pages/Pricing.tsx`  (ensure it imports the correct hook)
+
+```tsx
+import { useCartContext } from "@/context/cart";
+
+export default function Pricing() {
+  const { addItem } = useCartContext();
+  return (
+    <section className="px-4 py-12">
+      <h1 className="text-3xl font-bold mb-6">Pricing</h1>
+      <button className="px-4 py-2 rounded bg-blue-600 text-white" onClick={() => addItem("plan-scale")}>
+        Select Scale Plan
+      </button>
+    </section>
+  );
+}
+```
+
+> **Project-wide:** replace any old cart imports with `@/context/cart` to avoid duplicate contexts.
+
+---
+
+## 4) Run & validate (no more EADDRINUSE, all pages load)
+
+### Dev mode (Vite only)
+
+```bash
+pkill -f "node|vite" || true
+npm install
+npm run dev
+```
+
+Open the Replit Preview → navigate to `/`, `/pricing`, `/contact`, refresh on each. **No 404s, no flicker.**
+
+### Production preview (SPA via Express)
+
+```bash
+pkill -f "node|vite" || true
+npm run build
+npm run serve
+```
+
+Open Preview → deep link to `/pricing` and refresh → still works.
+
+---
+
+## Acceptance checklist (report after changes)
+
+* Confirm there’s **no hardcoded `5000`** left in the repo (`grep -R "5000" -n .` returns nothing).
+* Only one `BrowserRouter` (in `client/src/main.tsx`).
+* Navbar/Footer persist; Footer never shows 404 content.
+* `/pricing` renders with no `CartProvider` error.
+* Refreshing any client route does not 404 (SPA fallback active).
+* Replit **Run** uses a single process (no port conflict).
+
+Perform all edits and shell commands above exactly.

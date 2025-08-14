@@ -21,7 +21,7 @@ import { relations } from "drizzle-orm";
 export const orgStatusEnum = pgEnum("org_status", ["active", "suspended"]);
 export const accessCodeStatusEnum = pgEnum("access_code_status", ["active", "used", "revoked", "expired"]);
 export const providerEnum = pgEnum("provider", [
-  "hubspot", "salesforce", "zoho", "pipedrive", 
+  "hubspot", "salesforce", "zoho", "pipedrive",
   "five9", "ringcentral", "twilio", "aircall",
   "zendesk", "freshdesk", "intercom", "helpscout"
 ]);
@@ -282,7 +282,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     relationName: "issuedAccessCodes",
   }),
   consumedAccessCodes: many(accessCodes, {
-    relationName: "consumedAccessCodes", 
+    relationName: "consumedAccessCodes",
   }),
   createdTickets: many(tickets, {
     relationName: "createdTickets",
@@ -357,11 +357,11 @@ export type InsertKpiDaily = typeof kpisDaily.$inferInsert;
 export type RateLimit = typeof rateLimits.$inferSelect;
 export type InsertRateLimit = typeof rateLimits.$inferInsert;
 export type FeatureFlag = typeof featureFlags.$inferSelect;
-export type InsertFeatureFlag = typeof featureFlags.$inferInsert;
+export type InsertFeatureFlag = typeof featureFlags.$insert;
 export type ApiKey = typeof apiKeys.$inferSelect;
-export type InsertApiKey = typeof apiKeys.$inferInsert;
+export type InsertApiKey = typeof apiKeys.$insert;
 export type Session = typeof sessions.$inferSelect;
-export type InsertSession = typeof sessions.$inferInsert;
+export type InsertSession = typeof sessions.$insert;
 
 // Validation Schemas
 export const createOrgSchema = z.object({
@@ -406,8 +406,8 @@ export const kpiFilterSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export const verify2faSchema = z.object({
@@ -424,3 +424,40 @@ export const connectIntegrationSchema = z.object({
   authType: z.enum(["oauth", "apikey"]),
   credentials: z.record(z.string()),
 });
+
+// Contact form schema
+export const insertContactSubmissionSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
+});
+
+// User registration schema
+export const registerUserSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+// Order schema
+export const insertOrderSchema = z.object({
+  userId: z.string(),
+  total: z.string(),
+  stripePaymentIntentId: z.string().optional(),
+  status: z.string().default('pending'),
+});
+
+// Order item schema
+export const insertOrderItemSchema = z.object({
+  orderId: z.number(),
+  packageId: z.number(),
+  quantity: z.number().min(1),
+  price: z.string(),
+});
+
+export type ContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
+export type RegisterUser = z.infer<typeof registerUserSchema>;
+export type LoginUser = z.infer<typeof loginSchema>;
+export type Order = z.infer<typeof insertOrderSchema>;
+export type OrderItem = z.infer<typeof insertOrderItemSchema>;
