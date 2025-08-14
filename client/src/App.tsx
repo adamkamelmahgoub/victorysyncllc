@@ -1,132 +1,69 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { CartProvider } from "@/contexts/CartContext";
-import { useState, Suspense, lazy } from "react";
 
-// Layout Components
-import { SiteLayout } from "@/layouts/SiteLayout";
-import CartModal from "@/components/cart-modal";
-import ScrollToTop from "@/components/ScrollToTop";
+import React from 'react';
+import { Router, Route, Switch } from 'wouter';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { CartProvider } from '@/contexts/CartContext';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Pages
-import Home from "@/pages/home";
-import Services from "@/pages/services";
-import Pricing from "@/pages/pricing";
-import About from "@/pages/about";
-import Contact from "@/pages/contact";
-import Checkout from "@/pages/checkout";
-import CustomerDashboard from "@/pages/customer-dashboard";
-import Dashboard from "@/pages/dashboard";
-import AdminPortal from "@/pages/admin-portal";
-import Register from "@/pages/register";
-import Login from "@/pages/login";
-import NotFound from "@/pages/not-found";
+import HomePage from '@/pages/home';
+import AboutPage from '@/pages/about';
+import ServicesPage from '@/pages/services';
+import PricingPage from '@/pages/pricing';
+import ContactPage from '@/pages/contact';
+import LoginPage from '@/pages/login';
+import RegisterPage from '@/pages/register';
+import CustomerDashboard from '@/pages/customer-dashboard';
+import AdminPortal from '@/pages/admin-portal';
+import CheckoutPage from '@/pages/checkout';
+import NotFoundPage from '@/pages/not-found';
+import TermsPage from '@/pages/terms';
+import PrivacyPolicyPage from '@/pages/privacy-policy';
+import HelpCenterPage from '@/pages/help-center';
+import CareersPage from '@/pages/careers';
+import BlogPage from '@/pages/blog';
+import DocsPage from '@/pages/docs';
 
-// Footer Pages
-import AboutUs from "@/pages/about-us";
-import Careers from "@/pages/careers";
-import Blog from "@/pages/blog";
-import HelpCenter from "@/pages/help-center";
-import Documentation from "@/pages/docs";
-import PrivacyPolicy from "@/pages/privacy-policy";
-import TermsOfService from "@/pages/terms";
-
-// Lazy load admin components
-const AdminLogin = lazy(() => import('./pages/admin/Login'));
-const IntegrationsSettings = lazy(() => import('./pages/dashboard/Settings/Integrations'));
-
-// Import Google Fonts
-import "@fontsource/inter/300.css";
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/700.css";
-import "@fontsource/inter/800.css";
-
-function Router() {
-  const [cartModalOpen, setCartModalOpen] = useState(false);
-
-  const openCartModal = () => setCartModalOpen(true);
-  const closeCartModal = () => setCartModalOpen(false);
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <ScrollToTop />
-      
-      <Switch>
-        {/* Admin routes without main layout */}
-        <Route path="/admin/login">
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-            <AdminLogin />
-          </Suspense>
-        </Route>
-        
-        <Route path="/admin*" component={AdminPortal} />
-        
-        {/* Dashboard routes without cart */}
-        <Route path="/dashboard*">
-          <SiteLayout showCart={false}>
-            <Switch>
-              <Route path="/dashboard" component={Dashboard} />
-              <Route path="/dashboard/settings/integrations">
-                <Suspense fallback={<div className="text-center py-8">Loading...</div>}>
-                  <IntegrationsSettings />
-                </Suspense>
-              </Route>
-            </Switch>
-          </SiteLayout>
-        </Route>
-
-        {/* Main site routes with cart */}
-        <Route>
-          <SiteLayout onCartClick={openCartModal}>
-            <Switch>
-              <Route path="/" component={Home} />
-              <Route path="/services" component={Services} />
-              <Route path="/pricing" component={Pricing} />
-              <Route path="/about" component={About} />
-              <Route path="/contact" component={Contact} />
-              <Route path="/checkout" component={Checkout} />
-              <Route path="/register" component={Register} />
-              <Route path="/signup" component={Register} />
-              <Route path="/login" component={Login} />
-
-              {/* Footer Pages */}
-              <Route path="/about-us" component={AboutUs} />
-              <Route path="/careers" component={Careers} />
-              <Route path="/blog" component={Blog} />
-              <Route path="/help-center" component={HelpCenter} />
-              <Route path="/docs" component={Documentation} />
-              <Route path="/privacy-policy" component={PrivacyPolicy} />
-              <Route path="/terms" component={TermsOfService} />
-
-              <Route component={NotFound} />
-            </Switch>
-          </SiteLayout>
-        </Route>
-      </Switch>
-
-      <CartModal 
-        isOpen={cartModalOpen} 
-        onClose={closeCartModal} 
-      />
-    </div>
-  );
-}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <TooltipProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <CartProvider>
+          <Router>
+            <Switch>
+              <Route path="/" component={HomePage} />
+              <Route path="/about" component={AboutPage} />
+              <Route path="/services" component={ServicesPage} />
+              <Route path="/pricing" component={PricingPage} />
+              <Route path="/contact" component={ContactPage} />
+              <Route path="/login" component={LoginPage} />
+              <Route path="/register" component={RegisterPage} />
+              <Route path="/dashboard" component={CustomerDashboard} />
+              <Route path="/admin" component={AdminPortal} />
+              <Route path="/checkout" component={CheckoutPage} />
+              <Route path="/terms" component={TermsPage} />
+              <Route path="/privacy" component={PrivacyPolicyPage} />
+              <Route path="/help" component={HelpCenterPage} />
+              <Route path="/careers" component={CareersPage} />
+              <Route path="/blog" component={BlogPage} />
+              <Route path="/docs" component={DocsPage} />
+              <Route component={NotFoundPage} />
+            </Switch>
+          </Router>
           <Toaster />
-          <Router />
-        </TooltipProvider>
-      </CartProvider>
-    </QueryClientProvider>
+        </CartProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

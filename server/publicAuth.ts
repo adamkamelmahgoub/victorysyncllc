@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { registerUserSchema, loginSchema, type PublicUser } from "@shared/schema";
-import { storage } from "./storage";
+import { storage } from "../storage";
 import { sendEmail } from "./utils/sendEmail";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
@@ -45,6 +45,10 @@ export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, 
     
     if (!user) {
       return res.status(401).json({ error: "Invalid token - user not found" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ error: "Account has been deactivated" });
     }
 
     req.user = user;

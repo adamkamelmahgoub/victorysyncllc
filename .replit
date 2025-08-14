@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "postgresql-16"]
+modules = ["nodejs-20", "postgresql-16", "python-3.11", "web"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
@@ -11,7 +11,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Project"
+runButton = "Development Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -31,15 +31,28 @@ task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
 
+[[workflows.workflow]]
+name = "Development Server"
+author = 44496704
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow]]
+name = "Start App"
+author = 44496704
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
 
-[rules]
-
-[rules.formatter]
-
-[rules.formatter.fileExtensions]
-
-[rules.formatter.fileExtensions.".tsx"]
-id = "module:nodejs-20/formatter:prettier"
+[[ports]]
+localPort = 24678
+externalPort = 3000

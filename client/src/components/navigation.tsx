@@ -1,11 +1,14 @@
-import { useState } from "react";
 import { Link, useLocation } from "wouter";
+import { ShoppingCart, User, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, User } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
-import { Logo } from "./Logo";
-import type { PublicUser } from "../../../shared/schema";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 interface NavigationProps {
   onCartClick: () => void;
@@ -32,8 +35,17 @@ export default function Navigation({ onCartClick }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <Logo />
+          <Link href="/" onClick={scrollToTop}>
+            <div className="flex items-center space-x-3 cursor-pointer">
+              <img 
+            src="/LOGO_VS.png" 
+            alt="VictorySync Logo" 
+            className="w-8 h-8 rounded-lg bg-white p-1"
+          />
+              <span className="text-xl brand-font victory-dark">
+                VictorySync
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -90,11 +102,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/register">
-                  <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
-                    Get Started
-                  </Button>
-                </Link>
+
               </div>
             )}
           </div>
@@ -176,13 +184,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     >
                       Sign In
                     </Button>
-                    <Button
-                      size="sm"
-                      className="w-full justify-start bg-purple-600 hover:bg-purple-700 text-white"
-                      onClick={() => (window.location.href = "/register")}
-                    >
-                      Get Started
-                    </Button>
+
                   </div>
                 )}
               </div>

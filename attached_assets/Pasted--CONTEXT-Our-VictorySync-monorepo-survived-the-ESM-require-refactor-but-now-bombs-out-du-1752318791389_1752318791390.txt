@@ -1,0 +1,70 @@
+### 🆘 CONTEXT
+Our **VictorySync** monorepo survived the ESM/require refactor, but now bombs out during
+startup with an **`esbuild / tsx`** stack trace:
+
+Your app crashed
+at /workspace/node_modules/esbuild/lib/main.js:1476:15
+at /workspace/node_modules/tsx/node_modules/esbuild/lib/main.js:755:50
+at responseCallbacks.<computed> (/workspace/node_modules/tsx/node_modules/esbuild/lib/main.js:622:9)
+at handleIncomingPacket (/workspace/node_modules/tsx/node_modules/esbuild/lib/main.js:677:12)
+at Socket.readFromStdout (/workspace/node_modules/tsx/node_modules/esbuild/lib/main.js:600:7)
+… (Readable / Pipe.onStreamRead)
+
+markdown
+Copy
+Edit
+
+- **Runtime**: Replit default **Node 18.x** (can switch to 20 via `NIXPKGS_NODE_VERSION`)  
+- **Server entry**: `tsx watch --clear-screen=false server/index.ts`  
+- **TypeScript**: strict, `moduleResolution:nodenext`, `"module":"esnext"`  
+- **Dependencies**: `"tsx": "^4.7.x"`, `"esbuild": "^0.20.x"`
+
+### 🔍 OBJECTIVES
+1. **Surface the *real* underlying error**  
+   • Re-run `tsx --debug` to print the esbuild stderr that is currently swallowed.  
+   • Capture & log any TypeScript, import-path, or env-var failure that triggers the fatal exit.
+
+2. **Stabilise the tsx + esbuild toolchain**  
+   • Pin *matching* versions: `"tsx": "4.7.0"` + `"esbuild": "0.19.11"` (known good combo).  
+   • Add `"preinstall": "npx npm@latest install --package-lock-only"` to keep lockfile deterministic.  
+   • If Replit’s Node 18 has a glibc bug with esbuild binary, force a rebuild:  
+     `npm rebuild esbuild --build-from-source`.
+
+3. **Fallback path if tsx keeps crashing**  
+   • Replace `tsx` with **`ts-node-esm`** for dev and use **`esbuild`** or **`tsup`** to generate a
+     compiled `dist/` for production.  
+   • Adjust `.replit` run command to `node --enable-source-maps dist/index.js`.
+
+4. **Deliverables**  
+   - Patched `package.json` (scripts + pinned deps).  
+   - Updated lockfile.  
+   - New `scripts/debug.sh` that runs `tsx --debug server/index.ts` for quick repro.  
+   - CHANGELOG.md entry: root cause + chosen fix.  
+   - Console proof that ends with: `echo "✅ VictorySync up – tsx/esbuild stable"`.
+
+### 💡 HINTS
+- Common silent killers:  
+  • Missing **.env** var referenced in `server/index.ts` before dotenv loads.  
+  • Unsupported syntax (e.g. `import.meta.resolve` without Node 20).  
+  • A circular import that triggers esbuild “dynamic import cycle” panic.  
+- If you move to `ts-node-esm`, enable `"experimentalSpecifierResolution":"node"` or
+  run Node with `--experimental-specifier-resolution=node`.
+
+### ✅ DEFINITION OF DONE
+- `npm run dev` (or the `.replit` Run button) shows “🚀 VictorySync server listening on :3000”.
+- Preview panel no longer shows the crash banner.
+- Hot re-load survives a dummy change in `server/routes/health.ts`.
+
+Please walk through:
+1. The exact root cause you uncovered.
+2. The file diff(s) to resolve it.
+3. Final console output confirming success.
+Why this prompt should work
+
+Pinpoints the visible stack (esbuild / tsx) so Claude focuses on that layer.
+
+Directs Claude to surface hidden stderr first—often the real clue.
+
+Offers two concrete remediation paths: version-pin or swap runner.
+
+Provides a Definition of Done plus deliverables so you get a verifiable, running server.
