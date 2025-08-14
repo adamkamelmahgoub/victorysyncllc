@@ -1,14 +1,17 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import App from './App';
+import { BrowserRouter } from 'react-router-dom';
+import AppRouter from './router';
+import { CartProvider } from '@/context/cart';
 import './index.css';
 
-const root = document.getElementById('root')!;
-ReactDOM.createRoot(root).render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <CartProvider>
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
+    </CartProvider>
   </React.StrictMode>
 );
