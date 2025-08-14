@@ -1,7 +1,16 @@
 import 'dotenv/config'
-import express from 'express'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+// Ensure we're loading .env from the project root
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const envPath = path.resolve(__dirname, '../.env')
+
+// Load environment variables from the correct path
+import { config } from 'dotenv'
+config({ path: envPath })
+import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
