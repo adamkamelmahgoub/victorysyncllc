@@ -8,7 +8,7 @@ import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
 import authRoutes from './routes/auth';
-import adminRoutes from './routes/admin';
+import { admin as adminRoutes } from './routes/admin';
 import customerRoutes from './routes/customer';
 
 let stripe: Stripe | null = null;
