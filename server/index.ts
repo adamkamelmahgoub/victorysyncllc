@@ -24,9 +24,6 @@ import { router as integrationRouter } from './routes/integrations.js'
 import { router as billingRouter } from './routes/billing.js'
 import { router as webhookRouter } from './routes/webhooks.js'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
 const app = express()
 
 // Basic hardening & json
