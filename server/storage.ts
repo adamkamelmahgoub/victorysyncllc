@@ -65,7 +65,7 @@ import {
   type InsertAccessControlPaymentMethod,
   type AccessControlCallMetric,
   type InsertAccessControlCallMetric,
-} from "../shared/schema.js";
+} from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, count } from "drizzle-orm";
 import type postgres from "postgres"; // Import type for postgres client

@@ -1,12 +1,12 @@
 import { Check, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useCartContext } from '@/hooks/useCart';
+import { useCart } from '@/hooks/useCart';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 
 export default function Pricing() {
-  const { addItem } = useCartContext();
+  const { addItem } = useCart();
 
   const { data: packages, isLoading } = useQuery({
     queryKey: ['/api/packages'],

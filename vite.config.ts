@@ -29,14 +29,6 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    allowedHosts: true,
-    host: true,
-    strictPort: false,
-    hmr: {
-      protocol: 'wss',
-      clientPort: 443,
-      overlay: false, // never block rendering with the overlay
-    },
     fs: {
       strict: true,
       deny: ["**/.*"],

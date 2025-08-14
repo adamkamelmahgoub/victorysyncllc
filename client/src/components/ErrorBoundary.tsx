@@ -2,21 +2,19 @@
 import React from 'react';
 
 type Props = { children: React.ReactNode };
-type State = { hasError: boolean; message?: string };
+type State = { hasError: boolean; error?: any };
 
-export class ErrorBoundary extends React.Component<Props, State> {
+export default class ErrorBoundary extends React.Component<Props, State> {
   state: State = { hasError: false };
-  static getDerivedStateFromError(err: unknown) {
-    return { hasError: true, message: err instanceof Error ? err.message : String(err) };
-  }
-  componentDidCatch(err: unknown) { console.error('UI error:', err); }
+  static getDerivedStateFromError(error: any) { return { hasError: true, error }; }
+  componentDidCatch(error: any, info: any) { console.error('UI crash:', error, info); }
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: 24 }}>
-          <h2>Something went wrong</h2>
-          <pre style={{ whiteSpace: 'pre-wrap' }}>{this.state.message}</pre>
-        </div>
+        <main className="p-6">
+          <h1 className="text-xl font-semibold">Something went wrong</h1>
+          <pre className="mt-2 bg-gray-100 p-3 rounded">{String(this.state.error)}</pre>
+        </main>
       );
     }
     return this.props.children;

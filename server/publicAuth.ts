@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { registerUserSchema, loginSchema, type PublicUser } from "../shared/schema.js";
+import { registerUserSchema, loginSchema, type PublicUser } from "@shared/schema";
 import { storage } from "./storage";
 import { sendEmail } from "./utils/sendEmail";
 

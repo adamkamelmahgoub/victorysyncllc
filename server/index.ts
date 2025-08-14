@@ -1,71 +1,83 @@
 
-// server/index.ts
 import 'dotenv/config';
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cors from 'cors';
 
+// ESM dirname helpers
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = Number(process.env.PORT || 5000);
 
-// Allow cookies from Replit preview
-app.use(cors({ origin: true, credentials: true }));
+// CORS for Replit Preview
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
+
 app.use(cookieParser());
 app.use(express.json({ limit: '1mb' }));
 
-// Lightweight health
+// Health check
 app.get('/health', (_req, res) => res.status(200).send('ok'));
 
-// ---------- API ----------
-import apiRouter from './routes.js';
-app.use('/api', apiRouter);
+// Import routes
+import { auth } from './routes/auth.js';
+import { admin } from './routes/admin.js';
+import { requireAuth, requireRole } from './middleware/auth.js';
 
-// ---------- Vite / Static ----------
+// API routes
+app.use('/api', auth);
+app.use('/api', requireAuth, requireRole('admin'), admin);
+
+// Vite dev server setup
 async function setupVite(app: express.Express) {
-  const clientRoot = path.resolve(__dirname, '../client');
-
   if (process.env.NODE_ENV === 'development') {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
-      root: clientRoot,
-      appType: 'custom',
+      root: path.resolve(__dirname, '../client'),
       server: {
         middlewareMode: true,
-        host: true,
+        hmr: { overlay: true },
         allowedHosts: true,
-        strictPort: false,
-        hmr: {
-          protocol: 'wss',
-          clientPort: 443,
-          overlay: false, // never block rendering with an overlay
-        },
       },
+      appType: 'custom',
     });
-
-    // Vite middlewares first
+    
     app.use(vite.middlewares);
 
-    // SPA fallback for any non-/api GET
-    app.use(async (req, res, next) => {
-      if (req.method !== 'GET' || req.path.startsWith('/api')) return next();
+    // SPA fallback for non-API routes
+    app.use('*', async (req, res, next) => {
+      if (req.originalUrl.startsWith('/api')) return next();
+      
       try {
-        const fs = await import('fs/promises');
-        const htmlPath = path.join(clientRoot, 'index.html');
-        const html = await fs.readFile(htmlPath, 'utf8');
-        const transformed = await vite.transformIndexHtml(req.originalUrl, html);
-        res.status(200).set('Content-Type', 'text/html').end(transformed);
-      } catch (err) {
-        vite.ssrFixStacktrace(err as Error);
-        next(err);
+        const url = req.originalUrl;
+        const template = await vite.transformIndexHtml(url, `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VictorySync</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+        `);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
       }
     });
   } else {
-    const dist = path.resolve(clientRoot, 'dist');
+    const dist = path.resolve(__dirname, '../client/dist');
     app.use(express.static(dist));
     app.get('*', (req, res) => {
       if (req.path.startsWith('/api')) return res.status(404).json({ message: 'Not found' });
@@ -75,5 +87,7 @@ async function setupVite(app: express.Express) {
 }
 
 setupVite(app).then(() => {
-  app.listen(PORT, () => console.log(`[express] serving on port ${PORT}`));
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[express] serving on port ${PORT}`);
+  });
 });

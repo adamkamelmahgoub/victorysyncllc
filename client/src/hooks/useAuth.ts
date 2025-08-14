@@ -1,87 +1,90 @@
-
-import { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { queryClient } from '@/lib/queryClient';
 
 interface User {
-  id: number;
-  name: string;
+  id: string;
   email: string;
   role: string;
+  org_id: string;
+  full_name: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  loading: boolean;
+  setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const isAuthenticated = user !== null;
+  const isAuthenticated = !!user;
 
   useEffect(() => {
-    // Check if user is logged in on mount
-    checkAuthStatus();
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Verify token is valid by calling whoami
+      fetch('/api/auth/whoami', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+      .then(async (response) => {
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+        } else {
+          // Token is invalid, remove it
+          localStorage.removeItem('token');
+          setUser(null);
+        }
+      })
+      .catch(() => {
+        // If verification fails, clear token and user
+        localStorage.removeItem('token');
+        setUser(null);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
-  const checkAuthStatus = async () => {
-    try {
-      const response = await fetch('/api/auth/me', {
-        credentials: 'include',
-      });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const login = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      } else {
-        throw new Error('Login failed');
-      }
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoading(false);
+    if (response.ok) {
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+
+      // Invalidate and refetch queries
+      queryClient.invalidateQueries();
+    } else {
+      const error = await response.json();
+      throw new Error(error.message || 'Login failed');
     }
   };
 
-  const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      setUser(null);
-    }
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    queryClient.clear();
+    window.location.href = '/login';
   };
 
   return (
@@ -89,9 +92,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         isAuthenticated,
+        isLoading,
         login,
         logout,
-        loading,
+        setUser,
       }}
     >
       {children}
