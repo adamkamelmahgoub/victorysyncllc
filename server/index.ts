@@ -102,8 +102,19 @@ async function start() {
     })
   }
 
-  app.listen(PORT, HOST, () => {
+  // Add error handling for port conflicts
+  const server = app.listen(PORT, HOST, () => {
     console.log(`✅ Server ready on http://${HOST}:${PORT} (NODE_ENV=${process.env.NODE_ENV})`)
+  })
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${PORT} is already in use. Trying to kill existing processes...`)
+      process.exit(1)
+    } else {
+      console.error('Server error:', err)
+      process.exit(1)
+    }
   })
 }
 
