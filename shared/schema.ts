@@ -278,6 +278,7 @@ export const packages = pgTable("packages", {
   description: text("description"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   currency: varchar("currency", { length: 3 }).default("usd").notNull(),
+  features: jsonb("features"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -539,4 +540,12 @@ export const insertOrderItemSchema = z.object({
   packageId: z.number(),
   quantity: z.number().positive(),
   price: z.string().regex(/^\d+\.\d{2}$/),
+});
+
+export const insertPackageSchema = z.object({
+  name: z.string().min(1).max(255),
+  description: z.string().optional(),
+  price: z.string().regex(/^\d+\.\d{2}$/),
+  currency: z.string().length(3).default("usd"),
+  features: z.array(z.string()).optional(),
 });

@@ -80,7 +80,12 @@ export class DatabaseStorage implements IStorage {
 
   // Package operations
   async getPackages(): Promise<Package[]> {
-    return await db.select().from(packages).where(eq(packages.isActive, true));
+    try {
+      return await db.select().from(packages);
+    } catch (error) {
+      console.error("Error in getPackages:", error);
+      throw error;
+    }
   }
 
   async getPackage(id: number): Promise<Package | undefined> {
@@ -88,9 +93,13 @@ export class DatabaseStorage implements IStorage {
     return pkg;
   }
 
-  async createPackage(pkg: InsertPackage): Promise<Package> {
-    const [newPackage] = await db.insert(packages).values(pkg).returning();
-    return newPackage;
+  async createPackage(pkg: InsertPackage & { features?: string[] }): Promise<Package> {
+    const packageData = {
+      ...pkg,
+      features: pkg.features || null
+    };
+    const [created] = await db.insert(packages).values(packageData).returning();
+    return created;
   }
 
   // Order operations
