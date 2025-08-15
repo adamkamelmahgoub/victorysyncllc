@@ -1,6 +1,6 @@
 
-import React from "react";
-import ReactDOM from "react-dom/client";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -20,8 +20,11 @@ const queryClient = new QueryClient({
   },
 });
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+const root = document.getElementById("root");
+if (!root) throw new Error("#root not found");
+
+createRoot(root).render(
+  <StrictMode>
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
@@ -34,5 +37,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </BrowserRouter>
       </QueryClientProvider>
     </HelmetProvider>
-  </React.StrictMode>
+  </StrictMode>
 );
