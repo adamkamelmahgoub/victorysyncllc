@@ -7,6 +7,9 @@ import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
+import { Router } from "express";
+import fs from "fs";
+import path from "path";
 
 let stripe: Stripe | null = null;
 
@@ -72,8 +75,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-
-
   // Package routes
   app.get('/api/packages', async (req, res) => {
     try {
@@ -125,8 +126,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/create-payment-intent", authenticateJWT as any, async (req: any, res: any) => {
     try {
       if (!stripe) {
-        return res.status(503).json({ 
-          message: "Payment processing is currently unavailable. Please contact support." 
+        return res.status(503).json({
+          message: "Payment processing is currently unavailable. Please contact support."
         });
       }
 
@@ -425,6 +426,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/*', (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
   });
+
+  // --- New routes for access code signup flow ---
+  const api = Router();
+
+  api.get("/health", (_req,res)=>res.json({ok:true, ts:Date.now()}));
+  api.get("/auth/check", (_req,res)=>res.json({ ok:true, authenticated:false, user:null }));
+
+  type AccessCode={ code:string; orgNumber:string; orgName?:string; emailDomain?:string };
+  type OtpEntry={ key:string; otp:string; expiresAt:number };
+  const CODES_PATH=path.join(__dirname,"data","access-codes.json");
+  const OTPS_PATH=path.join(__dirname,"data","otps.json");
+  function readJson<T>(p:string,f:T):T{ try{return JSON.parse(fs.readFileSync(p,"utf8")) as T;}catch{return f;} }
+  function writeJson<T>(p:string,d:T){ fs.mkdirSync(path.dirname(p),{recursive:true}); fs.writeFileSync(p,JSON.stringify(d,null,2)); }
+  const genOtp=(n=6)=>Array.from({length:n},()=>Math.floor(Math.random()*10)).join("");
+
+  // Verify
+  api.post("/access/verify",(req,res)=>{
+    const { accessCode, name, email, phone, orgNumber } = req.body??{};
+    if(!accessCode||!name||!email||!phone||!orgNumber) return res.status(400).json({ok:false,error:"Missing required fields"});
+    const codes=readJson<AccessCode[]>(CODES_PATH,[]); const found=codes.find(c=>c.code===accessCode);
+    if(!found) return res.status(404).json({ok:false,error:"Invalid access code"});
+    if(found.orgNumber && String(found.orgNumber)!==String(orgNumber)) return res.status(400).json({ok:false,error:"Organization number mismatch"});
+    if(found.emailDomain && !String(email).toLowerCase().endsWith(`@${found.emailDomain.toLowerCase()}`)) return res.status(400).json({ok:false,error:`Email must end with @${found.emailDomain}`});
+    res.json({ok:true, orgName:found.orgName??null});
+  });
+
+  // Request OTP
+  api.post("/access/request-otp",(req,res)=>{
+    const { accessCode, email, phone } = req.body??{}; if(!accessCode||!email) return res.status(400).json({ok:false,error:"Missing accessCode or email"});
+    const otps=readJson<OtpEntry[]>(OTPS_PATH,[]); const key=`${accessCode}|${String(email).toLowerCase()}`;
+    const otp=genOtp(6); const expiresAt=Date.now()+5*60*1000;
+    const i=otps.findIndex(o=>o.key===key); if(i>-1) otps[i]={key,otp,expiresAt}; else otps.push({key,otp,expiresAt}); writeJson(OTPS_PATH,otps);
+    const devOtp=process.env.NODE_ENV!=="production"?otp: undefined; console.log(`[OTP] ${otp} -> ${email}${phone? " / "+phone: ""} for ${accessCode}`);
+    res.json({ok:true, devOtp});
+  });
+
+  // Confirm OTP
+  api.post("/access/confirm-otp",(req,res)=>{
+    const { accessCode, email, otp } = req.body??{}; if(!accessCode||!email||!otp) return res.status(400).json({ok:false,error:"Missing fields"});
+    const otps=readJson<OtpEntry[]>(OTPS_PATH,[]); const key=`${accessCode}|${String(email).toLowerCase()}`; const e=otps.find(o=>o.key===key);
+    if(!e) return res.status(400).json({ok:false,error:"No OTP pending"}); if(Date.now()>e.expiresAt) return res.status(400).json({ok:false,error:"OTP expired"});
+    if(String(e.otp)!==String(otp)) return res.status(400).json({ok:false,error:"Invalid OTP"}); writeJson(OTPS_PATH,otps.filter(o=>o.key!==key)); res.json({ok:true});
+  });
+
+  app.use('/api', api);
 
   const httpServer = createServer(app);
   return httpServer;
