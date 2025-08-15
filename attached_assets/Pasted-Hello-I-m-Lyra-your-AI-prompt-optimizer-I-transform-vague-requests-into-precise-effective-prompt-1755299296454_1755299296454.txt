@@ -1,0 +1,220 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are **Claude**, working **inside my Replit project** (Vite + React/TS in `client/`, Express in `server/`, single-port run).
+Fix the **Cart** runtime crash:
+
+> `[plugin:runtime-error-plugin] useCartContext must be used within a CartProvider`
+> stack points to: `client/src/contexts/CartContext.tsx`, `client/src/hooks/useCart.tsx`, and `client/src/components/navigation.tsx`
+
+Also ensure **all buttons/links route correctly** using React Router (no staying on Home, no full reloads).
+Make the exact file edits below (paths are from repo root). **No other changes.**
+
+---
+
+## Explanation
+
+* The crash occurs because components (e.g., `navigation.tsx`) call `useCart()` without an ancestor `<CartProvider>`, and the current hook **throws**.
+* Replace the cart context with a **fail-safe** implementation (warn instead of throw) and **mount `<CartProvider>` at the app root**.
+* Normalize imports so every place uses the **same** `useCart` and `CartProvider`.
+* Keep our SmartLink/NavButton router fixes so every CTA navigates.
+
+---
+
+## Code (copy these verbatim)
+
+### 1) Replace the crashing context with a safe one
+
+**Edit (REPLACE):** `client/src/contexts/CartContext.tsx`
+
+```tsx
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  PropsWithChildren,
+} from "react";
+
+export type CartItem = { id: string; name?: string; price?: number; qty: number };
+
+export type CartCtx = {
+  items: CartItem[];
+  count: number;
+  subtotal: number;
+  add: (item: Omit<CartItem, "qty">, qty?: number) => void;
+  remove: (id: string) => void;
+  clear: () => void;
+};
+
+const CartContext = createContext<CartCtx | undefined>(undefined);
+
+export function CartProvider({ children }: PropsWithChildren) {
+  const [items, setItems] = useState<CartItem[]>([]);
+
+  const add: CartCtx["add"] = (item, qty = 1) => {
+    setItems((prev) => {
+      const i = prev.findIndex((p) => p.id === item.id);
+      if (i > -1) {
+        const copy = [...prev];
+        copy[i] = { ...copy[i], qty: copy[i].qty + qty };
+        return copy;
+      }
+      return [...prev, { ...item, qty }];
+    });
+  };
+
+  const remove: CartCtx["remove"] = (id) =>
+    setItems((prev) => prev.filter((p) => p.id !== id));
+
+  const clear = () => setItems([]);
+
+  const count = useMemo(() => items.reduce((n, i) => n + i.qty, 0), [items]);
+  const subtotal = useMemo(
+    () => items.reduce((s, i) => s + (i.price ?? 0) * i.qty, 0),
+    [items]
+  );
+
+  const value: CartCtx = { items, count, subtotal, add, remove, clear };
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}
+
+/** SAFE HOOK: never crash if provider is missing (prevents white screens) */
+export function useCartContext(): CartCtx {
+  const ctx = useContext(CartContext);
+  if (!ctx) {
+    console.warn("useCartContext used without CartProvider — returning no-op cart.");
+    return {
+      items: [],
+      count: 0,
+      subtotal: 0,
+      add: () => {},
+      remove: () => {},
+      clear: () => {},
+    };
+  }
+  return ctx;
+}
+```
+
+### 2) Ensure the project’s hook uses the safe context
+
+**Edit (REPLACE):** `client/src/hooks/useCart.tsx`
+
+```tsx
+export { useCartContext as useCart } from "@/contexts/CartContext";
+```
+
+*(If other files export a different `useCart`, rewrite them exactly like the line above.)*
+
+### 3) Mount the provider at the application root
+
+**Edit (REPLACE the tree only):** `client/src/main.tsx`
+*(Keep your existing imports like styles, SEO provider, etc. Add CartProvider as shown.)*
+
+```tsx
+import { StrictMode } from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import AppRouter from "./router";
+import { AuthProvider } from "@/context/auth";
+import { CartProvider } from "@/contexts/CartContext";
+import "./index.css";
+import "./styles/site.css";
+
+const root = document.getElementById("root");
+if (!root) throw new Error("#root not found");
+
+ReactDOM.createRoot(root).render(
+  <StrictMode>
+    <AuthProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      </CartProvider>
+    </AuthProvider>
+  </StrictMode>
+);
+```
+
+### 4) Make navigation use React Router (no full reloads)
+
+**Verify/Adjust:** `client/src/components/navigation.tsx` (or `Navbar.tsx`)
+Replace any raw `<a href="/...">` or `window.location = "/..."` with `NavLink`/`SmartLink`/`NavButton`. Example:
+
+```tsx
+import { NavLink } from "react-router-dom";
+import SmartLink from "@/components/SmartLink";
+import { useCart } from "@/hooks/useCart"; // <- from step 2
+
+export default function Navigation() {
+  const { count } = useCart();
+  const link = ({ isActive }: { isActive: boolean }) =>
+    `px-3 py-2 ${isActive ? "underline" : "hover:underline"}`;
+  return (
+    <header className="...">
+      <SmartLink to="/" className="font-bold">VictorySync</SmartLink>
+      <nav className="space-x-2">
+        <NavLink to="/services" className={link}>Services</NavLink>
+        <NavLink to="/pricing" className={link}>Pricing</NavLink>
+        <NavLink to="/about" className={link}>About</NavLink>
+        <NavLink to="/contact" className={link}>Contact</NavLink>
+        <NavLink to="/cart" className={link}>Cart ({count})</NavLink>
+      </nav>
+    </header>
+  );
+}
+```
+
+*(If you don’t have `SmartLink`/`NavButton` yet, keep using `NavLink` for internal routes. Do **not** use raw `<a href="/...">` for internal pages.)*
+
+---
+
+## Instructions (Replit-safe)
+
+1. Apply the file replacements above **exactly** (keep the same filenames/paths).
+2. Search/normalize imports so every `useCart` comes from our single source:
+
+   ```bash
+   grep -Rn "useCart" client/src | sed -n '1,200p'
+   # If any import is not '@/hooks/useCart' or '@/contexts/CartContext', update it.
+   ```
+3. Restart cleanly and build:
+
+   ```bash
+   pkill -f "node|vite" || true
+   npm run build && tsx server/index.ts
+   ```
+4. Open Preview → hard refresh. Click **all** header/footer/CTA buttons and confirm navigation changes the URL and renders the correct page.
+
+---
+
+## Acceptance checks (must pass)
+
+* Console has **no red errors**.
+* The Vite overlay is gone; the app renders normally.
+* `/`, `/services`, `/pricing`, `/about`, `/contact`, `/cart` all render (create stub pages if any are missing).
+* No internal `<a href="/...">` remain:
+
+  ```bash
+  grep -R '<a[^>]*href="/' client/src || echo "OK"
+  ```
+* `useCart` is imported from **one place** only:
+
+  ```bash
+  grep -R "from \".*/useCart" client/src || echo "OK"
+  ```
+* Deep-link refresh on any route keeps working (SPA fallback intact).
+
+---
+
+## Warnings (avoid future breakage)
+
+* Do **not** reintroduce `throw new Error("useCartContext must be used within a CartProvider")`. Keep the safe hook.
+* Keep exactly **one** `<BrowserRouter>` (in `main.tsx`).
+* Internal navigation must use `NavLink`/`Link` (or `SmartLink`), not raw anchors or `window.location`.
+* If you add new contexts (e.g., `WishlistProvider`), mount them in `main.tsx` and make their hooks **non-throwing** the same way.
+
+**Apply these edits now.** This will eliminate the CartProvider crash and ensure every button/link routes to its correct page without errors in this Replit project.
