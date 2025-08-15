@@ -285,6 +285,9 @@ export const publicUsers = pgTable("public_users", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).unique().notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }),
+  provider: varchar("provider", { length: 50 }).default("local"),
+  isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -444,6 +447,12 @@ export type InsertOrderItem = typeof orderItems.$inferInsert;
 export const createOrgSchema = z.object({
   name: z.string().min(1).max(255),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
+});
+
+export const registerUserSchema = z.object({
+  name: z.string().min(1).max(255),
+  email: z.string().email(),
+  password: z.string().min(8).regex(/(?=.*\d)/, "Password must contain at least one number"),
 });
 
 export const registerWithCodeSchema = z.object({
