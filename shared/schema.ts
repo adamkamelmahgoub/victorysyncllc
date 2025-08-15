@@ -1,4 +1,3 @@
-
 import {
   pgTable,
   text,
@@ -22,7 +21,7 @@ import { relations } from "drizzle-orm";
 export const orgStatusEnum = pgEnum("org_status", ["active", "suspended"]);
 export const accessCodeStatusEnum = pgEnum("access_code_status", ["active", "used", "revoked", "expired"]);
 export const providerEnum = pgEnum("provider", [
-  "hubspot", "salesforce", "zoho", "pipedrive", 
+  "hubspot", "salesforce", "zoho", "pipedrive",
   "five9", "ringcentral", "twilio", "aircall",
   "zendesk", "freshdesk", "intercom", "helpscout"
 ]);
@@ -186,7 +185,8 @@ export const tickets = pgTable("tickets", {
 // Orders
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  orgId: integer("org_id").references(() => organizations.id).notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  orgId: integer("org_id").references(() => organizations.id),
   externalId: varchar("external_id", { length: 100 }),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   currency: varchar("currency", { length: 3 }).default("usd").notNull(),
@@ -262,6 +262,41 @@ export const sessions = pgTable("sessions", {
   index("sessions_expires_idx").on(table.expiresAt),
 ]);
 
+// New tables for contact submissions, packages, public users, and order items
+export const contactSubmissions = pgTable("contact_submissions", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const packages = pgTable("packages", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("usd").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const publicUsers = pgTable("public_users", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).unique().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const orderItems = pgTable("order_items", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").references(() => orders.id).notNull(),
+  packageId: integer("package_id").references(() => packages.id).notNull(),
+  quantity: integer("quantity").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const organizationsRelations = relations(organizations, ({ many, one }) => ({
   users: many(users),
@@ -288,7 +323,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     relationName: "issuedAccessCodes",
   }),
   consumedAccessCodes: many(accessCodes, {
-    relationName: "consumedAccessCodes", 
+    relationName: "consumedAccessCodes",
   }),
   createdTickets: many(tickets, {
     relationName: "createdTickets",
@@ -335,6 +370,31 @@ export const userRolesRelations = relations(userRoles, ({ one }) => ({
   }),
 }));
 
+// Relations for new tables
+export const contactSubmissionsRelations = relations(contactSubmissions, () => ({
+  // No relations defined for contactSubmissions yet
+}));
+
+export const packagesRelations = relations(packages, ({ many }) => ({
+  orderItems: many(orderItems),
+}));
+
+export const publicUsersRelations = relations(publicUsers, () => ({
+  // No relations defined for publicUsers yet
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+  package: one(packages, {
+    fields: [orderItems.packageId],
+    references: [packages.id],
+  }),
+}));
+
+
 // Types
 export type Organization = typeof organizations.$inferSelect;
 export type InsertOrganization = typeof organizations.$inferInsert;
@@ -368,6 +428,17 @@ export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertApiKey = typeof apiKeys.$inferInsert;
 export type Session = typeof sessions.$inferSelect;
 export type InsertSession = typeof sessions.$inferInsert;
+
+// Types for new tables
+export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
+export type Package = typeof packages.$inferSelect;
+export type InsertPackage = typeof packages.$inferInsert;
+export type PublicUser = typeof publicUsers.$inferSelect;
+export type InsertPublicUser = typeof publicUsers.$inferInsert;
+export type OrderItem = typeof orderItems.$inferSelect;
+export type InsertOrderItem = typeof orderItems.$inferInsert;
+
 
 // Validation Schemas
 export const createOrgSchema = z.object({
