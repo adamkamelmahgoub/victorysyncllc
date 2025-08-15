@@ -1,0 +1,89 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+🔗 Connecting to database...
+🚀 Starting VictorySync application...
+Environment: development
+✅ All required environment variables are set
+✅ Database connection established
+✅ Database connection test successful
+📦 Initializing default packages...
+Error in getPackages: error: column "currency" does not exist
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-serverless/session.ts:102:18)
+    at async DatabaseStorage.getPackages (/home/runner/workspace/storage.ts:84:14)
+    at async initializePackages (/home/runner/workspace/server/routes.ts:436:30)
+    at async registerRoutes (/home/runner/workspace/server/routes.ts:61:3)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:71:20) {
+  length: 108,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: undefined,
+  position: '46',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3722',
+  routine: 'errorMissingColumn'
+}
+❌ Error initializing packages: error: column "currency" does not exist
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-serverless/session.ts:102:18)
+    at async DatabaseStorage.getPackages (/home/runner/workspace/storage.ts:84:14)
+    at async initializePackages (/home/runner/workspace/server/routes.ts:436:30)
+    at async registerRoutes (/home/runner/workspace/server/routes.ts:61:3)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:71:20) {
+  length: 108,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: undefined,
+  position: '46',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3722',
+  routine: 'errorMissingColumn'
+}
+❌ Failed to start server: error: column "currency" does not exist
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-serverless/session.ts:102:18)
+    at async DatabaseStorage.getPackages (/home/runner/workspace/storage.ts:84:14)
+    at async initializePackages (/home/runner/workspace/server/routes.ts:436:30)
+    at async registerRoutes (/home/runner/workspace/server/routes.ts:61:3)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:71:20) {
+  length: 108,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: undefined,
+  position: '46',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3722',
+  routine: 'errorMissingColumn'
+}
