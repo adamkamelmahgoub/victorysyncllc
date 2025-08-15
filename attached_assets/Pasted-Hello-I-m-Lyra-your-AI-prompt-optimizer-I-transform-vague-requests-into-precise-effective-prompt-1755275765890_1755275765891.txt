@@ -1,0 +1,201 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are **Claude**, operating in **Replit** as a **100000× senior full-stack engineer**. The goal is to make the Replit app display the **exact same frontend as the live site at `https://victorysync.com`** (all pages, styles, images, fonts, icons, meta tags) while keeping our current Vite + React + Express setup and SPA routing. Do this end-to-end now.
+
+---
+
+## Objectives (all must pass)
+
+1. The Replit preview renders the **same UI and content** as `victorysync.com` on every public page (home, pricing, services, about, contact, blog posts if present, legal pages, etc.).
+2. **Pixel parity**: same layout, fonts, colors, spacing, images, icons, animations.
+3. **Routes** work both via in-app navigation and direct refresh (SPA fallback intact).
+4. **SEO parity**: head tags, canonical, Open Graph, Twitter cards, sitemap, robots.
+5. **Assets self-hosted** locally (no hot-linking), with licenses preserved (e.g., Google Fonts).
+6. Forms/CTAs behave the same (hook to existing endpoints or safe no-ops if unknown).
+
+> Assume we own the site and content. Do not change any copy/design unless it’s purely for wiring.
+
+---
+
+## Plan of action (do these steps exactly)
+
+### 0) Prep
+
+```bash
+pkill -f "node|vite" || true
+mkdir -p import && rm -rf import/*
+```
+
+### 1) **Mirror** the live site to a local folder (static snapshot)
+
+```bash
+# Full static mirror (html, css, js, images, fonts)
+wget --mirror --convert-links --adjust-extension --page-requisites --no-parent \
+  --directory-prefix=import --domains victorysync.com https://victorysync.com/
+```
+
+* Result will be under `import/victorysync.com/`.
+* If the site uses CDNs (fonts, css, scripts), download those URLs too and stash them under `client/public/vendor/`.
+
+### 2) **Lift assets** into the Vite app
+
+```bash
+mkdir -p client/public/site client/src/styles vendor-tmp
+# Move images/fonts/icons
+rsync -a --include "*/" --include "*.png" --include "*.jpg" --include "*.jpeg" --include "*.webp" \
+  --include "*.svg" --include "*.ico" --include "*.woff" --include "*.woff2" \
+  --exclude "*" import/victorysync.com/ client/public/site/
+# Collect CSS & vendor JS for review
+rsync -a --include "*/" --include "*.css" --include "*.js" --exclude "*" \
+  import/victorysync.com/ vendor-tmp/
+```
+
+* Create `client/src/styles/site.css` by concatenating mirrored CSS in URL order. Keep comments showing original paths.
+
+```bash
+cat $(find vendor-tmp -type f -name '*.css' | sort) > client/src/styles/site.css
+```
+
+* For Google Fonts, download the font files and rewrite `url()` to local `/site/fonts/...`. Keep **same font-family names**.
+
+### 3) **Head & SEO parity**
+
+* Install head manager:
+
+```bash
+npm i react-helmet-async
+```
+
+* Create `client/src/components/SEO.tsx`:
+
+```tsx
+import { Helmet } from "react-helmet-async";
+export default function SEO({ title, description, canonical, ogImage }: { title?: string; description?: string; canonical?: string; ogImage?: string; }) {
+  return (
+    <Helmet>
+      {title && <title>{title}</title>}
+      {description && <meta name="description" content={description} />}
+      {canonical && <link rel="canonical" href={canonical} />}
+      {ogImage && <meta property="og:image" content={ogImage} />}
+      <meta property="og:type" content="website" />
+      <meta name="twitter:card" content="summary_large_image" />
+      {/* Add any required meta tags discovered in the mirror (locale, site_name, etc.) */}
+    </Helmet>
+  );
+}
+```
+
+* Wrap app in provider (edit `client/src/main.tsx`):
+
+```tsx
+import { HelmetProvider } from "react-helmet-async";
+// ...
+ReactDOM.createRoot(root).render(
+  <StrictMode>
+    <HelmetProvider>
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
+    </HelmetProvider>
+  </StrictMode>
+);
+```
+
+* Copy mirrored `favicon`, `manifest`, and any meta assets to `client/public/` and wire in `client/index.html`.
+
+### 4) **Navbar & Footer parity**
+
+* Open `import/victorysync.com/index.html`. Extract header/nav markup and footer markup.
+* Rebuild them as React components **without changing classes**:
+
+  * `client/src/components/Navbar.tsx`
+  * `client/src/components/Footer.tsx`
+* Replace any `<a href="/path">` internal links with `<NavLink to="/path">`. Keep external links as `<a>`.
+
+### 5) **Page parity (componentize each page)**
+
+Create page files under `client/src/pages/` mirroring the live site URLs:
+
+* `Home.tsx`, `Pricing.tsx`, `Services.tsx`, `About.tsx`, `Contact.tsx`, `Privacy.tsx`, `Terms.tsx`, plus any others (Blog index `Blog.tsx`, post template `Post.tsx` if present).
+* For each mirrored HTML page in `import/.../*.html`:
+
+  1. Copy the **main content** markup into the matching React page.
+  2. Import `site.css` at the top of `client/src/main.tsx` (after Tailwind) so original classes/styles apply:
+
+     ```ts
+     import "./styles/site.css";
+     ```
+  3. For images/icons, switch `src` to the local copies under `/site/...`.
+  4. Inline on-page scripts that only drive interactions (e.g., simple toggles) as React effects; omit analytics/trackers.
+
+> If the live site is Tailwind-based, keep the classlists; our Tailwind is configured. If it’s custom CSS, `site.css` will style it.
+
+### 6) **Router parity**
+
+* Update `client/src/router.tsx` to include routes for every public page.
+* Add a catch-all to `NotFound` (we already have it).
+* If the live site has legacy URLs, add 301 redirects in **`server/index.ts`** **before** static serve:
+
+```ts
+const redirects: Record<string, string> = {
+  "/old-slug": "/new-slug"
+};
+app.use((req, res, next) => {
+  const to = redirects[req.path];
+  if (to) return res.redirect(301, to);
+  next();
+});
+```
+
+### 7) **Forms & CTAs**
+
+* Mirror the Contact page form. If the live site posts to a 3rd-party, keep it.
+* If it posts to the same origin, add a stub in `server/index.ts`:
+
+```ts
+app.post("/api/contact", (req, res) => { /* TODO: wire email/provider */ res.json({ ok: true }); });
+```
+
+* In the React form handler, `fetch("/api/contact", { method: "POST", ... })`, show success/error UI.
+
+### 8) **Sitemap & robots**
+
+* Generate `client/public/sitemap.xml` matching mirrored pages.
+* Create/merge `client/public/robots.txt` from the mirror.
+
+### 9) **Build & run (single port)**
+
+```bash
+npm run build
+npm run serve
+```
+
+Open Replit Preview. Verify **visual parity** with victorysync.com for all pages (compare in split view).
+
+### 10) **Hardening & “never regress” checks**
+
+* Ensure **no** remaining hot-linked assets. Search:
+
+  ```
+  grep -R "https://victorysync.com" -n client | grep -v sitemap || true
+  ```
+
+  If found, replace with local `/site/...`.
+* Ensure only one router and that all internal links are `<Link>/<NavLink>`.
+* Keep Tailwind + `site.css` imports. If collisions occur, scope parts of `site.css` under `:where(html) { ... }` or wrap page sections with a scoping class and prefix selectors in `site.css` accordingly.
+* Add a simple **visual smoke test** page listing thumbnails of every local image path to confirm none are broken.
+
+---
+
+## Deliverables
+
+* Updated components: `Navbar.tsx`, `Footer.tsx`, page components for each public page.
+* `client/src/styles/site.css` with all mirrored CSS (and notes of each source file).
+* All images/fonts/icons under `client/public/site/**`.
+* Correct `<head>` tags (via `SEO` + `HelmetProvider`) and favicons/manifest in `client/public/`.
+* Working forms (or stubs), redirects, sitemap, robots.
+* `npm run serve` shows a **pixel-matched** copy of victorysync.com in the Replit preview.
+
+**Do everything above now, exactly as written.**
