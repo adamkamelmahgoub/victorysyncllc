@@ -1,25 +1,24 @@
 
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter, HashRouter } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/AuthContext';
-import GlobalErrorBoundary from '@/components/GlobalErrorBoundary';
-import App from './App';
-import './index.css';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
+import AppRouter from "./router";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import "./swCleanup";
+import "./index.css";
 
-// In Replit preview, server fallbacks can be flaky. Use HashRouter in DEV to avoid blank screens.
-// In production we use BrowserRouter.
-const Router: React.ComponentType<{ children: React.ReactNode }> =
-  import.meta.env.DEV ? (HashRouter as any) : (BrowserRouter as any);
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <GlobalErrorBoundary>
-      <Router>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </Router>
-    </GlobalErrorBoundary>
+    <ErrorBoundary>
+      <AuthProvider>
+        <CartProvider>
+          <BrowserRouter>
+            <AppRouter />
+          </BrowserRouter>
+        </CartProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

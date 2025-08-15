@@ -1,20 +1,24 @@
 
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
-  appType: 'spa',
   plugins: [react()],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@shared': path.resolve(__dirname, '../shared'),
-    },
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) }
   },
   server: {
-    host: true,
-    allowedHosts: true,
-    hmr: { overlay: false, protocol: 'wss', clientPort: 443 },
+    host: "0.0.0.0",
+    port: 5173,
+    proxy: {
+      "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false
+      }
+    }
   },
+  preview: { host: "0.0.0.0", port: 5173 },
+  base: "/"
 });
