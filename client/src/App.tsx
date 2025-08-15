@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from './components/ui/toaster';
 import Navigation from './components/navigation';
 import Footer from './components/footer';
+import { CartProvider } from './contexts/CartContext';
 
 // Pages
 import Home from './pages/home';
@@ -26,34 +27,36 @@ import PrivacyPolicy from './pages/privacy-policy';
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<CustomerDashboard />} />
-            <Route path="/admin" element={<AdminPortal />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/careers" element={<Careers />} />
-            <Route path="/help" element={<HelpCenter />} />
-            <Route path="/docs" element={<Docs />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-        <Footer />
-        <Toaster />
-      </div>
-    </Router>
+    <CartProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col">
+          <Navigation />
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/dashboard" element={<CustomerDashboard />} />
+              <Route path="/admin" element={<AdminPortal />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="/help" element={<HelpCenter />} />
+              <Route path="/docs" element={<Docs />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+          <Footer />
+          <Toaster />
+        </div>
+      </Router>
+    </CartProvider>
   );
 }
 
