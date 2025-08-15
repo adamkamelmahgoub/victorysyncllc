@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   useStripe,
   Elements,
@@ -5,7 +6,6 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { useEffect, useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";

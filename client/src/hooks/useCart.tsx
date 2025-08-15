@@ -1,4 +1,4 @@
-import { useCartContext } from '@/contexts/CartContext';
+import { useCart as useCartContext } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 
 export const useCart = () => {
