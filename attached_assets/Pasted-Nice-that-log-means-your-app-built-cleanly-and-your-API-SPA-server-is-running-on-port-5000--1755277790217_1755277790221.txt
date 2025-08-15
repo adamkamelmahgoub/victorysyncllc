@@ -1,0 +1,117 @@
+Nice — that log means your app **built cleanly** and your **API+SPA server is running on port 5000**. Now it should render in the Replit preview.
+
+## Explanation
+
+* The previous JSON parse error is fixed by serving JSON from `/api/*` and returning the SPA **only** for non-API routes.
+* The build warning about chunk size is non-blocking; it’s just suggesting code-splitting for faster loads.
+
+## Quick checks (do these now)
+
+1. Open Preview → hard refresh (Ctrl/Cmd-Shift-R).
+2. Visit `/`, `/pricing`, `/contact` — they should render with no red console errors.
+3. Verify the API returns JSON: open `/api/health`. You should see `{ ok: true, ts: <number> }`.
+
+If you still see a blank page, it’s almost always cache:
+
+```ts
+// client/src/swCleanup.ts  (create if missing)
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+  caches?.keys?.().then(keys => keys.forEach(k => caches.delete(k)));
+}
+// import once near the top of client/src/main.tsx:
+import "./swCleanup";
+```
+
+Then rebuild: `npm run build && tsx server/index.ts`.
+
+---
+
+## Optional: shrink the JS bundle (silence >500kB warning)
+
+### A) Lazy-load pages
+
+`client/src/router.tsx`
+
+```tsx
+import { lazy, Suspense } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import RootLayout from "@/layouts/RootLayout";
+
+const Home    = lazy(() => import("@/pages/Home"));
+const Pricing = lazy(() => import("@/pages/Pricing"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const NotFound= lazy(() => import("@/pages/NotFound"));
+
+export default function AppRouter() {
+  return (
+    <Suspense fallback={null}>
+      <Routes>
+        <Route element={<RootLayout />}>
+          <Route index element={<Home />} />
+          <Route path="pricing" element={<Pricing />} />
+          <Route path="contact" element={<Contact />} />
+          <Route path="404" element={<NotFound />} />
+          <Route path="*" element={<Navigate to="/404" replace />} />
+        </Route>
+      </Routes>
+    </Suspense>
+  );
+}
+```
+
+### B) Vendor chunking & higher warning limit
+
+`client/vite.config.ts`
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { fileURLToPath, URL } from "node:url";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
+  base: "/",
+  server: { host: "0.0.0.0", port: 5173 },
+  preview: { host: "0.0.0.0", port: 5173 },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom", "react-router-dom"],
+        },
+      },
+    },
+  },
+});
+```
+
+Rebuild after changes:
+
+```bash
+npm run build && tsx server/index.ts
+```
+
+---
+
+## Replit “Run” button (single, reliable port)
+
+Set `.replit` to:
+
+```
+run = "npm run dev"
+```
+
+…and ensure your `dev` script does exactly what your log shows:
+
+```json
+"dev": "npm run build && tsx server/index.ts"
+```
+
+This guarantees the Preview always hits **one** port (5000) that serves the **built** SPA + API.
+
+---
+
+If anything still looks off (layout, missing assets, or a specific route), tell me the exact URL and the console/network error you see and I’ll give the pinpoint fix.
