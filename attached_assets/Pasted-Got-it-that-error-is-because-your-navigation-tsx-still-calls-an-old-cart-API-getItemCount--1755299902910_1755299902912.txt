@@ -1,0 +1,87 @@
+Got it — that error is because your `navigation.tsx` still calls an old cart API (`getItemCount()`), but the new `CartContext` we added exposes `count` (number) instead of that function. Easiest, zero-risk fix: add a **compatibility shim** in your `useCart` hook that provides both the new fields **and** the old function names. No need to touch every component.
+
+# Explanation
+
+* Root cause: `useCart()` previously returned helpers like `getItemCount()`. After refactor, it returns `{ count, subtotal, items, add, remove, clear }`.
+* Fix: replace `client/src/hooks/useCart.tsx` with a wrapper that maps the new API to the old names (`getItemCount`, `getSubtotal`, `getItems`, `addItem`, `removeItem`, `clearCart`). This satisfies both old and new code paths and stops the Vite overlay.
+
+# Code (drop-in, safe for Replit)
+
+### Replace: `client/src/hooks/useCart.tsx`
+
+```tsx
+import { useCartContext } from "@/contexts/CartContext";
+
+/**
+ * Compatibility wrapper:
+ * - Exposes current context props: items, count, subtotal, add, remove, clear
+ * - Also exposes legacy helpers used around the app:
+ *   getItemCount(), getSubtotal(), getItems(), addItem(), removeItem(), clearCart()
+ * This prevents "getItemCount is not a function" and similar runtime errors.
+ */
+export function useCart() {
+  const ctx = useCartContext();
+
+  return {
+    // current API
+    ...ctx, // items, count, subtotal, add, remove, clear
+
+    // legacy/compat API (used by older components like navigation.tsx)
+    getItemCount: () => ctx.count,
+    getSubtotal: () => ctx.subtotal,
+    getItems: () => ctx.items,
+    addItem: ctx.add,
+    removeItem: ctx.remove,
+    clearCart: ctx.clear,
+  };
+}
+
+// Also export default for places that import default
+export default useCart;
+
+// Re-export types if other files import them from here
+export type { CartItem, CartCtx } from "@/contexts/CartContext";
+```
+
+> Keep `client/src/contexts/CartContext.tsx` as we set it earlier (safe, non-throwing). No changes needed there.
+
+### (Optional) Minimal alternative (if you prefer to change the nav code)
+
+Edit **only** the lines in `client/src/components/navigation.tsx` that read:
+
+```tsx
+const { getItemCount } = useCart();
+const cartItemCount = getItemCount();
+```
+
+to:
+
+```tsx
+const { count: cartItemCount } = useCart();
+```
+
+But the shim above means you don’t have to touch any components.
+
+# Instructions
+
+1. Replace the file exactly as shown at `client/src/hooks/useCart.tsx`.
+2. Make sure imports reference this file: in components, prefer:
+
+   ```ts
+   import { useCart } from "@/hooks/useCart"; // or: import useCart from "@/hooks/useCart";
+   ```
+3. Rebuild & run (single port) in Replit:
+
+   ```bash
+   pkill -f "node|vite" || true
+   npm run build && tsx server/index.ts
+   ```
+4. Hard refresh the Preview. The Vite overlay should disappear, and the header cart badge (or any cart reads) should show without crashing.
+
+# Warnings (to prevent future regressions)
+
+* Keep `CartProvider` mounted in `client/src/main.tsx` (above the Router).
+* Avoid reintroducing throwing hooks (e.g., “must be used within…”). Our hooks should **warn** and no-op instead of crash.
+* If you add new legacy calls elsewhere (e.g., `getCartItems()`), extend the wrapper similarly so older code keeps working.
+
+This targeted shim cures the `getItemCount is not a function` error without risking other parts of your Replit setup.
