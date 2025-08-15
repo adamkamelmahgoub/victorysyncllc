@@ -3,15 +3,21 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import AppRouter from "./router";
-import { CartProvider } from "@/contexts/CartContext";
 import "./index.css";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+// SUPER-DEFENSIVE: if mount fails, write to body
+const rootEl = document.getElementById("root");
+if (!rootEl) {
+  const msg = document.createElement("pre");
+  msg.textContent = "Mount failed: #root not found";
+  document.body.appendChild(msg);
+  throw new Error("No #root element");
+}
+
+ReactDOM.createRoot(rootEl).render(
   <React.StrictMode>
-    <CartProvider>
-      <BrowserRouter>
-        <AppRouter />
-      </BrowserRouter>
-    </CartProvider>
+    <BrowserRouter>
+      <AppRouter />
+    </BrowserRouter>
   </React.StrictMode>
 );
