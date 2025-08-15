@@ -13,9 +13,10 @@ const PORT = Number(process.env.PORT) || 5000;
 app.use(cors({ origin: true }));
 app.use(express.json());
 
-// Minimal health route for diagnostics
+// Minimal API check
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
+// Serve built client
 const dist = path.join(__dirname, "..", "client", "dist");
 app.use(express.static(dist));
 app.get("*", (_req, res) => res.sendFile(path.join(dist, "index.html")));
