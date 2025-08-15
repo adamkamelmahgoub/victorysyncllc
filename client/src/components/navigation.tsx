@@ -1,10 +1,21 @@
-import { Link, useLocation } from "wouter";
-import { ShoppingCart, User, Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
+import { ShoppingCart, User, LogOut, Search, Menu, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
+import CartModal from './cart-modal';
+import SmartLink from './SmartLink';
+import NavButton from './NavButton';
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -15,183 +26,204 @@ interface NavigationProps {
 }
 
 export default function Navigation({ onCartClick }: NavigationProps) {
-  const [location] = useLocation();
-  const { getItemCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
 
+  const { getItemCount } = useCart();
   const cartItemCount = getItemCount();
 
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/services", label: "Services" },
-    { href: "/pricing", label: "Pricing" },
-    { href: "/about-us", label: "About" },
-    { href: "/contact", label: "Contact" },
-  ];
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
 
   return (
     <nav className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" onClick={scrollToTop}>
-            <div className="flex items-center space-x-3 cursor-pointer">
-              <img 
-            src="/LOGO_VS.png" 
-            alt="VictorySync Logo" 
-            className="w-8 h-8 rounded-lg bg-white p-1"
-          />
-              <span className="text-xl brand-font victory-dark">
-                VictorySync
-              </span>
-            </div>
-          </Link>
+          <SmartLink to="/" className="flex items-center space-x-2" onClick={scrollToTop}>
+            <img src="/LOGO_VS.png" alt="VictorySync" className="h-8 w-8" />
+            <span className="text-xl font-bold text-purple-600">VictorySync</span>
+          </SmartLink>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
-                <span
-                  className={`font-medium transition-colors cursor-pointer ${
-                    location === link.href
-                      ? "victory-purple"
-                      : "victory-gray hover:victory-purple"
-                  }`}
-                >
-                  {link.label}
-                </span>
-              </Link>
-            ))}
-          </div>
+          <nav className="hidden md:flex items-center space-x-6">
+            <NavLink
+              to="/services"
+              className={({ isActive }) =>
+                `text-gray-700 hover:text-purple-600 transition-colors ${isActive ? 'text-purple-600 font-medium' : ''}`
+              }
+            >
+              Services
+            </NavLink>
+            <NavLink
+              to="/pricing"
+              className={({ isActive }) =>
+                `text-gray-700 hover:text-purple-600 transition-colors ${isActive ? 'text-purple-600 font-medium' : ''}`
+              }
+            >
+              Pricing
+            </NavLink>
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                `text-gray-700 hover:text-purple-600 transition-colors ${isActive ? 'text-purple-600 font-medium' : ''}`
+              }
+            >
+              About
+            </NavLink>
+            <NavLink
+              to="/contact"
+              className={({ isActive }) =>
+                `text-gray-700 hover:text-purple-600 transition-colors ${isActive ? 'text-purple-600 font-medium' : ''}`
+              }
+            >
+              Contact
+            </NavLink>
+          </nav>
 
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <button
-              onClick={onCartClick}
-              className="relative p-2 victory-gray hover:victory-purple transition-colors"
-            >
+            <NavButton onClick={() => setIsCartModalOpen(true)} className="relative p-2 victory-gray hover:victory-purple transition-colors">
               <ShoppingCart className="w-5 h-5" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-victory-purple text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <Badge className="absolute -top-1 -right-1 bg-victory-purple text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                   {cartItemCount}
-                </span>
+                </Badge>
               )}
-            </button>
+            </NavButton>
 
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-2">
-                <Link href="/dashboard">
-                  <Button variant="ghost" size="sm">
-                    <User className="w-4 h-4 mr-2" />
-                    Dashboard
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center space-x-2">
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline">{user.name}</span>
                   </Button>
-                </Link>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={logout}
-                >
-                  Sign Out
-                </Button>
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <SmartLink to="/dashboard" className="flex items-center w-full">
+                      <User className="h-4 w-4 mr-2" />
+                      Dashboard
+                    </SmartLink>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">
-                    Sign In
-                  </Button>
-                </Link>
-
+                <Button variant="ghost" asChild>
+                  <SmartLink to="/login">Login</SmartLink>
+                </Button>
+                <Button asChild>
+                  <SmartLink to="/register">Sign Up</SmartLink>
+                </Button>
               </div>
             )}
           </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
-            <button
-              onClick={onCartClick}
-              className="relative p-2 victory-gray hover:victory-purple transition-colors"
-            >
+            <NavButton onClick={() => setIsCartModalOpen(true)} className="relative p-2 victory-gray hover:victory-purple transition-colors">
               <ShoppingCart className="w-5 h-5" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-victory-purple text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <Badge className="absolute -top-1 -right-1 bg-victory-purple text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                   {cartItemCount}
-                </span>
+                </Badge>
               )}
-            </button>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 victory-gray hover:victory-purple transition-colors"
-            >
+            </NavButton>
+            <Button variant="ghost" onClick={toggleMobileMenu} className="p-2 victory-gray hover:victory-purple transition-colors">
               {mobileMenuOpen ? (
                 <X className="w-5 h-5" />
               ) : (
                 <Menu className="w-5 h-5" />
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-slate-200">
-            <div className="flex flex-col space-y-4">
-              {navLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
-                  <span
-                    className={`font-medium transition-colors cursor-pointer block py-2 ${
-                      location === link.href
-                        ? "victory-purple"
-                        : "victory-gray hover:victory-purple"
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </span>
-                </Link>
-              ))}
+          <div className="md:hidden border-t">
+            <nav className="flex flex-col space-y-2 p-4">
+              <NavLink
+                to="/services"
+                className={({ isActive }) =>
+                  `text-gray-700 hover:text-purple-600 transition-colors py-2 ${isActive ? 'text-purple-600 font-medium' : ''}`
+                }
+                onClick={closeMobileMenu}
+              >
+                Services
+              </NavLink>
+              <NavLink
+                to="/pricing"
+                className={({ isActive }) =>
+                  `text-gray-700 hover:text-purple-600 transition-colors py-2 ${isActive ? 'text-purple-600 font-medium' : ''}`
+                }
+                onClick={closeMobileMenu}
+              >
+                Pricing
+              </NavLink>
+              <NavLink
+                to="/about"
+                className={({ isActive }) =>
+                  `text-gray-700 hover:text-purple-600 transition-colors py-2 ${isActive ? 'text-purple-600 font-medium' : ''}`
+                }
+                onClick={closeMobileMenu}
+              >
+                About
+              </NavLink>
+              <NavLink
+                to="/contact"
+                className={({ isActive }) =>
+                  `text-gray-700 hover:text-purple-600 transition-colors py-2 ${isActive ? 'text-purple-600 font-medium' : ''}`
+                }
+                onClick={closeMobileMenu}
+              >
+                Contact
+              </NavLink>
 
-              <div className="pt-4 border-t border-slate-200">
-                {isAuthenticated ? (
-                  <div className="flex flex-col space-y-2">
-                    <Link href="/dashboard">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Dashboard
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={logout}
+              <div className="border-t pt-4 space-y-2">
+                {user ? (
+                  <>
+                    <SmartLink
+                      to="/dashboard"
+                      className="block text-gray-700 hover:text-purple-600 transition-colors py-2"
+                      onClick={closeMobileMenu}
                     >
-                      Sign Out
+                      Dashboard
+                    </SmartLink>
+                    <Button variant="ghost" onClick={logout} className="w-full justify-start">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
                     </Button>
-                  </div>
+                  </>
                 ) : (
-                  <div className="flex flex-col space-y-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => (window.location.href = "/login")}
-                    >
-                      Sign In
+                  <>
+                    <Button variant="ghost" className="w-full justify-start" asChild>
+                      <SmartLink to="/login" onClick={closeMobileMenu}>Login</SmartLink>
                     </Button>
-
-                  </div>
+                    <Button className="w-full justify-start" asChild>
+                      <SmartLink to="/register" onClick={closeMobileMenu}>Sign Up</SmartLink>
+                    </Button>
+                  </>
                 )}
               </div>
-            </div>
+            </nav>
           </div>
         )}
       </div>
+      <CartModal isOpen={isCartModalOpen} onClose={() => setIsCartModalOpen(false)} />
     </nav>
   );
 }
