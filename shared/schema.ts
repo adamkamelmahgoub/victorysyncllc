@@ -265,7 +265,8 @@ export const sessions = pgTable("sessions", {
 // New tables for contact submissions, packages, public users, and order items
 export const contactSubmissions = pgTable("contact_submissions", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 255 }).notNull(),
+  lastName: varchar("last_name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -509,4 +510,33 @@ export const connectIntegrationSchema = z.object({
   provider: z.enum(["hubspot", "salesforce", "zoho", "pipedrive", "five9", "ringcentral", "twilio", "aircall", "zendesk", "freshdesk", "intercom", "helpscout"]),
   authType: z.enum(["oauth", "apikey"]),
   credentials: z.record(z.string()),
+});
+
+// Insert schemas for validation
+export const insertContactSubmissionSchema = z.object({
+  firstName: z.string().min(1).max(255),
+  lastName: z.string().min(1).max(255),
+  email: z.string().email(),
+  message: z.string().min(1),
+});
+
+export const insertOrderSchema = z.object({
+  userId: z.string().min(1),
+  orgId: z.number().optional(),
+  externalId: z.string().optional(),
+  amount: z.string().regex(/^\d+\.\d{2}$/),
+  currency: z.string().length(3).default("usd"),
+  status: z.enum(["pending", "processing", "completed", "cancelled"]).default("pending"),
+  customerName: z.string().max(255).optional(),
+  customerEmail: z.string().email().optional(),
+  source: z.string().max(50).optional(),
+  total: z.string().regex(/^\d+\.\d{2}$/),
+  stripePaymentIntentId: z.string().optional(),
+});
+
+export const insertOrderItemSchema = z.object({
+  orderId: z.number(),
+  packageId: z.number(),
+  quantity: z.number().positive(),
+  price: z.string().regex(/^\d+\.\d{2}$/),
 });
