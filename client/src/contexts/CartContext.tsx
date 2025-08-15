@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, ReactNode } from "react";
 
 interface CartItem {
@@ -76,3 +75,5 @@ export function useCart() {
   }
   return context;
 }
+
+export { CartProvider, useCart };

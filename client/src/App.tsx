@@ -16,7 +16,7 @@ import NotFound from './pages/NotFound';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { Toaster } from './components/ui/toaster';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { ErrorBoundary } from './components/error-boundary';
 
 const queryClient = new QueryClient({
   defaultOptions: {

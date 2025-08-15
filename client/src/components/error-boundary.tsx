@@ -9,7 +9,7 @@ interface ErrorBoundaryState {
   error?: Error;
 }
 
-export class ErrorBoundary extends Component<
+export export class ErrorBoundary extends Component<
   PropsWithChildren<{}>,
   ErrorBoundaryState
 > {
