@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,11 +44,6 @@ import {
   MoreVertical,
   FileText,
   Ban,
-  RefreshCw,
-  LogOut,
-  BarChart,
-  Building2,
-  Key,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -75,17 +71,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useAuth } from '../hooks/useAuth';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface UserPrivileges {
   canCreateOrders: boolean;
@@ -132,59 +117,7 @@ interface UserStats {
   apiCalls: number;
 }
 
-// Interfaces for the second AdminPortal component
-interface Organization {
-  id: number;
-  name: string;
-  slug: string;
-  status: string;
-  userCount: number;
-  currentPlan: string | null;
-  subscriptionStatus: string | null;
-  createdAt: string;
-}
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  isActive: boolean;
-  twoFactorEnabled: boolean;
-  emailVerified: boolean;
-  lastLoginAt: string | null;
-  organization: { name: string; slug: string } | null;
-  roles: string[];
-  createdAt: string;
-  isSuperAdmin?: boolean; // Added for the second AdminPortal
-}
-
-interface AccessCode {
-  id: number;
-  code: string;
-  status: string;
-  expiresAt: string;
-  notes: string | null;
-  issuedByUser: { name: string; email: string };
-  consumedByUser: { name: string; email: string } | null;
-  organization: { name: string; slug: string } | null;
-  consumedAt: string | null;
-  createdAt: string;
-}
-
-interface AuditLog {
-  id: number;
-  action: string;
-  entityType: string;
-  entityId: string | null;
-  meta: any;
-  ip: string | null;
-  actorUser: { name: string; email: string } | null;
-  organization: { name: string; slug: string } | null;
-  createdAt: string;
-}
-
-// First AdminPortal component (renamed to AdminPortalFirst)
-function AdminPortalFirst() {
+export default function AdminPortal() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -688,7 +621,7 @@ function AdminPortalFirst() {
 
   const handleDeletePackage = (packageId: number) => {
     toast({
-      title: "Feature Coming Soon",
+      title: "Feature Coming Soon", 
       description: "Delete package functionality will be implemented soon",
     });
   };
@@ -741,8 +674,8 @@ function AdminPortalFirst() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <Button
-            onClick={() => setIsAuthenticated(false)}
+          <Button 
+            onClick={() => setIsAuthenticated(false)} 
             variant="outline"
             className="border-gray-300 hover:bg-gray-50"
           >
@@ -862,8 +795,8 @@ function AdminPortalFirst() {
                     <span>User Management</span>
                   </CardTitle>
                   <div className="flex space-x-2">
-                    <Button
-                      size="sm"
+                    <Button 
+                      size="sm" 
                       variant="outline"
                       onClick={() => exportData("users")}
                       className="border-gray-300 hover:bg-gray-50"
@@ -1087,8 +1020,8 @@ function AdminPortalFirst() {
                     <span>Package Management</span>
                   </CardTitle>
                   <div className="flex space-x-2">
-                    <Button
-                      size="sm"
+                    <Button 
+                      size="sm" 
                       variant="outline"
                       onClick={() => exportData("packages")}
                       className="border-gray-300 hover:bg-gray-50"
@@ -1187,8 +1120,8 @@ function AdminPortalFirst() {
                     <ShoppingCart className="w-5 h-5" />
                     <span>Order Management</span>
                   </CardTitle>
-                  <Button
-                    size="sm"
+                  <Button 
+                    size="sm" 
                     variant="outline"
                     onClick={() => exportData("orders")}
                     className="border-gray-300 hover:bg-gray-50"
@@ -1322,9 +1255,9 @@ function AdminPortalFirst() {
                       <div className="space-y-3">
                         <div>
                           <Label>Account Status</Label>
-                          <Select
-                            value={userPrivileges.accountStatus}
-                            onValueChange={(value: "active" | "suspended" | "pending" | "banned" | "trial") =>
+                          <Select 
+                            value={userPrivileges.accountStatus} 
+                            onValueChange={(value: "active" | "suspended" | "pending" | "banned" | "trial") => 
                               setUserPrivileges(prev => ({ ...prev, accountStatus: value }))
                             }
                           >
@@ -1342,9 +1275,9 @@ function AdminPortalFirst() {
                         </div>
                         <div>
                           <Label>Subscription Tier</Label>
-                          <Select
-                            value={userPrivileges.subscriptionTier}
-                            onValueChange={(value: "basic" | "premium" | "enterprise" | "custom") =>
+                          <Select 
+                            value={userPrivileges.subscriptionTier} 
+                            onValueChange={(value: "basic" | "premium" | "enterprise" | "custom") => 
                               setUserPrivileges(prev => ({ ...prev, subscriptionTier: value }))
                             }
                           >
@@ -1373,7 +1306,7 @@ function AdminPortalFirst() {
                         <Switch
                           id="canCreateOrders"
                           checked={userPrivileges.canCreateOrders}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(checked) => 
                             setUserPrivileges(prev => ({ ...prev, canCreateOrders: checked }))
                           }
                         />
@@ -1383,7 +1316,7 @@ function AdminPortalFirst() {
                         <Switch
                           id="canViewReports"
                           checked={userPrivileges.canViewReports}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(checked) => 
                             setUserPrivileges(prev => ({ ...prev, canViewReports: checked }))
                           }
                         />
@@ -1393,7 +1326,7 @@ function AdminPortalFirst() {
                         <Switch
                           id="canAccessPremiumFeatures"
                           checked={userPrivileges.canAccessPremiumFeatures}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(checked) => 
                             setUserPrivileges(prev => ({ ...prev, canAccessPremiumFeatures: checked }))
                           }
                         />
@@ -1403,7 +1336,7 @@ function AdminPortalFirst() {
                         <Switch
                           id="canModifyProfile"
                           checked={userPrivileges.canModifyProfile}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(checked) => 
                             setUserPrivileges(prev => ({ ...prev, canModifyProfile: checked }))
                           }
                         />
@@ -1413,7 +1346,7 @@ function AdminPortalFirst() {
                         <Switch
                           id="canDeleteAccount"
                           checked={userPrivileges.canDeleteAccount}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(checked) => 
                             setUserPrivileges(prev => ({ ...prev, canDeleteAccount: checked }))
                           }
                         />
@@ -1425,7 +1358,7 @@ function AdminPortalFirst() {
                         <Switch
                           id="canViewBilling"
                           checked={userPrivileges.canViewBilling}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(checked) => 
                             setUserPrivileges(prev => ({ ...prev, canViewBilling: checked }))
                           }
                         />
@@ -1435,7 +1368,7 @@ function AdminPortalFirst() {
                         <Switch
                           id="canManageIntegrations"
                           checked={userPrivileges.canManageIntegrations}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(checked) => 
                             setUserPrivileges(prev => ({ ...prev, canManageIntegrations: checked }))
                           }
                         />
@@ -1445,7 +1378,7 @@ function AdminPortalFirst() {
                         <Switch
                           id="canExportData"
                           checked={userPrivileges.canExportData}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(checked) => 
                             setUserPrivileges(prev => ({ ...prev, canExportData: checked }))
                           }
                         />
@@ -1455,7 +1388,7 @@ function AdminPortalFirst() {
                         <Switch
                           id="canAccessAPI"
                           checked={userPrivileges.canAccessAPI}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(checked) => 
                             setUserPrivileges(prev => ({ ...prev, canAccessAPI: checked }))
                           }
                         />
@@ -1465,7 +1398,7 @@ function AdminPortalFirst() {
                         <Switch
                           id="canViewAnalytics"
                           checked={userPrivileges.canViewAnalytics}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(checked) => 
                             setUserPrivileges(prev => ({ ...prev, canViewAnalytics: checked }))
                           }
                         />
@@ -1482,7 +1415,7 @@ function AdminPortalFirst() {
                         <Label htmlFor="maxOrderValue">Max Order Value: ${userPrivileges.maxOrderValue.toLocaleString()}</Label>
                         <Slider
                           value={[userPrivileges.maxOrderValue]}
-                          onValueChange={(value) =>
+                          onValueChange={(value) => 
                             setUserPrivileges(prev => ({ ...prev, maxOrderValue: value[0] }))
                           }
                           max={100000}
@@ -1495,7 +1428,7 @@ function AdminPortalFirst() {
                         <Label htmlFor="maxOrdersPerMonth">Max Orders Per Month: {userPrivileges.maxOrdersPerMonth}</Label>
                         <Slider
                           value={[userPrivileges.maxOrdersPerMonth]}
-                          onValueChange={(value) =>
+                          onValueChange={(value) => 
                             setUserPrivileges(prev => ({ ...prev, maxOrdersPerMonth: value[0] }))
                           }
                           max={500}
@@ -1508,7 +1441,7 @@ function AdminPortalFirst() {
                         <Label htmlFor="creditLimit">Credit Limit: ${userPrivileges.creditLimit.toLocaleString()}</Label>
                         <Slider
                           value={[userPrivileges.creditLimit]}
-                          onValueChange={(value) =>
+                          onValueChange={(value) => 
                             setUserPrivileges(prev => ({ ...prev, creditLimit: value[0] }))
                           }
                           max={50000}
@@ -1523,7 +1456,7 @@ function AdminPortalFirst() {
                         <Label htmlFor="apiRateLimit">API Rate Limit: {userPrivileges.apiRateLimit}/hour</Label>
                         <Slider
                           value={[userPrivileges.apiRateLimit]}
-                          onValueChange={(value) =>
+                          onValueChange={(value) => 
                             setUserPrivileges(prev => ({ ...prev, apiRateLimit: value[0] }))
                           }
                           max={10000}
@@ -1536,7 +1469,7 @@ function AdminPortalFirst() {
                         <Label htmlFor="dataRetentionDays">Data Retention: {userPrivileges.dataRetentionDays} days</Label>
                         <Slider
                           value={[userPrivileges.dataRetentionDays]}
-                          onValueChange={(value) =>
+                          onValueChange={(value) => 
                             setUserPrivileges(prev => ({ ...prev, dataRetentionDays: value[0] }))
                           }
                           max={2555}
@@ -1547,9 +1480,9 @@ function AdminPortalFirst() {
                       </div>
                       <div>
                         <Label>Priority Level</Label>
-                        <Select
-                          value={userPrivileges.priority}
-                          onValueChange={(value: "low" | "normal" | "high" | "critical") =>
+                        <Select 
+                          value={userPrivileges.priority} 
+                          onValueChange={(value: "low" | "normal" | "high" | "critical") => 
                             setUserPrivileges(prev => ({ ...prev, priority: value }))
                           }
                         >
@@ -1573,7 +1506,7 @@ function AdminPortalFirst() {
                   <Textarea
                     id="customNotes"
                     value={userPrivileges.customNotes}
-                    onChange={(e) =>
+                    onChange={(e) => 
                       setUserPrivileges(prev => ({ ...prev, customNotes: e.target.value }))
                     }
                     placeholder="Add any custom notes about this user..."
@@ -1587,7 +1520,7 @@ function AdminPortalFirst() {
                     {getUserActivity(selectedUser.id).map((activity) => (
                       <div key={activity.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded">
                         <div className={`w-2 h-2 rounded-full ${
-                          activity.status === 'success' ? 'bg-green-500' :
+                          activity.status === 'success' ? 'bg-green-500' : 
                           activity.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500'
                         }`} />
                         <div className="flex-1">
@@ -1616,757 +1549,3 @@ function AdminPortalFirst() {
     </div>
   );
 }
-
-// Second AdminPortal component (default export)
-function AdminPortal() {
-  const { user, requireSuperAdmin } = useAuth();
-  const [overview, setOverview] = useState<any>(null);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [accessCodes, setAccessCodes] = useState<AccessCode[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
-
-  // Pagination states
-  const [orgPage, setOrgPage] = useState(1);
-  const [userPage, setUserPage] = useState(1);
-  const [codePage, setCodePage] = useState(1);
-  const [auditPage, setAuditPage] = useState(1);
-
-  // Search states
-  const [orgSearch, setOrgSearch] = useState('');
-  const [userSearch, setUserSearch] = useState('');
-  const [codeStatus, setCodeStatus] = useState('');
-  const [auditAction, setAuditAction] = useState('');
-
-  // New access code form
-  const [newCodeForm, setNewCodeForm] = useState({
-    orgName: '',
-    expiresAt: '',
-    notes: '',
-  });
-
-  // Protect route
-  useEffect(() => {
-    requireSuperAdmin();
-  }, [requireSuperAdmin]);
-
-  // Fetch data
-  const fetchOverview = async () => {
-    try {
-      const response = await fetch('/api/admin/overview', {
-        credentials: 'include',
-      });
-      const data = await response.json();
-      if (data.ok) {
-        setOverview(data.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch overview:', error);
-      toast({ title: 'Error', description: 'Failed to load overview', variant: 'destructive' });
-    }
-  };
-
-  const fetchOrganizations = async (page = 1, search = '') => {
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '10',
-        ...(search && { search }),
-      });
-
-      const response = await fetch(`/api/admin/organizations?${params}`, {
-        credentials: 'include',
-      });
-      const data = await response.json();
-      if (data.ok) {
-        setOrganizations(data.data.organizations);
-      }
-    } catch (error) {
-      console.error('Failed to fetch organizations:', error);
-      toast({ title: 'Error', description: 'Failed to load organizations', variant: 'destructive' });
-    }
-  };
-
-  const fetchUsers = async (page = 1, search = '') => {
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '10',
-        ...(search && { search }),
-      });
-
-      const response = await fetch(`/api/admin/users?${params}`, {
-        credentials: 'include',
-      });
-      const data = await response.json();
-      if (data.ok) {
-        setUsers(data.data.users);
-      }
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
-      toast({ title: 'Error', description: 'Failed to load users', variant: 'destructive' });
-    }
-  };
-
-  const fetchAccessCodes = async (page = 1, status = '') => {
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '10',
-        ...(status && { status }),
-      });
-
-      const response = await fetch(`/api/admin/access-codes?${params}`, {
-        credentials: 'include',
-      });
-      const data = await response.json();
-      if (data.ok) {
-        setAccessCodes(data.data.accessCodes);
-      }
-    } catch (error) {
-      console.error('Failed to fetch access codes:', error);
-      toast({ title: 'Error', description: 'Failed to load access codes', variant: 'destructive' });
-    }
-  };
-
-  const fetchAuditLogs = async (page = 1, action = '') => {
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '10',
-        ...(action && { action }),
-      });
-
-      const response = await fetch(`/api/admin/audit-logs?${params}`, {
-        credentials: 'include',
-      });
-      const data = await response.json();
-      if (data.ok) {
-        setAuditLogs(data.data.auditLogs);
-      }
-    } catch (error) {
-      console.error('Failed to fetch audit logs:', error);
-      toast({ title: 'Error', description: 'Failed to load audit logs', variant: 'destructive' });
-    }
-  };
-
-  // Actions
-  const createAccessCode = async () => {
-    try {
-      const response = await fetch('/api/admin/access-codes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newCodeForm),
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-      if (data.ok) {
-        toast({ title: 'Success', description: 'Access code created successfully' });
-        setNewCodeForm({ orgName: '', expiresAt: '', notes: '' });
-        fetchAccessCodes();
-      } else {
-        throw new Error(data.message);
-      }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
-  };
-
-  const revokeAccessCode = async (id: number) => {
-    try {
-      const response = await fetch(`/api/admin/access-codes/${id}/revoke`, {
-        method: 'PATCH',
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-      if (data.ok) {
-        toast({ title: 'Success', description: 'Access code revoked' });
-        fetchAccessCodes();
-      } else {
-        throw new Error(data.message);
-      }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
-  };
-
-  const toggleUserStatus = async (userId: number, isActive: boolean) => {
-    try {
-      const response = await fetch(`/api/admin/users/${userId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isActive: !isActive }),
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-      if (data.ok) {
-        toast({
-          title: 'Success',
-          description: `User ${!isActive ? 'activated' : 'deactivated'}`
-        });
-        fetchUsers();
-      } else {
-        throw new Error(data.message);
-      }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
-  };
-
-  const reset2FA = async (userId: number) => {
-    try {
-      const response = await fetch(`/api/admin/users/${userId}/reset-2fa`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-      if (data.ok) {
-        toast({ title: 'Success', description: '2FA reset successfully' });
-        fetchUsers();
-      } else {
-        throw new Error(data.message);
-      }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
-  };
-
-  const impersonateOrg = async (orgId: number) => {
-    try {
-      const response = await fetch(`/api/admin/organizations/${orgId}/impersonate`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-      if (data.ok) {
-        // Store impersonation token and redirect to dashboard
-        sessionStorage.setItem('impersonationToken', data.data.token);
-        window.location.href = '/dashboard';
-      } else {
-        throw new Error(data.message);
-      }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
-  };
-
-  const exportData = async (type: string) => {
-    try {
-      const response = await fetch(`/api/admin/export/${type}`, {
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = `${type}-export-${new Date().toISOString().split('T')[0]}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        toast({ title: 'Success', description: 'Export downloaded successfully' });
-      } else {
-        throw new Error('Export failed');
-      }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
-  };
-
-  // Load data on tab change
-  useEffect(() => {
-    setLoading(true);
-
-    const loadData = async () => {
-      switch (activeTab) {
-        case 'overview':
-          await fetchOverview();
-          break;
-        case 'organizations':
-          await fetchOrganizations(orgPage, orgSearch);
-          break;
-        case 'users':
-          await fetchUsers(userPage, userSearch);
-          break;
-        case 'access-codes':
-          await fetchAccessCodes(codePage, codeStatus);
-          break;
-        case 'audit-logs':
-          await fetchAuditLogs(auditPage, auditAction);
-          break;
-      }
-      setLoading(false);
-    };
-
-    loadData();
-  }, [activeTab, orgPage, userPage, codePage, auditPage, orgSearch, userSearch, codeStatus, auditAction]);
-
-  if (!user?.isSuperAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center">
-            <Shield className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Access Denied</h2>
-            <p className="text-gray-600">Super admin access required</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Admin Portal</h1>
-            <p className="mt-2 text-gray-600">System administration and management</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="organizations">Organizations</TabsTrigger>
-            <TabsTrigger value="access-codes">Access Codes</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="audit-logs">Audit Logs</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="mt-6">
-            {overview && (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <Building2 className="text-blue-600 w-6 h-6" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Organizations</p>
-                          <p className="text-2xl font-bold text-gray-900">{overview.stats.organizations}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                          <Users className="text-green-600 w-6 h-6" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Users</p>
-                          <p className="text-2xl font-bold text-gray-900">{overview.stats.users}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                          <Key className="text-purple-600 w-6 h-6" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Active Codes</p>
-                          <p className="text-2xl font-bold text-gray-900">{overview.stats.activeAccessCodes}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                          <DollarSign className="text-yellow-600 w-6 h-6" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Revenue</p>
-                          <p className="text-2xl font-bold text-gray-900">${overview.stats.revenue}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {overview.recentActivity.map((log: AuditLog) => (
-                        <div key={log.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">
-                              {log.actorUser?.name || 'System'} performed {log.action}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(log.createdAt).toLocaleString()}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
-            )}
-          </TabsContent>
-
-          <TabsContent value="organizations" className="mt-6">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex space-x-4">
-                <Input
-                  placeholder="Search organizations..."
-                  value={orgSearch}
-                  onChange={(e) => setOrgSearch(e.target.value)}
-                  className="w-64"
-                />
-                <Button onClick={() => exportData('organizations')}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
-              </div>
-            </div>
-
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Slug</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Users</TableHead>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {organizations.map((org) => (
-                    <TableRow key={org.id}>
-                      <TableCell className="font-medium">{org.name}</TableCell>
-                      <TableCell>{org.slug}</TableCell>
-                      <TableCell>
-                        <Badge variant={org.status === 'active' ? 'default' : 'secondary'}>
-                          {org.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{org.userCount}</TableCell>
-                      <TableCell>{org.currentPlan || 'None'}</TableCell>
-                      <TableCell>{new Date(org.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => impersonateOrg(org.id)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="access-codes" className="mt-6">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex space-x-4">
-                <Select value={codeStatus} onValueChange={setCodeStatus}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All Statuses</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="used">Used</SelectItem>
-                    <SelectItem value="revoked">Revoked</SelectItem>
-                    <SelectItem value="expired">Expired</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button onClick={() => exportData('access-codes')}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
-              </div>
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Access Code
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create Access Code</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="orgName">Organization Name (optional)</Label>
-                      <Input
-                        id="orgName"
-                        value={newCodeForm.orgName}
-                        onChange={(e) => setNewCodeForm(prev => ({ ...prev, orgName: e.target.value }))}
-                        placeholder="Leave empty to let user create org"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="expiresAt">Expires At</Label>
-                      <Input
-                        id="expiresAt"
-                        type="datetime-local"
-                        value={newCodeForm.expiresAt}
-                        onChange={(e) => setNewCodeForm(prev => ({ ...prev, expiresAt: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="notes">Notes (optional)</Label>
-                      <Input
-                        id="notes"
-                        value={newCodeForm.notes}
-                        onChange={(e) => setNewCodeForm(prev => ({ ...prev, notes: e.target.value }))}
-                        placeholder="Internal notes"
-                      />
-                    </div>
-                    <Button onClick={createAccessCode} className="w-full">
-                      Create Code
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Organization</TableHead>
-                    <TableHead>Issued By</TableHead>
-                    <TableHead>Consumed By</TableHead>
-                    <TableHead>Expires</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {accessCodes.map((code) => (
-                    <TableRow key={code.id}>
-                      <TableCell className="font-mono">{code.code}</TableCell>
-                      <TableCell>
-                        <Badge variant={code.status === 'active' ? 'default' : 'secondary'}>
-                          {code.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{code.organization?.name || 'Unassigned'}</TableCell>
-                      <TableCell>{code.issuedByUser.name}</TableCell>
-                      <TableCell>{code.consumedByUser?.name || 'Unused'}</TableCell>
-                      <TableCell>{new Date(code.expiresAt).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        {code.status === 'active' && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="outline">
-                                Revoke
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Revoke Access Code</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to revoke this access code? This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => revokeAccessCode(code.id)}>
-                                  Revoke
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="users" className="mt-6">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex space-x-4">
-                <Input
-                  placeholder="Search users..."
-                  value={userSearch}
-                  onChange={(e) => setUserSearch(e.target.value)}
-                  className="w-64"
-                />
-                <Button onClick={() => exportData('users')}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
-              </div>
-            </div>
-
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Organization</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>2FA</TableHead>
-                    <TableHead>Last Login</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.organization?.name || 'None'}</TableCell>
-                      <TableCell>
-                        <Badge variant={user.isActive ? 'default' : 'secondary'}>
-                          {user.isActive ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={user.twoFactorEnabled ? 'default' : 'outline'}>
-                          {user.twoFactorEnabled ? 'Enabled' : 'Disabled'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {user.lastLoginAt
-                          ? new Date(user.lastLoginAt).toLocaleDateString()
-                          : 'Never'
-                        }
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => toggleUserStatus(user.id, user.isActive)}
-                          >
-                            {user.isActive ? <UserX className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
-                          </Button>
-                          {user.twoFactorEnabled && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button size="sm" variant="outline">
-                                  <Shield className="w-4 h-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Reset 2FA</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to reset 2FA for this user? They will need to set it up again.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => reset2FA(user.id)}>
-                                    Reset 2FA
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="audit-logs" className="mt-6">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex space-x-4">
-                <Input
-                  placeholder="Filter by action..."
-                  value={auditAction}
-                  onChange={(e) => setAuditAction(e.target.value)}
-                  className="w-64"
-                />
-                <Button onClick={() => exportData('audit-logs')}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
-              </div>
-            </div>
-
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead>Actor</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Entity</TableHead>
-                    <TableHead>Organization</TableHead>
-                    <TableHead>IP Address</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {auditLogs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell>{new Date(log.createdAt).toLocaleString()}</TableCell>
-                      <TableCell>{log.actorUser?.name || 'System'}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{log.action}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {log.entityType}
-                        {log.entityId && ` #${log.entityId}`}
-                      </TableCell>
-                      <TableCell>{log.organization?.name || 'Global'}</TableCell>
-                      <TableCell className="font-mono text-sm">{log.ip || 'N/A'}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-}
-
-export default AdminPortal;

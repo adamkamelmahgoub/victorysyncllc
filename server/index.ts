@@ -1,52 +1,137 @@
+import express, { type Request, Response, NextFunction } from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+import { testDatabaseConnection } from "./db";
+import passport from "./auth/passport";
 
-import express from "express";
-import cors from "cors";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Validate required environment variables at startup
+function validateEnvironment() {
+  const requiredEnvVars = ['DATABASE_URL'];
+  const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
+  
+  if (missing.length > 0) {
+    console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+  
+  console.log(`✅ All required environment variables are set`);
+}
 
 const app = express();
-const PORT = Number(process.env.PORT) || 5000;
-
-app.use(cors({ origin: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// ---------- API ROUTES (JSON ONLY) ----------
-const api = express.Router();
+// Initialize Passport
+app.use(passport.initialize());
 
-// Health check (used for diagnostics)
-api.get("/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
-// Auth status endpoints (cover several common paths your UI may call)
-const authHandler = (_req: express.Request, res: express.Response) => {
-  // If you have real auth, replace this with your session/user logic
-  res.json({
-    ok: true,
-    authenticated: false,
-    user: null
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      log(logLine);
+    }
   });
-};
-api.get("/auth", authHandler);
-api.get("/auth/", authHandler);
-api.get("/auth/check", authHandler);
-api.get("/auth/status", authHandler);
-api.get("/auth/me", authHandler);
 
-// Catch-all for unknown API routes -> ALWAYS JSON
-api.all("*", (req, res) => {
-  res.status(404).json({ ok: false, error: "Not found", path: req.path });
+  next();
 });
 
-// Mount the API BEFORE static and SPA fallback
-app.use("/api", api);
+(async () => {
+  try {
+    console.log(`🚀 Starting VictorySync application...`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    
+    // Validate environment variables
+    validateEnvironment();
+    
+    // Test database connection
+    const dbConnected = await testDatabaseConnection();
+    if (!dbConnected) {
+      throw new Error('Database connection failed - cannot start server');
+    }
+    
+    const server = await registerRoutes(app);
+    console.log(`✅ Routes registered successfully`);
 
-// ---------- STATIC + SPA FALLBACK ----------
-const dist = path.join(__dirname, "..", "client", "dist");
-app.use(express.static(dist));
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      
+      console.error(`❌ Application error: ${message}`, err);
+      res.status(status).json({ message });
+    });
 
-// Any non-API route -> return the app shell
-app.get("*", (_req, res) => res.sendFile(path.join(dist, "index.html")));
+    // importantly only setup vite in development and after
+    // setting up all the other routes so the catch-all route
+    // doesn't interfere with the other routes
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+      console.log(`✅ Vite development server setup complete`);
+    } else {
+      try {
+        serveStatic(app);
+        console.log(`✅ Static file serving setup complete`);
+      } catch (error) {
+        console.error(`❌ Failed to setup static file serving:`, error);
+        console.log(`This might happen if the build files are missing.`);
+        console.log(`In production, ensure you run 'npm run build' before starting the server.`);
+        throw error;
+      }
+    }
 
-app.listen(PORT, () => console.log(`✅ API+SPA server on :${PORT}`));
+
+
+    // ALWAYS serve the app on port 5000
+    // this serves both the API and the client.
+    // It is the only port that is not firewalled.
+    const port = process.env.PORT || 5000;
+    server.listen({
+      port: Number(port),
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      console.log(`🎉 VictorySync server is running successfully!`);
+      log(`serving on port ${port}`);
+      console.log(`Health check available at: http://0.0.0.0:${port}/health`);
+    });
+
+    // Handle graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received, shutting down gracefully');
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+    });
+
+    process.on('SIGINT', () => {
+      console.log('SIGINT received, shutting down gracefully');
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+    });
+    
+  } catch (error) {
+    console.error(`❌ Failed to start server:`, error);
+    process.exit(1);
+  }
+})();

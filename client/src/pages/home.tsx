@@ -1,191 +1,270 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import SEO from '@/components/SEO';
+import { Card, CardContent } from '@/components/ui/card';
+import { Phone, Megaphone, Bot, Check, Star } from 'lucide-react';
 
 export default function Home() {
   return (
-    <>
-      <SEO 
-        title="VictorySync - Strategic Business Solutions for Growth"
-        description="Empowering businesses with strategic solutions that drive growth, efficiency, and lasting success in today's competitive marketplace."
-        canonical="https://victorysync.com/"
-        ogTitle="VictorySync - Strategic Business Solutions for Growth"
-        ogDescription="Empowering businesses with strategic solutions that drive growth, efficiency, and lasting success in today's competitive marketplace."
-        ogImage="/LOGO_VS.png"
-      />
-
-      <div className="min-h-screen">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                Strategic Solutions for
-                <span className="text-blue-600 block">Business Victory</span>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="gradient-victory py-20 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                Reduce Customer Service Costs by <span className="text-yellow-300">60%</span>
               </h1>
-              <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-                Empowering businesses with strategic solutions that drive growth, efficiency, and lasting success in today's competitive marketplace.
+              <p className="text-xl mb-8 text-purple-100">
+                Professional call center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/register">
-                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
-                    Get Started Today
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="/pricing">
+                  <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#5d5df2]">
+                    View Pricing
                   </Button>
                 </Link>
-                <Link to="/services">
-                  <Button variant="outline" size="lg" className="px-8 py-3">
-                    Explore Services
+                <Link href="/contact">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#506bf4]">
+                    Schedule Demo
                   </Button>
                 </Link>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Why Choose VictorySync?
-              </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                We deliver comprehensive solutions that transform challenges into opportunities for sustainable growth.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card className="text-center">
-                <CardHeader>
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+            <div className="relative">
+              <img 
+                src="https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                alt="Modern call center workspace with professional agents" 
+                className="rounded-2xl shadow-2xl w-full" 
+              />
+              <div className="absolute -bottom-6 -left-6 p-4 rounded-xl shadow-lg text-victory-dark bg-[#5d5df2]">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <Check className="text-green-600 w-6 h-6" />
                   </div>
-                  <CardTitle>Strategic Planning</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Comprehensive strategic planning that aligns with your business goals and market opportunities.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card className="text-center">
-                <CardHeader>
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
+                  <div>
+                    <p className="font-semibold">93% Cost Savings</p>
+                    <p className="text-sm text-victory-gray">vs US-based agents</p>
                   </div>
-                  <CardTitle>Growth Acceleration</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Proven methodologies to accelerate your business growth and maximize market penetration.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card className="text-center">
-                <CardHeader>
-                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                    </svg>
-                  </div>
-                  <CardTitle>Operational Excellence</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Streamline operations and optimize processes for maximum efficiency and productivity.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* Services Preview */}
-        <section className="py-20 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Our Core Services
-              </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Comprehensive solutions tailored to meet your unique business challenges and opportunities.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Business Strategy</h3>
-                <p className="text-gray-600 mb-4">
-                  Develop winning strategies that position your business for long-term success and competitive advantage.
-                </p>
-                <Link to="/services" className="text-blue-600 hover:text-blue-700 font-medium">
-                  Learn More →
-                </Link>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Digital Transformation</h3>
-                <p className="text-gray-600 mb-4">
-                  Modernize your operations with cutting-edge technology solutions and digital innovations.
-                </p>
-                <Link to="/services" className="text-blue-600 hover:text-blue-700 font-medium">
-                  Learn More →
-                </Link>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Performance Optimization</h3>
-                <p className="text-gray-600 mb-4">
-                  Maximize efficiency and productivity through data-driven performance optimization strategies.
-                </p>
-                <Link to="/services" className="text-blue-600 hover:text-blue-700 font-medium">
-                  Learn More →
-                </Link>
+                </div>
               </div>
             </div>
-
-            <div className="text-center mt-12">
-              <Link to="/services">
-                <Button size="lg" variant="outline">
-                  View All Services
-                </Button>
-              </Link>
+          </div>
+        </div>
+      </section>
+      {/* Stats Section */}
+      <section className="bg-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-3xl font-bold victory-purple mb-2">60%</div>
+              <div className="victory-gray">Cost Reduction</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold victory-purple mb-2">24/7</div>
+              <div className="victory-gray">Support Coverage</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold victory-purple mb-2">97%</div>
+              <div className="victory-gray">Client Satisfaction</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold victory-purple mb-2">500+</div>
+              <div className="victory-gray">Projects Completed</div>
             </div>
           </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-20 bg-blue-600">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Transform Your Business?
+        </div>
+      </section>
+      {/* Services Section */}
+      <section className="bg-slate-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
+              Complete Customer Engagement Solutions
             </h2>
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join hundreds of successful businesses that have achieved victory with our strategic solutions.
+            <p className="text-xl victory-gray max-w-3xl mx-auto">
+              From inbound support to outbound sales, AI automation to digital marketing - we've got your customer engagement covered.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/contact">
-                <Button size="lg" variant="secondary" className="px-8 py-3">
-                  Get Free Consultation
-                </Button>
-              </Link>
-              <Link to="/pricing">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3">
-                  View Pricing
-                </Button>
-              </Link>
-            </div>
           </div>
-        </section>
-      </div>
-    </>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Inbound Services */}
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
+                  <Phone className="victory-purple w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-4">Inbound Call Center</h3>
+                <p className="victory-gray mb-6">
+                  Professional customer support, technical assistance, and order processing with multilingual capabilities.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> 24/7 Customer Support</li>
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Technical Help Desk</li>
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Order Processing</li>
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Live Chat Support</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Outbound Services */}
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
+                  <Megaphone className="victory-blue w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-4">Outbound Sales</h3>
+                <p className="victory-gray mb-6">
+                  Lead generation, appointment setting, and sales campaigns to grow your business revenue.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Lead Generation</li>
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Appointment Setting</li>
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Cold Calling</li>
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Sales Campaigns</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* AI Automation */}
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
+                  <Bot className="victory-light-purple w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-4">AI Automation</h3>
+                <p className="victory-gray mb-6">
+                  Intelligent chatbots, automated workflows, and AI-powered customer insights to streamline operations.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> AI Chatbots</li>
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Workflow Automation</li>
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Call Summaries</li>
+                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Reporting Dashboard</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+      {/* Testimonials Section */}
+      <section className="bg-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
+              What Our Clients Say
+            </h2>
+            <p className="text-xl victory-gray">
+              Join hundreds of satisfied businesses who trust VictorySync
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Testimonial 1 */}
+            <Card>
+              <CardContent className="p-8">
+                <div className="flex items-center mb-4">
+                  <div className="flex text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-current" />
+                    ))}
+                  </div>
+                </div>
+                <p className="victory-gray mb-6">
+                  "VictorySync helped us reduce our customer service costs by 65% while improving response times. Their team is professional and reliable."
+                </p>
+                <div className="flex items-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
+                    alt="Professional business executive" 
+                    className="w-12 h-12 rounded-full mr-4 object-cover" 
+                  />
+                  <div>
+                    <div className="font-semibold">Michael Rodriguez</div>
+                    <div className="text-sm victory-gray">CEO, TechStart Inc.</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonial 2 */}
+            <Card>
+              <CardContent className="p-8">
+                <div className="flex items-center mb-4">
+                  <div className="flex text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-current" />
+                    ))}
+                  </div>
+                </div>
+                <p className="victory-gray mb-6">
+                  "The AI automation features have streamlined our entire customer support process. Highly recommend their services."
+                </p>
+                <div className="flex items-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
+                    alt="Professional business leader" 
+                    className="w-12 h-12 rounded-full mr-4 object-cover" 
+                  />
+                  <div>
+                    <div className="font-semibold">Sarah Chen</div>
+                    <div className="text-sm victory-gray">Operations Director, GrowthCorp</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonial 3 */}
+            <Card>
+              <CardContent className="p-8">
+                <div className="flex items-center mb-4">
+                  <div className="flex text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-current" />
+                    ))}
+                  </div>
+                </div>
+                <p className="victory-gray mb-6">
+                  "Outstanding service quality and cost savings. VictorySync has become an essential part of our business operations."
+                </p>
+                <div className="flex items-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
+                    alt="Business executive" 
+                    className="w-12 h-12 rounded-full mr-4 object-cover" 
+                  />
+                  <div>
+                    <div className="font-semibold">David Thompson</div>
+                    <div className="text-sm victory-gray">Founder, Digital Solutions</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+      {/* CTA Section */}
+      <section className="gradient-victory py-20 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Save 60% on Customer Service?
+          </h2>
+          <p className="text-xl mb-8 text-purple-100 max-w-2xl mx-auto">
+            Join our next webinar to learn how other businesses are cutting costs while improving service quality.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/contact">
+              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6950f0]">
+                Schedule Demo
+              </Button>
+            </Link>
+            <Link href="/pricing">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
+                View Pricing
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

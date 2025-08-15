@@ -3,6 +3,7 @@ import {
   packages,
   orders,
   orderItems,
+  contactSubmissions,
   type PublicUser,
   type InsertPublicUser,
   type Package,
@@ -11,6 +12,8 @@ import {
   type InsertOrder,
   type OrderItem,
   type InsertOrderItem,
+  type ContactSubmission,
+  type InsertContactSubmission,
 } from "@shared/schema";
 import { db } from "./server/db";
 import { eq } from "drizzle-orm";
@@ -37,7 +40,9 @@ export interface IStorage {
   createOrderItem(item: InsertOrderItem): Promise<OrderItem>;
   getOrderItems(orderId: number): Promise<OrderItem[]>;
 
-  
+  // Contact submissions
+  createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
+  getContactSubmissions(): Promise<ContactSubmission[]>;
 
   getAllPublicUsers(): Promise<PublicUser[]>;
   getAllOrders(): Promise<Order[]>;
@@ -164,7 +169,15 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
   }
 
-  
+  // Contact submissions
+  async createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission> {
+    const [newSubmission] = await db.insert(contactSubmissions).values(submission).returning();
+    return newSubmission;
+  }
+
+  async getContactSubmissions(): Promise<ContactSubmission[]> {
+    return await db.select().from(contactSubmissions);
+  }
 }
 
 export const storage = new DatabaseStorage();

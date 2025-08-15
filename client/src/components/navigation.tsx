@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"; // Changed from "wouter"
+import { Link, useLocation } from "wouter";
 import { ShoppingCart, User, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
@@ -15,10 +15,10 @@ interface NavigationProps {
 }
 
 export default function Navigation({ onCartClick }: NavigationProps) {
-  // Removed useLocation from "wouter" as it's not used in the changes
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [location] = useLocation();
   const { getItemCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const cartItemCount = getItemCount();
 
@@ -35,13 +35,13 @@ export default function Navigation({ onCartClick }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" onClick={scrollToTop}> {/* Changed href to to */}
+          <Link href="/" onClick={scrollToTop}>
             <div className="flex items-center space-x-3 cursor-pointer">
-              <img
-                src="/LOGO_VS.png"
-                alt="VictorySync Logo"
-                className="w-8 h-8 rounded-lg bg-white p-1"
-              />
+              <img 
+            src="/LOGO_VS.png" 
+            alt="VictorySync Logo" 
+            className="w-8 h-8 rounded-lg bg-white p-1"
+          />
               <span className="text-xl brand-font victory-dark">
                 VictorySync
               </span>
@@ -51,11 +51,9 @@ export default function Navigation({ onCartClick }: NavigationProps) {
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <Link key={link.href} to={link.href}> {/* Changed href to to */}
+              <Link key={link.href} href={link.href}>
                 <span
                   className={`font-medium transition-colors cursor-pointer ${
-                    // Assuming location check needs to be adapted or removed if not using react-router's location
-                    // For now, keeping the structure but it might need adjustment based on actual react-router usage
                     location === link.href
                       ? "victory-purple"
                       : "victory-gray hover:victory-purple"
@@ -83,7 +81,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
 
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
-                <Link to="/dashboard"> {/* Changed href to to */}
+                <Link href="/dashboard">
                   <Button variant="ghost" size="sm">
                     <User className="w-4 h-4 mr-2" />
                     Dashboard
@@ -99,7 +97,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link to="/login"> {/* Changed href to to */}
+                <Link href="/login">
                   <Button variant="ghost" size="sm">
                     Sign In
                   </Button>
@@ -140,15 +138,14 @@ export default function Navigation({ onCartClick }: NavigationProps) {
           <div className="md:hidden py-4 border-t border-slate-200">
             <div className="flex flex-col space-y-4">
               {navLinks.map((link) => (
-                <Link key={link.href} to={link.href} onClick={() => setMobileMenuOpen(false)}> {/* Changed href to to */}
+                <Link key={link.href} href={link.href}>
                   <span
                     className={`font-medium transition-colors cursor-pointer block py-2 ${
-                      // Assuming location check needs to be adapted or removed if not using react-router's location
-                      // For now, keeping the structure but it might need adjustment based on actual react-router usage
                       location === link.href
                         ? "victory-purple"
                         : "victory-gray hover:victory-purple"
                     }`}
+                    onClick={() => setMobileMenuOpen(false)}
                   >
                     {link.label}
                   </span>
@@ -158,7 +155,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
               <div className="pt-4 border-t border-slate-200">
                 {isAuthenticated ? (
                   <div className="flex flex-col space-y-2">
-                    <Link to="/dashboard"> {/* Changed href to to */}
+                    <Link href="/dashboard">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -183,7 +180,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                       variant="ghost"
                       size="sm"
                       className="w-full justify-start"
-                      onClick={() => (window.location.href = "/login")} // This might also need to be a Link or navigate function
+                      onClick={() => (window.location.href = "/login")}
                     >
                       Sign In
                     </Button>
