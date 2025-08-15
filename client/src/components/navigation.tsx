@@ -44,7 +44,7 @@ export default function Navigation() {
           {/* Logo */}
           <SmartLink to="/" className="flex items-center space-x-2" onClick={scrollToTop}>
             <img src="/LOGO_VS.png" alt="VictorySync" className="h-8 w-8" />
-            <span className="text-xl font-bold text-purple-600">VictorySync</span>
+            <span className="text-xl font-bold text-black">VictorySync</span>
           </SmartLink>
 
           {/* Desktop Navigation Links */}
@@ -119,10 +119,7 @@ export default function Navigation() {
             ) : (
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" asChild>
-                  <SmartLink to="/login">Login</SmartLink>
-                </Button>
-                <Button asChild>
-                  <SmartLink to="/register">Sign Up</SmartLink>
+                  <SmartLink to="/signin">Sign In</SmartLink>
                 </Button>
               </div>
             )}
@@ -207,10 +204,7 @@ export default function Navigation() {
                 ) : (
                   <>
                     <Button variant="ghost" className="w-full justify-start" asChild>
-                      <SmartLink to="/login" onClick={closeMobileMenu}>Login</SmartLink>
-                    </Button>
-                    <Button className="w-full justify-start" asChild>
-                      <SmartLink to="/register" onClick={closeMobileMenu}>Sign Up</SmartLink>
+                      <SmartLink to="/signin" onClick={closeMobileMenu}>Sign In</SmartLink>
                     </Button>
                   </>
                 )}
