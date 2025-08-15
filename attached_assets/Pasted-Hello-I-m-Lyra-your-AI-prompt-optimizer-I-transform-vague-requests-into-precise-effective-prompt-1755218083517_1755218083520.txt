@@ -1,0 +1,338 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are **Claude**, working in **Replit** as a **100000× senior full-stack engineer** on a **Vite (React + TypeScript) + Node/Express** repo.
+The app shows a **blank screen**. Fix it **end-to-end** so **every page renders**, routing works, and no more refresh 404s. **Make the exact code edits below, in the exact files, then run the shell steps.** Do not add demo data.
+
+---
+
+## 0) Kill any stuck processes & clean
+
+**Shell (Replit):**
+
+```bash
+pkill -f "node|vite" || true
+rm -rf node_modules client/node_modules
+npm cache clean --force
+```
+
+---
+
+## 1) Ensure a visible render baseline (index.html + main.tsx)
+
+### Edit (create/overwrite): `client/index.html`
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VictorySync</title>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Fallback content shown if JS fails to load -->
+      <noscript>Please enable JavaScript to view this site.</noscript>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+### Edit (create/overwrite): `client/src/main.tsx`
+
+```tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import AppRouter from "./router";
+import "./index.css";
+
+// SUPER-DEFENSIVE: if mount fails, write to body
+const rootEl = document.getElementById("root");
+if (!rootEl) {
+  const msg = document.createElement("pre");
+  msg.textContent = "Mount failed: #root not found";
+  document.body.appendChild(msg);
+  throw new Error("No #root element");
+}
+
+ReactDOM.createRoot(rootEl).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <AppRouter />
+    </BrowserRouter>
+  </React.StrictMode>
+);
+```
+
+---
+
+## 2) Minimal router + guaranteed visible pages (no flicker)
+
+### Edit (create/overwrite): `client/src/router.tsx`
+
+```tsx
+import { Routes, Route, Navigate } from "react-router-dom";
+import RootLayout from "@/layouts/RootLayout";
+import Home from "@/pages/Home";
+import Pricing from "@/pages/Pricing";
+import Contact from "@/pages/Contact";
+import NotFound from "@/pages/NotFound";
+
+export default function AppRouter() {
+  return (
+    <Routes>
+      <Route element={<RootLayout />}>
+        <Route index element={<Home />} />
+        <Route path="pricing" element={<Pricing />} />
+        <Route path="contact" element={<Contact />} />
+        <Route path="404" element={<NotFound />} />
+        <Route path="*" element={<Navigate to="/404" replace />} />
+      </Route>
+    </Routes>
+  );
+}
+```
+
+### Edit (create/overwrite): `client/src/layouts/RootLayout.tsx`
+
+```tsx
+import { Outlet } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+
+export default function RootLayout() {
+  return (
+    <>
+      <Navbar />
+      <main className="min-h-[calc(100vh-64px)] p-6">
+        <Outlet />
+      </main>
+      <Footer />
+    </>
+  );
+}
+```
+
+### Edit (create/overwrite): `client/src/pages/Home.tsx`
+
+```tsx
+export default function Home() {
+  return (
+    <section>
+      <h1 className="text-3xl font-bold">Home renders ✅</h1>
+      <p className="mt-2">If you see this, the React app is mounted and routing works.</p>
+    </section>
+  );
+}
+```
+
+### Edit (create/overwrite): `client/src/pages/Pricing.tsx`
+
+```tsx
+export default function Pricing() {
+  return (
+    <section>
+      <h1 className="text-3xl font-bold">Pricing renders ✅</h1>
+    </section>
+  );
+}
+```
+
+### Edit (create/overwrite): `client/src/pages/Contact.tsx`
+
+```tsx
+export default function Contact() {
+  return (
+    <section>
+      <h1 className="text-3xl font-bold">Contact renders ✅</h1>
+    </section>
+  );
+}
+```
+
+### Edit (create/overwrite): `client/src/pages/NotFound.tsx`
+
+```tsx
+export default function NotFound() {
+  return (
+    <section>
+      <h1 className="text-2xl font-bold">404 — Page Not Found</h1>
+    </section>
+  );
+}
+```
+
+### Edit (create/overwrite): `client/src/components/Navbar.tsx`
+
+```tsx
+import { NavLink } from "react-router-dom";
+export default function Navbar() {
+  const link = ({ isActive }: { isActive: boolean }) =>
+    `px-3 py-2 ${isActive ? "underline" : "hover:underline"}`;
+  return (
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="max-w-5xl mx-auto h-14 px-4 flex items-center justify-between">
+        <NavLink to="/" className="font-bold">VictorySync</NavLink>
+        <nav className="space-x-2">
+          <NavLink to="/pricing" className={link}>Pricing</NavLink>
+          <NavLink to="/contact" className={link}>Contact</NavLink>
+        </nav>
+      </div>
+    </header>
+  );
+}
+```
+
+### Edit (create/overwrite): `client/src/components/Footer.tsx`
+
+```tsx
+export default function Footer() {
+  return (
+    <footer className="border-t">
+      <div className="max-w-5xl mx-auto px-4 py-6 text-sm">
+        © {new Date().getFullYear()} VictorySync — Footer renders ✅
+      </div>
+    </footer>
+  );
+}
+```
+
+---
+
+## 3) Vite + TS alias (avoid duplicate React & broken imports)
+
+### Edit (create/overwrite): `client/vite.config.ts`
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { fileURLToPath, URL } from "node:url";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
+  server: { host: "0.0.0.0", port: 5173 },
+  preview: { host: "0.0.0.0", port: 5173 },
+  base: "/"
+});
+```
+
+### Edit (create/overwrite): `tsconfig.json` (root)
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "baseUrl": "client/src",
+    "paths": { "@/*": ["./*"] }
+  },
+  "include": ["client/src", "server"]
+}
+```
+
+---
+
+## 4) SPA fallback for deep links (Express)
+
+### Edit (create/overwrite): `server/index.ts`
+
+```ts
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = Number(process.env.PORT) || 5000;
+
+const dist = path.join(__dirname, "..", "client", "dist");
+app.use(express.static(dist));
+app.get("/api/health", (_req, res) => res.json({ ok: true }));
+app.get("*", (_req, res) => res.sendFile(path.join(dist, "index.html")));
+
+app.listen(PORT, () => console.log(`✅ Server on :${PORT}`));
+```
+
+---
+
+## 5) Package scripts & Run button
+
+### Edit (create/overwrite): `package.json`
+
+```json
+{
+  "type": "module",
+  "scripts": {
+    "dev": "cd client && vite --host 0.0.0.0 --port 5173",
+    "build": "cd client && vite build",
+    "serve": "node server/index.js",
+    "preview": "cd client && vite preview --host 0.0.0.0 --port 5173"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.2",
+    "typescript": "^5.5.4"
+  }
+}
+```
+
+### Edit (create/overwrite): `.replit`
+
+```
+run = "npm run dev"
+```
+
+---
+
+## 6) Install & run
+
+**Shell:**
+
+```bash
+npm i
+npm run dev
+```
+
+Open the **Preview**. You should see “Home renders ✅” with Navbar & Footer.
+Navigate to **/pricing** and **/contact**; refresh each — they must render.
+
+For production preview:
+
+```bash
+npm run build
+npm run serve
+```
+
+Preview again; deep links must work and `/api/health` should return `{ ok: true }`.
+
+---
+
+## 7) Diagnostics if still blank
+
+* Open DevTools → **Console + Network**. If any JS file 404s (e.g., `/assets/...`), the `base` or `index.html` path is wrong—**keep `base: "/"`** and the script tag `src="/src/main.tsx"`.
+* Search project for **multiple `BrowserRouter`** and remove duplicates (must exist **only** in `main.tsx`).
+* Search for `React.useState` / `React.useEffect` usage; convert to named hooks imports if found.
+
+---
+
+## Acceptance Criteria
+
+* Home, Pricing, Contact render with visible headings.
+* Navbar & Footer always visible; no flicker.
+* Refresh on any route doesn’t 404 (Express fallback).
+* Replit Run uses `npm run dev` (Vite only) and shows UI; `npm run build && npm run serve` also works.
+
+Apply these exact edits and commands now.
