@@ -1,16 +1,16 @@
 
-import React from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 type State = { hasError: boolean; error?: Error };
 
-export default class GlobalErrorBoundary extends React.Component<{ children: React.ReactNode }, State> {
+export default class GlobalErrorBoundary extends Component<{ children: ReactNode }, State> {
   state: State = { hasError: false };
 
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
+  componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('Global render error:', error, info);
   }
 
