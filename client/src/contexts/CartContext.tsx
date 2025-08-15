@@ -75,5 +75,3 @@ export function useCart() {
   }
   return context;
 }
-
-export { CartProvider, useCart };
