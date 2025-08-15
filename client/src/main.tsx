@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
-import App from "./App";
+import AppRouter from "./router";
 import "./index.css";
 import "./styles/site.css";
 import "./swCleanup";
@@ -31,7 +31,7 @@ createRoot(root).render(
         <BrowserRouter>
           <AuthProvider>
             <CartProvider>
-              <App />
+              <AppRouter />
               <Toaster />
             </CartProvider>
           </AuthProvider>
