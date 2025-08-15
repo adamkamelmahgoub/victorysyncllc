@@ -1,0 +1,216 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are **Claude**, working in **Replit** as a **100000× senior full-stack engineer** on a **Vite (React + TypeScript) + Node/Express** repo.
+
+**Problem now:** App is a **blank screen** and DevTools shows **`React is not defined`**. Fix this completely so **every page renders**, routing works, and refresh/deep links don’t 404. Make the exact file edits below (with paths) and run the shell steps. Do **not** add demo/placeholder data.
+
+---
+
+## Why it’s blank
+
+The code uses JSX elements like `<React.StrictMode>` / `<React.Suspense>` and/or `React.useX` without importing `React`. With the **automatic JSX runtime** (`"jsx": "react-jsx"`), you must **either** import the specific symbols (`StrictMode`, `Suspense`, etc.) **or** add `import React from "react"` everywhere. We’ll do the modern fix: **named imports** and remove all `React.` prefixes. Also ensure Vite’s React plugin and TS config are correct so only **one** React build is used.
+
+---
+
+## 0) Shell (clean start)
+
+```bash
+pkill -f "node|vite" || true
+```
+
+---
+
+## 1) TS & Vite config (single React build + automatic JSX)
+
+### Edit: `tsconfig.json` (root)
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "jsx": "react-jsx",                 // ✅ automatic runtime
+    "baseUrl": "client/src",
+    "paths": { "@/*": ["./*"] },
+    "esModuleInterop": true,
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "skipLibCheck": true
+  },
+  "include": ["client/src", "server"]
+}
+```
+
+### Edit (or create): `client/vite.config.ts`
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { fileURLToPath, URL } from "node:url";
+
+export default defineConfig({
+  plugins: [react()],                   // ✅ ensure react plugin
+  resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
+  server: { host: "0.0.0.0", port: 5173 },
+  preview: { host: "0.0.0.0", port: 5173 },
+  base: "/"
+});
+```
+
+---
+
+## 2) Fix the **React is not defined** source
+
+### Edit: `client/src/main.tsx`  (replace top-level render)
+
+```tsx
+import { StrictMode } from "react";     // ✅ named import
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import AppRouter from "./router";
+import "./index.css";
+
+const root = document.getElementById("root");
+if (!root) throw new Error("#root not found");
+
+ReactDOM.createRoot(root).render(
+  <StrictMode>                          {/* ✅ no React.StrictMode */}
+    <BrowserRouter>
+      <AppRouter />
+    </BrowserRouter>
+  </StrictMode>
+);
+```
+
+### Project-wide refactors (run these checks and fix):
+
+* **Find JSX using `React.` namespace** and convert to named imports:
+
+  * `<React.StrictMode>` → import `{ StrictMode }` and use `<StrictMode>`
+  * `<React.Suspense>`   → import `{ Suspense }` and use `<Suspense>`
+  * `<React.Fragment>`   → use `<>…</>` or import `{ Fragment }` and `<Fragment>`
+* **Find hooks called via `React.`** and switch to named hooks:
+
+  * `React.useState` → `useState` (with `import { useState } from "react"`)
+  * same for `useEffect`, `useMemo`, `useRef`, `useContext`.
+
+*(Claude: do this across `client/src/**`. For certainty, search patterns)*:
+
+* Search: `React\.use`  → replace with named hooks + imports.
+* Search: `<React\.`    → replace with named components + imports.
+
+**Example – context fix if present**
+`client/src/context/cart.tsx`
+
+```tsx
+import { createContext, useContext, useState, PropsWithChildren } from "react";
+
+type CartItem = { id: string; qty: number };
+type Ctx = { items: CartItem[]; addItem: (id: string, qty?: number) => void; clear: () => void };
+
+const CartContext = createContext<Ctx | undefined>(undefined);
+
+export function CartProvider({ children }: PropsWithChildren) {
+  const [items, setItems] = useState<CartItem[]>([]);
+  const addItem = (id: string, qty = 1) =>
+    setItems(prev => {
+      const i = prev.findIndex(x => x.id === id);
+      if (i > -1) { const copy = [...prev]; copy[i] = { ...copy[i], qty: copy[i].qty + qty }; return copy; }
+      return [...prev, { id, qty }];
+    });
+  return <CartContext.Provider value={{ items, addItem, clear: () => setItems([]) }}>{children}</CartContext.Provider>;
+}
+
+export function useCartContext() {
+  const v = useContext(CartContext);
+  if (!v) throw new Error("useCartContext must be used within a CartProvider");
+  return v;
+}
+```
+
+---
+
+## 3) Ensure root layout & routes still render
+
+*(Leave your existing pages; only ensure router wiring is correct.)*
+
+`client/src/layouts/RootLayout.tsx`
+
+```tsx
+import { Outlet } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+
+export default function RootLayout() {
+  return (
+    <>
+      <Navbar />
+      <main className="min-h-[calc(100vh-64px)]">
+        <Outlet />
+      </main>
+      <Footer />
+    </>
+  );
+}
+```
+
+`client/src/router.tsx`
+
+```tsx
+import { Routes, Route, Navigate } from "react-router-dom";
+import RootLayout from "@/layouts/RootLayout";
+import Home from "@/pages/Home";
+import Pricing from "@/pages/Pricing";
+import Contact from "@/pages/Contact";
+import NotFound from "@/pages/NotFound";
+
+export default function AppRouter() {
+  return (
+    <Routes>
+      <Route element={<RootLayout />}>
+        <Route index element={<Home />} />
+        <Route path="pricing" element={<Pricing />} />
+        <Route path="contact" element={<Contact />} />
+        <Route path="404" element={<NotFound />} />
+        <Route path="*" element={<Navigate to="/404" replace />} />
+      </Route>
+    </Routes>
+  );
+}
+```
+
+> Confirm there is **only one** `BrowserRouter` (in `main.tsx`) and all internal links use `<Link>/<NavLink>` (no `<a href="/...">`).
+
+---
+
+## 4) Rebuild & run in Replit
+
+```bash
+npm install
+npm run dev
+```
+
+Open Preview:
+
+* Home, Pricing, Contact must render.
+* Console must **not** show “React is not defined”.
+
+**Production preview (optional)**
+
+```bash
+npm run build
+npm run serve
+```
+
+---
+
+## 5) Acceptance checklist (report after changes)
+
+* `grep -R "<React\." client/src` returns **no matches**.
+* `grep -R "React\.use" client/src` returns **no matches**.
+* `tsconfig.json` has `"jsx": "react-jsx"`.
+* Navbar & Footer always visible; refreshing any route does not 404.
+
+Proceed and apply these exact edits and checks to eliminate the **React is not defined** blank screen and make all pages render correctly.
