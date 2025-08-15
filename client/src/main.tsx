@@ -1,21 +1,42 @@
 
-import React, { StrictMode } from "react";
-import ReactDOM from "react-dom/client";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import AppRouter from "./router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
+import App from "./App";
 import "./index.css";
 import "./styles/site.css";
+import "./swCleanup";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
 
 const root = document.getElementById("root");
 if (!root) throw new Error("#root not found");
 
-ReactDOM.createRoot(root).render(
+createRoot(root).render(
   <StrictMode>
     <HelmetProvider>
-      <BrowserRouter>
-        <AppRouter />
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <CartProvider>
+              <App />
+              <Toaster />
+            </CartProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
     </HelmetProvider>
   </StrictMode>
 );

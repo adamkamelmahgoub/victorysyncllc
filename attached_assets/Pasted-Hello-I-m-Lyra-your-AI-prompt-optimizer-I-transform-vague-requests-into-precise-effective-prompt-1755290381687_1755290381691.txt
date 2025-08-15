@@ -1,0 +1,190 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are **Claude**, in **Replit**, acting as a **100000× senior full-stack engineer** on a **Vite (React + TS) + Express** app. Make the frontend **render correctly for *all* pages**, not just Home/Pricing/Contact. Implement a **file-system router** so every component in `client/src/pages/**` auto-registers as a route (including nested folders and `[param]` dynamics), with persistent Navbar/Footer, SPA fallback, and zero console errors.
+
+Do the following **exactly**.
+
+---
+
+## What to change (copy verbatim)
+
+### 1) `client/src/router.tsx` — **REPLACE** (auto-routes every page)
+
+```tsx
+import { lazy, Suspense } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import RootLayout from "@/layouts/RootLayout";
+import NotFound from "@/pages/NotFound";
+
+/**
+ * Auto-map files in /pages to routes:
+ * - Home.tsx or /pages/Home.tsx          -> "/"
+ * - /pages/Index.tsx                     -> "/"
+ * - /pages/About.tsx                     -> "/about"
+ * - /pages/blog/Index.tsx                -> "/blog"
+ * - /pages/blog/Post.tsx                 -> "/blog/post"
+ * - /pages/blog/[slug].tsx               -> "/blog/:slug"
+ * NOTE: exclude NotFound from auto list; we wire it explicitly.
+ */
+
+type Loader = () => Promise<{ default: React.ComponentType<any> }>;
+const pageModules = import.meta.glob("./pages/**/*.tsx") as Record<string, Loader>;
+
+function fileToPath(file: string): string {
+  // strip "./pages" prefix and ".tsx" suffix
+  let p = file.replace("./pages", "").replace(/\.tsx$/, "");
+  // remove trailing /Index or /index, map Home to root
+  p = p.replace(/\/?Index$/i, "");
+  if (/^\/Home$/i.test(p)) p = "";
+  // transform [param] -> :param
+  p = p.replace(/\[([^\]]+)\]/g, ":$1");
+  // ensure leading slash; lower-case for consistency
+  p = (p ? p : "/").toLowerCase();
+  return p;
+}
+
+const autoRoutes = Object.entries(pageModules)
+  .map(([file, loader]) => ({ path: fileToPath(file), Component: lazy(loader) }))
+  .filter(r => r.path !== "/404" && r.path !== "/notfound"); // we add NotFound explicitly
+
+export default function AppRouter() {
+  return (
+    <Suspense fallback={null}>
+      <Routes>
+        <Route element={<RootLayout />}>
+          {/* index route ("/") */}
+          {autoRoutes
+            .filter(r => r.path === "/")
+            .map(({ path, Component }) => (
+              <Route key={path} index element={<Component />} />
+            ))}
+
+          {/* all other routes */}
+          {autoRoutes
+            .filter(r => r.path !== "/")
+            .map(({ path, Component }) => (
+              <Route key={path} path={path.slice(1)} element={<Component />} />
+            ))}
+
+          {/* 404 */}
+          <Route path="404" element={<NotFound />} />
+          <Route path="*" element={<Navigate to="/404" replace />} />
+        </Route>
+      </Routes>
+    </Suspense>
+  );
+}
+```
+
+### 2) `client/src/layouts/RootLayout.tsx` — **ENSURE** this (Navbar/Footer everywhere)
+
+```tsx
+import { Outlet } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+
+export default function RootLayout() {
+  return (
+    <>
+      <Navbar />
+      <main className="min-h-[calc(100vh-64px)]">
+        <Outlet />
+      </main>
+      <Footer />
+    </>
+  );
+}
+```
+
+### 3) `client/src/pages/NotFound.tsx` — **CREATE/REPLACE**
+
+```tsx
+export default function NotFound() {
+  return (
+    <section className="p-6">
+      <h1 className="text-2xl font-bold">404 — Page Not Found</h1>
+      <p className="mt-2">Use the navigation to find what you need.</p>
+    </section>
+  );
+}
+```
+
+### 4) `client/src/main.tsx` — **WRAP providers once** (already added earlier; confirm)
+
+```tsx
+import { StrictMode } from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import AppRouter from "./router";
+import { AuthProvider } from "@/context/auth";    // ✅ required to avoid useAuth crash
+import "./index.css";
+import "./styles/site.css";                       // keep if used
+
+const root = document.getElementById("root");
+if (!root) throw new Error("#root not found");
+
+ReactDOM.createRoot(root).render(
+  <StrictMode>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
+    </AuthProvider>
+  </StrictMode>
+);
+```
+
+### 5) Server fallback — **confirm** this stays (so refresh/deep links work)
+
+`server/index.ts` must mount `/api` **before** the SPA fallback and then:
+
+```ts
+app.use(express.static(dist));
+app.get("*", (_req, res) => res.sendFile(path.join(dist, "index.html")));
+```
+
+---
+
+## How to add pages (now auto-detected)
+
+Place a default-exported component under `client/src/pages/**`:
+
+* `client/src/pages/Home.tsx` → `/`
+* `client/src/pages/About.tsx` → `/about`
+* `client/src/pages/blog/Index.tsx` → `/blog`
+* `client/src/pages/blog/[slug].tsx` → `/blog/:slug`
+
+> No manual router edits needed; the file-system router discovers them on build.
+
+---
+
+## Commands (Replit Shell)
+
+```bash
+pkill -f "node|vite" || true
+npm run build && tsx server/index.ts
+```
+
+(Or use **Run** if it’s set to build+serve.)
+
+---
+
+## Verify (must pass)
+
+* Navigate to **every** page file you have in `client/src/pages/**`; each renders without code changes to the router.
+* Hard refresh on a deep link (e.g., `/blog/some-post`) → still renders (SPA fallback working).
+* Console is clean (no `useAuth` missing, no JSON parse errors).
+* Navbar & Footer persist across all routes.
+
+---
+
+## Warnings (keep it stable)
+
+* **One** `<BrowserRouter>` only (in `main.tsx`).
+* Internal links must use `<Link>` / `<NavLink>` (not `<a href>`).
+* Each page file must **default export** a React component.
+* Dynamic routes use bracket syntax, e.g., `[id].tsx` → `:id`.
+
+**Apply the code above exactly so every page under `src/pages` auto-renders and the app stays stable across new routes.**
