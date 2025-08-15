@@ -9,7 +9,10 @@
     "esModuleInterop": true,
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noEmit": true
   },
   "include": ["client/src", "server"]
 }
