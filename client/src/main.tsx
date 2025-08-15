@@ -1,7 +1,6 @@
 import React, { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import AppRouter from "./router";
+import App from "./App";
 import "./index.css";
 
 const root = document.getElementById("root");
@@ -10,9 +9,7 @@ if (!root) throw new Error("#root not found");
 try {
   ReactDOM.createRoot(root).render(
     <StrictMode>
-      <BrowserRouter>
-        <AppRouter />
-      </BrowserRouter>
+      <App />
     </StrictMode>
   );
 } catch (error) {
