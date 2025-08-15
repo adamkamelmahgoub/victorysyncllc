@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'wouter';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, Megaphone, Bot, Check, Star, ArrowRight } from 'lucide-react';
@@ -265,11 +265,11 @@ export default function Home() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </SmartLink>
             </Button>
-            <Link href="/pricing">
+            <SmartLink to="/pricing">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
                 View Pricing
               </Button>
-            </Link>
+            </SmartLink>
           </div>
         </div>
       </section>

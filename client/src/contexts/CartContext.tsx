@@ -1,95 +1,68 @@
-import { createContext, useContext, useReducer, ReactNode } from 'react';
 
-export interface CartItem {
-  packageId: number;
-  name: string;
-  price: number;
-  quantity: number;
-}
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  PropsWithChildren,
+} from "react";
 
-interface CartState {
+export type CartItem = { id: string; name?: string; price?: number; qty: number };
+
+export type CartCtx = {
   items: CartItem[];
-  total: number;
-}
-
-type CartAction =
-  | { type: 'ADD_ITEM'; payload: Omit<CartItem, 'quantity'> }
-  | { type: 'REMOVE_ITEM'; payload: number }
-  | { type: 'UPDATE_QUANTITY'; payload: { packageId: number; quantity: number } }
-  | { type: 'CLEAR_CART' };
-
-const cartReducer = (state: CartState, action: CartAction): CartState => {
-  switch (action.type) {
-    case 'ADD_ITEM': {
-      const existingItem = state.items.find(item => item.packageId === action.payload.packageId);
-      
-      let newItems;
-      if (existingItem) {
-        newItems = state.items.map(item =>
-          item.packageId === action.payload.packageId
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      } else {
-        newItems = [...state.items, { ...action.payload, quantity: 1 }];
-      }
-      
-      const total = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      return { items: newItems, total };
-    }
-    
-    case 'REMOVE_ITEM': {
-      const newItems = state.items.filter(item => item.packageId !== action.payload);
-      const total = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      return { items: newItems, total };
-    }
-    
-    case 'UPDATE_QUANTITY': {
-      if (action.payload.quantity <= 0) {
-        return cartReducer(state, { type: 'REMOVE_ITEM', payload: action.payload.packageId });
-      }
-      
-      const newItems = state.items.map(item =>
-        item.packageId === action.payload.packageId
-          ? { ...item, quantity: action.payload.quantity }
-          : item
-      );
-      
-      const total = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      return { items: newItems, total };
-    }
-    
-    case 'CLEAR_CART':
-      return { items: [], total: 0 };
-    
-    default:
-      return state;
-  }
+  count: number;
+  subtotal: number;
+  add: (item: Omit<CartItem, "qty">, qty?: number) => void;
+  remove: (id: string) => void;
+  clear: () => void;
 };
 
-const CartContext = createContext<{
-  state: CartState;
-  dispatch: React.Dispatch<CartAction>;
-} | undefined>(undefined);
+const CartContext = createContext<CartCtx | undefined>(undefined);
 
-interface CartProviderProps {
-  children: ReactNode;
-}
+export function CartProvider({ children }: PropsWithChildren) {
+  const [items, setItems] = useState<CartItem[]>([]);
 
-export const CartProvider = ({ children }: CartProviderProps) => {
-  const [state, dispatch] = useReducer(cartReducer, { items: [], total: 0 });
+  const add: CartCtx["add"] = (item, qty = 1) => {
+    setItems((prev) => {
+      const i = prev.findIndex((p) => p.id === item.id);
+      if (i > -1) {
+        const copy = [...prev];
+        copy[i] = { ...copy[i], qty: copy[i].qty + qty };
+        return copy;
+      }
+      return [...prev, { ...item, qty }];
+    });
+  };
 
-  return (
-    <CartContext.Provider value={{ state, dispatch }}>
-      {children}
-    </CartContext.Provider>
+  const remove: CartCtx["remove"] = (id) =>
+    setItems((prev) => prev.filter((p) => p.id !== id));
+
+  const clear = () => setItems([]);
+
+  const count = useMemo(() => items.reduce((n, i) => n + i.qty, 0), [items]);
+  const subtotal = useMemo(
+    () => items.reduce((s, i) => s + (i.price ?? 0) * i.qty, 0),
+    [items]
   );
-};
 
-export const useCartContext = () => {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error('useCartContext must be used within a CartProvider');
+  const value: CartCtx = { items, count, subtotal, add, remove, clear };
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}
+
+/** SAFE HOOK: never crash if provider is missing (prevents white screens) */
+export function useCartContext(): CartCtx {
+  const ctx = useContext(CartContext);
+  if (!ctx) {
+    console.warn("useCartContext used without CartProvider — returning no-op cart.");
+    return {
+      items: [],
+      count: 0,
+      subtotal: 0,
+      add: () => {},
+      remove: () => {},
+      clear: () => {},
+    };
   }
-  return context;
-};
+  return ctx;
+}

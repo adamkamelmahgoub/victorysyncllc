@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import SmartLink from './SmartLink';
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -46,16 +46,16 @@ export default function Footer() {
             <h4 className="font-semibold mb-6">Services</h4>
             <ul className="space-y-3 text-gray-400">
               <li>
-                <Link href="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Inbound Support</span></Link>
+                <SmartLink to="/services" onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Inbound Support</SmartLink>
               </li>
               <li>
-                <Link href="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Outbound Sales</span></Link>
+                <SmartLink to="/services" onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Outbound Sales</SmartLink>
               </li>
               <li>
-                <Link href="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">AI Automation</span></Link>
+                <SmartLink to="/services" onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">AI Automation</SmartLink>
               </li>
               <li>
-                <Link href="/services"><span onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Digital Marketing</span></Link>
+                <SmartLink to="/services" onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Digital Marketing</SmartLink>
               </li>
             </ul>
           </div>

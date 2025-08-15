@@ -21,11 +21,7 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-interface NavigationProps {
-  onCartClick: () => void;
-}
-
-export default function Navigation({ onCartClick }: NavigationProps) {
+export default function Navigation() {
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
