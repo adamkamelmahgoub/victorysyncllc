@@ -5,7 +5,6 @@ import {
   timestamp,
   jsonb,
   index,
-  serial,
   integer,
   decimal,
   boolean,
@@ -34,7 +33,7 @@ export const orderStatusEnum = pgEnum("order_status", ["pending", "processing", 
 
 // Organizations
 export const organizations = pgTable("organizations", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 100 }).unique().notNull(),
   status: orgStatusEnum("status").default("active").notNull(),
@@ -44,7 +43,7 @@ export const organizations = pgTable("organizations", {
 
 // Users (enhanced with 2FA and org relationship)
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orgId: integer("org_id").references(() => organizations.id),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).unique().notNull(),
@@ -63,7 +62,7 @@ export const users = pgTable("users", {
 
 // Roles
 export const roles = pgTable("roles", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orgId: integer("org_id").references(() => organizations.id), // nullable for global roles
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
@@ -73,7 +72,7 @@ export const roles = pgTable("roles", {
 
 // Permissions
 export const permissions = pgTable("permissions", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   key: varchar("key", { length: 100 }).unique().notNull(),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -97,7 +96,7 @@ export const userRoles = pgTable("user_roles", {
 
 // Access Codes
 export const accessCodes = pgTable("access_codes", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   code: varchar("code", { length: 50 }).unique().notNull(),
   orgId: integer("org_id").references(() => organizations.id),
   issuedByUserId: integer("issued_by_user_id").references(() => users.id).notNull(),
@@ -111,7 +110,7 @@ export const accessCodes = pgTable("access_codes", {
 
 // API Credentials
 export const apiCredentials = pgTable("api_credentials", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orgId: integer("org_id").references(() => organizations.id).notNull(),
   provider: providerEnum("provider").notNull(),
   authType: authTypeEnum("auth_type").notNull(),
@@ -124,7 +123,7 @@ export const apiCredentials = pgTable("api_credentials", {
 
 // Audit Logs
 export const auditLogs = pgTable("audit_logs", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orgId: integer("org_id").references(() => organizations.id), // nullable for global actions
   actorUserId: integer("actor_user_id").references(() => users.id), // nullable for system actions
   action: varchar("action", { length: 100 }).notNull(),
@@ -141,7 +140,7 @@ export const auditLogs = pgTable("audit_logs", {
 
 // Subscriptions
 export const subscriptions = pgTable("subscriptions", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orgId: integer("org_id").references(() => organizations.id).notNull(),
   plan: planEnum("plan").notNull(),
   status: subscriptionStatusEnum("status").notNull(),
@@ -156,7 +155,7 @@ export const subscriptions = pgTable("subscriptions", {
 
 // Invoices
 export const invoices = pgTable("invoices", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orgId: integer("org_id").references(() => organizations.id).notNull(),
   stripeInvoiceId: varchar("stripe_invoice_id", { length: 100 }).unique().notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
@@ -169,7 +168,7 @@ export const invoices = pgTable("invoices", {
 
 // Tickets
 export const tickets = pgTable("tickets", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orgId: integer("org_id").references(() => organizations.id).notNull(),
   createdByUserId: integer("created_by_user_id").references(() => users.id).notNull(),
   assignedToUserId: integer("assigned_to_user_id").references(() => users.id),
@@ -184,7 +183,7 @@ export const tickets = pgTable("tickets", {
 
 // Orders
 export const orders = pgTable("orders", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   userId: varchar("user_id", { length: 255 }).notNull(),
   orgId: integer("org_id").references(() => organizations.id),
   externalId: varchar("external_id", { length: 100 }),
@@ -200,7 +199,7 @@ export const orders = pgTable("orders", {
 
 // KPI Daily Metrics
 export const kpisDaily = pgTable("kpis_daily", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orgId: integer("org_id").references(() => organizations.id).notNull(),
   date: timestamp("date").notNull(),
   calls: integer("calls").default(0).notNull(),
@@ -216,7 +215,7 @@ export const kpisDaily = pgTable("kpis_daily", {
 
 // Rate Limits
 export const rateLimits = pgTable("rate_limits", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orgId: integer("org_id").references(() => organizations.id),
   key: varchar("key", { length: 100 }).notNull(),
   count: integer("count").default(0).notNull(),
@@ -228,7 +227,7 @@ export const rateLimits = pgTable("rate_limits", {
 
 // Feature Flags
 export const featureFlags = pgTable("feature_flags", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orgId: integer("org_id").references(() => organizations.id), // nullable for global flags
   key: varchar("key", { length: 100 }).notNull(),
   enabled: boolean("enabled").default(false).notNull(),
@@ -239,7 +238,7 @@ export const featureFlags = pgTable("feature_flags", {
 
 // API Keys (Personal Access Tokens)
 export const apiKeys = pgTable("api_keys", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   userId: integer("user_id").references(() => users.id).notNull(),
   orgId: integer("org_id").references(() => organizations.id).notNull(),
   name: varchar("name", { length: 255 }).notNull(),
@@ -252,7 +251,7 @@ export const apiKeys = pgTable("api_keys", {
 
 // Sessions for refresh tokens
 export const sessions = pgTable("sessions", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   userId: integer("user_id").references(() => users.id).notNull(),
   refreshTokenHash: varchar("refresh_token_hash", { length: 255 }).notNull(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -264,7 +263,7 @@ export const sessions = pgTable("sessions", {
 
 // New tables for contact submissions, packages, public users, and order items
 export const contactSubmissions = pgTable("contact_submissions", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
@@ -273,7 +272,7 @@ export const contactSubmissions = pgTable("contact_submissions", {
 });
 
 export const packages = pgTable("packages", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
@@ -284,7 +283,7 @@ export const packages = pgTable("packages", {
 });
 
 export const publicUsers = pgTable("public_users", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).unique().notNull(),
   passwordHash: varchar("password_hash", { length: 255 }),
@@ -294,7 +293,7 @@ export const publicUsers = pgTable("public_users", {
 });
 
 export const orderItems = pgTable("order_items", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orderId: integer("order_id").references(() => orders.id).notNull(),
   packageId: integer("package_id").references(() => packages.id).notNull(),
   quantity: integer("quantity").notNull(),
