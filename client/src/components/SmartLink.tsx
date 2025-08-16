@@ -1,18 +1,33 @@
-import { Link, LinkProps } from "react-router-dom";
 import React from "react";
+import { Link } from "react-router-dom";
 
-type Props = {
-  to: string;
+interface SmartLinkProps {
+  href?: string;
   children: React.ReactNode;
   className?: string;
-  newTab?: boolean;
-} & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href">;
+  target?: string;
+  rel?: string;
+}
 
-const isInternal = (to: string) =>
-  /^\/(?!\/)/.test(to) || to.startsWith("#"); // "/about", "/pricing", "#section"
+export default function SmartLink({ href, children, className, target, rel }: SmartLinkProps) {
+  // Guard against undefined href
+  if (!href) {
+    return <span className={className}>{children}</span>;
+  }
 
-export default function SmartLink({ to, children, className, newTab, ...rest }: Props) {
-  return isInternal(to)
-    ? <Link to={to} className={className} {...(rest as Omit<LinkProps, "to">)}>{children}</Link>
-    : <a href={to} className={className} target={newTab ? "_blank" : rest.target} rel={newTab ? "noopener noreferrer" : rest.rel} {...rest}>{children}</a>;
+  // External link
+  if (href.startsWith("http")) {
+    return (
+      <a href={href} className={className} target={target} rel={rel}>
+        {children}
+      </a>
+    );
+  }
+
+  // Internal link
+  return (
+    <Link to={href} className={className} target={target} rel={rel}>
+      {children}
+    </Link>
+  );
 }

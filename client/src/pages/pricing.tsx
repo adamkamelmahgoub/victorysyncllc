@@ -31,7 +31,7 @@ export default function Pricing() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="gradient-victory py-20 text-white vs-hero text-center py-20 px-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Transparent Pricing Plans
@@ -193,8 +193,8 @@ export default function Pricing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="bg-slate-50 py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-slate-50 py-20 vs-section-alt py-20 px-6">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
               Frequently Asked Questions
