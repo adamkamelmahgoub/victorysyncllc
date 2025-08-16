@@ -27,6 +27,8 @@ const clientDist = path.resolve(clientRoot, "dist");          // /workspace/clie
 // Create app
 const app = express();
 
+app.set("trust proxy", 1); // behind Replit proxy
+
 // Health check early
 app.get("/health", (_req, res) => res.json({ ok: true, env: NODE_ENV }));
 
@@ -50,7 +52,11 @@ async function boot() {
     const { createServer } = await import("vite");
     const vite = await createServer({
       root: clientRoot,
-      server: { middlewareMode: true, hmr: { clientPort: 443 }, watch: { usePolling: true } },
+      server: {
+        middlewareMode: true,
+        hmr: { protocol: "wss", clientPort: 443, path: "/hmr" },
+        watch: { usePolling: true, interval: 300, awaitWriteFinish: { stabilityThreshold: 500, pollInterval: 300 } },
+      },
       appType: "custom",
     });
     app.use(vite.middlewares);
@@ -90,7 +96,7 @@ async function boot() {
     app.use(sirv(clientDist, { dev: false, etag: true, single: true }));
   }
 
-  app.listen(PORT, "0.0.0.0", async () => {
+  const server = app.listen(PORT, "0.0.0.0", async () => {
     console.log(`🎉 VictorySync running on http://0.0.0.0:${PORT} (env=${NODE_ENV})`);
     console.log(`Health: http://0.0.0.0:${PORT}/health`);
     console.log("📦 Initializing default packages...");
@@ -103,6 +109,11 @@ async function boot() {
       // Do not throw; app must keep running.
     }
   });
+
+  // Keep sockets alive long enough for proxy/HMR
+  server.keepAliveTimeout = 70_000;
+  server.headersTimeout   = 75_000;
+  server.on("connection", (socket) => socket.setKeepAlive(true, 60_000));
 }
 
 // Never hard-crash the process for unhandled errors
