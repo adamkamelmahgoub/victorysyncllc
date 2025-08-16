@@ -1,3 +1,4 @@
+
 import { Check, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,14 +9,35 @@ import { Badge } from '@/components/ui/badge';
 export default function Pricing() {
   const { addItem } = useCart();
 
-  const { data: packages, isLoading } = useQuery({
-    queryKey: ['/api/packages'],
+  const { data: packages = [], isLoading, isError } = useQuery({
+    queryKey: ["packages"],
+    queryFn: async () => {
+      const res = await fetch("/api/packages");
+      if (!res.ok) throw new Error("Failed to load packages");
+      return res.json();
+    },
   });
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center py-10 text-sm text-red-600">Unable to load pricing at the moment.</div>
+      </div>
+    );
+  }
+
+  if (!packages.length) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center py-10 text-sm text-muted-foreground">No packages available yet.</div>
       </div>
     );
   }
@@ -48,54 +70,48 @@ export default function Pricing() {
       {/* Pricing Cards */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {packages && packages.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-8">
-              {packages.map((pkg: any, index: number) => {
-                const isPopular = index === 1; // Make middle plan popular
-                return (
-                  <Card key={pkg.id} className={`relative hover:shadow-lg transition-shadow ${isPopular ? 'border-victory-purple border-2' : 'border-slate-200'}`}>
-                    {isPopular && (
-                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <Badge className="bg-victory-purple text-white px-4 py-1">
-                          Most Popular
-                        </Badge>
+          <div className="grid md:grid-cols-3 gap-8">
+            {packages.map((pkg: any, index: number) => {
+              const isPopular = index === 1; // Make middle plan popular
+              return (
+                <Card key={pkg.id} className={`relative hover:shadow-lg transition-shadow ${isPopular ? 'border-victory-purple border-2' : 'border-slate-200'}`}>
+                  {isPopular && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <Badge className="bg-victory-purple text-white px-4 py-1">
+                        Most Popular
+                      </Badge>
+                    </div>
+                  )}
+                  <CardContent className="p-8">
+                    <div className="text-center mb-8">
+                      <h3 className="text-2xl font-bold victory-dark mb-2">{pkg.name}</h3>
+                      <div className="text-4xl font-bold victory-purple mb-2">
+                        ${parseFloat(pkg.price).toLocaleString()}
+                        <span className="text-base font-normal victory-gray">/month</span>
                       </div>
-                    )}
-                    <CardContent className="p-8">
-                      <div className="text-center mb-8">
-                        <h3 className="text-2xl font-bold victory-dark mb-2">{pkg.name}</h3>
-                        <div className="text-4xl font-bold victory-purple mb-2">
-                          ${parseFloat(pkg.price).toLocaleString()}
-                          <span className="text-base font-normal victory-gray">/month</span>
-                        </div>
-                        <p className="victory-gray">{pkg.description}</p>
-                      </div>
+                      <p className="victory-gray">{pkg.description}</p>
+                    </div>
 
-                      <ul className="space-y-4 mb-8">
-                        {pkg.features.map((feature: string, idx: number) => (
-                          <li key={idx} className="flex items-center">
-                            <Check className="text-green-500 w-5 h-5 mr-3 flex-shrink-0" />
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
+                    <ul className="space-y-4 mb-8">
+                      {(pkg.features || []).map((feature: string, idx: number) => (
+                        <li key={idx} className="flex items-center">
+                          <Check className="text-green-500 w-5 h-5 mr-3 flex-shrink-0" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-                      <Button 
-                        onClick={() => handleAddToCart(pkg)}
-                        className={`w-full ${isPopular ? 'bg-victory-purple hover:bg-purple-700' : 'bg-victory-purple hover:bg-purple-700'} text-white`}
-                      >
-                        Add to Cart
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-xl victory-gray">Loading pricing packages...</p>
-            </div>
-          )}
+                    <Button 
+                      onClick={() => handleAddToCart(pkg)}
+                      className={`w-full ${isPopular ? 'bg-victory-purple hover:bg-purple-700' : 'bg-victory-purple hover:bg-purple-700'} text-white`}
+                    >
+                      Add to Cart
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       </section>
 

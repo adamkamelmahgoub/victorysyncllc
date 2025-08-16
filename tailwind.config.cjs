@@ -1,4 +1,3 @@
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -7,7 +6,6 @@ module.exports = {
   ],
   theme: {
     extend: {
-      // shadcn-style tokens so utilities like bg-background, text-foreground, border-border exist
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -36,8 +34,8 @@ module.exports = {
           200: "#CDC4FF",
           300: "#B0A3FF",
           400: "#907FFF",
-          500: "#6C4DF6",   // main
-          600: "#5A3FE0",   // hover
+          500: "#6C4DF6", // live site
+          600: "#5A3FE0",
           700: "#4933B5",
           800: "#38288C",
           900: "#2B206C",

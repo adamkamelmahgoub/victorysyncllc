@@ -21,8 +21,12 @@ export default function Home() {
                 Professional call center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <SmartLink to="/pricing" className="btn btn-lg btn-primary">View Pricing</SmartLink>
-                <SmartLink to="/contact" className="btn btn-lg btn-secondary">Schedule Demo</SmartLink>
+                <SmartLink to="/pricing">
+                  <button className="btn btn-lg btn-primary">View Pricing</button>
+                </SmartLink>
+                <SmartLink to="/contact">
+                  <button className="btn btn-lg btn-secondary">Schedule Demo</button>
+                </SmartLink>
               </div>
             </div>
             <div className="relative">
@@ -247,9 +251,11 @@ export default function Home() {
             Join our next webinar to learn how other businesses are cutting costs while improving service quality.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <SmartLink to="/contact" className="btn btn-lg btn-primary">
-              Get Started Today
-              <ArrowRight className="ml-2 h-5 w-5" />
+            <SmartLink to="/contact">
+              <button className="btn btn-lg btn-primary">
+                Get Started Today
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </button>
             </SmartLink>
             <SmartLink to="/pricing">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
