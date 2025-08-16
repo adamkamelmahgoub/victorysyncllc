@@ -1,0 +1,151 @@
+**Your Optimized Prompt:**
+
+You are **Claude**, my **100000x senior full-stack engineer** working **inside THIS Replit** repo.
+The site renders but the preview **keeps blanking/reloading** because the **Vite HMR websocket drops** behind Replit’s proxy. I need a **stable dev preview** right now (no flicker), **without touching any public UI** or breaking Admin/Customer dashboards.
+
+Follow these exact steps and edits.
+
+---
+
+# Explanation (what to fix)
+
+* Replit’s HTTPS proxy intermittently kills Vite’s `ws` HMR socket → the client prints `server connection lost, polling for restart…` and forces reloads.
+* Fix by: (1) making HMR robust when it works, (2) **disabling HMR entirely on Replit** (while keeping it on locally), and (3) preventing any **Service Worker** from forcing reloads in dev, and (4) keeping sockets alive on the Node server.
+
+---
+
+# Code (edit exactly these files)
+
+### 1) `client/vite.config.ts` — robust + Replit-safe HMR
+
+Replace the whole export with this:
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+
+// Detect Replit container
+const isReplit = !!process.env.REPL_ID || !!process.env.REPLIT_DB_URL;
+
+// When running in Replit, HMR off (prevents WS flaps → page flicker).
+// Locally, keep secure WSS for browser previews that are https.
+const hmrConfig = isReplit
+  ? false
+  : {
+      protocol: "wss",
+      clientPort: 443,
+      path: "/hmr",
+    };
+
+export default defineConfig({
+  plugins: [react({ fastRefresh: true })],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      "@shared": path.resolve(__dirname, "../shared"),
+    },
+  },
+  server: {
+    host: true,
+    port: 5173,
+    strictPort: true,
+    cors: true,
+    allowedHosts: true,
+    hmr: hmrConfig,
+    watch: {
+      // FS polling is more stable in Replit containers
+      usePolling: true,
+      interval: 300,
+      awaitWriteFinish: { stabilityThreshold: 500, pollInterval: 300 },
+    },
+  },
+  build: { outDir: "dist" },
+});
+```
+
+### 2) `server/index.ts` — keep sockets alive (already mostly done; add if missing)
+
+Add **after** `const app = express();` and **after** `app.listen`:
+
+```ts
+app.set("trust proxy", 1);
+
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🎉 VictorySync running on http://0.0.0.0:${PORT} (${NODE_ENV})`);
+});
+
+server.keepAliveTimeout = 70_000;
+server.headersTimeout   = 75_000;
+server.on("connection", (socket) => socket.setKeepAlive(true, 60_000));
+```
+
+### 3) **Dev only**: ensure no Service Worker forces refresh loops
+
+If you have any service worker registration, add this tiny dev-only guard.
+
+Create (or append) **`client/src/dev-sw-unregister.ts`**:
+
+```ts
+// Unregister any SW in dev to avoid cache/reload loops in preview
+if (import.meta.env.DEV && "serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then((regs) => {
+    regs.forEach((r) => r.unregister().catch(() => {}));
+  });
+}
+```
+
+Import it once at the very top of **`client/src/main.tsx`**:
+
+```ts
+import "./dev-sw-unregister";
+// ...existing imports below
+```
+
+This does nothing in prod builds.
+
+### 4) `package.json` — single dev server (no duplicate vite)
+
+Ensure scripts are exactly:
+
+```json
+{
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server/index.ts",
+    "build": "cd client && vite build"
+  }
+}
+```
+
+Remove any `concurrently`, `vite dev`, or second server runner. We only use **Express + Vite middleware**.
+
+---
+
+# Instructions (run & verify)
+
+1. Install deps just in case:
+
+   ```bash
+   npm i
+   ```
+
+2. Click **Run** in Replit.
+
+3. Open the Preview and watch the console:
+
+   * There should be **no** repeating `server connection lost` messages.
+   * The page should **not blank/reload** periodically anymore.
+   * Local changes will now require **manual refresh in Replit** (by design when HMR is disabled there). Locally (non-Replit), HMR still works.
+
+4. Confirm Admin & Customer dashboards still function. No public UI changes were made.
+
+---
+
+# Notes
+
+* This keeps the dev preview rock-solid on Replit by **disabling HMR only in that environment** while retaining HMR locally.
+* We also unregister any service worker in dev to prevent SW-related reload loops.
+* Socket keep-alive plus polling FS watchers reduce proxy timeouts and missed file events.
+
+Apply all edits exactly and run again.
