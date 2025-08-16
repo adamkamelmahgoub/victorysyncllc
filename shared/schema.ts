@@ -56,9 +56,9 @@ export const users = pgTable("users", {
 export const packages = pgTable("packages", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: text("name").notNull(),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  price: text("price").notNull(), // keep as string to avoid decimal issues
   description: text("description"),
-  features: text("features").array(),
+  features: jsonb("features").$type<string[]>().notNull().default([]),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

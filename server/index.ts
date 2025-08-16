@@ -1,4 +1,3 @@
-
 import express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
@@ -66,6 +65,15 @@ async function boot() {
   app.listen(port, "0.0.0.0", () => {
     console.log(`🎉 VictorySync running on http://0.0.0.0:${port}`);
     console.log(`Health: http://0.0.0.0:${port}/health`);
+    console.log("📦 Initializing default packages...");
+  try {
+    const { seedDefaultPackages } = await import("./db/seed");
+    await seedDefaultPackages();
+    console.log("📦 Packages ready.");
+  } catch (e) {
+    console.error("⚠️ Package seed failed (continuing):", e);
+    // Do not throw; app must keep running.
+  }
   });
 }
 

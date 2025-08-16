@@ -19,6 +19,7 @@ import {
 } from "./db/schema";
 import { eq, desc, and, or, isNull } from "drizzle-orm";
 import { createOrderSchema, createContactSubmissionSchema, createAnnouncementSchema } from "@shared/schema";
+import { seedDefaultPackages } from "./db/seed";
 
 let stripe: Stripe | null = null;
 
@@ -63,7 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Initialize default packages
-  await initializePackages();
+  await seedDefaultPackages();
 
   // Initialize admin user
   await initializeAdminUser();
@@ -979,61 +980,3 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-async function initializePackages() {
-  try {
-    console.log('📦 Initializing default packages...');
-    const existingPackages = await storage.getPackages();
-    console.log(`Found ${existingPackages.length} existing packages`);
-
-    if (existingPackages.length === 0) {
-      console.log('Creating default packages...');
-      // Create default packages
-      await storage.createPackage({
-        name: "Starter",
-        price: "1200.00",
-        description: "Perfect for small businesses",
-        features: JSON.stringify([
-          "1 Dedicated Agent",
-          "Business Hours Support",
-          "Basic CRM Integration",
-          "Email Support",
-          "Monthly Reports"
-        ]),
-      });
-
-      await storage.createPackage({
-        name: "Growth",
-        price: "2500.00",
-        description: "For growing companies",
-        features: JSON.stringify([
-          "2 Dedicated Agents",
-          "Extended Hours Support",
-          "Appointment Setting",
-          "Advanced CRM Integration",
-          "Live Chat Support",
-          "Weekly Reports"
-        ]),
-      });
-
-      await storage.createPackage({
-        name: "Scale",
-        price: "4500.00",
-        description: "For enterprise needs",
-        features: JSON.stringify([
-          "24/7 Blended Team",
-          "AI Automation Suite",
-          "Dedicated Success Manager",
-          "Custom Integrations",
-          "Priority Support",
-          "Real-time Analytics"
-        ]),
-      });
-      console.log('✅ Default packages created successfully');
-    } else {
-      console.log('✅ Packages already exist, skipping initialization');
-    }
-  } catch (error) {
-    console.error("❌ Error initializing packages:", error);
-    throw error; // Re-throw to prevent server from starting with invalid state
-  }
-}
