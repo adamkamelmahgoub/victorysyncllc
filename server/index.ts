@@ -1,6 +1,5 @@
 
 // --- server/index.ts (bootstrap first) ---
-import "dotenv/config";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
@@ -110,7 +109,16 @@ async function boot() {
 process.on("unhandledRejection", (e) => console.error("UNHANDLED REJECTION", e));
 process.on("uncaughtException", (e) => console.error("UNCAUGHT EXCEPTION", e));
 
-boot().catch((err) => {
+async function main() {
+  try {
+    await import("dotenv/config");
+  } catch {
+    // ignore in Replit or prod where env comes from platform
+  }
+  await boot();
+}
+
+main().catch((err) => {
   console.error("Fatal boot error:", err);
   process.exit(1);
 });
