@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------- VictorySync Button System ---------- */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md font-semibold transition-colors
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 select-none;
+  }
+  .btn-sm { @apply text-sm px-3 py-2; }
+  .btn-md { @apply text-sm px-4 py-2; }  /* default */
+  .btn-lg { @apply text-base px-6 py-3; }
+
+  /* Primary: solid violet (used on "View Pricing", "Get Started Today") */
+  .btn-primary {
+    @apply bg-vs-violet text-white shadow-btn focus-visible:ring-vs-violet hover:bg-vs-violetHover;
+  }
+
+  /* Secondary: white bg + violet border (used on "Schedule Demo", "Learn More", Nav "Sign In") */
+  .btn-secondary {
+    @apply bg-white text-vs-violet border border-vs-violet hover:bg-violet-50
+           focus-visible:ring-vs-violet;
+  }
+
+  /* Link/Ghost: text-only violet (used for small inline actions) */
+  .btn-link {
+    @apply text-vs-violet hover:text-vs-violetHover underline-offset-4 hover:underline;
+  }
+
+  /* Full-width option when needed */
+  .btn-block { @apply w-full; }
+}
+
 /* Remove all button outlines */
 button {
   outline: none !important;

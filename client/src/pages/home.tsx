@@ -21,20 +21,8 @@ export default function Home() {
                 Professional call center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg" asChild>
-                  <SmartLink to="/pricing" className="flex items-center">
-                    View Pricing
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </SmartLink>
-                </Button>
-                <NavButton 
-                  to="/contact"
-                  size="lg" 
-                  variant="outline" 
-                  className="border-purple-600 text-purple-600 hover:bg-purple-50 px-8 py-4 text-lg"
-                >
-                  Schedule Demo
-                </NavButton>
+                <SmartLink to="/pricing" className="btn btn-lg btn-primary">View Pricing</SmartLink>
+                <SmartLink to="/contact" className="btn btn-lg btn-secondary">Schedule Demo</SmartLink>
               </div>
             </div>
             <div className="relative">
@@ -259,12 +247,10 @@ export default function Home() {
             Join our next webinar to learn how other businesses are cutting costs while improving service quality.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg" asChild>
-              <SmartLink to="/contact" className="flex items-center">
-                Get Started Today
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </SmartLink>
-            </Button>
+            <SmartLink to="/contact" className="btn btn-lg btn-primary">
+              Get Started Today
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </SmartLink>
             <SmartLink to="/pricing">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
                 View Pricing

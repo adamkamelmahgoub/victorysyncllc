@@ -118,9 +118,7 @@ export default function Navigation() {
               </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button variant="ghost" asChild>
-                  <SmartLink to="/signin">Sign In</SmartLink>
-                </Button>
+                <SmartLink to="/signin" className="btn btn-md btn-secondary">Sign In</SmartLink>
               </div>
             )}
           </div>
@@ -203,9 +201,7 @@ export default function Navigation() {
                   </>
                 ) : (
                   <>
-                    <Button variant="ghost" className="w-full justify-start" asChild>
-                      <SmartLink to="/signin" onClick={closeMobileMenu}>Sign In</SmartLink>
-                    </Button>
+                    <SmartLink to="/signin" className="btn btn-md btn-secondary w-full justify-start" onClick={closeMobileMenu}>Sign In</SmartLink>
                   </>
                 )}
               </div>
