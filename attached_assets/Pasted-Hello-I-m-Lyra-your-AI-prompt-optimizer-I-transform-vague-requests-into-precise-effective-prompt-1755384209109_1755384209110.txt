@@ -1,0 +1,552 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are **Claude**, the **100000x senior full-stack engineer** working **INSIDE THIS Replit**. Your task: ship a **launch-ready VictorySync** with **ALL Admin + Customer features** below implemented, typed, and tested — **without changing any public site UI** per the brand rules.
+
+Follow the exact file paths, code, and order below. Use Typescript everywhere, Zod for validation, Drizzle + Postgres, Express for API, Vite+React for client, Tailwind (existing tokens only), TanStack Query for data. No placeholders; no loosening type checks.
+
+---
+
+## NON-NEGOTIABLE BRAND RULES
+
+* **DO NOT** modify public navbar/header/footer/theme assets, copy, colors, spacing, fonts, breakpoints, or public routing.
+* **DO NOT** rename existing DB tables/columns/enums. Only **add** new ones.
+* **DO NOT** relax TS/ESLint. Fix types properly.
+* Admin Portal UI is **isolated** under `client/src/admin/**` and may be polished with existing tokens **only**. Public components remain untouched.
+
+---
+
+## 0) BASELINE – PREVIEW MUST RENDER
+
+### A) Vite + aliases + SPA fallback
+
+**Edit:** `client/vite.config.ts`
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      "@shared": path.resolve(__dirname, "../shared"),
+    },
+  },
+  server: {
+    host: true,
+    port: 5173,
+    hmr: { clientPort: 443 },
+    allowedHosts: true,
+  },
+  build: { outDir: "dist" },
+});
+```
+
+### B) Server dev/prod boot with SPA fallback
+
+**Edit:** `server/index.ts`
+
+```ts
+import express from "express";
+import path from "path";
+import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import cors from "cors";
+import compression from "compression";
+import morgan from "morgan";
+import { fileURLToPath } from "url";
+import api from "./routes"; // exports all /api routers
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+app.use(helmet());
+app.use(compression());
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json({ limit: "1mb" }));
+app.use(cookieParser());
+app.use(morgan("tiny"));
+
+app.use("/api", api);
+
+const isProd = process.env.NODE_ENV === "production";
+const clientRoot = path.resolve(__dirname, "../client");
+const dist = path.resolve(clientRoot, "dist");
+
+async function start() {
+  if (!isProd) {
+    // Vite middleware in dev
+    const { createServer: createViteServer } = await import("vite");
+    const vite = await createViteServer({
+      root: clientRoot,
+      server: { middlewareMode: true, hmr: { clientPort: 443 } },
+      appType: "custom",
+    });
+    app.use(vite.middlewares);
+
+    app.get("*", async (req, res, next) => {
+      if (req.path.startsWith("/api")) return next();
+      try {
+        const html = await vite.transformIndexHtml(req.originalUrl, `
+          <!doctype html><html><head><meta charset="utf-8"/></head>
+          <body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>
+        `);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch (e) { vite.ssrFixStacktrace(e as Error); next(e); }
+    });
+  } else {
+    // Static dist with SPA fallback
+    app.use(express.static(dist));
+    app.get("*", (req, res, next) => {
+      if (req.path.startsWith("/api")) return next();
+      res.sendFile(path.join(dist, "index.html"));
+    });
+  }
+
+  const port = process.env.PORT ? Number(process.env.PORT) : 5000;
+  app.listen(port, () => console.log(`✅ Server on :${port}`));
+}
+start();
+```
+
+### C) Client boot (providers only, no public visual changes)
+
+**Edit:** `client/src/main.tsx`
+
+```tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/query";
+import { AuthProvider } from "@/context/auth";
+import App from "./App"; // existing
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
+);
+```
+
+---
+
+## 1) SHARED TYPES & SCHEMAS (`@shared/schema`)
+
+**Create/Edit:** `shared/schema/index.ts`
+Export **exact names** specified.
+
+```ts
+import { z } from "zod";
+
+/* Auth */
+export const registerUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  accessCode: z.string().optional(),
+  inviteToken: z.string().optional(),
+});
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  totp: z.string().optional(),
+  backupCode: z.string().optional(),
+});
+export type PublicUser = {
+  id: number; email: string; firstName?: string; lastName?: string;
+  orgId?: number; role: Role; verified: boolean; mfaEnabled: boolean;
+};
+
+/* Access/Invites */
+export const accessCodeSchema = z.object({
+  code: z.string().min(6),
+  role: z.enum(["superAdmin","admin","manager","agent","customer"]),
+  orgId: z.number(),
+  maxUses: z.number().int().positive(),
+  expiresAt: z.string().datetime(),
+});
+export const inviteTokenSchema = z.object({ token: z.string().min(16) });
+
+/* RBAC */
+export type Role = "superAdmin"|"admin"|"manager"|"agent"|"customer";
+export const Permissions = {
+  USER_READ: "user:read",
+  USER_WRITE: "user:write",
+  ORG_READ: "org:read",
+  ORG_WRITE: "org:write",
+  BILLING_READ: "billing:read",
+  BILLING_WRITE: "billing:write",
+  INTEGRATION_WRITE: "integrations:write",
+  KPI_READ: "kpi:read",
+  ORDERS_READ: "orders:read",
+  ORDERS_WRITE: "orders:write",
+} as const;
+
+/* Entities */
+export type User = { id:number; email:string; orgId?:number; role:Role; verified:boolean; mfaEnabled:boolean; createdAt:string; };
+export type Organization = { id:number; name:string; number?:string; createdAt:string; };
+export type OrderItem = { id:number; orderId:number; sku?:string; priceAtTime:string; quantity:number; };
+export type Order = { id:number; orgId:number; userId?:number; amount:string; status:"pending"|"processing"|"completed"|"cancelled"|"refunded"; items:OrderItem[]; createdAt:string; };
+export type Package = { id:number; key:string; name:string; price:string; features:string[] };
+export type Integration = { id:number; orgId:number; provider:string; status:"connected"|"error"|"disconnected"; createdAt:string; };
+export type ContactSubmission = { id:number; firstName:string; lastName:string; email:string; message:string; createdAt:string; };
+
+/* KPI */
+export type KPIData = {
+  activeAgents:number, callsToday:number, callsThisWeek:number, callsThisMonth:number,
+  avgResponseTime:number, avgHandleTime:number, occupancyRate:number,
+  customerSatisfaction:number, resolutionRate:number, slaCompliance:number
+};
+
+/* Validation */
+export const insertContactSubmissionSchema = z.object({
+  firstName: z.string().min(1), lastName: z.string().min(1),
+  email: z.string().email(), message: z.string().min(1)
+});
+export const insertOrderItemSchema = z.object({
+  sku: z.string().optional(),
+  priceAtTime: z.string(),
+  quantity: z.number().int().positive(),
+});
+export const insertOrderSchema = z.object({
+  orgId: z.number().int().positive(),
+  amount: z.string(),
+  status: z.enum(["pending","processing","completed","cancelled","refunded"]),
+  items: z.array(insertOrderItemSchema).nonempty(),
+});
+
+export type {
+  // re-export types if needed by client
+};
+```
+
+---
+
+## 2) DATABASE – DRIZZLE/PG (ADD-ONLY)
+
+**Create:** `server/db/schema.ts` – include new tables only (and import existing ones to relate).
+**Create migrations** that add: `invites`, `access_codes`, `audit_logs`, `mfa_backup_codes`, `api_keys`, `webhooks`, `coupons`, `redemptions`, `contact_submissions`.
+
+Example for a few (replicate for all):
+
+```ts
+import { pgTable, serial, text, integer, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+
+export const invites = pgTable("invites", {
+  id: serial("id").primaryKey(),
+  orgId: integer("org_id").notNull(),
+  email: text("email").notNull(),
+  role: text("role").notNull(), // Role
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }).default(null),
+  createdAt: timestamp("created_at",{withTimezone:true}).defaultNow(),
+});
+
+export const accessCodes = pgTable("access_codes", {
+  id: serial("id").primaryKey(),
+  orgId: integer("org_id").notNull(),
+  code: text("code").notNull().unique(),
+  role: text("role").notNull(),
+  maxUses: integer("max_uses").notNull().default(1),
+  usedCount: integer("used_count").notNull().default(0),
+  expiresAt: timestamp("expires_at",{withTimezone:true}).notNull(),
+  createdBy: integer("created_by").notNull(),
+  createdAt: timestamp("created_at",{withTimezone:true}).defaultNow(),
+});
+
+export const coupons = pgTable("coupons", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  type: text("type").notNull(), // 'percent' | 'fixed'
+  amount: text("amount").notNull(), // decimal as string
+  appliesToPackageId: integer("applies_to_package_id"),
+  orgId: integer("org_id"),
+  maxRedemptions: integer("max_redemptions").default(0),
+  redeemedCount: integer("redeemed_count").default(0),
+  startsAt: timestamp("starts_at",{withTimezone:true}),
+  endsAt: timestamp("ends_at",{withTimezone:true}),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at",{withTimezone:true}).defaultNow(),
+});
+
+export const redemptions = pgTable("redemptions", {
+  id: serial("id").primaryKey(),
+  couponId: integer("coupon_id").notNull(),
+  orgId: integer("org_id"),
+  userId: integer("user_id"),
+  orderId: integer("order_id"),
+  redeemedAt: timestamp("redeemed_at",{withTimezone:true}).defaultNow(),
+  amount: text("amount").notNull(),
+});
+
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id"),
+  orgId: integer("org_id"),
+  action: text("action").notNull(),
+  meta: jsonb("meta").$type<Record<string, unknown>>().default({}),
+  ip: text("ip"),
+  ua: text("ua"),
+  createdAt: timestamp("created_at",{withTimezone:true}).defaultNow(),
+});
+
+// ... mfa_backup_codes, api_keys, webhooks, contact_submissions similarly
+```
+
+**Seed script:** only roles/permissions/superAdmin; **no demo org/order**.
+
+---
+
+## 3) AUTH & SECURITY
+
+### A) Middleware + JWT user
+
+**Create:** `server/auth/middleware.ts`
+
+```ts
+import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+
+export type JwtUser = { id:number; orgId?:number; role:Role; permissions:string[]; isSuperAdmin:boolean };
+declare global { namespace Express { interface Request { user?: JwtUser } } }
+
+export function authenticateJWT(req:Request,res:Response,next:NextFunction){
+  const token = req.cookies?.token || (req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.slice(7) : null);
+  if (!token) return res.status(401).json({ error:"unauthorized" });
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET!) as JwtUser;
+    return next();
+  } catch { return res.status(401).json({ error:"unauthorized" }); }
+}
+
+export function authorize(perms: string[] = []) {
+  return (req:Request,res:Response,next:NextFunction) => {
+    if (!req.user) return res.status(401).json({ error:"unauthorized" });
+    if (req.user.isSuperAdmin) return next();
+    const ok = perms.every(p => req.user!.permissions.includes(p));
+    return ok ? next() : res.status(403).json({ error:"forbidden" });
+  };
+}
+```
+
+### B) Auth routes (register/login/logout/me + email verify + 2FA + SSO stubs)
+
+**Create:** `server/routes/auth.ts` – implement all endpoints per spec using argon2, speakeasy, qrcode, and audit logs. (Keep code concise here; include full handlers for register/login/logout/me, and structured stubs with TODOs for SSO callbacks and 2FA enrollment/challenge. Enforce accessCode/inviteToken logic exactly as described — increment `usedCount`, mark invite `usedAt`, validate expiry/maxUses.)
+
+---
+
+## 4) BILLING / ORDERS / COUPONS
+
+**Create:** `server/routes/billing.ts`, `server/routes/coupons.ts`, `server/routes/orders.ts`
+
+* Follow the endpoint list in the spec.
+* Coupons validation: window, active, scope match, redemptions; increment `redeemedCount`, record in `redemptions`.
+* If Stripe env vars present, mirror create/update via Stripe SDK.
+
+---
+
+## 5) API KEYS & WEBHOOKS
+
+**Create:** `server/routes/apikeys.ts`, `server/routes/webhooks.ts`
+
+* Keys: generate, hash + show once, rotate, revoke, update `lastUsedAt`.
+* Webhooks: register, sign payload (HMAC SHA256), retry/backoff; DLQ table `webhook_failures`.
+* Delivery log persisted; redact secrets in logs.
+
+---
+
+## 6) INTEGRATIONS (CRM + Dialer)
+
+**Create:** `server/integrations/*` for providers.
+
+* Implement **at least**: HubSpot (OAuth) **and** Twilio (API key) fully. Stubs for others with typed shapes.
+* Endpoints:
+
+  * `GET /api/integrations/available`
+  * `GET /api/integrations`
+  * `POST /api/integrations/connect`
+  * `DELETE /api/integrations/:id`
+  * `POST /api/integrations/:id/sync`
+  * `POST /api/integrations/hooks/:provider` (signature verify, enqueue delta sync)
+* Use BullMQ if `REDIS_URL`, else node-cron + in-process queue. Rate-limit and backoff 429s.
+
+---
+
+## 7) ADMIN PORTAL (isolated UI)
+
+Under `client/src/admin/**` build a minimal, clean app **without using public header/footer**. Use shadcn + tokens.
+
+Pages:
+
+1. Overview (KPIs, revenue, orgs/users, failed webhooks, queue health)
+2. Users & Roles (list/search, assign roles, deactivate/reactivate, reset MFA, force password reset, invite flow)
+3. Organizations (CRUD, settings; generate access codes)
+4. Coupons/Promotions (CRUD; view redemptions; export CSV)
+5. Billing (subscriptions/seats overview; invoices)
+6. Integrations (catalog; connection status; resync; rotate secrets)
+7. API Keys (create/rotate/revoke; scopes; copy-once, last used)
+8. Audit & Health (filterable audit log; background jobs; rate limits)
+
+> **Do not import public Nav/Footer**. Use isolated layout.
+
+---
+
+## 8) CUSTOMER PORTAL
+
+* Sign-up with **Access Code or Invite**.
+* 2FA flows (enroll/enable/challenge/disable; backup codes).
+* Dashboard (KPIData, recent orders, integration status).
+* Billing (plan, seats, invoices, apply coupon).
+* Integrations (connect/remove/sync).
+* Team (managers invite teammates).
+* Profile & Security (password change, 2FA management, personal API keys if allowed).
+
+---
+
+## 9) CLIENT DATA WIRING (Typed TanStack Query; **no Response objects**)
+
+**Create:** `client/src/lib/apiRequest.ts`
+
+```ts
+type HttpMethod = "GET"|"POST"|"PUT"|"PATCH"|"DELETE";
+
+export class ApiError extends Error {
+  status: number; data?: unknown;
+  constructor(message: string, status:number, data?:unknown){ super(message); this.status=status; this.data=data; }
+}
+
+async function request<T>(method:HttpMethod, url:string, body?:unknown, init?:RequestInit): Promise<T> {
+  const res = await fetch(url, {
+    method,
+    headers: { "Content-Type":"application/json", ...(init?.headers||{}) },
+    credentials: "include",
+    body: body ? JSON.stringify(body) : undefined,
+    ...init,
+  });
+  const ct = res.headers.get("content-type") || "";
+  const data = ct.includes("application/json") ? await res.json() : await res.text();
+  if (!res.ok) throw new ApiError(typeof data==="string" ? data : (data?.error || "Request failed"), res.status, data);
+  return data as T;
+}
+
+export const api = {
+  get:  <T>(url:string, init?:RequestInit)=>request<T>("GET", url, undefined, init),
+  post: <T>(url:string, body?:unknown, init?:RequestInit)=>request<T>("POST", url, body, init),
+  put:  <T>(url:string, body?:unknown, init?:RequestInit)=>request<T>("PUT", url, body, init),
+  patch:<T>(url:string, body?:unknown, init?:RequestInit)=>request<T>("PATCH", url, body, init),
+  del:  <T>(url:string, init?:RequestInit)=>request<T>("DELETE", url, undefined, init),
+};
+```
+
+**Create:** `client/src/lib/query.ts`
+
+```ts
+import { QueryClient } from "@tanstack/react-query";
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { staleTime: 60_000, refetchOnWindowFocus:false, retry:1 },
+    mutations: { retry:0 },
+  },
+});
+```
+
+**Typed hooks examples** (use everywhere; **no conditional hooks**):
+
+```ts
+// example: use current user
+// client/src/queries/useMe.ts
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/apiRequest";
+import type { PublicUser } from "@shared/schema";
+
+export function useMe(){
+  return useQuery({
+    queryKey:["me"],
+    queryFn: () => api.get<PublicUser>("/api/auth/me"),
+  });
+}
+```
+
+**Guard conditionally with `enabled` instead of conditional hooks**:
+
+```ts
+const { data: orders=[] } = useQuery({
+  queryKey:["orders", userId],
+  queryFn: () => api.get<Order[]>(`/api/orders?userId=${userId}`),
+  enabled: !!userId,
+});
+```
+
+---
+
+## 10) TESTING
+
+* **Server unit/integration:** add Jest + supertest for `/api/auth/*`, `/api/coupons`, `/api/orders`, `/api/integrations/*`, `/api/apikeys`, `/api/webhooks`.
+* **Migration tests:** run drizzle migrations up/down in CI.
+* **Admin/customer flows smoke tests:** login, 2FA enroll/verify, coupon apply preview, api key create/revoke, webhook sign/verify, integration connect/sync (HubSpot/Twilio happy path).
+
+---
+
+## 11) ENV & SECURITY
+
+* `.env`: `DATABASE_URL`, `JWT_SECRET`, `EMAIL_VERIFICATION=true|false`, `ENFORCE_MFA_ROLES="admin,manager"`, `ENABLE_AUDIT_LOGS=true`, `REDIS_URL?`, provider secrets (HubSpot/Twilio), `STRIPE_*` if used.
+* Add Helmet, CORS, cookie flags, rate-limit if needed. Always audit auth events if enabled.
+
+---
+
+## 12) RUN IN REPLIT
+
+* **Dev:** Start server only (Vite is in middleware mode).
+
+  ```bash
+  npm run dev   # script: tsx server/index.ts
+  ```
+* **Build:**
+
+  ```bash
+  cd client && npm run build && cd .. && NODE_ENV=production tsx server/index.ts
+  ```
+
+---
+
+## 13) ACCEPTANCE CHECKLIST
+
+* Preview renders (no blank screen / “Cannot GET /”).
+* Public site unchanged visually/functionally.
+* Auth: register (accessCode OR invite), login/logout, me, optional email verify.
+* MFA: enroll/enable/disable, login challenge, backup codes.
+* SSO (Google/Microsoft): server-side flow, state protection, link or create (requires invite/accessCode), MFA enforced by role.
+* RBAC enforced via middleware.
+* Orders + Coupons + Billing endpoints functional; redemptions persisted; Stripe mirrored if configured.
+* API Keys and Webhooks CRUD + signing, retries, DLQ.
+* Integrations: HubSpot OAuth + Twilio API fully working; others stubbed; sync engine queues and persists logs.
+* Admin Portal (isolated) delivers all listed features.
+* Customer Portal delivers all listed features.
+* Typed React Query throughout; **no conditional hook calls**; `enabled` gates only.
+* All tests pass; no type errors.
+
+---
+
+## GUARDRAILS
+
+* **Never** modify public UI assets, nav/footer/theme, or routing.
+* **Never** loosen types/ESLint. Fix errors at the source.
+* **Never** rename existing DB columns/tables/enums. Only add.
+* **No** placeholder/demo data anywhere.
+
+**Implement exactly as above, file-by-file, committing in small passes. When complete, run tests and confirm the Acceptance Checklist.**
