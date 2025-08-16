@@ -62,18 +62,18 @@ async function boot() {
   }
 
   const port = Number(process.env.PORT) || 5000;
-  app.listen(port, "0.0.0.0", () => {
+  app.listen(port, "0.0.0.0", async () => {
     console.log(`🎉 VictorySync running on http://0.0.0.0:${port}`);
     console.log(`Health: http://0.0.0.0:${port}/health`);
     console.log("📦 Initializing default packages...");
-  try {
-    const { seedDefaultPackages } = await import("./db/seed");
-    await seedDefaultPackages();
-    console.log("📦 Packages ready.");
-  } catch (e) {
-    console.error("⚠️ Package seed failed (continuing):", e);
-    // Do not throw; app must keep running.
-  }
+    try {
+      const { seedDefaultPackages } = await import("./db/seed.js");
+      await seedDefaultPackages();
+      console.log("📦 Packages ready.");
+    } catch (e) {
+      console.error("⚠️ Package seed failed (continuing):", e);
+      // Do not throw; app must keep running.
+    }
   });
 }
 
