@@ -1,7 +1,7 @@
-
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
+import { seedDatabase } from "./seedData";
 
 async function runMigrations() {
   const connectionString = process.env.DATABASE_URL;
@@ -15,6 +15,10 @@ async function runMigrations() {
   console.log("🔄 Running migrations...");
   await migrate(db, { migrationsFolder: "./drizzle" });
   console.log("✅ Migrations completed");
+
+  console.log("Starting database seeding...");
+  await seedDatabase();
+  console.log("Seeding completed!");
 
   await sql.end();
 }

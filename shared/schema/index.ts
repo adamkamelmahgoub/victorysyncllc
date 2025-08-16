@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 /* Auth */
@@ -12,11 +11,92 @@ export const registerUserSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-  totp: z.string().optional(),
-  backupCode: z.string().optional(),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
 });
+
+export type LoginSchema = z.infer<typeof loginSchema>;
+
+// VictorySync Business Schemas
+export const serviceSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string().nullable(),
+  category: z.string(),
+  isActive: z.boolean(),
+  createdAt: z.date(),
+});
+
+export const servicePackageSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string().nullable(),
+  price: z.number(),
+  duration: z.number().nullable(),
+  features: z.array(z.string()),
+  isActive: z.boolean(),
+  createdAt: z.date(),
+});
+
+export const orderSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  packageId: z.number().nullable(),
+  status: z.enum(["pending", "confirmed", "in_progress", "completed", "cancelled"]),
+  totalAmount: z.number(),
+  notes: z.string().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export const contactSubmissionSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  email: z.string().email(),
+  subject: z.string().nullable(),
+  message: z.string(),
+  status: z.enum(["new", "contacted", "resolved"]),
+  createdAt: z.date(),
+});
+
+export const announcementSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  content: z.string(),
+  type: z.enum(["info", "warning", "success", "error"]),
+  isActive: z.boolean(),
+  targetRole: z.any().nullable(), // Placeholder, assuming roleSchema will be defined or imported elsewhere
+  createdBy: z.number(),
+  createdAt: z.date(),
+});
+
+export const createOrderSchema = z.object({
+  packageId: z.number().optional(),
+  notes: z.string().optional(),
+});
+
+export const createContactSubmissionSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  subject: z.string().optional(),
+  message: z.string().min(1, "Message is required"),
+});
+
+export const createAnnouncementSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  content: z.string().min(1, "Content is required"),
+  type: z.enum(["info", "warning", "success", "error"]).default("info"),
+  targetRole: z.any().optional(), // Placeholder, assuming roleSchema will be defined or imported elsewhere
+});
+
+export type Service = z.infer<typeof serviceSchema>;
+export type ServicePackage = z.infer<typeof servicePackageSchema>;
+export type Order = z.infer<typeof orderSchema>;
+export type ContactSubmission = z.infer<typeof contactSubmissionSchema>;
+export type Announcement = z.infer<typeof announcementSchema>;
+export type CreateOrderSchema = z.infer<typeof createOrderSchema>;
+export type CreateContactSubmissionSchema = z.infer<typeof createContactSubmissionSchema>;
+export type CreateAnnouncementSchema = z.infer<typeof createAnnouncementSchema>;
 
 export type PublicUser = {
   id: number; 
@@ -44,6 +124,9 @@ export const inviteTokenSchema = z.object({
 
 /* RBAC */
 export type Role = "superAdmin"|"admin"|"manager"|"agent"|"customer";
+
+// Assuming roleSchema is meant to be defined or imported. For now, using a placeholder type.
+const roleSchema = z.enum(["superAdmin","admin","manager","agent","customer"]);
 
 export const Permissions = {
   USER_READ: "user:read",

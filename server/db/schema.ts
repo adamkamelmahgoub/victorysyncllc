@@ -1,4 +1,3 @@
-
 import { pgTable, serial, text, integer, timestamp, boolean, jsonb, decimal } from "drizzle-orm/pg-core";
 
 // Import existing tables (users, organizations, etc.)
@@ -107,13 +106,57 @@ export const redemptions = pgTable("redemptions", {
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
 });
 
-export const contactSubmissions = pgTable("contact_submissions", {
+// VictorySync Business Models
+export const servicesTable = pgTable("services", {
   id: serial("id").primaryKey(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const servicePackagesTable = pgTable("service_packages", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  price: integer("price").notNull(), // cents
+  duration: integer("duration"), // months
+  features: text("features").array().default([]),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const ordersTable = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => usersTable.id),
+  packageId: integer("package_id").references(() => servicePackagesTable.id),
+  status: text("status", { enum: ["pending", "confirmed", "in_progress", "completed", "cancelled"] }).default("pending"),
+  totalAmount: integer("total_amount").notNull(), // cents
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const contactSubmissionsTable = pgTable("contact_submissions", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
   email: text("email").notNull(),
+  subject: text("subject"),
   message: text("message").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  status: text("status", { enum: ["new", "contacted", "resolved"] }).default("new"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const announcementsTable = pgTable("announcements", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  type: text("type", { enum: ["info", "warning", "success", "error"] }).default("info"),
+  isActive: boolean("is_active").default(true),
+  targetRole: roleEnum("target_role"),
+  createdBy: integer("created_by").notNull().references(() => usersTable.id),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const integrations = pgTable("integrations", {
