@@ -483,7 +483,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // Export the API router for external use if needed
 export { api };
-}
 
 async function initializePackages() {
   try {
