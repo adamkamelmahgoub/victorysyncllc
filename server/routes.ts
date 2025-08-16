@@ -236,7 +236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { name, email, password, role, isActive, permissions } = req.body;
 
       // Check if user already exists
-      const existingUser = await storage.getUserByEmail(email);
+      const existingUser = await storage.getPublicUserByEmail(email);
       if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
@@ -245,7 +245,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const user = await storage.createUser({
+      const user = await storage.createPublicUser({
         name,
         email,
         password: hashedPassword,
@@ -416,7 +416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/users/:id/impersonate', requireAdmin, async (req: any, res: any) => {
     try {
       const userId = parseInt(req.params.id);
-      const userToImpersonate = await storage.getUserById(userId);
+      const userToImpersonate = await storage.getPublicUserById(userId);
 
       if (!userToImpersonate) {
         return res.status(404).json({ message: "User not found" });
@@ -481,7 +481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/user/profile', authenticateJWT as any, async (req: any, res: any) => {
     try {
       const userId = req.user!.id;
-      const user = await storage.getUserById(userId);
+      const user = await storage.getPublicUserById(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -918,7 +918,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/users/:id/impersonate', authenticateJWT as any, requireSuperAdmin, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = parseInt(req.params.id);
-      const userToImpersonate = await storage.getUserById(userId);
+      const userToImpersonate = await storage.getPublicUserById(userId);
 
       if (!userToImpersonate) {
         return res.status(404).json({ message: "User not found" });
@@ -992,41 +992,41 @@ async function initializePackages() {
         name: "Starter",
         price: "1200.00",
         description: "Perfect for small businesses",
-        features: [
+        features: JSON.stringify([
           "1 Dedicated Agent",
           "Business Hours Support",
           "Basic CRM Integration",
           "Email Support",
           "Monthly Reports"
-        ],
+        ]),
       });
 
       await storage.createPackage({
         name: "Growth",
         price: "2500.00",
         description: "For growing companies",
-        features: [
+        features: JSON.stringify([
           "2 Dedicated Agents",
           "Extended Hours Support",
           "Appointment Setting",
           "Advanced CRM Integration",
           "Live Chat Support",
           "Weekly Reports"
-        ],
+        ]),
       });
 
       await storage.createPackage({
         name: "Scale",
         price: "4500.00",
         description: "For enterprise needs",
-        features: [
+        features: JSON.stringify([
           "24/7 Blended Team",
           "AI Automation Suite",
           "Dedicated Success Manager",
           "Custom Integrations",
           "Priority Support",
           "Real-time Analytics"
-        ],
+        ]),
       });
       console.log('✅ Default packages created successfully');
     } else {

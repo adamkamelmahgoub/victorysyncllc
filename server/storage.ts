@@ -336,25 +336,25 @@ export class DatabaseStorage implements IStorage {
 
   // User management for admins
   async updateUserRole(userId: number, role: string) {
-    const [updated] = await db.update(users)
+    const [updated] = await db.update(publicUsers)
       .set({ role, updatedAt: new Date() })
-      .where(eq(users.id, userId))
+      .where(eq(publicUsers.id, userId))
       .returning();
     return updated;
   }
 
   async updateUserPermissions(userId: number, permissions: any) {
-    const [updated] = await db.update(users)
+    const [updated] = await db.update(publicUsers)
       .set({ permissions, updatedAt: new Date() })
-      .where(eq(users.id, userId))
+      .where(eq(publicUsers.id, userId))
       .returning();
     return updated;
   }
 
   async updateLastLogin(userId: number) {
-    const [updated] = await db.update(users)
+    const [updated] = await db.update(publicUsers)
       .set({ lastLogin: new Date() })
-      .where(eq(users.id, userId))
+      .where(eq(publicUsers.id, userId))
       .returning();
     return updated;
   }
