@@ -1,0 +1,242 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are **Claude**, a 100000x senior full-stack engineer working **inside my Replit project** (Vite + React/TS in `client/`, Express/TS in `server/`, Tailwind, TanStack Query).
+Fix the runtime error:
+
+```
+[plugin:runtime-error-plugin] Rendered more hooks than during the previous render.
+at client/src/pages/customer-dashboard.tsx:109:59
+```
+
+This is due to **hooks (useQuery, useState, etc.) being called conditionally** (e.g., inside `if`/`switch`/loops or after an early return). Refactor so **all hooks are called unconditionally in the same order on every render**, and gate network calls with `enabled:`. Make the page stable and error-free.
+
+---
+
+## Must pass
+
+* No “Rendered more/fewer hooks” errors anywhere.
+* All `useQuery`/`useMutation`/`useState`/`useEffect` are called **unconditionally** at top level of the component.
+* Data fetching is gated using `enabled` flags, not conditional hook calls.
+* No hooks inside loops or `map` — use `useQueries` or aggregate fetches.
+* Build/dev run cleanly in Replit.
+
+---
+
+## Exact file edit (replace component with this SAFE pattern)
+
+**File:** `client/src/pages/customer-dashboard.tsx`
+**Action:** Replace the whole component body with the version below (keep your header/footer/UI sections; just merge your content into this structure). Adjust field names and endpoints to match your code, but **do not change the hook order**.
+
+```tsx
+import React, { useMemo, useState } from "react";
+import { useQuery, useQueries } from "@tanstack/react-query";
+import { useAuth } from "@/context/auth"; // or wherever your auth lives
+import SmartLink from "@/components/SmartLink";
+
+/**
+ * RULES TO KEEP:
+ * 1) Call ALL hooks (useState/useMemo/useQuery) unconditionally and in the same order.
+ * 2) Do NOT call hooks inside if/switch/loops. Use `enabled:` and conditional rendering instead.
+ * 3) Do NOT early-return before hooks; render conditionally after hooks are created.
+ */
+
+export default function CustomerDashboard() {
+  // ---- 1) Primitive state and derived values (always declared in same order)
+  const { user } = useAuth();          // never conditionally call
+  const userId = user?.id ?? null;
+
+  const [activeTab, setActiveTab] = useState<"overview"|"orders"|"billing"|"settings">("overview");
+
+  // Derive booleans for enabled flags (no hooks inside conditionals)
+  const canFetch = !!userId;
+  const isOrdersTab   = activeTab === "orders";
+  const isBillingTab  = activeTab === "billing";
+  const isOverviewTab = activeTab === "overview";
+
+  // ---- 2) Queries (ALWAYS declared; network is gated via `enabled`)
+  // Orders
+  const {
+    data: orders = [],
+    isLoading: ordersLoading,
+    isError: ordersError,
+  } = useQuery({
+    queryKey: ["user","orders", userId],
+    queryFn: async () => {
+      const r = await fetch("/api/user/orders");
+      if (!r.ok) throw new Error("Failed to load orders");
+      return r.json();
+    },
+    enabled: canFetch && isOrdersTab,  // tab + auth gate
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  // Profile (often needed across tabs)
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    isError: profileError,
+  } = useQuery({
+    queryKey: ["user","profile", userId],
+    queryFn: async () => {
+      const r = await fetch("/api/user/me");
+      if (!r.ok) throw new Error("Failed to load profile");
+      return r.json();
+    },
+    enabled: canFetch,                 // auth gate only
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  // Billing (example; keep order fixed even if not on tab)
+  const {
+    data: invoices = [],
+    isLoading: invoicesLoading,
+    isError: invoicesError,
+  } = useQuery({
+    queryKey: ["user","invoices", userId],
+    queryFn: async () => {
+      const r = await fetch("/api/user/invoices");
+      if (!r.ok) throw new Error("Failed to load invoices");
+      return r.json();
+    },
+    enabled: canFetch && isBillingTab,
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  // If you previously called useQuery inside a loop, use useQueries instead:
+  // const results = useQueries({
+  //   queries: (ids ?? []).map(id => ({
+  //     queryKey: ["user","detail", userId, id],
+  //     queryFn: () => fetch(`/api/user/detail/${id}`).then(r => r.json()),
+  //     enabled: canFetch && isOverviewTab,
+  //   })),
+  // });
+
+  // ---- 3) Render (safe conditional UI AFTER hooks are declared)
+  if (!userId) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
+        <h2 className="text-xl font-semibold mb-3">Please sign in</h2>
+        <p className="text-muted-foreground mb-6">You need an account to access your dashboard.</p>
+        <SmartLink to="/signin" className="btn btn-md btn-primary">Sign In</SmartLink>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-10">
+      {/* Tabs */}
+      <div className="flex gap-3 mb-8">
+        <button className={`btn btn-sm ${isOverviewTab ? "btn-primary" : "btn-secondary"}`} onClick={() => setActiveTab("overview")}>Overview</button>
+        <button className={`btn btn-sm ${isOrdersTab ? "btn-primary" : "btn-secondary"}`} onClick={() => setActiveTab("orders")}>Orders</button>
+        <button className={`btn btn-sm ${isBillingTab ? "btn-primary" : "btn-secondary"}`} onClick={() => setActiveTab("billing")}>Billing</button>
+        <button className={`btn btn-sm ${activeTab==="settings" ? "btn-primary" : "btn-secondary"}`} onClick={() => setActiveTab("settings")}>Settings</button>
+      </div>
+
+      {/* Overview */}
+      {isOverviewTab && (
+        <section>
+          {profileLoading && <p className="text-sm text-muted-foreground">Loading profile…</p>}
+          {profileError && <p className="text-sm text-red-600">Unable to load profile.</p>}
+          {profile && <pre className="text-xs bg-white border p-4 rounded">{JSON.stringify(profile, null, 2)}</pre>}
+        </section>
+      )}
+
+      {/* Orders */}
+      {isOrdersTab && (
+        <section>
+          {ordersLoading && <p className="text-sm text-muted-foreground">Loading orders…</p>}
+          {ordersError && <p className="text-sm text-red-600">Unable to load orders.</p>}
+          {!ordersLoading && !ordersError && !orders.length && (
+            <p className="text-sm text-muted-foreground">No orders yet.</p>
+          )}
+          {!!orders.length && (
+            <ul className="grid md:grid-cols-2 gap-4">
+              {orders.map((o: any) => (
+                <li key={o.id} className="rounded border bg-white p-4">
+                  <div className="font-semibold">{o.title ?? `Order #${o.id}`}</div>
+                  <div className="text-sm text-muted-foreground">{o.status}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {/* Billing */}
+      {isBillingTab && (
+        <section>
+          {invoicesLoading && <p className="text-sm text-muted-foreground">Loading invoices…</p>}
+          {invoicesError && <p className="text-sm text-red-600">Unable to load invoices.</p>}
+          {!!invoices.length && (
+            <ul className="grid md:grid-cols-2 gap-4">
+              {invoices.map((inv: any) => (
+                <li key={inv.id} className="rounded border bg-white p-4">
+                  <div className="font-semibold">Invoice #{inv.number ?? inv.id}</div>
+                  <div className="text-sm text-muted-foreground">{inv.total}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}
+```
+
+### Why this fixes it
+
+* **All hooks are declared once and in the same order** on every render.
+* Data fetching is toggled using **`enabled:`** flags instead of conditional hook calls.
+* No hooks in loops; `useQueries` (or a single aggregated query) replaces per-item `useQuery` inside `.map`.
+* Early return happens **after** hooks are declared (only for “not signed in” UX), which is safe because the hooks are already called this render.
+
+---
+
+## Project-wide sweep (do these too)
+
+1. **Search & destroy conditional hooks**
+
+   ```bash
+   grep -Rni "useQuery(" client/src | grep -v node_modules
+   grep -Rni "useState(" client/src | grep -v node_modules
+   grep -Rni "useEffect(" client/src | grep -v node_modules
+   ```
+
+   * If you see hooks inside `if`, `switch`, loops, or early returns before some hooks run: **refactor** to top-level with `enabled:` gate and conditional rendering.
+
+2. **No hooks in loops**
+
+   * Replace `items.map(() => useQuery(...))` with:
+
+     ```ts
+     const results = useQueries({ queries: items.map(item => ({ queryKey: [...], queryFn: ..., enabled })) });
+     ```
+
+     or fetch them in **one** query that returns an array.
+
+3. **React Query provider is already global**
+
+   * Ensure `QueryClientProvider` wraps the app in `client/src/main.tsx` (you already added this in previous step).
+
+---
+
+## Replit build
+
+```bash
+pkill -f "node|vite" || true
+npm run build && tsx server/index.ts
+```
+
+**Verify:**
+
+* Navigate to `/customer-dashboard` and click between tabs; no hook errors.
+* Reload the page while unauthenticated: still no hook errors; the sign-in prompt shows.
+* All queries fire only when `enabled` is true (tab + auth gate).
+
+**Apply this refactor exactly to `customer-dashboard.tsx`, then sweep the rest of the app for conditional hooks and fix using the same pattern.**
