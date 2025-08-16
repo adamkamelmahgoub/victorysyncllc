@@ -1,4 +1,4 @@
-import SmartLink from '@/components/SmartLink';
+import { Link } from 'wouter';
 
 export default function Blog() {
   const blogPosts = [
@@ -15,7 +15,7 @@ export default function Blog() {
       title: "The Future of Customer Service: AI Automation vs Human Touch",
       excerpt: "Exploring the perfect balance between artificial intelligence and human empathy in modern customer service operations.",
       author: "Michael Rodriguez",
-      date: "December 10, 2024",
+      date: "December 10, 2024", 
       readTime: "6 min read",
       category: "AI Technology",
       image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
@@ -25,7 +25,7 @@ export default function Blog() {
       excerpt: "Learn to identify the key indicators that suggest it's time to outsource your customer support operations to professionals.",
       author: "Jennifer Walsh",
       date: "December 5, 2024",
-      readTime: "5 min read",
+      readTime: "5 min read", 
       category: "Business Strategy",
       image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80"
     },
@@ -84,8 +84,8 @@ export default function Blog() {
               <button
                 key={index}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  index === 0
-                    ? 'bg-victory-purple text-white'
+                  index === 0 
+                    ? 'bg-victory-purple text-white' 
                     : 'bg-white text-gray-700 border border-gray-300 hover:border-victory-purple hover:text-victory-purple'
                 }`}
               >
@@ -122,9 +122,9 @@ export default function Blog() {
                   <span className="mx-2">•</span>
                   <span>{blogPosts[0].readTime}</span>
                 </div>
-                <SmartLink href={`/blog/${index}`} className="bg-victory-purple hover:bg-victory-purple/90 text-white px-6 py-3 rounded-lg font-semibold transition-colors inline-block">
+                <button className="bg-victory-purple hover:bg-victory-purple/90 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
                   Read Article
-                </SmartLink>
+                </button>
               </div>
             </div>
           </div>
@@ -156,9 +156,9 @@ export default function Blog() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">{post.readTime}</span>
-                    <SmartLink href={`/blog/${index + 1}`} className="text-victory-purple hover:text-victory-purple/80 font-medium transition-colors">
+                    <button className="text-victory-purple hover:text-victory-purple/80 font-medium transition-colors">
                       Read More →
-                    </SmartLink>
+                    </button>
                   </div>
                 </div>
               </article>
@@ -178,9 +178,9 @@ export default function Blog() {
               placeholder="Enter your email address"
               className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-victory-purple focus:border-transparent"
             />
-            <SmartLink href="/subscribe" className="bg-victory-purple hover:bg-victory-purple/90 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block">
+            <button className="bg-victory-purple hover:bg-victory-purple/90 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
               Subscribe
-            </SmartLink>
+            </button>
           </div>
           <p className="text-sm text-gray-500 mt-4">
             No spam, unsubscribe at any time. We respect your privacy.
@@ -194,12 +194,16 @@ export default function Blog() {
             Learn how VictorySync can help you implement the strategies discussed in our blog.
           </p>
           <div className="space-x-4">
-            <SmartLink href="/contact" className="bg-victory-purple hover:bg-victory-purple/90 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block">
-              Get Started Today
-            </SmartLink>
-            <SmartLink href="/pricing" className="border border-gray-300 hover:border-gray-400 text-gray-700 px-8 py-3 rounded-lg font-semibold transition-colors inline-block">
-              View Our Services
-            </SmartLink>
+            <Link href="/contact">
+              <button className="bg-victory-purple hover:bg-victory-purple/90 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+                Get Started Today
+              </button>
+            </Link>
+            <Link href="/pricing">
+              <button className="border border-gray-300 hover:border-gray-400 text-gray-700 px-8 py-3 rounded-lg font-semibold transition-colors">
+                View Our Services
+              </button>
+            </Link>
           </div>
         </div>
       </div>

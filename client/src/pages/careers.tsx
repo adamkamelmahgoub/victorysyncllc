@@ -1,9 +1,4 @@
 import { Link } from 'wouter';
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { MapPin, Clock, DollarSign, Users, TrendingUp, Heart } from 'lucide-react';
-import SmartLink from '@/components/SmartLink';
 
 export default function Careers() {
   const positions = [
@@ -22,7 +17,7 @@ export default function Careers() {
       ]
     },
     {
-      title: "AI Automation Specialist",
+      title: "AI Automation Specialist", 
       department: "Technology",
       location: "Millstone, NJ / Remote",
       type: "Full-time",
@@ -51,7 +46,7 @@ export default function Careers() {
     },
     {
       title: "Team Lead - Operations",
-      department: "Operations",
+      department: "Operations", 
       location: "Millstone, NJ",
       type: "Full-time",
       description: "Lead and mentor a team of customer service representatives while ensuring quality standards.",
@@ -206,9 +201,11 @@ export default function Careers() {
             Don't see a position that fits? We're always looking for talented individuals to join our growing team.
           </p>
           <div className="space-x-4">
-            <SmartLink to="/contact" className="btn btn-lg btn-primary">
-              Apply Now
-            </SmartLink>
+            <Link href="/contact">
+              <button className="bg-victory-purple hover:bg-victory-purple/90 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+                Send Your Resume
+              </button>
+            </Link>
             <Link href="/about-us">
               <button className="border border-gray-300 hover:border-gray-400 text-gray-700 px-8 py-3 rounded-lg font-semibold transition-colors">
                 Learn More About Us

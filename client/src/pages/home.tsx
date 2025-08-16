@@ -1,16 +1,13 @@
-import React from 'react';
-
+import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Phone, Megaphone, Bot, Check, Star, ArrowRight } from 'lucide-react';
-import SmartLink from '@/components/SmartLink';
-import NavButton from '@/components/NavButton';
+import { Phone, Megaphone, Bot, Check, Star } from 'lucide-react';
 
 export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="vs-hero-solid py-20 text-white">
+      <section className="gradient-victory py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -21,12 +18,16 @@ export default function Home() {
                 Professional call center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <SmartLink to="/pricing">
-                  <button className="btn btn-lg btn-primary">View Pricing</button>
-                </SmartLink>
-                <SmartLink to="/contact">
-                  <button className="btn btn-lg btn-secondary">Schedule Demo</button>
-                </SmartLink>
+                <Link href="/pricing">
+                  <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#5d5df2]">
+                    View Pricing
+                  </Button>
+                </Link>
+                <Link href="/contact">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#506bf4]">
+                    Schedule Demo
+                  </Button>
+                </Link>
               </div>
             </div>
             <div className="relative">
@@ -74,7 +75,7 @@ export default function Home() {
         </div>
       </section>
       {/* Services Section */}
-      <section className="vs-section-alt py-20">
+      <section className="bg-slate-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
@@ -242,7 +243,7 @@ export default function Home() {
         </div>
       </section>
       {/* CTA Section */}
-      <section className="vs-hero-solid py-20 text-white">
+      <section className="gradient-victory py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Save 60% on Customer Service?
@@ -251,17 +252,16 @@ export default function Home() {
             Join our next webinar to learn how other businesses are cutting costs while improving service quality.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <SmartLink to="/contact">
-              <button className="btn btn-lg btn-primary">
-                Get Started Today
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </button>
-            </SmartLink>
-            <SmartLink to="/pricing">
+            <Link href="/contact">
+              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6950f0]">
+                Schedule Demo
+              </Button>
+            </Link>
+            <Link href="/pricing">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
                 View Pricing
               </Button>
-            </SmartLink>
+            </Link>
           </div>
         </div>
       </section>

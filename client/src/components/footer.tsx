@@ -1,8 +1,4 @@
-import SmartLink from './SmartLink';
-
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+import { Link } from 'wouter';
 
 export default function Footer() {
   return (
@@ -12,10 +8,10 @@ export default function Footer() {
           {/* Company Info */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center space-x-3 mb-6">
-              <img
-                src="/LOGO_VS.png"
-                alt="VictorySync Logo"
-                className="w-8 h-8 rounded-lg bg-transparent p-1"
+              <img 
+                src="/vs_favicon_32.png" 
+                alt="VictorySync Logo" 
+                className="w-8 h-8 rounded-lg bg-white p-1"
               />
               <span className="text-xl brand-font">VictorySync</span>
             </div>
@@ -45,18 +41,10 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-6">Services</h4>
             <ul className="space-y-3 text-gray-400">
-              <li>
-                <SmartLink to="/services" onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Inbound Support</SmartLink>
-              </li>
-              <li>
-                <SmartLink to="/services" onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Outbound Sales</SmartLink>
-              </li>
-              <li>
-                <SmartLink to="/services" onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">AI Automation</SmartLink>
-              </li>
-              <li>
-                <SmartLink to="/services" onClick={scrollToTop} className="hover:text-white transition-colors cursor-pointer">Digital Marketing</SmartLink>
-              </li>
+              <li><Link href="/services"><span className="hover:text-white transition-colors cursor-pointer">Inbound Support</span></Link></li>
+              <li><Link href="/services"><span className="hover:text-white transition-colors cursor-pointer">Outbound Sales</span></Link></li>
+              <li><Link href="/services"><span className="hover:text-white transition-colors cursor-pointer">AI Automation</span></Link></li>
+              <li><Link href="/services"><span className="hover:text-white transition-colors cursor-pointer">Digital Marketing</span></Link></li>
             </ul>
           </div>
 
@@ -64,21 +52,9 @@ export default function Footer() {
           <div id="about-us">
             <h4 className="font-semibold mb-6">Company</h4>
             <ul className="space-y-3 text-gray-400">
-              <li>
-                <SmartLink to="/about-us" className="text-base text-gray-600 hover:text-white transition-colors cursor-pointer">
-                  About Us
-                </SmartLink>
-              </li>
-              <li>
-                <SmartLink to="/careers" className="text-base text-gray-600 hover:text-white transition-colors cursor-pointer">
-                  Careers
-                </SmartLink>
-              </li>
-              <li>
-                <SmartLink to="/contact" className="text-base text-gray-600 hover:text-white transition-colors cursor-pointer">
-                  Contact
-                </SmartLink>
-              </li>
+              <li><Link href="/about-us"><span className="hover:text-white transition-colors cursor-pointer">About Us</span></Link></li>
+              <li><Link href="/careers"><span className="hover:text-white transition-colors cursor-pointer">Careers</span></Link></li>
+              <li><Link href="/contact"><span className="hover:text-white transition-colors cursor-pointer">Contact</span></Link></li>
             </ul>
           </div>
 
@@ -86,21 +62,9 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-6">Support</h4>
             <ul className="space-y-3 text-gray-400">
-              <li>
-                <SmartLink to="/help-center" className="text-base text-gray-600 hover:text-white transition-colors cursor-pointer">
-                  Help Center
-                </SmartLink>
-              </li>
-              <li>
-                <SmartLink to="/privacy-policy" className="text-base text-gray-600 hover:text-white transition-colors cursor-pointer">
-                  Privacy Policy
-                </SmartLink>
-              </li>
-              <li>
-                <SmartLink to="/terms" className="text-base text-gray-600 hover:text-white transition-colors cursor-pointer">
-                  Terms of Service
-                </SmartLink>
-              </li>
+              <li><Link href="/help-center"><span className="hover:text-white transition-colors cursor-pointer">Help Center</span></Link></li>
+              <li><Link href="/privacy-policy"><span className="hover:text-white transition-colors cursor-pointer">Privacy Policy</span></Link></li>
+              <li><Link href="/terms"><span className="hover:text-white transition-colors cursor-pointer">Terms of Service</span></Link></li>
             </ul>
           </div>
         </div>

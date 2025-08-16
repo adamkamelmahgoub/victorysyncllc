@@ -1,31 +1,49 @@
-import { useCartContext } from "@/contexts/CartContext";
+import { useCartContext } from '@/contexts/CartContext';
+import { useToast } from '@/hooks/use-toast';
 
-/**
- * Compatibility wrapper:
- * - Exposes current context props: items, count, subtotal, add, remove, clear
- * - Also exposes legacy helpers used around the app:
- *   getItemCount(), getSubtotal(), getItems(), addItem(), removeItem(), clearCart()
- * This prevents "getItemCount is not a function" and similar runtime errors.
- */
-export function useCart() {
-  const ctx = useCartContext();
+export const useCart = () => {
+  const { state, dispatch } = useCartContext();
+  const { toast } = useToast();
+
+  const addItem = (item: { packageId: number; name: string; price: number }) => {
+    dispatch({ type: 'ADD_ITEM', payload: item });
+    toast({
+      title: "Added to cart",
+      description: `${item.name} plan has been added to your cart.`,
+    });
+  };
+
+  const removeItem = (packageId: number) => {
+    dispatch({ type: 'REMOVE_ITEM', payload: packageId });
+    toast({
+      title: "Removed from cart",
+      description: "Item has been removed from your cart.",
+    });
+  };
+
+  const updateQuantity = (packageId: number, quantity: number) => {
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { packageId, quantity } });
+  };
+
+  const clearCart = () => {
+    dispatch({ type: 'CLEAR_CART' });
+    toast({
+      title: "Cart cleared",
+      description: "All items have been removed from your cart.",
+    });
+  };
+
+  const getItemCount = () => {
+    return state.items.reduce((sum, item) => sum + item.quantity, 0);
+  };
 
   return {
-    // current API
-    ...ctx, // items, count, subtotal, add, remove, clear
-
-    // legacy/compat API (used by older components like navigation.tsx)
-    getItemCount: () => ctx.count,
-    getSubtotal: () => ctx.subtotal,
-    getItems: () => ctx.items,
-    addItem: ctx.add,
-    removeItem: ctx.remove,
-    clearCart: ctx.clear,
+    items: state.items,
+    total: state.total,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    getItemCount,
   };
-}
-
-// Also export default for places that import default
-export default useCart;
-
-// Re-export types if other files import them from here
-export type { CartItem, CartCtx } from "@/contexts/CartContext";
+};
