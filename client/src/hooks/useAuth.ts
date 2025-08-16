@@ -1,7 +1,8 @@
+
 import { useQuery } from "@tanstack/react-query";
 
 export function useAuth() {
-  const token = localStorage.getItem('auth_token');
+  const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
   
   const { data: user, isLoading } = useQuery({
     queryKey: ["/api/auth/me"],
@@ -19,6 +20,7 @@ export function useAuth() {
       if (!response.ok) {
         if (response.status === 401) {
           // Token is invalid, remove it
+          localStorage.removeItem('token');
           localStorage.removeItem('auth_token');
           return null;
         }
@@ -33,14 +35,25 @@ export function useAuth() {
   });
 
   const logout = () => {
+    localStorage.removeItem('token');
     localStorage.removeItem('auth_token');
     window.location.href = '/';
+  };
+
+  const isAdmin = () => {
+    return user && ['admin', 'super_admin', 'billing', 'crm_manager'].includes(user.role);
+  };
+
+  const isCustomer = () => {
+    return user && (user.role === 'user' || user.role === 'customer');
   };
 
   return {
     user,
     isLoading,
     isAuthenticated: !!user && !!token,
+    isAdmin: isAdmin(),
+    isCustomer: isCustomer(),
     logout,
   };
 }
