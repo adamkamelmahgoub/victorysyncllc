@@ -32,22 +32,7 @@
   .btn-block { @apply w-full; }
 }
 
-/* Remove all button outlines */
-button {
-  outline: none !important;
-  border: none !important;
-}
 
-button:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* Add white outline to all buttons */
-button {
-  outline: 2px solid white !important;
-  outline-offset: 2px !important;
-}
 
 :root {
   --background: hsl(210, 40%, 98%);
@@ -119,8 +104,16 @@ button {
 }
 
 @layer base {
+  :root {
+    --border: hsl(214.3, 31.8%, 91.4%);
+  }
+  
+  .dark {
+    --border: hsl(217.2, 32.6%, 17.5%);
+  }
+
   * {
-    @apply border-border;
+    @apply border-[hsl(var(--border))];
   }
 
   html {
