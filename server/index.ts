@@ -1,137 +1,61 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { testDatabaseConnection } from "./db";
-import passport from "./auth/passport";
+import express from "express";
+import path from "path";
+import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import cors from "cors";
+import compression from "compression";
+import morgan from "morgan";
+import { fileURLToPath } from "url";
+import api from "./routes"; // exports all /api routers
 
-// Validate required environment variables at startup
-function validateEnvironment() {
-  const requiredEnvVars = ['DATABASE_URL'];
-  const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
-  
-  if (missing.length > 0) {
-    console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
-    process.exit(1);
-  }
-  
-  console.log(`✅ All required environment variables are set`);
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(helmet());
+app.use(compression());
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json({ limit: "1mb" }));
+app.use(cookieParser());
+app.use(morgan("tiny"));
 
-// Initialize Passport
-app.use(passport.initialize());
+app.use("/api", api);
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+const isProd = process.env.NODE_ENV === "production";
+const clientRoot = path.resolve(__dirname, "../client");
+const dist = path.resolve(clientRoot, "dist");
 
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
-  });
-
-  next();
-});
-
-(async () => {
-  try {
-    console.log(`🚀 Starting VictorySync application...`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    
-    // Validate environment variables
-    validateEnvironment();
-    
-    // Test database connection
-    const dbConnected = await testDatabaseConnection();
-    if (!dbConnected) {
-      throw new Error('Database connection failed - cannot start server');
-    }
-    
-    const server = await registerRoutes(app);
-    console.log(`✅ Routes registered successfully`);
-
-    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      
-      console.error(`❌ Application error: ${message}`, err);
-      res.status(status).json({ message });
+async function start() {
+  if (!isProd) {
+    // Vite middleware in dev
+    const { createServer: createViteServer } = await import("vite");
+    const vite = await createViteServer({
+      root: clientRoot,
+      server: { middlewareMode: true, hmr: { clientPort: 443 } },
+      appType: "custom",
     });
+    app.use(vite.middlewares);
 
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-      console.log(`✅ Vite development server setup complete`);
-    } else {
+    app.get("*", async (req, res, next) => {
+      if (req.path.startsWith("/api")) return next();
       try {
-        serveStatic(app);
-        console.log(`✅ Static file serving setup complete`);
-      } catch (error) {
-        console.error(`❌ Failed to setup static file serving:`, error);
-        console.log(`This might happen if the build files are missing.`);
-        console.log(`In production, ensure you run 'npm run build' before starting the server.`);
-        throw error;
-      }
-    }
-
-
-
-    // ALWAYS serve the app on port 5000
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
-    const port = process.env.PORT || 5000;
-    server.listen({
-      port: Number(port),
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
-      console.log(`🎉 VictorySync server is running successfully!`);
-      log(`serving on port ${port}`);
-      console.log(`Health check available at: http://0.0.0.0:${port}/health`);
+        const html = await vite.transformIndexHtml(req.originalUrl, `
+          <!doctype html><html><head><meta charset="utf-8"/></head>
+          <body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>
+        `);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch (e) { vite.ssrFixStacktrace(e as Error); next(e); }
     });
-
-    // Handle graceful shutdown
-    process.on('SIGTERM', () => {
-      console.log('SIGTERM received, shutting down gracefully');
-      server.close(() => {
-        console.log('Server closed');
-        process.exit(0);
-      });
+  } else {
+    // Static dist with SPA fallback
+    app.use(express.static(dist));
+    app.get("*", (req, res, next) => {
+      if (req.path.startsWith("/api")) return next();
+      res.sendFile(path.join(dist, "index.html"));
     });
-
-    process.on('SIGINT', () => {
-      console.log('SIGINT received, shutting down gracefully');
-      server.close(() => {
-        console.log('Server closed');
-        process.exit(0);
-      });
-    });
-    
-  } catch (error) {
-    console.error(`❌ Failed to start server:`, error);
-    process.exit(1);
   }
-})();
+
+  const port = process.env.PORT ? Number(process.env.PORT) : 5000;
+  app.listen(port, () => console.log(`✅ Server on :${port}`));
+}
+start();
