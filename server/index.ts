@@ -1,18 +1,37 @@
+
+// --- server/index.ts (bootstrap first) ---
+import "dotenv/config";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import express from "express";
-import path from "path";
-import fs from "node:fs";
 import cookieParser from "cookie-parser";
 import compression from "compression";
 import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
-import { fileURLToPath } from "url";
 import { registerRoutes } from "./routes.js";
 
+// Resolve ESM dirname/filename early
 const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
+const __dirname = path.dirname(__filename);
 
+// Environment & flags — define BEFORE any usage
+const NODE_ENV = process.env.NODE_ENV ?? "development";
+const isProd = NODE_ENV === "production";
+const PORT = Number(process.env.PORT ?? 5000);
+
+// Project roots
+const repoRoot = path.resolve(__dirname, "..");               // /workspace/server/..
+const clientRoot = path.resolve(repoRoot, "client");          // /workspace/client
+const clientDist = path.resolve(clientRoot, "dist");          // /workspace/client/dist
+
+// Create app
 const app = express();
+
+// Health check early
+app.get("/health", (_req, res) => res.json({ ok: true, env: NODE_ENV }));
+
+// Middleware setup
 if (!isProd) {
   app.use(helmet({ contentSecurityPolicy: false }));
 } else {
@@ -24,13 +43,6 @@ app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 app.use(morgan("tiny"));
 
-// Health probe so Replit keeps process alive
-app.get("/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
-
-const isProd = process.env.NODE_ENV === "production";
-const clientRoot = path.resolve(__dirname, "../client");
-const dist = path.join(clientRoot, "dist");
-
 async function boot() {
   // Register API routes first
   await registerRoutes(app);
@@ -40,30 +52,30 @@ async function boot() {
     const vite = await createServer({
       root: clientRoot,
       server: { middlewareMode: true, hmr: { clientPort: 443 }, watch: { usePolling: true } },
-      appType: "custom"
+      appType: "custom",
     });
     app.use(vite.middlewares);
 
+    // Serve transformed index.html so Vite injects @vite/client + React refresh preamble
+    const fs = await import("node:fs");
     app.get("*", async (req, res, next) => {
       if (req.path.startsWith("/api")) return next();
       try {
-        const indexHtmlPath = path.resolve(clientRoot, "index.html");
-        let html = fs.readFileSync(indexHtmlPath, "utf-8");
-
-        // Let Vite inject @vite/client and React refresh preamble
+        const indexPath = path.resolve(clientRoot, "index.html");
+        let html = fs.readFileSync(indexPath, "utf-8");
         html = await vite.transformIndexHtml(req.originalUrl, html);
 
-        // EXTRA GUARANTEE: if the preamble wasn't injected (edge cases), inject it manually
+        // Extra guard: if preamble didn't inject for any reason, inject it manually
         if (!html.includes("/@vite/client") || !html.includes("__vite_plugin_react_preamble_installed__")) {
           const preamble = `
-          <script type="module" src="/@vite/client"></script>
-          <script type="module">
-            import RefreshRuntime from "/@react-refresh";
-            RefreshRuntime.injectIntoGlobalHook(window);
-            window.$RefreshReg$ = () => {};
-            window.$RefreshSig$ = () => (type) => type;
-            window.__vite_plugin_react_preamble_installed__ = true;
-          </script>`;
+            <script type="module" src="/@vite/client"></script>
+            <script type="module">
+              import RefreshRuntime from "/@react-refresh";
+              RefreshRuntime.injectIntoGlobalHook(window);
+              window.$RefreshReg$ = () => {};
+              window.$RefreshSig$ = () => (type) => type;
+              window.__vite_plugin_react_preamble_installed__ = true;
+            </script>`;
           html = html.replace("</head>", `${preamble}\n</head>`);
         }
 
@@ -74,18 +86,14 @@ async function boot() {
       }
     });
   } else {
-    // Serve built client with SPA fallback
-    app.use(express.static(dist));
-    app.get("*", (req, res, next) => {
-      if (req.path.startsWith("/api")) return next();
-      res.sendFile(path.join(dist, "index.html"));
-    });
+    // Production: serve built SPA with fallback (no changes to public UI)
+    const sirv = (await import("sirv")).default;
+    app.use(sirv(clientDist, { dev: false, etag: true, single: true }));
   }
 
-  const port = Number(process.env.PORT) || 5000;
-  app.listen(port, "0.0.0.0", async () => {
-    console.log(`🎉 VictorySync running on http://0.0.0.0:${port}`);
-    console.log(`Health: http://0.0.0.0:${port}/health`);
+  app.listen(PORT, "0.0.0.0", async () => {
+    console.log(`🎉 VictorySync running on http://0.0.0.0:${PORT} (env=${NODE_ENV})`);
+    console.log(`Health: http://0.0.0.0:${PORT}/health`);
     console.log("📦 Initializing default packages...");
     try {
       const { seedDefaultPackages } = await import("./db/seed.js");
@@ -102,4 +110,7 @@ async function boot() {
 process.on("unhandledRejection", (e) => console.error("UNHANDLED REJECTION", e));
 process.on("uncaughtException", (e) => console.error("UNCAUGHT EXCEPTION", e));
 
-boot();
+boot().catch((err) => {
+  console.error("Fatal boot error:", err);
+  process.exit(1);
+});
