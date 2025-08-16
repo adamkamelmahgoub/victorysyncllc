@@ -1,4 +1,3 @@
-
 import { db } from "../db";
 import { servicePackagesTable, servicesTable } from "./schema";
 
@@ -38,57 +37,52 @@ export async function seedDatabase() {
       description: "Perfect for small businesses getting started with digital marketing",
       price: 49900, // $499.00
       duration: 1,
-      features: [
-        "Basic website audit",
-        "Social media setup", 
-        "Google My Business optimization",
-        "Monthly performance report"
-      ],
+      features: {
+        "dedicated_agent": true,
+        "24_7_support": true,
+        "basic_analytics": true,
+      },
     },
     {
       name: "Growth Package",
       description: "Accelerate your business growth with comprehensive marketing",
       price: 99900, // $999.00
       duration: 3,
-      features: [
-        "Complete marketing strategy",
-        "Website optimization",
-        "Social media management",
-        "Content creation",
-        "SEO optimization",
-        "Weekly performance reports"
-      ],
+      features: {
+        "dedicated_agents_3": true,
+        "24_7_support": true,
+        "advanced_analytics": true,
+        "crm_integration": true
+      },
     },
     {
       name: "Enterprise Package",
       description: "Full-scale digital transformation for established businesses",
       price: 249900, // $2,499.00
       duration: 6,
-      features: [
-        "Custom website development",
-        "Advanced analytics setup",
-        "Multi-platform advertising",
-        "Brand development",
-        "24/7 support",
-        "Dedicated account manager",
-        "Daily performance monitoring"
-      ],
+      features: {
+        "dedicated_agents_5": true,
+        "24_7_support": true,
+        "premium_analytics": true,
+        "crm_integration": true,
+        "ai_automation": true,
+        "custom_workflows": true
+      },
     },
     {
       name: "Custom Consulting",
       description: "Tailored consulting services for unique business needs",
       price: 19900, // $199.00
       duration: null,
-      features: [
-        "One-on-one consultation",
-        "Custom strategy development", 
-        "Implementation guidance",
-        "Follow-up support"
-      ],
+      features: {
+        "dedicated_agent": true,
+        "24_7_support": true,
+        "basic_analytics": true,
+      },
     },
   ];
 
   await db.insert(servicePackagesTable).values(packages).onConflictDoNothing();
-  
+
   console.log("Database seeded successfully!");
 }

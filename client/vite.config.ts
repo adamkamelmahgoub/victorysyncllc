@@ -8,14 +8,14 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
-      "@shared": path.resolve(__dirname, "../shared"),
-    },
+      "@shared": path.resolve(__dirname, "../shared")
+    }
   },
   server: {
     host: true,
     port: 5173,
     hmr: { clientPort: 443 },
-    allowedHosts: true,
+    allowedHosts: true
   },
-  build: { outDir: "dist" },
+  build: { outDir: "dist" }
 });
