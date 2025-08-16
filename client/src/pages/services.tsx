@@ -98,7 +98,7 @@ export default function Services() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="vs-hero-solid py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Complete Business Solutions
@@ -192,7 +192,7 @@ export default function Services() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="bg-slate-50 py-20">
+      <section className="vs-section-alt py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
@@ -244,7 +244,7 @@ export default function Services() {
       </section>
 
       {/* CTA Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="vs-hero-solid py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Transform Your Business?

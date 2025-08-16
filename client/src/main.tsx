@@ -1,34 +1,22 @@
-
 import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "./context/auth";
-import { CartProvider } from "./contexts/CartContext";
-import { Toaster } from "./components/ui/toaster";
-import App from "./App";
+import AppRouter from "./router";
+import { AuthProvider } from "@/context/auth";
+import { CartProvider } from "@/contexts/CartContext";
 import "./index.css";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 1,
-    },
-  },
-});
+const root = document.getElementById("root");
+if (!root) throw new Error("#root not found");
 
-createRoot(document.getElementById("root")!).render(
+ReactDOM.createRoot(root).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <CartProvider>
-            <App />
-            <Toaster />
-          </CartProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <AuthProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      </CartProvider>
+    </AuthProvider>
   </StrictMode>
 );

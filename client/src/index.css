@@ -96,22 +96,9 @@
 
 /* ---- VictorySync backgrounds ---- */
 @layer utilities {
-  /* Hero gradient used on landing hero sections */
-  .vs-hero {
-    background-image:
-      linear-gradient(135deg, #6C4DF6 0%, #5A3FE0 40%, #6ea8ff 100%);
-    color: white;
-  }
-  @media (min-width: 1024px) {
-    .vs-hero {
-      background-image:
-        radial-gradient(1200px 600px at 75% 20%, rgba(255,255,255,0.35), rgba(255,255,255,0) 60%),
-        linear-gradient(135deg, #6C4DF6 0%, #5A3FE0 40%, #6ea8ff 100%);
-    }
-  }
+  /* Solid VictorySync purple hero background (no gradient) */
+  .vs-hero-solid { background-color: #6C4DF6; color: white; }
 
-  /* Subtle alternating section background */
-  .vs-section-alt {
-    background: linear-gradient(180deg, #f7faff 0%, #ffffff 70%);
-  }
+  /* Subtle off-white stripe for alternating bands */
+  .vs-section-alt { background-color: #F7FAFF; }
 }
