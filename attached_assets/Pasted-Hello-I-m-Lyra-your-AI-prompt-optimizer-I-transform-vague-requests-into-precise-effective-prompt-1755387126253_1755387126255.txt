@@ -1,0 +1,204 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are **Claude**, my **100000x senior full-stack engineer** working **inside THIS Replit**.
+Fix the **blank page + `[@vitejs/plugin-react] can't detect preamble`** error in dev while preserving **all Admin & Customer dashboard features** and the one-process server. Implement the steps **exactly** below (copy/paste). Do **not** change any public UI (nav/footer/theme), routes, or dashboard code.
+
+---
+
+## What to change (file-by-file)
+
+### 1) `server/index.ts` — serve the real HTML in dev **and** hard-inject the preamble (belt & suspenders)
+
+Replace your current dev catch-all with this block (keep the rest of the file as-is: API routes, health, listen, etc.):
+
+```ts
+// server/index.ts (inside boot(), dev branch)
+import fs from "node:fs";
+import path from "node:path";
+
+if (!isProd) {
+  const { createServer } = await import("vite");
+  const vite = await createServer({
+    root: clientRoot,
+    server: { middlewareMode: true, hmr: { clientPort: 443 }, watch: { usePolling: true } },
+    appType: "custom"
+  });
+  app.use(vite.middlewares);
+
+  // Disable CSP ONLY in dev so Vite can inject inline preamble safely
+  // (If you're using helmet, wrap helmet() with this guard)
+  // e.g. app.use(helmet({ contentSecurityPolicy: false }));
+
+  app.get("*", async (req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    try {
+      const indexHtmlPath = path.resolve(clientRoot, "index.html");
+      let html = fs.readFileSync(indexHtmlPath, "utf-8");
+
+      // Let Vite inject @vite/client and React refresh preamble
+      html = await vite.transformIndexHtml(req.originalUrl, html);
+
+      // EXTRA GUARANTEE: if the preamble wasn't injected (edge cases), inject it manually
+      if (!html.includes("/@vite/client") || !html.includes("__vite_plugin_react_preamble_installed__")) {
+        const preamble = `
+          <script type="module" src="/@vite/client"></script>
+          <script type="module">
+            import RefreshRuntime from "/@react-refresh";
+            RefreshRuntime.injectIntoGlobalHook(window);
+            window.$RefreshReg$ = () => {};
+            window.$RefreshSig$ = () => (type) => type;
+            window.__vite_plugin_react_preamble_installed__ = true;
+          </script>`;
+        html = html.replace("</head>", `${preamble}\n</head>`);
+      }
+
+      res.status(200).setHeader("Content-Type", "text/html").end(html);
+    } catch (err) {
+      vite.ssrFixStacktrace(err as Error);
+      next(err);
+    }
+  });
+} else {
+  // keep your existing prod static + SPA fallback
+}
+```
+
+> Why: Vite’s React fast-refresh relies on a **preamble script** injected via the HTML transform pipeline. If anything prevents that (custom HTML string, strict CSP), React plugin warns and you get a blank page. The code above both **uses `transformIndexHtml`** and **manually injects** the preamble if needed.
+
+---
+
+### 2) `client/index.html` — ensure standard Vite scaffold
+
+Create/verify this exact file:
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VictorySync</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- Vite injects @vite/client + React preamble in dev -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+---
+
+### 3) `client/vite.config.ts` — sane plugin & HMR
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+
+export default defineConfig({
+  plugins: [react({ fastRefresh: true })],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      "@shared": path.resolve(__dirname, "../shared")
+    }
+  },
+  server: {
+    host: true,
+    port: 5173,
+    hmr: { clientPort: 443 },
+    allowedHosts: true
+  },
+  build: { outDir: "dist" }
+});
+```
+
+---
+
+### 4) Helmet (dev only) — don’t block the inline preamble
+
+If you use Helmet, ensure **dev** does **not** enforce CSP that blocks inline scripts:
+
+```ts
+// near your app.use(helmet())
+import helmet from "helmet";
+if (!isProd) {
+  app.use(helmet({ contentSecurityPolicy: false }));
+} else {
+  app.use(helmet());
+}
+```
+
+---
+
+### 5) `client/src/main.tsx` — verify mount point & providers (no UI changes)
+
+Make sure you mount into `#root` and keep your existing Providers and `<App/>`:
+
+```tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App";
+// ... your existing QueryClient/Auth/Theme providers
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    {/* your existing providers */}
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+);
+```
+
+---
+
+### 6) Package versions (avoid plugin/react mismatch)
+
+In `package.json` ensure (or greater within same major):
+
+```json
+{
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "vite": "^5.4.19",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.4",
+    "tsx": "^4.19.1"
+  }
+}
+```
+
+Run:
+
+```bash
+npm i
+```
+
+---
+
+## Run & verify (Replit)
+
+1. Click **Run**.
+2. Preview should render (no blank page).
+3. Devtools console should **NOT** show “can’t detect preamble”.
+4. Edit any component → HMR / React Refresh should update without full reload.
+5. Confirm **Admin & Customer dashboards** still work (no UI changes were made).
+
+---
+
+## Safeguards
+
+* We did **not** modify any public UI, routing, or dashboard logic.
+* Single Node process remains (Express with Vite middleware).
+* SPA fallback preserved in prod.
+* If something else ever serves raw HTML, the **manual preamble injection** guarantees React Refresh is available.
+
+Apply these exact changes now and run the project.
