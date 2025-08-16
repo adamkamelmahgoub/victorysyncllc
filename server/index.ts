@@ -4,6 +4,12 @@ import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
 import passport from "./auth/passport";
 import fs from "fs";
+// ESM-safe __filename/__dirname for tsx/ESM
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -100,9 +106,7 @@ app.use((req, res, next) => {
 
 
 
-    // Import and mount API routes
-    const { api } = await import("./routes");
-    app.use("/api", api);
+    // API routes are already registered in registerRoutes()
 
     // ALWAYS serve the app on port 5000
     // this serves both the API and the client.

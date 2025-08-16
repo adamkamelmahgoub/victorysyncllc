@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
+// ESM-safe __filename/__dirname for tsx/ESM
+import { fileURLToPath } from "url";
+import path from "path";
 import { storage } from "../storage";
 import { registerUser, loginUser, getCurrentUser, authenticateJWT, generateJWT, type AuthenticatedRequest } from "./publicAuth";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
@@ -9,7 +12,9 @@ import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
 import { Router } from "express";
 import fs from "fs";
-import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let stripe: Stripe | null = null;
 
@@ -474,6 +479,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Export the API router for external use if needed
+export { api };
 }
 
 async function initializePackages() {
