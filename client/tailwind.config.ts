@@ -1,29 +1,32 @@
+
+import type { Config } from "tailwindcss";
+
 export default {
-  darkMode: ["class"],
   content: [
     "./index.html",
-    "./src/**/*.{ts,tsx,js,jsx}",
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
+    "./src/**/*.{ts,tsx,js,jsx}"
   ],
-  prefix: "",
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
     extend: {
       colors: {
-        // VictorySync brand violet (solid buttons)
-        vs: {
-          violet: "#6C4DF6",
-          violetHover: "#5a3fe0",
+        // Canonical brand palette (numeric keys so utilities compile)
+        brand: {
+          50:  "#F3F0FF",
+          100: "#E9E4FF",
+          200: "#CDC4FF",
+          300: "#B0A3FF",
+          400: "#907FFF",
+          500: "#6C4DF6",   // primary
+          600: "#5A3FE0",   // hover
+          700: "#4933B5",
+          800: "#38288C",
+          900: "#2B206C"
         },
       },
       boxShadow: {
-        "btn": "0 6px 16px rgba(108,77,246,0.32)",
+        btn: "0 6px 16px rgba(108,77,246,0.32)",
       },
+    },
+  },
+  plugins: [],
+} satisfies Config;

@@ -9,26 +9,26 @@
            focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 select-none;
   }
   .btn-sm { @apply text-sm px-3 py-2; }
-  .btn-md { @apply text-sm px-4 py-2; }  /* default */
+  .btn-md { @apply text-sm px-4 py-2; }
   .btn-lg { @apply text-base px-6 py-3; }
 
-  /* Primary: solid violet (used on "View Pricing", "Get Started Today") */
+  /* Primary: solid brand */
   .btn-primary {
-    @apply bg-vs-violet text-white shadow-btn focus-visible:ring-vs-violet hover:bg-vs-violetHover;
+    @apply bg-brand-500 text-white shadow-btn hover:bg-brand-600
+           focus-visible:ring-brand-500;
   }
 
-  /* Secondary: white bg + violet border (used on "Schedule Demo", "Learn More", Nav "Sign In") */
+  /* Secondary: white + brand outline */
   .btn-secondary {
-    @apply bg-white text-vs-violet border border-vs-violet hover:bg-violet-50
-           focus-visible:ring-vs-violet;
+    @apply bg-white text-brand-500 border border-brand-500 hover:bg-brand-50
+           focus-visible:ring-brand-500;
   }
 
-  /* Link/Ghost: text-only violet (used for small inline actions) */
+  /* Text-only */
   .btn-link {
-    @apply text-vs-violet hover:text-vs-violetHover underline-offset-4 hover:underline;
+    @apply text-brand-500 hover:text-brand-600 underline-offset-4 hover:underline;
   }
 
-  /* Full-width option when needed */
   .btn-block { @apply w-full; }
 }
 
