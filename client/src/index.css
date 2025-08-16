@@ -65,7 +65,7 @@
     --ring: 256 90% 63%;
   }
 
-  * { @apply border-border; }
+  * { @apply border-border; }              /* <- requires colors.border in config */
   body { @apply bg-background text-foreground; }
 }
 
@@ -78,7 +78,7 @@
   .btn-md { @apply text-sm px-4 py-2; }
   .btn-lg { @apply text-base px-6 py-3; }
 
-  /* Primary: solid brand color */
+  /* Primary: solid brand */
   .btn-primary {
     @apply bg-brand-500 text-white shadow-btn hover:bg-brand-600
            focus-visible:ring-brand-500;
