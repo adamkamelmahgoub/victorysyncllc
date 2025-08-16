@@ -1,0 +1,119 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are **Claude**, working **inside my Replit project** (Vite + React/TS in `client/`, Express/TS in `server/`, single-port app on `:5000`).
+There’s a **runtime crash** when starting the server:
+
+```
+ReferenceError: __dirname is not defined
+at server/routes.ts:XXX
+```
+
+Implement the following **ESM-safe fixes** and sanity checks with **zero build/runtime errors**.
+
+---
+
+## Goals (must all pass)
+
+* `server/routes.ts` and **any server file that uses `__dirname`** work in **ESM/tsx** (no `__dirname` crash).
+* API router is mounted **once** at `/api` in `server/index.ts`.
+* All API paths inside the router are **relative** (no `/api/api/...` double prefix).
+* Preview opens without errors; `/api/health` returns JSON.
+
+---
+
+## Make these exact edits
+
+### 1) ESM-safe `__dirname` in `server/routes.ts`
+
+**At the very top of the file, right after imports, add:**
+
+```ts
+// ESM-safe __filename/__dirname for tsx/ESM
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
+```
+
+**Ensure the data file paths use this `__dirname`:**
+
+```ts
+// Keep/replace these two constants exactly:
+const CODES_PATH = path.join(__dirname, "data", "access-codes.json");
+const OTPS_PATH  = path.join(__dirname, "data", "otps.json");
+```
+
+> If you prefer URL style, you can instead use:
+>
+> ```ts
+> const CODES_PATH = fileURLToPath(new URL("./data/access-codes.json", import.meta.url));
+> const OTPS_PATH  = fileURLToPath(new URL("./data/otps.json", import.meta.url));
+> ```
+>
+> (Use one approach only; do not mix.)
+
+### 2) Apply the same ESM polyfill to **every server file** that uses `__dirname`
+
+For each match, add the **same three lines** (the `fileURLToPath` import + `__filename` + `__dirname`) at the top and keep using `path.join(__dirname, ...)`.
+
+Files to check:
+
+```bash
+# run these in Replit shell to find offenders (do not paste back to me)
+grep -Rn "__dirname" server | cut -d: -f1 | sort -u
+```
+
+Edit each listed file exactly as in step 1.
+
+### 3) API router mount & route prefixes (consistency)
+
+In `server/index.ts`, confirm this block exists **once** and is above the SPA fallback:
+
+```ts
+import { api } from "./routes";          // must import the same symbol you export
+
+server.use("/api", api);                  // single mount
+
+const dist = path.join(__dirname, "..", "client", "dist");
+server.use(express.static(dist));
+server.get("*", (_req, res) => res.sendFile(path.join(dist, "index.html")));
+```
+
+Inside `server/routes.ts`, **all** endpoints must be **relative** (e.g., `api.get("/health", ...)`, `api.post("/access/verify", ...)`).
+There must be **no** paths that begin with `/api/` inside the router.
+
+Quick check you can run:
+
+```bash
+grep -n "api\.(get\|post\|put\|patch\|delete)(\s*['\"]/api/" server/routes.ts || echo "OK: no prefixed /api in router"
+```
+
+---
+
+## Build & Run (Replit)
+
+```bash
+pkill -f "node|vite" || true
+npm run build && tsx server/index.ts
+```
+
+---
+
+## Acceptance
+
+* Console shows no `__dirname` errors.
+* Opening `/api/health` in Preview returns JSON like `{ "ok": true, "ts": ... }`.
+* The app serves the SPA normally on other routes.
+
+---
+
+## Warnings (prevent regressions)
+
+* In **ESM/tsx**, `__dirname` is **not global**: every file that uses it needs the same `fileURLToPath` + `path.dirname` polyfill.
+* Keep exactly **one** `/api` mount in `index.ts`, and keep the SPA fallback **after** that mount.
+* Router files must use **relative** paths; never prefix with `/api` inside the router.
+
+**Apply these edits exactly so the server starts cleanly in Replit with no `__dirname` crash and a correct `/api` mount.**
