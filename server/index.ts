@@ -13,7 +13,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
 const app = express();
-app.use(helmet());
+if (!isProd) {
+  app.use(helmet({ contentSecurityPolicy: false }));
+} else {
+  app.use(helmet());
+}
 app.use(compression());
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: "1mb" }));
@@ -35,18 +39,34 @@ async function boot() {
     const { createServer } = await import("vite");
     const vite = await createServer({
       root: clientRoot,
-      server: { middlewareMode: true, hmr: { clientPort: 443 } },
+      server: { middlewareMode: true, hmr: { clientPort: 443 }, watch: { usePolling: true } },
       appType: "custom"
     });
     app.use(vite.middlewares);
 
-    // ✅ Serve the real index.html so Vite can inject @vite/client and React refresh preamble
     app.get("*", async (req, res, next) => {
       if (req.path.startsWith("/api")) return next();
       try {
         const indexHtmlPath = path.resolve(clientRoot, "index.html");
         let html = fs.readFileSync(indexHtmlPath, "utf-8");
+
+        // Let Vite inject @vite/client and React refresh preamble
         html = await vite.transformIndexHtml(req.originalUrl, html);
+
+        // EXTRA GUARANTEE: if the preamble wasn't injected (edge cases), inject it manually
+        if (!html.includes("/@vite/client") || !html.includes("__vite_plugin_react_preamble_installed__")) {
+          const preamble = `
+          <script type="module" src="/@vite/client"></script>
+          <script type="module">
+            import RefreshRuntime from "/@react-refresh";
+            RefreshRuntime.injectIntoGlobalHook(window);
+            window.$RefreshReg$ = () => {};
+            window.$RefreshSig$ = () => (type) => type;
+            window.__vite_plugin_react_preamble_installed__ = true;
+          </script>`;
+          html = html.replace("</head>", `${preamble}\n</head>`);
+        }
+
         res.status(200).setHeader("Content-Type", "text/html").end(html);
       } catch (err) {
         vite.ssrFixStacktrace(err as Error);
