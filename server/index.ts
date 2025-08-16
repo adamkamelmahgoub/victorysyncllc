@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "node:fs";
 import cookieParser from "cookie-parser";
 import compression from "compression";
 import cors from "cors";
@@ -39,18 +40,18 @@ async function boot() {
     });
     app.use(vite.middlewares);
 
-    // SPA fallback in dev (serve index.html for non-/api routes)
+    // ✅ Serve the real index.html so Vite can inject @vite/client and React refresh preamble
     app.get("*", async (req, res, next) => {
       if (req.path.startsWith("/api")) return next();
       try {
-        const html = await vite.transformIndexHtml(
-          req.originalUrl,
-          `<!doctype html>
-           <html><head><meta charset="utf-8"/></head>
-           <body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>`
-        );
+        const indexHtmlPath = path.resolve(clientRoot, "index.html");
+        let html = fs.readFileSync(indexHtmlPath, "utf-8");
+        html = await vite.transformIndexHtml(req.originalUrl, html);
         res.status(200).setHeader("Content-Type", "text/html").end(html);
-      } catch (err) { vite.ssrFixStacktrace(err as Error); next(err); }
+      } catch (err) {
+        vite.ssrFixStacktrace(err as Error);
+        next(err);
+      }
     });
   } else {
     // Serve built client with SPA fallback
