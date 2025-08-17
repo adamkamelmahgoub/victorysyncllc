@@ -4,6 +4,7 @@
   --vs-blue: #3B82F6;
   --vs-purple-600: #6a14e9;
   --vs-purple-700: #5b12c9;
+  --vs-footer: #0E1526;
 }
 
 @tailwind base;
@@ -134,9 +135,24 @@
     --ring: 252 82% 62%;
   }
 
-  /* Remove outlines everywhere by default */
-  *:focus { outline: none; }
-  *:focus-visible { outline: none; }
+  /* Remove ALL outlines site-wide (as requested) */
+  *:focus,
+  *:focus-visible,
+  *:active,
+  button:focus,
+  button:focus-visible,
+  button:active,
+  input:focus,
+  input:focus-visible,
+  textarea:focus,
+  textarea:focus-visible,
+  select:focus,
+  select:focus-visible,
+  a:focus,
+  a:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 }
 
 /* Apply tokens to the document (does NOT change your layout) */
