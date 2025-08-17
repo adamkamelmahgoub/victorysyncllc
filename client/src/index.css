@@ -23,6 +23,14 @@
     box-shadow: 0 0 0 1px white, inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   }
 
+  /* Utility classes for purple backgrounds */
+  .bg-vs-purple {
+    background: var(--vs-purple);
+  }
+  .bg-vs-purple-700 {
+    background: var(--vs-purple-600);
+  }
+
   /* Primary brand button */
   .btn-vs {
     @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
@@ -137,22 +145,7 @@
   body { @apply bg-background text-foreground; }
 }
 
-/* ================== VictorySync Global Tokens ================== */
-@layer base {
-  :root{
-    --vs-purple: #7B1CF5;
-    --vs-purple-700: #6A14E9;
-    --vs-blue: #2F80ED;
-    --vs-footer: #0E1526;
-  }
 
-  /* Remove ALL outlines site-wide (as requested) */
-  *:focus,
-  *:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
-  }
-}
 
 /* ================== VictorySync Components ===================== */
 @layer components {
@@ -210,8 +203,8 @@
 
   /* Harden white text on anything purple, just in case */
   .vs-purple-btn,
-  .bg-[var(--vs-purple)],
-  .bg-[var(--vs-purple-700)] {
+  .bg-vs-purple,
+  .bg-vs-purple-700 {
     color: #fff !important;
   }
 }
