@@ -6,8 +6,9 @@ const scrollToTop = () => {
 
 export default function Footer() {
   return (
-    <footer className="bg-victory-dark text-white">
+    <>
       <div className="bg-vs-cta h-1 w-full" />
+      <footer className="bg-victory-dark text-white">
       <div className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8">
@@ -81,5 +82,6 @@ export default function Footer() {
       </div>
       </div>
     </footer>
+    </>
   );
 }
