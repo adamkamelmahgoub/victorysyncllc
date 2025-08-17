@@ -1,0 +1,102 @@
+Nice — that build log looks healthy now. To stop the “page flashes / vite connection lost” and preserve all admin + customer features while serving a stable app in Replit, give Claude this **final stabilization prompt** (it keeps the current behavior you see in your screenshot and prevents HMR disconnects):
+
+---
+
+## MASTER PROMPT FOR CLAUDE — “No More Vite Disconnects, Stable Preview”
+
+You are working **in this Replit**. Make preview rock-solid (no HMR polling, no blank flashes) while preserving **all Admin + Customer dashboard features** and the public site exactly as-is.
+
+### What to do
+
+1. **Confirm our “build then serve” dev command** (no live HMR):
+
+   * In `package.json`, ensure:
+
+   ```json
+   {
+     "scripts": {
+       "dev": "npm run build && cross-env DEV_STATIC=1 NODE_ENV=development tsx server/index.ts",
+       "build": "cd client && vite build"
+     }
+   }
+   ```
+
+   * Do not start Vite in watch mode. We always serve **prebuilt** `/client/dist` via the Express server. This removes the WebSocket dependency that was dropping in Replit.
+
+2. **Server fallback is correct** (already wired, re-check):
+
+   * In `server/index.ts`, keep:
+
+     * API routes mounted under `/api`.
+     * `app.use('/assets', express.static(path.resolve('client/dist/assets'), { maxAge: '1y', immutable: true }))`
+     * `app.use(express.static(path.resolve('client/dist')))`
+     * Catch-all:
+
+       ```ts
+       app.get('*', (req, res) => {
+         if (req.path.startsWith('/api')) return res.status(404).json({ error: 'Not found' });
+         res.sendFile(path.resolve('client/dist/index.html'));
+       });
+       ```
+   * This guarantees SPA routing without involving Vite dev server.
+
+3. **Disable HMR client in built assets** (avoid stray HMR scripts):
+
+   * In `client/vite.config.ts`, keep it minimal for prod build:
+
+     ```ts
+     import { defineConfig } from 'vite';
+     import react from '@vitejs/plugin-react';
+
+     export default defineConfig({
+       plugins: [react()],
+       build: {
+         sourcemap: false,
+         chunkSizeWarningLimit: 1500
+       }
+     });
+     ```
+   * No `server.hmr` needed, we’re not serving Vite in dev.
+
+4. **Ensure Tailwind is properly wired** (from previous prompt; don’t change it).
+   This removed the `bg-background` / `border-border` errors and it must remain.
+
+5. **Replit “Run” button**
+
+   * Confirm the run button triggers `npm run dev`.
+   * If Replit tries to auto-open the Vite preview ports, keep using the normal **Preview** pane that loads the Express server (usually port 5000). The server’s console should show something like:
+
+     ```
+     🎉 VictorySync server is running successfully!
+     [express] serving on port 5000
+     Health check: http://0.0.0.0:5000/health
+     ```
+   * If Replit’s “This app is starting…” loops, make sure the process **does not exit**. Keep the Express server as the only long-running process.
+
+6. **Hot-reload during edits (optional but stable):**
+
+   * If you need a quick loop: run `npm run build` manually after changes and refresh preview. Do **not** re-enable Vite HMR inside Replit.
+
+7. **Sanity checks**
+
+   * Public pages: Home, Services, Pricing, About, Contact all render.
+   * Navbar logo goes Home, “Sign In” routes to the existing auth page.
+   * Admin & Customer dashboards still route and fetch (all /api endpoints work).
+   * No console spam like “vite server connection lost / polling for restart”.
+
+8. **Leave a short note in README**:
+   Add a “Replit notes” section explaining: “We serve prebuilt assets via Express (`npm run dev` runs build then serves). Vite HMR is intentionally not used in Replit to avoid WebSocket disconnects.”
+
+**Do not change any public UI markup or theme.** Only ensure the build-then-serve path is used so there’s zero HMR/WebSocket flapping in Replit.
+
+When done, run:
+
+```bash
+npm run dev
+```
+
+Wait for “server is running” and open Preview; it should stay stable with no blank flashes.
+
+---
+
+Give Claude that block, and you’ll have a stable preview with all features intact and no Vite disconnects.
