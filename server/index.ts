@@ -85,7 +85,8 @@ if (NODE_ENV === "production" || DEV_STATIC) {
               window.$RefreshSig$ = () => (type) => type;
               window.__vite_plugin_react_preamble_installed__ = true;
             </script>`;
-        html = html.replace("</head>", `${preamble}\n</head>`);
+        html = html.replace("</head>", `${preamble}
+</head>`);
       }
 
       res.status(200).setHeader("Content-Type", "text/html").end(html);
@@ -99,7 +100,9 @@ if (NODE_ENV === "production" || DEV_STATIC) {
 // ______________________________________
 // Keep-alive so proxy doesn't kill sockets prematurely
 const server = app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🎉 VictorySync on http://0.0.0.0:${PORT}  env=${NODE_ENV}  IN_REPLIT=${IN_REPLIT}  DEV_STATIC=${DEV_STATIC}`);
+  console.log(`🎉 VictorySync server is running successfully!`);
+  console.log(`[express] serving on port ${PORT}`);
+  console.log(`Health check: http://0.0.0.0:${PORT}/health`);
 });
 server.keepAliveTimeout = 70_000;
 server.headersTimeout = 75_000;
