@@ -16,7 +16,7 @@
     --popover-foreground: 222.2 84% 4.9%;
 
     /* Primary brand hue (adjust if you need an exact VictorySync purple) */
-    --primary: 252 82% 62%;
+    --primary: 270 50% 75%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
@@ -48,7 +48,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 252 82% 62%;
+    --primary: 270 50% 75%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 217.2 32.6% 17.5%;
