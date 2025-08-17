@@ -1,6 +1,7 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
-import postgres from "postgres";
+
+import { drizzle } from "drizzle-orm/neon-serverless";
+import { migrate } from "drizzle-orm/neon-serverless/migrator";
+import { Pool } from "@neondatabase/serverless";
 import { seedDatabase } from "./seedData";
 
 async function runMigrations() {
@@ -9,18 +10,18 @@ async function runMigrations() {
     throw new Error("DATABASE_URL is required");
   }
 
-  const sql = postgres(connectionString, { max: 1 });
-  const db = drizzle(sql);
+  const pool = new Pool({ connectionString });
+  const db = drizzle(pool);
 
   console.log("🔄 Running migrations...");
-  await migrate(db, { migrationsFolder: "./drizzle" });
+  await migrate(db, { migrationsFolder: "./migrations" });
   console.log("✅ Migrations completed");
 
   console.log("Starting database seeding...");
   await seedDatabase();
   console.log("Seeding completed!");
 
-  await sql.end();
+  await pool.end();
 }
 
 if (require.main === module) {
