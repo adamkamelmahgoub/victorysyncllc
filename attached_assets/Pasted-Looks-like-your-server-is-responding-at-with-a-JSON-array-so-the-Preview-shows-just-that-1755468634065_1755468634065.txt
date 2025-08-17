@@ -1,0 +1,192 @@
+Looks like your server is responding at `/` with `[]` (a JSON array), so the Preview shows just that. That happens when you still have a root handler somewhere like `app.get('/', …res.json([])… )` or a router that mounts at `/` and returns an array. The fix is: (1) move all API under `/api`, (2) delete any root (`/`) JSON handlers, and (3) enable a proper SPA fallback that always returns `client/dist/index.html` for non-API routes.
+
+Here’s a copy-paste **master prompt for Claude** that will do exactly that, with full file replacements and a quick search-and-destroy of stray root handlers.
+
+---
+
+**MASTER PROMPT FOR CLAUDE – FIX BLANK PREVIEW (“\[]”) & ENABLE SPA FALLBACK**
+
+You are editing this exact Replit repo. The Preview is showing `[]` because the server returns JSON at `/`. Fix this by:
+
+### A) Enforce a clean API prefix and SPA fallback
+
+1. **Replace the entire file `server/routes.ts`** with the robust default export aggregator (same as before), but mount everything under `/api` only:
+
+```ts
+// server/routes.ts
+import type express from "express";
+
+async function tryImport(base: string) {
+  const candidates = [`${base}.ts`, `${base}.js`];
+  for (const spec of candidates) {
+    try {
+      // @ts-ignore
+      return await import(spec);
+    } catch (err: any) {
+      const msg = String(err?.message ?? err);
+      const notFound =
+        msg.includes("Cannot find module") ||
+        msg.includes("ERR_MODULE_NOT_FOUND") ||
+        msg.includes("Module not found");
+      if (!notFound) console.error(`[routes] Failed to import ${spec}:`, err);
+    }
+  }
+  return null;
+}
+
+function mountAt(app: express.Express, basePath: string, prefix = "/api") {
+  return async () => {
+    const mod = await tryImport(basePath);
+    if (!mod) return;
+    const router = (mod as any).default ?? (mod as any).router ?? (mod as any);
+    if (typeof router === "function") {
+      app.use(prefix, router);
+      console.log(`[routes] Mounted ${prefix} -> ${basePath}`);
+    } else {
+      console.warn(`[routes] ${basePath} found but did not export a router`);
+    }
+  };
+}
+
+export default async function registerRoutes(app: express.Express) {
+  const mount = (p: string) => mountAt(app, p)();
+
+  // Auth
+  await mount("./routes/auth.mfa");
+  await mount("./routes/auth");
+  await mount("./routes/access-codes");
+  await mount("./routes/invites");
+
+  // Admin
+  await mount("./routes/admin");
+  await mount("./routes/admin.users");
+  await mount("./routes/admin.organizations");
+  await mount("./routes/admin.coupons");
+  await mount("./routes/admin.api-keys");
+  await mount("./routes/admin.webhooks");
+
+  // Customer/core
+  await mount("./routes/organizations");
+  await mount("./routes/orders");
+  await mount("./routes/billing");
+  await mount("./routes/integrations");
+  await mount("./routes/kpi");
+  await mount("./routes/contacts");
+
+  // Utilities
+  await mount("./routes/health"); // exposes /api/health
+}
+```
+
+2. **Replace the entire file `server/index.ts`** with this SPA-first, API-under-/api setup. It eliminates any accidental root JSON and always serves the built client for non-API routes:
+
+```ts
+// server/index.ts
+import "dotenv/config";
+import express from "express";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import registerRoutes from "./routes";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const isProd = process.env.NODE_ENV === "production";
+const port = Number(process.env.PORT ?? 5000);
+
+async function main() {
+  const app = express();
+
+  // Core middleware
+  app.use(cors({ origin: true, credentials: true }));
+  app.use(express.json({ limit: "2mb" }));
+  app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser());
+
+  // Optional top-level health
+  app.get("/health", (_req, res) => res.json({ ok: true, env: process.env.NODE_ENV }));
+
+  // ----- API under /api -----
+  await registerRoutes(app);
+
+  // ----- SPA hosting & fallback -----
+  const clientDist = path.resolve(__dirname, "../client/dist");
+  if (isProd || process.env.DEV_STATIC === "1") {
+    app.use(express.static(clientDist));
+  }
+
+  // Anything NOT starting with /api should serve index.html (SPA fallback)
+  app.get(/^(?!\/api\/).*/, (_req, res) => {
+    res.sendFile(path.join(clientDist, "index.html"));
+  });
+
+  app.listen(port, "0.0.0.0", () => {
+    console.log(`🚀 VictorySync server listening on http://0.0.0.0:${port}`);
+  });
+}
+
+main().catch((err) => {
+  console.error("Fatal boot error:", err);
+  process.exit(1);
+});
+```
+
+### B) Remove stray root handlers that return JSON
+
+Search and remove any of these (or convert them to `/api/...`):
+
+* `app.get('/', ...)`
+* `router.get('/', ...)` in any router mounted at `/`
+* any `res.json([])` or `res.send([])` used as a default root response
+
+Perform a project-wide search for:
+
+* `app.get('/')`
+* `router.get('/')`
+* `res.json([]`
+* `res.send([]`
+
+If a legitimate page needs a health JSON, move it to `/api/health` or `/health` only.
+
+**Route file pattern** (example) – keep every router exporting default or `router` and only define API paths **with `/api` prefix handled by mounting**:
+
+```ts
+// server/routes/billing.ts
+import { Router } from "express";
+const router = Router();
+
+router.get("/billing/info", (req, res) => {
+  res.json({ plan: "Starter", seats: 3, invoices: [] });
+});
+
+export default router;
+```
+
+> Because we mount at `/api`, the above becomes `/api/billing/info` at runtime.
+
+### C) Build & run flow
+
+1. Stop any running process.
+2. Build client:
+
+   ```
+   cd client && vite build && cd ..
+   ```
+3. Launch server with static serving enabled in dev:
+
+   ```
+   cross-env DEV_STATIC=1 NODE_ENV=development tsx server/index.ts
+   ```
+4. Open Preview: you should now see the React app (not `[]`). API routes respond under `/api/...`. Health at `/api/health` and `/health`.
+
+### D) Safety checks
+
+* If you hit `EADDRINUSE: 5000`, click **Stop** in Replit to kill the stray server, then run again.
+* Ensure **no file** imports `./routes/billing.full` (rename/remove that import).
+* Every route file must be in `server/routes/` named like `*.ts` or `*.js`, exporting a router.
+
+---
+
+Use the instructions above exactly. After these changes, `/` will always return `client/dist/index.html` and the Preview will render your SPA instead of `[]`.
