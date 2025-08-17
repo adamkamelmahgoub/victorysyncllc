@@ -61,11 +61,9 @@ function Router() {
           <Route path="/checkout" component={Checkout} />
           <Route path="/dashboard" component={CustomerDashboard} />
           <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/admin" component={AdminPortal} />
+          <Route path="/login" component={Login} />
           <Route path="/register" component={Register} />
           <Route path="/signup" component={Register} />
-          <Route path="/login" component={Login} />
-
           {/* Footer Pages */}
           <Route path="/about-us" component={AboutUs} />
           <Route path="/careers" component={Careers} />
@@ -74,6 +72,7 @@ function Router() {
           <Route path="/docs" component={Documentation} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route path="/terms" component={TermsOfService} />
+          {/* Admin Portal Route */}
           <Route path="/admin" component={AdminPortal} />
           <Route component={NotFound} />
         </Switch>
@@ -81,9 +80,9 @@ function Router() {
 
       <Footer />
 
-      <CartModal 
-        isOpen={cartModalOpen} 
-        onClose={closeCartModal} 
+      <CartModal
+        isOpen={cartModalOpen}
+        onClose={closeCartModal}
       />
     </div>
   );
