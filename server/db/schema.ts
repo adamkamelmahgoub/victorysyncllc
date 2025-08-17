@@ -152,9 +152,9 @@ export const announcementsTable = pgTable("announcements", {
   content: text("content").notNull(),
   type: text("type", { enum: ["info", "warning", "success", "error"] }).default("info"),
   isActive: boolean("is_active").default(true),
-  targetRole: roleEnum("target_role"),
-  createdBy: integer("created_by").notNull().references(() => usersTable.id),
-  createdAt: timestamp("created_at").defaultNow(),
+  targetRole: text("target_role"),
+  createdBy: integer("created_by").notNull().references(() => publicUsers.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
 export const integrations = pgTable("integrations", {
