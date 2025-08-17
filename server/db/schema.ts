@@ -1,5 +1,5 @@
 import { pgTable, serial, text, integer, timestamp, boolean, jsonb, decimal } from "drizzle-orm/pg-core";
-import { usersTable, roleEnum } from "../../shared/schema";
+import { publicUsers } from "../../shared/schema";
 
 export const invites = pgTable("invites", {
   id: serial("id").primaryKey(),
