@@ -181,3 +181,7 @@ For technical support or questions:
 ## License
 
 © 2025 VictorySync. All rights reserved.
+
+## Replit Notes
+
+We serve prebuilt assets via Express (`npm run dev` runs build then serves). Vite HMR is intentionally not used in Replit to avoid WebSocket disconnects. This ensures a stable preview with no blank flashes or connection lost errors.
