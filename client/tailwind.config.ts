@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 import plugin from "tailwindcss/plugin";
 
@@ -45,6 +44,15 @@ const config: Config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        "victory-dark": "#2d3748",
+        "victory-gray": "#718096",
+        "victory-blue": "#3182ce",
+        "victory-purple": "#6b46c1",
+        vs: {
+          purple: '#6B4DFF',
+          purpleHover: '#5A3CFF',
+          purpleRing: '#E8E4FF',
         },
       },
       borderRadius: {

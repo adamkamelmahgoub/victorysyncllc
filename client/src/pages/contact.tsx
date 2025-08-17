@@ -53,7 +53,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="hero-bg py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Ready to Get Started?
@@ -98,7 +98,7 @@ export default function Contact() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="company">Company (Optional)</Label>
                     <Input
@@ -107,7 +107,7 @@ export default function Contact() {
                       placeholder="Your Company"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -121,7 +121,7 @@ export default function Contact() {
                       <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
                     )}
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="message">Message</Label>
                     <Textarea
@@ -135,10 +135,11 @@ export default function Contact() {
                       <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
                     )}
                   </div>
-                  
+
                   <Button 
                     type="submit" 
-                    className="w-full bg-victory-purple hover:bg-purple-700 text-white"
+                    variant="primary" 
+                    className="w-full"
                     disabled={contactMutation.isPending}
                   >
                     {contactMutation.isPending ? 'Sending...' : 'Send Message'}
@@ -214,7 +215,7 @@ export default function Contact() {
                   <p className="mb-4 text-purple-100">
                     Join our next webinar to learn how other businesses are cutting costs while improving service.
                   </p>
-                  <Button className="text-victory-purple hover:bg-gray-100 bg-[#5268f3]">
+                  <Button className="text-victory-purple hover:bg-gray-100 bg-[#526868]">
                     Register for Webinar
                   </Button>
                 </CardContent>
@@ -292,7 +293,7 @@ export default function Contact() {
           <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
             Ready to reduce costs and improve customer satisfaction? We're here to help make it happen.
           </p>
-          
+
         </div>
       </section>
     </div>

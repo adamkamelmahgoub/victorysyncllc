@@ -3,6 +3,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .btn-primary { @apply bg-vs-purple text-white hover:bg-vs-purpleHover border border-transparent; }
+  .btn-primary-outline { @apply bg-transparent text-vs-purple border border-vs-purple hover:bg-vs-purple hover:text-white; }
+  .hero-bg { @apply bg-vs-purple text-white; }
+  .footer-bg { @apply bg-vs-purple text-white; }
+}
+
 /* Design tokens used by shadcn-style utilities (bg-background, border-border, etc.) */
 @layer base {
   :root {

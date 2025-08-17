@@ -11,46 +11,28 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="gradient-victory py-20 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                Reduce Customer Service Costs by <span className="text-yellow-300">60%</span>
-              </h1>
-              <p className="text-xl mb-8 text-purple-100">
-                Professional contact center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/pricing">
-                  <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#5d5df2]" onClick={scrollToTop}>
-                    View Pricing
-                  </Button>
-                </Link>
-                <Link href="/contact">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#506bf4]" onClick={scrollToTop}>
-                    Schedule Demo
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            <div className="relative">
-              <img 
-                src="https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
-                alt="Modern call center workspace with professional agents" 
-                className="rounded-2xl shadow-2xl w-full" 
-              />
-              <div className="absolute -bottom-6 -left-6 p-4 rounded-xl shadow-lg text-victory-dark bg-[#5d5df2]">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <Check className="text-green-600 w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">93% Cost Savings</p>
-                    <p className="text-sm text-victory-gray">vs US-based agents</p>
-                  </div>
-                </div>
-              </div>
+      <section className="relative hero-bg py-20 lg:py-32 overflow-hidden">
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6 leading-tight">
+              Outsource Your <span className="text-yellow-300">Success</span>
+            </h1>
+            <p className="text-xl sm:text-2xl mb-8 max-w-4xl mx-auto leading-relaxed">
+              Premium call center services from Cairo, Egypt. 24/7 support, bilingual agents,
+              and personalized customer experiences that drive results.
+            </p>
+            <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+              <Button size="lg" variant="primary" className="w-full sm:w-auto font-semibold">
+                Get Started Today
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-vs-purple"
+              >
+                Schedule Demo
+              </Button>
             </div>
           </div>
         </div>
@@ -247,25 +229,26 @@ export default function Home() {
         </div>
       </section>
       {/* CTA Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Save 60% on Customer Service?
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Ready to Transform Your Customer Experience?
           </h2>
-          <p className="text-xl mb-8 text-purple-100 max-w-2xl mx-auto">
-            Join our next webinar to learn how other businesses are cutting costs while improving service quality.
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            Join hundreds of businesses that trust VictorySync for their customer service needs.
+            Start your journey today with a free consultation.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact">
-              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6950f0]" onClick={scrollToTop}>
-                Schedule Demo
-              </Button>
-            </Link>
-            <Link href="/pricing">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]" onClick={scrollToTop}>
-                View Pricing
-              </Button>
-            </Link>
+          <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+            <Button size="lg" variant="primary" className="w-full sm:w-auto">
+              View Pricing Plans
+            </Button>
+            <Button
+              variant="outlinePurple"
+              size="lg"
+              className="w-full sm:w-auto"
+            >
+              Contact Sales
+            </Button>
           </div>
         </div>
       </section>
