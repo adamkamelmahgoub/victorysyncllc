@@ -1,0 +1,148 @@
+Here’s a copy-paste **master prompt for Claude** that will (a) remove all outlines site-wide, and (b) add a clean, **even** outline only to buttons (including links styled as buttons), with consistent thickness/offset/hover/active/focus-visible behavior.
+
+---
+
+## MASTER PROMPT FOR CLAUDE — “Only buttons have outlines (even & consistent)”
+
+You’re inside my Replit repo. Make these exact changes so **no element shows an outline except buttons** (including `<a>` styled as buttons). Button outlines must be visually even across states.
+
+### 1) Add global outline rules + button outline utilities
+
+**File:** `client/src/index.css`
+Append the following (keep everything else intact):
+
+```css
+/* === GLOBAL OUTLINE POLICY =============================================== */
+@layer base {
+  /* Remove outlines everywhere by default */
+  *:focus { outline: none; }
+  *:focus-visible { outline: none; }
+}
+
+/* === BUTTON OUTLINE UTILITIES (even & consistent on all buttons) ========= */
+:root {
+  --vs-outline: #7B1CF5;      /* VictorySync purple (update if different in tokens) */
+  --vs-outline-hover: #6a14e9; /* slightly darker for hover */
+  --vs-outline-active: #5b12c9;/* slightly darker for active */
+}
+
+@layer components {
+  /* Apply to semantic buttons, role=button, and our button classes */
+  .btn-outline-even,
+  button,
+  [role="button"],
+  .btn-vs,
+  .btn-vs-outline {
+    /* Make the static outline visible and even */
+    outline: 2px solid var(--vs-outline);
+    outline-offset: 2px;
+    border-radius: 0.5rem; /* keep corners even; adjust to match existing buttons */
+  }
+
+  /* Hover/active color steps so the outline stays even but responds */
+  button:hover,
+  [role="button"]:hover,
+  .btn-vs:hover,
+  .btn-vs-outline:hover,
+  .btn-outline-even:hover {
+    outline-color: var(--vs-outline-hover);
+  }
+  button:active,
+  [role="button"]:active,
+  .btn-vs:active,
+  .btn-vs-outline:active,
+  .btn-outline-even:active {
+    outline-color: var(--vs-outline-active);
+  }
+
+  /* Keyboard focus ring: keep it visible ONLY on buttons */
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  .btn-vs:focus-visible,
+  .btn-vs-outline:focus-visible,
+  .btn-outline-even:focus-visible {
+    outline: 2px solid var(--vs-outline);
+    outline-offset: 2px;
+  }
+}
+```
+
+> Notes
+> • We’re intentionally **not** adding any focus-visible styles to non-button elements (links, inputs, etc.) unless they also carry a button class/role.
+> • If the project already has button radius tokens, swap `border-radius` to match.
+
+---
+
+### 2) Ensure every button component actually gets the outline classes
+
+Add the outline utility to all site button components (semantic `<button>` and links styled as buttons). Update these files (if present) so the **className** includes `.btn-outline-even` (on top of whatever they already have):
+
+* `client/src/components/NavButton.tsx`
+* `client/src/components/SmartLink.tsx` (for links that visually look like buttons)
+* `client/src/components/Button.tsx` or shadcn/ui button wrapper (if present)
+* Any CTA buttons in `client/src/pages/*` (e.g., hero CTAs)
+
+**Example change (pattern):**
+
+```tsx
+// BEFORE
+<button className="btn-vs ...existing...">Get Started</button>
+
+// AFTER
+<button className="btn-vs btn-outline-even ...existing...">Get Started</button>
+```
+
+For anchor buttons:
+
+```tsx
+// BEFORE
+<a href="/pricing" className="btn-vs-outline ...">View Pricing</a>
+
+// AFTER
+<a href="/pricing" className="btn-vs-outline btn-outline-even ..." role="button">View Pricing</a>
+```
+
+If there is a shared button wrapper, apply `btn-outline-even` there so all consumers inherit it.
+
+---
+
+### 3) Sweep and remove outlines from everything else
+
+Search and clean up any outlines applied to non-buttons so only buttons keep outlines.
+
+**Do:**
+
+* Remove `outline`, `outline-*`, or `ring-*` classes from *non-button* elements (cards, sections, containers).
+* If those were being used as separators, replace with a subtle border or shadow:
+
+  * Substitute with `border border-slate-200` (light mode) or `border-white/10` (dark sections), or `shadow-sm` if a separation effect is needed—**do not** reintroduce outlines.
+
+**Guided search (safe to run in Replit):**
+
+* Search `outline-` and `ring-` in `client/src` and update only **non-button** elements.
+* Keep outlines on anything with `button`, `role="button"`, `.btn-vs`, `.btn-vs-outline`, or `.btn-outline-even`.
+
+---
+
+### 4) Keep spacing even around the outlines
+
+Some button variants may already have borders. To avoid double thickness:
+
+* If a button uses `border` visually, leave it, but the outline will sit outside thanks to `outline-offset: 2px`.
+* If a specific variant looks too “thick,” remove its static border and let the outline serve as the only edge, or reduce border to `border-transparent`.
+
+---
+
+### 5) Verify pages
+
+* **Home, Services, Pricing, About, Contact**: no outlines except on buttons.
+* All buttons (including nav CTAs and hero CTAs) show a **2px outline** with **2px offset** across normal/hover/active/focus-visible—looks even everywhere.
+* No link cards or sections show outlines anymore.
+
+**Commit message:**
+
+```
+style(outlines): remove all non-button outlines; add even 2px outline to all buttons (+ links styled as buttons) with consistent hover/active/focus-visible behavior
+```
+
+If anything fights these styles, place the `@layer components` block **after** other component layers in `index.css` so it wins the cascade.
