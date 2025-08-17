@@ -33,6 +33,11 @@ import Documentation from "@/pages/docs";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms";
 
+// Placeholder for Admin and Customer Apps (assuming these components exist)
+const AdminApp = () => <div>Admin App Placeholder</div>;
+const CustomerApp = () => <div>Customer App Placeholder</div>;
+
+
 // Import Google Fonts
 import "@fontsource/inter/300.css";
 import "@fontsource/inter/400.css";
@@ -47,44 +52,62 @@ function Router() {
   const openCartModal = () => setCartModalOpen(true);
   const closeCartModal = () => setCartModalOpen(false);
 
+  // Placeholder for itemCount and isCartOpen, assuming they are managed elsewhere or will be defined
+  const itemCount = 0; // Example value
+  const isCartOpen = false; // Example value
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation onCartClick={openCartModal} />
-
-      <main className="flex-1">
+    <TooltipProvider>
+      <div className="flex min-h-screen flex-col">
         <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/services" component={Services} />
-          <Route path="/pricing" component={Pricing} />
-          <Route path="/about" component={About} />
-          <Route path="/contact" component={Contact} />
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/dashboard" component={CustomerDashboard} />
-          <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/login" component={Login} />
-          <Route path="/register" component={Register} />
-          <Route path="/signup" component={Register} />
-          {/* Footer Pages */}
-          <Route path="/about-us" component={AboutUs} />
-          <Route path="/careers" component={Careers} />
-          <Route path="/blog" component={Blog} />
-          <Route path="/help-center" component={HelpCenter} />
-          <Route path="/docs" component={Documentation} />
-          <Route path="/privacy-policy" component={PrivacyPolicy} />
-          <Route path="/terms" component={TermsOfService} />
-          {/* Admin Portal Route */}
-          <Route path="/admin" component={AdminPortal} />
-          <Route component={NotFound} />
+          {/* Admin and Customer Apps (no public nav/footer) */}
+          <Route path="/admin/:rest*">
+            {() => <AdminApp />}
+          </Route>
+          <Route path="/app/:rest*">
+            {() => <CustomerApp />}
+          </Route>
+
+          {/* Public routes with nav/footer */}
+          <Route>
+            {() => (
+              <>
+                <Navigation onCartClick={openCartModal} />
+                <main className="flex-1">
+                  <Switch>
+                    <Route path="/" component={Home} />
+                    <Route path="/services" component={Services} />
+                    <Route path="/pricing" component={Pricing} />
+                    <Route path="/about" component={About} />
+                    <Route path="/contact" component={Contact} />
+                    <Route path="/checkout" component={Checkout} />
+                    <Route path="/customer-dashboard" component={CustomerDashboard} />
+                    <Route path="/dashboard" component={CustomerDashboard} />
+                    <Route path="/login" component={Login} />
+                    <Route path="/register" component={Register} />
+                    <Route path="/signup" component={Register} />
+                    {/* Footer Pages */}
+                    <Route path="/about-us" component={AboutUs} />
+                    <Route path="/careers" component={Careers} />
+                    <Route path="/blog" component={Blog} />
+                    <Route path="/help-center" component={HelpCenter} />
+                    <Route path="/docs" component={Documentation} />
+                    <Route path="/privacy-policy" component={PrivacyPolicy} />
+                    <Route path="/terms" component={TermsOfService} />
+                    {/* Admin Portal Route */}
+                    <Route path="/admin-portal" component={AdminPortal} />
+                    <Route component={NotFound} />
+                  </Switch>
+                </main>
+                <Footer />
+              </>
+            )}
+          </Route>
         </Switch>
-      </main>
-
-      <Footer />
-
-      <CartModal
-        isOpen={cartModalOpen}
-        onClose={closeCartModal}
-      />
-    </div>
+      </div>
+      <Toaster />
+      <CartModal isOpen={cartModalOpen} onClose={closeCartModal} />
+    </TooltipProvider>
   );
 }
 
@@ -92,10 +115,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <Router />
       </CartProvider>
     </QueryClientProvider>
   );

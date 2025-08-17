@@ -257,3 +257,66 @@
     color: #fff !important;
   }
 }
+
+/* Admin and App utility styles */
+:root { 
+  --vs-purple: #5b30f5; 
+}
+
+.btn-vs {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  background: var(--vs-purple);
+  color: #fff;
+  border: 1px solid transparent;
+  transition: opacity 0.15s;
+  text-decoration: none;
+}
+
+.btn-vs:hover {
+  opacity: 0.9;
+}
+
+.btn-vs:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-vs-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  background: #fff;
+  color: #111;
+  border: 1px solid #e5e7eb;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.btn-vs-outline:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.input {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  width: 100%;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 1rem;
+}
