@@ -23,6 +23,8 @@ const config: Config = {
           foreground: "hsl(var(--primary-foreground))",
         },
         "victory-purple": "#8b5cf6",
+        "vs-purple": "var(--vs-purple)",
+        "vs-blue": "var(--vs-blue)",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",

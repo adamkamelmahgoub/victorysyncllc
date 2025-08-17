@@ -1,7 +1,45 @@
 
+:root {
+  --vs-purple: #7B1CF5;
+  --vs-blue: #3B82F6;
+  --vs-purple-600: #6a14e9;
+  --vs-purple-700: #5b12c9;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Reusable brand utilities */
+@layer utilities {
+  .bg-vs-hero {
+    @apply bg-gradient-to-r from-[var(--vs-purple)] to-[var(--vs-blue)];
+  }
+  .bg-vs-cta {
+    @apply bg-gradient-to-r from-[var(--vs-purple)] to-[var(--vs-blue)];
+  }
+
+  /* Primary brand button */
+  .btn-vs {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+    background: var(--vs-purple);
+  }
+  .btn-vs:hover { background: var(--vs-purple-600); }
+  .btn-vs:active { background: var(--vs-purple-700); }
+  .btn-vs:focus { @apply ring-[var(--vs-purple)] ring-offset-white; }
+
+  /* Outline variant */
+  .btn-vs-outline {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold transition-colors border;
+    color: var(--vs-purple);
+    border-color: var(--vs-purple);
+  }
+  .btn-vs-outline:hover {
+    color: #fff;
+    background: var(--vs-purple);
+    border-color: var(--vs-purple);
+  }
+}
 
 /* Design tokens used by shadcn-style utilities (bg-background, border-border, etc.) */
 @layer base {

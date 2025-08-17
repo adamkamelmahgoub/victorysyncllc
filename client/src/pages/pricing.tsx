@@ -36,7 +36,7 @@ export default function Pricing() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="bg-vs-hero py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Transparent Pricing Plans
@@ -239,7 +239,7 @@ export default function Pricing() {
       </section>
 
       {/* CTA Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="bg-vs-cta py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Start Saving?
@@ -249,12 +249,12 @@ export default function Pricing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6a4def]" onClick={scrollToTop}>
+              <Button size="lg" className="btn-vs" onClick={scrollToTop}>
                 Schedule Free Demo
               </Button>
             </Link>
             <Link href="/contact">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]" onClick={scrollToTop}>
+              <Button size="lg" className="btn-vs-outline border-white text-white hover:bg-white hover:text-vs-purple" onClick={scrollToTop}>
                 Contact Sales
               </Button>
             </Link>

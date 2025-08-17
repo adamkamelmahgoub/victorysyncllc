@@ -37,7 +37,7 @@ export default function About() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="bg-vs-hero py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -249,7 +249,7 @@ export default function About() {
       </section>
 
       {/* CTA Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="bg-vs-cta py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Partner with Us?

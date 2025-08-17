@@ -105,7 +105,7 @@ export default function Services() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="bg-vs-hero py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Complete Business Solutions
@@ -118,7 +118,7 @@ export default function Services() {
           <Link href="/pricing">
             <Button
               size="lg"
-              className="text-victory-purple hover:bg-gray-100 bg-[#6750f0]"
+              className="btn-vs"
             >
               View Our Packages
             </Button>
@@ -282,7 +282,7 @@ export default function Services() {
       </section>
 
       {/* CTA Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="bg-vs-cta py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Transform Your Business?
@@ -295,7 +295,7 @@ export default function Services() {
             <Link href="/contact">
               <Button
                 size="lg"
-                className="text-victory-purple hover:bg-gray-100 bg-[#7046ee]"
+                className="btn-vs"
               >
                 Get Free Consultation
               </Button>
@@ -303,8 +303,7 @@ export default function Services() {
             <Link href="/pricing">
               <Button
                 size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#7147ef]"
+                className="btn-vs-outline border-white text-white hover:bg-white hover:text-vs-purple"
               >
                 View Pricing
               </Button>

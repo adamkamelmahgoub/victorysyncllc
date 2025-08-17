@@ -6,7 +6,9 @@ const scrollToTop = () => {
 
 export default function Footer() {
   return (
-    <footer className="bg-victory-dark text-white py-16">
+    <footer className="bg-victory-dark text-white">
+      <div className="bg-vs-cta h-1 w-full" />
+      <div className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Company Info */}
@@ -76,6 +78,7 @@ export default function Footer() {
         <div className="border-t border-gray-700 mt-12 pt-8 text-center text-gray-400">
           <p>© 2025 VictorySync. All rights reserved.</p>
         </div>
+      </div>
       </div>
     </footer>
   );
