@@ -1,10 +1,10 @@
-import { Switch, Route } from "wouter";
+import { Suspense, lazy } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
-import { useState } from "react";
 
 // Layout Components
 import Navigation from "@/components/navigation";
@@ -22,7 +22,6 @@ import CustomerDashboard from "@/pages/customer-dashboard";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
-import AdminPortal from "@/pages/admin-portal";
 
 // Footer Pages
 import AboutUs from "@/pages/about-us";
@@ -33,81 +32,61 @@ import Documentation from "@/pages/docs";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms";
 
-// Placeholder for Admin and Customer Apps (assuming these components exist)
-const AdminApp = () => <div>Admin App Placeholder</div>;
-const CustomerApp = () => <div>Customer App Placeholder</div>;
+// Lazy-load Admin app so public bundle stays lean
+const AdminApp = lazy(() => import("@/admin/App"));
 
-
-// Import Google Fonts
-import "@fontsource/inter/300.css";
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/700.css";
-import "@fontsource/inter/800.css";
-
-function Router() {
-  const [cartModalOpen, setCartModalOpen] = useState(false);
-
-  const openCartModal = () => setCartModalOpen(true);
-  const closeCartModal = () => setCartModalOpen(false);
-
-  // Placeholder for itemCount and isCartOpen, assuming they are managed elsewhere or will be defined
-  const itemCount = 0; // Example value
-  const isCartOpen = false; // Example value
-
+function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <TooltipProvider>
-      <div className="flex min-h-screen flex-col">
-        <Switch>
-          {/* Admin and Customer Apps (no public nav/footer) */}
-          <Route path="/admin/:rest*">
-            {() => <AdminApp />}
-          </Route>
-          <Route path="/app/:rest*">
-            {() => <CustomerApp />}
-          </Route>
-
-          {/* Public routes with nav/footer */}
-          <Route>
-            {() => (
-              <>
-                <Navigation onCartClick={openCartModal} />
-                <main className="flex-1">
-                  <Switch>
-                    <Route path="/" component={Home} />
-                    <Route path="/services" component={Services} />
-                    <Route path="/pricing" component={Pricing} />
-                    <Route path="/about" component={About} />
-                    <Route path="/contact" component={Contact} />
-                    <Route path="/checkout" component={Checkout} />
-                    <Route path="/customer-dashboard" component={CustomerDashboard} />
-                    <Route path="/dashboard" component={CustomerDashboard} />
-                    <Route path="/login" component={Login} />
-                    <Route path="/register" component={Register} />
-                    <Route path="/signup" component={Register} />
-                    {/* Footer Pages */}
-                    <Route path="/about-us" component={AboutUs} />
-                    <Route path="/careers" component={Careers} />
-                    <Route path="/blog" component={Blog} />
-                    <Route path="/help-center" component={HelpCenter} />
-                    <Route path="/docs" component={Documentation} />
-                    <Route path="/privacy-policy" component={PrivacyPolicy} />
-                    <Route path="/terms" component={TermsOfService} />
-                    {/* Admin Portal Route */}
-                    <Route path="/admin-portal" component={AdminPortal} />
-                    <Route component={NotFound} />
-                  </Switch>
-                </main>
-                <Footer />
-              </>
-            )}
-          </Route>
-        </Switch>
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navigation />
+        <main className="flex-1">{children}</main>
+        <Footer />
+        <CartModal />
+        <Toaster />
       </div>
-      <Toaster />
-      <CartModal isOpen={cartModalOpen} onClose={closeCartModal} />
     </TooltipProvider>
+  );
+}
+
+function Router() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* PUBLIC SITE — DO NOT CHANGE VISUALS */}
+        <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+        <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
+        <Route path="/pricing" element={<PublicLayout><Pricing /></PublicLayout>} />
+        <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+        <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+        <Route path="/checkout" element={<PublicLayout><Checkout /></PublicLayout>} />
+        <Route path="/dashboard" element={<PublicLayout><CustomerDashboard /></PublicLayout>} />
+        <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
+        <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
+
+        {/* Footer Pages */}
+        <Route path="/about-us" element={<PublicLayout><AboutUs /></PublicLayout>} />
+        <Route path="/careers" element={<PublicLayout><Careers /></PublicLayout>} />
+        <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
+        <Route path="/help" element={<PublicLayout><HelpCenter /></PublicLayout>} />
+        <Route path="/docs" element={<PublicLayout><Documentation /></PublicLayout>} />
+        <Route path="/privacy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
+        <Route path="/terms" element={<PublicLayout><TermsOfService /></PublicLayout>} />
+
+        {/* ADMIN PORTAL — its own layout, separate from public navbar/footer */}
+        <Route
+          path="/admin/*"
+          element={
+            <Suspense fallback={null}>
+              <AdminApp />
+            </Suspense>
+          }
+        />
+
+        {/* Catch-all → 404 page */}
+        <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
