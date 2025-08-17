@@ -3,6 +3,19 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
+// Detect Replit container
+const isReplit = !!process.env.REPL_ID || !!process.env.REPLIT_DB_URL;
+
+// When running in Replit, HMR off (prevents WS flaps → page flicker).
+// Locally, keep secure WSS for browser previews that are https.
+const hmrConfig = isReplit
+  ? false
+  : {
+      protocol: "wss",
+      clientPort: 443,
+      path: "/hmr",
+    };
+
 export default defineConfig({
   plugins: [react({ fastRefresh: true })],
   resolve: {
@@ -17,15 +30,9 @@ export default defineConfig({
     strictPort: true,
     cors: true,
     allowedHosts: true,
-    hmr: {
-      // Replit preview is HTTPS → force secure WS to 443 to avoid mixed-content issues
-      protocol: "wss",
-      clientPort: 443,
-      path: "/hmr", // fixed path improves some proxy setups
-      overlay: true,
-    },
-    // Replit's file system can miss chokidar native events → poll for stability
+    hmr: hmrConfig,
     watch: {
+      // FS polling is more stable in Replit containers
       usePolling: true,
       interval: 300,
       awaitWriteFinish: { stabilityThreshold: 500, pollInterval: 300 },
