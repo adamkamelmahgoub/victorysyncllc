@@ -13,31 +13,51 @@
 /* Reusable brand utilities */
 @layer utilities {
   .bg-vs-hero {
-    @apply bg-gradient-to-r from-[var(--vs-purple)] to-[var(--vs-blue)];
+    @apply bg-gradient-to-r from-[var(--vs-purple)] to-[var(--vs-blue)] text-white;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px white, inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   }
   .bg-vs-cta {
-    @apply bg-gradient-to-r from-[var(--vs-purple)] to-[var(--vs-blue)];
+    @apply bg-gradient-to-r from-[var(--vs-purple)] to-[var(--vs-blue)] text-white;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px white, inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   }
 
   /* Primary brand button */
   .btn-vs {
     @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
     background: var(--vs-purple);
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px white;
   }
-  .btn-vs:hover { background: var(--vs-purple-600); }
-  .btn-vs:active { background: var(--vs-purple-700); }
-  .btn-vs:focus { @apply ring-[var(--vs-purple)] ring-offset-white; }
+  .btn-vs:hover { 
+    background: var(--vs-purple-600);
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px white;
+  }
+  .btn-vs:active { 
+    background: var(--vs-purple-700);
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px white;
+  }
+  .btn-vs:focus { 
+    @apply ring-[var(--vs-purple)] ring-offset-white;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px white;
+  }
 
   /* Outline variant */
   .btn-vs-outline {
     @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold transition-colors border;
     color: var(--vs-purple);
-    border-color: var(--vs-purple);
+    border: 2px solid var(--vs-purple);
+    box-shadow: 0 0 0 1px white;
   }
   .btn-vs-outline:hover {
     color: #fff;
     background: var(--vs-purple);
-    border-color: var(--vs-purple);
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px white;
   }
 }
 
