@@ -34,25 +34,28 @@
 
   /* Primary brand button */
   .btn-vs {
-    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold text-white transition-colors;
     background: var(--vs-purple);
     border: 2px solid white;
     box-shadow: 0 0 0 1px white;
+    outline: none !important;
   }
   .btn-vs:hover { 
     background: var(--vs-purple-600);
     border: 2px solid white;
     box-shadow: 0 0 0 1px white;
+    outline: none !important;
   }
   .btn-vs:active { 
     background: var(--vs-purple-700);
     border: 2px solid white;
     box-shadow: 0 0 0 1px white;
+    outline: none !important;
   }
   .btn-vs:focus { 
-    @apply ring-[var(--vs-purple)] ring-offset-white;
     border: 2px solid white;
     box-shadow: 0 0 0 1px white;
+    outline: none !important;
   }
 
   /* Outline variant */
@@ -135,14 +138,26 @@
     --ring: 252 82% 62%;
   }
 
-  /* Remove ALL outlines site-wide (as requested) */
-  *,
-  *:before,
-  *:after,
+  /* Remove ALL outlines and focus states site-wide */
+  * {
+    outline: none !important;
+    box-shadow: none !important;
+    border-outline: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+  }
+  
   *:focus,
   *:focus-visible,
   *:active,
-  *:hover,
+  *:hover {
+    outline: none !important;
+    box-shadow: none !important;
+    ring: none !important;
+    ring-offset: none !important;
+  }
+  
   button,
   button:focus,
   button:focus-visible,
@@ -164,17 +179,12 @@
   a:focus,
   a:focus-visible,
   a:active,
-  a:hover,
-  div,
-  span,
-  p,
-  h1, h2, h3, h4, h5, h6 {
+  a:hover {
     outline: none !important;
     box-shadow: none !important;
+    ring: none !important;
+    ring-offset: none !important;
     border-outline: none !important;
-    -webkit-appearance: none !important;
-    -moz-appearance: none !important;
-    appearance: none !important;
   }
 }
 
