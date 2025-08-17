@@ -20,9 +20,16 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      if (!data?.token) throw new Error("Missing token");
+
+      // Ensure we only parse JSON; on HTML/other, show generic message
+      const isJson = (res.headers.get("content-type") || "").includes("application/json");
+      if (!res.ok) {
+        const message = isJson ? (await res.json()).error || "Login failed" : "Login failed";
+        throw new Error(message);
+      }
+
+      const data = isJson ? await res.json() : null;
+      if (!data?.token) throw new Error("Login failed");
       setToken(data.token);
       nav("/admin/overview", { replace: true });
     } catch (e: any) {
@@ -39,7 +46,11 @@ export default function LoginPage() {
         className="w-full max-w-sm rounded-xl border px-6 py-6 shadow-sm space-y-4"
       >
         <h1 className="text-lg font-semibold">Sign in to VictorySync Admin</h1>
-        {err ? <div className="text-red-600 text-sm">{err}</div> : null}
+        {err ? (
+          <div className="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2 border border-red-200">
+            {err}
+          </div>
+        ) : null}
         <div className="space-y-1">
           <label className="text-sm">Email</label>
           <input

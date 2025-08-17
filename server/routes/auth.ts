@@ -132,3 +132,50 @@ router.post("/otp/verify", async (req, res) => {
 })
 
 export default router
+import { Express, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@victorysync.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "victorysync2025";
+
+function sign(user: { id: string; email: string; role: "superAdmin" | "admin" }) {
+  return jwt.sign(user, JWT_SECRET, { expiresIn: "12h" });
+}
+
+export function registerAuthRoutes(app: Express) {
+  // POST /api/auth/login  -> { token, user }
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body ?? {};
+      if (typeof email !== "string" || typeof password !== "string") {
+        return res.status(400).json({ error: "Invalid payload" });
+      }
+
+      // MVP admin login (no DB): compare to env credentials
+      if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      const user = { id: "1", email: ADMIN_EMAIL, role: "superAdmin" as const };
+      const token = sign(user);
+      return res.json({ token, user });
+    } catch (err) {
+      return res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // GET /api/auth/me -> { user } (validate token from Authorization: Bearer <token>)
+  app.get("/api/auth/me", (req: Request, res: Response) => {
+    try {
+      const auth = req.header("authorization") || "";
+      const [, raw] = auth.split(" ");
+      if (!raw) return res.status(401).json({ error: "Missing token" });
+
+      const user = jwt.verify(raw, JWT_SECRET);
+      return res.json({ user });
+    } catch {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+  });
+}
