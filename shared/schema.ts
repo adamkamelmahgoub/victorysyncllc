@@ -24,8 +24,12 @@ export const publicUsers = pgTable("public_users", {
   providerId: varchar("provider_id"),
   socialAccounts: jsonb("social_accounts").default([]), // Array of connected providers
   privileges: jsonb("privileges"), // User privileges and permissions
+  role: varchar("role").default("user"), // user, admin, super_admin, billing, crm_manager
+  permissions: jsonb("permissions").default({}),
   isActive: boolean("is_active").default(true),
+  lastLogin: timestamp("last_login"),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Register and login schemas for public users
