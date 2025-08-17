@@ -1,4 +1,3 @@
-
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { setToken } from "./auth";
@@ -76,6 +75,9 @@ export default function LoginPage() {
         >
           {loading ? "Signing in..." : "Sign In"}
         </button>
+        <div className="text-right mt-3">
+            <a className="text-sm underline" href="/admin/forgot">Forgot password?</a>
+          </div>
       </form>
     </div>
   );
