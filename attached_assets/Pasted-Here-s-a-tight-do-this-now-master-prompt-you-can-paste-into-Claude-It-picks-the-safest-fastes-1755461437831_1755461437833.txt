@@ -1,0 +1,229 @@
+Here’s a tight “do-this-now” master prompt you can paste into Claude. It picks the **safest + fastest** path to fix your crash, works with your current TS/ESM setup on Replit, and guarantees the server boots with a valid billing router mounted.
+
+---
+
+# MASTER PROMPT FOR CLAUDE — FIX `billing.full` IMPORT & BOOT SERVER
+
+You are working **inside this Replit**. Node v20, TS + tsx, Express + Vite.
+The server currently fails with:
+
+```
+ERR_MODULE_NOT_FOUND: Cannot find module '/home/runner/workspace/server/routes/billing.full'
+  imported from /home/runner/workspace/server/routes.ts
+```
+
+## Goal (pass/fail)
+
+* **Build succeeds** (client and server).
+* **Server starts** without missing-module errors.
+* **Health check** `GET http://0.0.0.0:5000/health` returns 200.
+* Existing routes continue to work.
+* No visual/public navbar changes.
+
+## Method (best practice for speed + safety)
+
+Implement a **defensive router resolution**:
+
+1. If `server/routes/billing.ts` already exists, **use it** and remove the bad import.
+2. Otherwise, **create** `server/routes/billing.full.ts` (below) and mount it.
+
+Do not break ESM/tsx behavior. Do not introduce placeholder/demo data—return **empty but typed** responses (e.g., `[]`, `null`, `0`) where real data isn’t yet wired.
+
+---
+
+## Step 1 — Check for an existing billing router
+
+* Scan for one of:
+
+  * `server/routes/billing.ts`
+  * `server/routes/billing.js`
+
+### If FOUND (fast path)
+
+Edit `server/routes.ts`:
+
+**Replace**
+
+```ts
+// ❌ bad import
+import billingFull from "./routes/billing.full";
+```
+
+**With**
+
+```ts
+// ✅ use the existing router
+import billingRoutes from "./routes/billing";
+```
+
+Then ensure it’s mounted:
+
+```ts
+// BEFORE
+// app.use(billingFull);
+
+// AFTER
+app.use(billingRoutes);
+```
+
+Proceed to **Step 3** (build & run).
+
+---
+
+### If NOT FOUND (create router – robust path)
+
+## Step 2 — Add a production-safe billing router
+
+Create **`server/routes/billing.full.ts`** with this code:
+
+```ts
+import { Router } from "express";
+
+const router = Router();
+
+/**
+ * Billing Router (production-safe minimal)
+ * - No placeholder/demo data returned
+ * - Neutral, typed responses (null/0/[]) until services are wired
+ * - All handlers wrapped with try/catch and 4xx/5xx semantics
+ */
+
+router.get("/api/billing/info", async (req, res) => {
+  try {
+    // If you have a real service module, you can swap this in later:
+    // const svc = await import("../services/billing");
+    // const data = await svc.getBillingInfo(req.user?.orgId);
+
+    // Neutral response (no demo content)
+    res.status(200).json({
+      plan: null,
+      seats: 0,
+      invoices: [],
+      currency: "USD",
+    });
+  } catch (err) {
+    res.status(500).json({ error: "billing_info_failed" });
+  }
+});
+
+router.post("/api/billing/seats", async (req, res) => {
+  try {
+    const { delta } = req.body ?? {};
+    if (typeof delta !== "number") {
+      return res.status(400).json({ error: "delta_required" });
+    }
+
+    // Swap to real logic later:
+    // const svc = await import("../services/billing");
+    // await svc.adjustSeats(req.user?.orgId, delta);
+
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: "billing_seats_failed" });
+  }
+});
+
+router.get("/api/billing/invoice/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Swap to real logic later:
+    // const svc = await import("../services/billing");
+    // const invoice = await svc.getInvoiceById(req.user?.orgId, id);
+
+    // Neutral structure
+    res.status(200).json({
+      id,
+      amount: 0,
+      pdfUrl: null,
+      issuedAt: null,
+      status: null,
+      lineItems: [],
+    });
+  } catch (err) {
+    res.status(500).json({ error: "billing_invoice_failed" });
+  }
+});
+
+router.post("/api/billing/coupons", async (req, res) => {
+  try {
+    const { code } = req.body ?? {};
+    if (!code) return res.status(400).json({ error: "code_required" });
+
+    // Swap to real logic later:
+    // const svc = await import("../services/billing");
+    // const preview = await svc.previewCoupon(req.user?.orgId, code);
+
+    // Neutral response indicates “not applicable” until wired
+    res.status(200).json({ valid: false, discount: 0, reason: "not_configured" });
+  } catch (err) {
+    res.status(500).json({ error: "billing_coupon_failed" });
+  }
+});
+
+export default router;
+```
+
+Now mount it in **`server/routes.ts`**:
+
+```ts
+import express from "express";
+import billingFull from "./routes/billing.full";
+
+export const registerRoutes = (app: express.Express) => {
+  // ... other routers above
+
+  app.use(billingFull);
+
+  // ... other routers below
+};
+```
+
+> Note: You do **not** need `.ts` extensions in imports when using `tsx`. Keep everything as shown.
+
+---
+
+## Step 3 — Build and run
+
+Run these exactly (from project root):
+
+```bash
+npm run build
+DEV_STATIC=1 NODE_ENV=development tsx server/index.ts
+```
+
+✅ Expect:
+
+* A successful client build.
+* Server logs similar to:
+
+  * “Connecting to database…”
+  * “Server running on port 5000”
+* `GET http://0.0.0.0:5000/health` → 200.
+
+---
+
+## Step 4 — Quick smoke tests (optional but recommended)
+
+In Replit shell:
+
+```bash
+curl -sS http://0.0.0.0:5000/health
+curl -sS http://0.0.0.0:5000/api/billing/info
+curl -sS -X POST http://0.0.0.0:5000/api/billing/seats -H 'Content-Type: application/json' -d '{"delta": 1}'
+curl -sS http://0.0.0.0:5000/api/billing/invoice/INV-123
+curl -sS -X POST http://0.0.0.0:5000/api/billing/coupons -H 'Content-Type: application/json' -d '{"code":"TEST"}'
+```
+
+All should return 200/204 with the neutral, typed bodies from the new router.
+
+---
+
+## Acceptance
+
+* No `ERR_MODULE_NOT_FOUND` for `billing.full`.
+* App boots and serves routes.
+* No changes to public-site visuals or navbar.
+* Code stays TS/ESM-friendly in Replit/tsx.
+
+If anything else explodes, repeat this pattern: **either point imports to an existing file** or **add the missing file** with a neutral, typed router that returns valid HTTP responses (no demo data).
