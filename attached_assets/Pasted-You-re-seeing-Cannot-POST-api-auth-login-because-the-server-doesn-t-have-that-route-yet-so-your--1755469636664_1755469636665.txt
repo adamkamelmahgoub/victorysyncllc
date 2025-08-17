@@ -1,0 +1,258 @@
+You’re seeing `Cannot POST /api/auth/login` because the server doesn’t have that route yet, so your admin form is posting into a void and the returned **HTML error** is being rendered as text above the form.
+
+Below is a **surgical, safe patch** that:
+
+* Adds a minimal **/api/auth/login** and **/api/auth/me** to the Express server (no public UI changes).
+* Returns clean JSON errors so nothing ugly appears above the form.
+* Keeps your requested default admin credentials (`admin@victorysync.com` / `victorysync2025`) while allowing you to change them later via env.
+* Fixes the router import (use a named export) so `server/index.ts` doesn’t break again.
+* Slightly hardens the Admin login UI (admin-only) to stop dumping raw HTML.
+
+---
+
+# Paste this to Claude (MASTER PROMPT — Login/API hotfix, no public UI changes)
+
+You are working **in this same Replit**. Apply these exact changes and do not alter public navbar/footer/theme.
+
+## 0) Dependencies (root `package.json`)
+
+Add JSON Web Token and Argon2 (for parity later), then install:
+
+```bash
+npm i jsonwebtoken argon2
+```
+
+## 1) Environment (Replit Secrets or `.env`)
+
+Create these secrets (or `.env` values):
+
+```
+PORT=5000
+JWT_SECRET=replace-with-a-long-random-string
+ADMIN_EMAIL=admin@victorysync.com
+ADMIN_PASSWORD=victorysync2025
+```
+
+> You can change the admin email/password later by editing these secrets. Do **not** hardcode them in client.
+
+## 2) Server wiring
+
+### `server/routes.ts` (replace entire file)
+
+```ts
+import { Express } from "express";
+import { registerAuthRoutes } from "./routes/auth";
+
+export function registerRoutes(app: Express) {
+  registerAuthRoutes(app);
+  // future: registerBillingRoutes(app), registerAdminRoutes(app), etc.
+}
+```
+
+### `server/routes/auth.ts` (new file)
+
+```ts
+import { Express, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@victorysync.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "victorysync2025";
+
+function sign(user: { id: string; email: string; role: "superAdmin" | "admin" }) {
+  return jwt.sign(user, JWT_SECRET, { expiresIn: "12h" });
+}
+
+export function registerAuthRoutes(app: Express) {
+  // POST /api/auth/login  -> { token, user }
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body ?? {};
+      if (typeof email !== "string" || typeof password !== "string") {
+        return res.status(400).json({ error: "Invalid payload" });
+      }
+
+      // MVP admin login (no DB): compare to env credentials
+      if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      const user = { id: "1", email: ADMIN_EMAIL, role: "superAdmin" as const };
+      const token = sign(user);
+      return res.json({ token, user });
+    } catch (err) {
+      return res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // GET /api/auth/me -> { user } (validate token from Authorization: Bearer <token>)
+  app.get("/api/auth/me", (req: Request, res: Response) => {
+    try {
+      const auth = req.header("authorization") || "";
+      const [, raw] = auth.split(" ");
+      if (!raw) return res.status(401).json({ error: "Missing token" });
+
+      const user = jwt.verify(raw, JWT_SECRET);
+      return res.json({ user });
+    } catch {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+  });
+}
+```
+
+### `server/index.ts` (replace entire file)
+
+```ts
+import "dotenv/config";
+import path from "path";
+import express from "express";
+import { registerRoutes } from "./routes";
+
+const app = express();
+const PORT = Number(process.env.PORT || 5000);
+const DEV_STATIC = process.env.DEV_STATIC === "1";
+
+app.set("trust proxy", 1);
+app.use(express.json());
+
+// Health
+app.get("/health", (_req, res) => res.json({ ok: true }));
+
+// API routes
+registerRoutes(app);
+
+// Static client in dev-static mode (CI/build runs vite first)
+if (DEV_STATIC) {
+  const distDir = path.resolve(__dirname, "../client/dist");
+  app.use(express.static(distDir));
+  // SPA fallback for anything not /api
+  app.get(/^(?!\/api).*/, (_req, res) => {
+    res.sendFile(path.join(distDir, "index.html"));
+  });
+}
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`[express] serving on port ${PORT}`);
+});
+```
+
+> Notes:
+>
+> * We now **import a named** `registerRoutes` (fixes your previous “does not provide default export”).
+> * `DEV_STATIC=1` shows the built client; otherwise the server only exposes APIs.
+
+## 3) Admin client: stop showing raw HTML on error
+
+### `client/src/admin/LoginPage.tsx` (replace the component body with this version)
+
+```tsx
+import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { setToken } from "./auth";
+
+export default function LoginPage() {
+  const nav = useNavigate();
+  const [email, setEmail] = useState("admin@victorysync.com");
+  const [password, setPassword] = useState("victorysync2025");
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      // Ensure we only parse JSON; on HTML/other, show generic message
+      const isJson = (res.headers.get("content-type") || "").includes("application/json");
+      if (!res.ok) {
+        const message = isJson ? (await res.json()).error || "Login failed" : "Login failed";
+        throw new Error(message);
+      }
+
+      const data = isJson ? await res.json() : null;
+      if (!data?.token) throw new Error("Login failed");
+      setToken(data.token);
+      nav("/admin/overview", { replace: true });
+    } catch (e: any) {
+      setErr(e?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen grid place-items-center bg-white text-slate-900">
+      <form
+        onSubmit={onSubmit}
+        className="w-full max-w-sm rounded-xl border px-6 py-6 shadow-sm space-y-4"
+      >
+        <h1 className="text-lg font-semibold">Sign in to VictorySync Admin</h1>
+        {err ? (
+          <div className="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2 border border-red-200">
+            {err}
+          </div>
+        ) : null}
+        <div className="space-y-1">
+          <label className="text-sm">Email</label>
+          <input
+            className="w-full rounded-md border px-3 py-2 outline-none focus:ring"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-sm">Password</label>
+          <input
+            type="password"
+            className="w-full rounded-md border px-3 py-2 outline-none focus:ring"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+          />
+        </div>
+        <button
+          disabled={loading}
+          className="w-full rounded-md px-3 py-2 font-medium bg-slate-900 text-white disabled:opacity-60"
+        >
+          {loading ? "Signing in..." : "Sign In"}
+        </button>
+      </form>
+    </div>
+  );
+}
+```
+
+*(This only changes the **admin** form error rendering. Public UI untouched.)*
+
+## 4) Build & Run (root)
+
+```bash
+# build client
+npm run build
+# serve API + built client
+cross-env DEV_STATIC=1 NODE_ENV=development tsx server/index.ts
+```
+
+Visit:
+
+* `/admin/login` → sign in with the env credentials.
+* On success you land on `/admin/overview`.
+
+---
+
+### What this fixes right now
+
+* The API returns **JSON** (no more HTML blob above the form).
+* The login endpoint exists and matches your admin form.
+* You can change the admin login later via env (`ADMIN_EMAIL`, `ADMIN_PASSWORD`) without touching code.
+* Public site styling/routes remain exactly as-is.
+
+If anything else breaks (e.g., another missing route), we’ll add that endpoint the same way — always under `/api/*` and **never** touching public UI unless you say so.
