@@ -1,53 +1,55 @@
 
-import express from "express"
-import path from "node:path"
-import cookieParser from "cookie-parser"
-import cors from "cors"
-import compression from "compression"
-import helmet from "helmet"
-import routes from "./routes"
-import { seedData } from "./db/seed"
+// server/index.ts
+import "dotenv/config";
+import express from "express";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import routes from "./routes";
 
-const isDev = process.env.NODE_ENV !== "production"
-const DEV_STATIC = process.env.DEV_STATIC === "1"
-const PORT = Number(process.env.PORT || 5000)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const isProd = process.env.NODE_ENV === "production";
+const port = Number(process.env.PORT ?? 5000);
 
 async function main() {
-  const app = express()
-  app.disable("x-powered-by")
-  app.use(helmet())
-  app.use(cors({ origin: true, credentials: true }))
-  app.use(cookieParser())
-  app.use(express.json({ limit: "2mb" }))
-  app.use(compression())
+  const app = express();
 
-  app.get("/health", (_req, res) => res.json({ ok: true, env: process.env.NODE_ENV, time: new Date().toISOString() }))
-  app.use("/api", routes)
+  // Core middleware
+  app.use(cors({ origin: true, credentials: true }));
+  app.use(express.json({ limit: "2mb" }));
+  app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser());
 
-  if (isDev && !DEV_STATIC) {
-    const vite = await (await import("vite")).createServer({
-      root: path.resolve(process.cwd(), "client"),
-      server: { middlewareMode: true, hmr: { clientPort: 443 }, host: true, port: 5173, allowedHosts: true }
-    })
-    app.use(vite.middlewares)
-    app.get(/^(?!\/api).*/, async (_req, res) => {
-      const html = await vite.transformIndexHtml("/", "<!DOCTYPE html><html><head></head><body><div id='root'></div><script type='module' src='/src/main.tsx'></script></body></html>")
-      res.status(200).set({ "Content-Type": "text/html" }).end(html)
-    })
+  // Health (early)
+  app.get("/health", (_req, res) => res.json({ ok: true, env: process.env.NODE_ENV }));
+
+  // Mount API routes (robust, async)
+  await routes(app);
+
+  // --- SPA hosting ---
+  if (isProd || process.env.DEV_STATIC === "1") {
+    const clientDist = path.resolve(__dirname, "../client/dist");
+    app.use(express.static(clientDist));
+    // SPA fallback for non-/api routes
+    app.get(/^(?!\/api\/).*/, (_req, res) => {
+      res.sendFile(path.join(clientDist, "index.html"));
+    });
   } else {
-    const dist = path.resolve(process.cwd(), "client/dist")
-    app.use(express.static(dist))
-    app.get(/^(?!\/api).*/, (_req, res) => res.sendFile(path.join(dist, "index.html")))
+    // Dev: attach Vite middleware if you do that in your project,
+    // or leave this section as-is if you already set it elsewhere.
+    // (Most Replit setups build and serve static from dist even in dev.)
   }
 
-  // Initialize database and seed data
-  await seedData()
-
-  const server = app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🎉 VictorySync server running on :${PORT}`)
-    console.log(`Health: http://0.0.0.0:${PORT}/health`)
-  })
-  process.on("SIGTERM", () => server.close(() => process.exit(0)))
-  process.on("SIGINT", () => server.close(() => process.exit(0)))
+  // Start server
+  app.listen(port, "0.0.0.0", () => {
+    console.log(`🚀 VictorySync server listening on http://0.0.0.0:${port}`);
+  });
 }
-main().catch((e) => { console.error("Fatal boot error:", e); process.exit(1) })
+
+main().catch((err) => {
+  console.error("Fatal boot error:", err);
+  process.exit(1);
+});
