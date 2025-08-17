@@ -1,3 +1,4 @@
+
 import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { queryClient } from "./lib/queryClient";
@@ -38,7 +39,7 @@ const AdminApp = lazy(() => import("@/admin/App"));
 function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen flex flex-col">
         <Navigation />
         <main className="flex-1">{children}</main>
         <Footer />
@@ -53,14 +54,14 @@ function Router() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* PUBLIC SITE — DO NOT CHANGE VISUALS */}
+        {/* PUBLIC ROUTES */}
         <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
         <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
         <Route path="/pricing" element={<PublicLayout><Pricing /></PublicLayout>} />
         <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
         <Route path="/checkout" element={<PublicLayout><Checkout /></PublicLayout>} />
-        <Route path="/dashboard" element={<PublicLayout><CustomerDashboard /></PublicLayout>} />
+        <Route path="/customer-dashboard" element={<PublicLayout><CustomerDashboard /></PublicLayout>} />
         <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
         <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
 
@@ -68,12 +69,12 @@ function Router() {
         <Route path="/about-us" element={<PublicLayout><AboutUs /></PublicLayout>} />
         <Route path="/careers" element={<PublicLayout><Careers /></PublicLayout>} />
         <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
-        <Route path="/help" element={<PublicLayout><HelpCenter /></PublicLayout>} />
+        <Route path="/help-center" element={<PublicLayout><HelpCenter /></PublicLayout>} />
         <Route path="/docs" element={<PublicLayout><Documentation /></PublicLayout>} />
-        <Route path="/privacy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
+        <Route path="/privacy-policy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
         <Route path="/terms" element={<PublicLayout><TermsOfService /></PublicLayout>} />
 
-        {/* ADMIN PORTAL — its own layout, separate from public navbar/footer */}
+        {/* ADMIN ROUTES */}
         <Route
           path="/admin/*"
           element={
@@ -83,7 +84,7 @@ function Router() {
           }
         />
 
-        {/* Catch-all → 404 page */}
+        {/* Catch-all */}
         <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
       </Routes>
     </BrowserRouter>

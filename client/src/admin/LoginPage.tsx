@@ -15,7 +15,6 @@ export default function LoginPage() {
     setErr(null);
     setLoading(true);
     try {
-      // expects /api/auth/login to return { token: string, user: PublicUser }
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
