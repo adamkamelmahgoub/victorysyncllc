@@ -137,49 +137,81 @@
   body { @apply bg-background text-foreground; }
 }
 
-/* === BUTTON OUTLINE UTILITIES (even & consistent on all buttons) ========= */
-:root {
-  --vs-outline: #7B1CF5;      /* VictorySync purple */
-  --vs-outline-hover: #6a14e9; /* slightly darker for hover */
-  --vs-outline-active: #5b12c9;/* slightly darker for active */
+/* ================== VictorySync Global Tokens ================== */
+@layer base {
+  :root{
+    --vs-purple: #7B1CF5;
+    --vs-purple-700: #6A14E9;
+    --vs-blue: #2F80ED;
+    --vs-footer: #0E1526;
+  }
+
+  /* Remove ALL outlines site-wide (as requested) */
+  *:focus,
+  *:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 }
 
+/* ================== VictorySync Components ===================== */
 @layer components {
-  /* Apply to semantic buttons, role=button, and our button classes */
-  .btn-outline-even,
-  button,
-  [role="button"],
-  .btn-vs,
+  /* Gradient band used above footer (exact like live site) */
+  .vs-gradient {
+    background: linear-gradient(90deg, var(--vs-purple) 0%, var(--vs-blue) 100%);
+  }
+
+  /* Footer background color (dark navy) */
+  .vs-footer {
+    background: var(--vs-footer);
+  }
+
+  /* Canonical VictorySync primary button (purple, white text) */
+  .btn-vs {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;               /* match live sizing */
+    padding: 0 24px;            /* match live spacing */
+    border-radius: 12px;        /* rounded look */
+    font-weight: 600;
+    line-height: 1;
+    background: var(--vs-purple);
+    color: #fff;                /* force white text on purple */
+    transition: background-color .2s ease, color .2s ease, opacity .2s ease;
+    text-decoration: none;
+  }
+  .btn-vs:hover { background: var(--vs-purple-700); }
+
+  /* Secondary outline style used beside primary CTAs */
   .btn-vs-outline {
-    /* Make the static outline visible and even */
-    outline: 2px solid var(--vs-outline);
-    outline-offset: 2px;
-    border-radius: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;               /* keep same height */
+    padding: 0 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    line-height: 1;
+    border: 1px solid var(--vs-purple);
+    color: var(--vs-purple);
+    background: transparent;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+    text-decoration: none;
+  }
+  .btn-vs-outline:hover {
+    background: var(--vs-purple);
+    color: #fff;
   }
 
-  /* Hover/active color steps so the outline stays even but responds */
-  button:hover,
-  [role="button"]:hover,
-  .btn-vs:hover,
-  .btn-vs-outline:hover,
-  .btn-outline-even:hover {
-    outline-color: var(--vs-outline-hover);
-  }
-  button:active,
-  [role="button"]:active,
-  .btn-vs:active,
-  .btn-vs-outline:active,
-  .btn-outline-even:active {
-    outline-color: var(--vs-outline-active);
-  }
+  /* Size aliases if needed elsewhere */
+  .btn-vs-sm { height: 40px; padding: 0 20px; font-size: .9rem; }
+  .btn-vs-lg { height: 48px; padding: 0 28px; font-size: 1rem; }
 
-  /* Keyboard focus ring: keep it visible ONLY on buttons */
-  button:focus-visible,
-  [role="button"]:focus-visible,
-  .btn-vs:focus-visible,
-  .btn-vs-outline:focus-visible,
-  .btn-outline-even:focus-visible {
-    outline: 2px solid var(--vs-outline);
-    outline-offset: 2px;
+  /* Harden white text on anything purple, just in case */
+  .vs-purple-btn,
+  .bg-[var(--vs-purple)],
+  .bg-[var(--vs-purple-700)] {
+    color: #fff !important;
   }
 }

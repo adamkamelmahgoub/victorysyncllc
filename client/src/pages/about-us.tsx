@@ -178,12 +178,12 @@ export default function AboutUs() {
           </p>
           <div className="space-x-4">
             <Link href="/contact">
-              <button className="bg-victory-purple hover:bg-victory-purple/90 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+              <button className="btn-vs">
                 Get Started Today
               </button>
             </Link>
             <Link href="/pricing">
-              <button className="border border-gray-300 hover:border-gray-400 text-gray-700 px-8 py-3 rounded-lg font-semibold transition-colors">
+              <button className="btn-vs-outline">
                 View Pricing
               </button>
             </Link>

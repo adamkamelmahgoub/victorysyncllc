@@ -37,23 +37,23 @@ export default function Register() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Registration failed');
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
       // Store the JWT token
       localStorage.setItem('auth_token', data.token);
-      
+
       toast({
         title: "Account created successfully!",
         description: "Welcome to VictorySync. You can now access all features.",
       });
-      
+
       // Redirect to dashboard or home
       setLocation('/customer-dashboard');
     },
@@ -82,7 +82,7 @@ export default function Register() {
             Join VictorySync and start saving on customer service costs
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
@@ -148,8 +148,8 @@ export default function Register() {
               </Alert>
             )}
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full bg-[#6950f0] hover:bg-[#5d4cdb] text-white"
               disabled={registerMutation.isPending}
             >
