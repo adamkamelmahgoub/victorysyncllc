@@ -27,7 +27,7 @@ export const publicUsers = pgTable("public_users", {
   role: varchar("role").default("user"), // user, admin, super_admin, billing, crm_manager
   permissions: jsonb("permissions").default({}),
   isActive: boolean("is_active").default(true),
-  lastLogin: timestamp("last_login"),
+  lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
