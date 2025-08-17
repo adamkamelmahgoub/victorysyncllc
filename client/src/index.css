@@ -125,10 +125,61 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 252 82% 62%;
   }
+
+  /* Remove outlines everywhere by default */
+  *:focus { outline: none; }
+  *:focus-visible { outline: none; }
 }
 
 /* Apply tokens to the document (does NOT change your layout) */
 @layer base {
   * { @apply border-border; }
   body { @apply bg-background text-foreground; }
+}
+
+/* === BUTTON OUTLINE UTILITIES (even & consistent on all buttons) ========= */
+:root {
+  --vs-outline: #7B1CF5;      /* VictorySync purple */
+  --vs-outline-hover: #6a14e9; /* slightly darker for hover */
+  --vs-outline-active: #5b12c9;/* slightly darker for active */
+}
+
+@layer components {
+  /* Apply to semantic buttons, role=button, and our button classes */
+  .btn-outline-even,
+  button,
+  [role="button"],
+  .btn-vs,
+  .btn-vs-outline {
+    /* Make the static outline visible and even */
+    outline: 2px solid var(--vs-outline);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+
+  /* Hover/active color steps so the outline stays even but responds */
+  button:hover,
+  [role="button"]:hover,
+  .btn-vs:hover,
+  .btn-vs-outline:hover,
+  .btn-outline-even:hover {
+    outline-color: var(--vs-outline-hover);
+  }
+  button:active,
+  [role="button"]:active,
+  .btn-vs:active,
+  .btn-vs-outline:active,
+  .btn-outline-even:active {
+    outline-color: var(--vs-outline-active);
+  }
+
+  /* Keyboard focus ring: keep it visible ONLY on buttons */
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  .btn-vs:focus-visible,
+  .btn-vs-outline:focus-visible,
+  .btn-outline-even:focus-visible {
+    outline: 2px solid var(--vs-outline);
+    outline-offset: 2px;
+  }
 }
