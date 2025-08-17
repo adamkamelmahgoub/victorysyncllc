@@ -157,8 +157,6 @@ export default function Register() {
             </Button>
           </form>
 
-
-
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
@@ -175,41 +173,6 @@ export default function Register() {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
-}
-import { useState, FormEvent } from "react";
-
-export default function Register() {
-  const [email,setEmail]=useState(""); const [password,setPassword]=useState("");
-  const [name,setName]=useState(""); const [org,setOrg]=useState("");
-  const [accessCode,setCode]=useState(""); const [msg,setMsg]=useState<string|null>(null);
-  const [err,setErr]=useState<string|null>(null);
-
-  async function submit(e:FormEvent){
-    e.preventDefault(); setErr(null); setMsg(null);
-    const res = await fetch("/api/auth/register", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ email,password,name,org,accessCode })
-    });
-    const data = await res.json();
-    if(!res.ok) return setErr(data?.error||"Failed");
-    setMsg("Registered! You can sign in now.");
-  }
-
-  return (
-    <div className="min-h-screen grid place-items-center">
-      <form onSubmit={submit} className="w-full max-w-md border rounded-xl p-6 space-y-3">
-        <h1 className="text-lg font-semibold">Create your account</h1>
-        {msg && <div className="text-green-700 text-sm">{msg}</div>}
-        {err && <div className="text-red-700 text-sm">{err}</div>}
-        <input className="w-full border rounded-md px-3 py-2" placeholder="Name" value={name} onChange={e=>setName(e.target.value)} />
-        <input className="w-full border rounded-md px-3 py-2" placeholder="Organization" value={org} onChange={e=>setOrg(e.target.value)} />
-        <input className="w-full border rounded-md px-3 py-2" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
-        <input type="password" className="w-full border rounded-md px-3 py-2" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} />
-        <input className="w-full border rounded-md px-3 py-2" placeholder="Access Code" value={accessCode} onChange={e=>setCode(e.target.value)} />
-        <button className="w-full rounded-md bg-slate-900 text-white px-3 py-2">Register</button>
-      </form>
     </div>
   );
 }
