@@ -36,18 +36,17 @@ export default function Pricing() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="hero-bg py-20">
+      <section className="gradient-victory py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Simple, Transparent Pricing
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            Transparent Pricing Plans
           </h1>
-          <p className="text-xl text-gray-200 max-w-3xl mx-auto mb-8">
-            Choose the perfect plan for your business. All plans include our core features 
-            with no hidden fees or setup costs.
+          <p className="text-xl text-purple-100 max-w-3xl mx-auto mb-8">
+            Choose the perfect plan for your business needs. No hidden fees, no long-term contracts. Scale up or down as your business grows.
           </p>
-          <Button size="lg" variant="primary" className="font-semibold">
-            Start Free Trial
-          </Button>
+          <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 inline-block">
+            <p className="text-lg font-semibold">💰 Save up to 60% compared to US-based services</p>
+          </div>
         </div>
       </section>
 
@@ -86,33 +85,12 @@ export default function Pricing() {
                         ))}
                       </ul>
 
-                      {pkg.name === 'Starter' && (
-                        <Button 
-                          variant="primary"
-                          className="w-full"
-                          onClick={() => handleAddToCart(pkg)}
-                        >
-                          Get Started
-                        </Button>
-                      )}
-                      {pkg.name === 'Growth' && (
-                        <Button 
-                          variant="primary"
-                          className="w-full"
-                          onClick={() => handleAddToCart(pkg)}
-                        >
-                          Get Started
-                        </Button>
-                      )}
-                      {pkg.name === 'Scale' && (
-                        <Button 
-                          variant="primary"
-                          className="w-full"
-                          onClick={() => handleAddToCart(pkg)}
-                        >
-                          Contact Sales
-                        </Button>
-                      )}
+                      <Button 
+                        onClick={() => handleAddToCart(pkg)}
+                        className={`w-full ${isPopular ? 'bg-victory-purple hover:bg-purple-700' : 'bg-victory-purple hover:bg-purple-700'} text-white`}
+                      >
+                        Add to Cart
+                      </Button>
                     </CardContent>
                   </Card>
                 );
