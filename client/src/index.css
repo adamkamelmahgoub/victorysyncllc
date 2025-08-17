@@ -136,22 +136,45 @@
   }
 
   /* Remove ALL outlines site-wide (as requested) */
+  *,
+  *:before,
+  *:after,
   *:focus,
   *:focus-visible,
   *:active,
+  *:hover,
+  button,
   button:focus,
   button:focus-visible,
   button:active,
+  button:hover,
+  input,
   input:focus,
   input:focus-visible,
+  input:active,
+  textarea,
   textarea:focus,
   textarea:focus-visible,
+  textarea:active,
+  select,
   select:focus,
   select:focus-visible,
+  select:active,
+  a,
   a:focus,
-  a:focus-visible {
+  a:focus-visible,
+  a:active,
+  a:hover,
+  div,
+  span,
+  p,
+  h1, h2, h3, h4, h5, h6 {
     outline: none !important;
     box-shadow: none !important;
+    border-outline: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
   }
 }
 
