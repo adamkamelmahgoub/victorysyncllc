@@ -118,7 +118,6 @@ async function main() {
   } catch {
     // ignore in Replit or prod where env comes from platform
   }
-  await boot();
 }
 
 main().catch((err) => {

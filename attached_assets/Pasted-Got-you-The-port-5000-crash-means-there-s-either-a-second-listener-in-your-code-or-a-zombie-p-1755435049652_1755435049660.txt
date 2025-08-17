@@ -1,0 +1,174 @@
+Got you. The port 5000 crash means there’s either a **second listener in your code** or a **zombie process** still bound to the port from a previous run. Here’s a drop-in fix plus a “hand-off” prompt you can paste into Claude to apply it exactly in your Replit.
+
+---
+
+## Do-this-now quick fix (no guessing)
+
+1. **Kill any stuck process once**
+
+Open the Replit **Shell** and run:
+
+```bash
+pkill -f "node .*server/index" || true
+pkill -f "tsx .*server/index" || true
+```
+
+2. **Ensure there is ONE (and only one) `listen`**
+
+Open the Replit **Code Search** (top bar) and search:
+
+```
+app.listen(
+.listen(
+```
+
+You should only find the **one** call I’m giving below. Remove any others.
+
+3. **Replace your server listener with an idempotent, hot-reload safe server**
+
+In `server/index.ts`, **replace your startup / listen section** with this exact block (keep your middlewares, routes, vite/static setup above it as-is):
+
+```ts
+// server/index.ts
+import { createServer } from 'http';
+import express from 'express';
+
+// ... your existing imports (env, db, routes, vite middleware, static serving, etc.)
+
+const isProd = process.env.NODE_ENV === 'production';
+const HOST = '0.0.0.0';
+const PORT = Number(process.env.PORT || 5000);
+
+// Keep a handle across tsx/hmr reloads
+declare global {
+  // eslint-disable-next-line no-var
+  var __vs_http_server__: import('http').Server | undefined;
+  // eslint-disable-next-line no-var
+  var __vs_vite__: any | undefined;
+}
+
+async function boot() {
+  const app = express();
+
+  // --- your existing middleware/routes go here ---
+  // e.g. app.use(cors()); app.use(express.json()); registerRoutes(app); etc.
+
+  // Health check (keep)
+  app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
+
+  // Vite in middleware mode in dev: create only once across reloads
+  if (!isProd) {
+    if (!global.__vs_vite__) {
+      const { createServer: createVite } = await import('vite');
+      global.__vs_vite__ = await createVite({ server: { middlewareMode: true } });
+    }
+    app.use(global.__vs_vite__.middlewares);
+  } else {
+    // your static /client/dist serving + SPA fallback stays as you already have it
+  }
+
+  // Close any previous server (prevents EADDRINUSE on hot reload)
+  if (global.__vs_http_server__) {
+    await new Promise<void>((resolve) => global.__vs_http_server__!.close(() => resolve()));
+    global.__vs_http_server__ = undefined;
+  }
+
+  const httpServer = createServer(app);
+
+  httpServer.on('error', (err: any) => {
+    if (err?.code === 'EADDRINUSE') {
+      console.warn(`Port ${PORT} is in use. A previous process is still bound. Retrying after close...`);
+    } else {
+      console.error('HTTP server error:', err);
+    }
+  });
+
+  httpServer.listen(PORT, HOST, () => {
+    console.log('🎉 VictorySync server is running successfully!');
+    console.log(`[express] serving on port ${PORT}`);
+    console.log(`Health check: http://${HOST}:${PORT}/health`);
+  });
+
+  global.__vs_http_server__ = httpServer;
+
+  // Graceful shutdown (Replit stop / restart)
+  const shutdown = async () => {
+    if (global.__vs_http_server__) {
+      await new Promise<void>((resolve) => global.__vs_http_server__!.close(() => resolve()));
+      global.__vs_http_server__ = undefined;
+    }
+    process.exit(0);
+  };
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+}
+
+// Prevent double boot if this file gets imported twice
+if (!(global as any).__vs_booted__) {
+  (global as any).__vs_booted__ = true;
+  boot().catch((e) => {
+    console.error('Fatal boot error:', e);
+    process.exit(1);
+  });
+}
+```
+
+4. **Run once more**
+
+* Click **Run**.
+* You should see:
+
+  * `🎉 VictorySync server is running successfully!`
+  * `[express] serving on port <PORT>`
+  * `Health check: http://0.0.0.0:<PORT>/health`
+* Open the health URL; it must return `{ ok: true }`.
+* No more `EADDRINUSE`.
+
+---
+
+## Master prompt for Claude (paste this)
+
+> You are working **inside THIS same Replit**. The server intermittently crashes with `Error: listen EADDRINUSE: address already in use 0.0.0.0:5000`. Root cause is multiple `listen` calls and/or an orphan process after HMR/tsx reloads.
+>
+> **Do exactly the following and nothing more (do NOT touch public UI or any dashboard features):**
+>
+> 1. **Kill strays once** in the Shell:
+>
+> ```bash
+> pkill -f "node .*server/index" || true
+> pkill -f "tsx .*server/index" || true
+> ```
+>
+> 2. **Search and enforce single listener**. In the repo, search for `app.listen(` and `.listen(` and ensure there’s **only one** listen call in `server/index.ts`.
+>
+> 3. **Edit `server/index.ts`** to make startup idempotent and hot-reload safe:
+>
+>    * Keep all existing middleware, routes, and static/Vite config.
+>    * Insert a global guarded `boot()` that:
+>
+>      * Creates/attaches the Vite dev middlewares **once** in dev and **does not** create multiple vite servers on reload.
+>      * Creates an `http.Server` via `createServer(app)`.
+>      * Before `listen`, closes `global.__vs_http_server__` if it exists.
+>      * Binds to `HOST='0.0.0.0'` and `PORT=Number(process.env.PORT || 5000)`.
+>      * Saves the server to `global.__vs_http_server__` for reuse.
+>      * Handles `SIGTERM`/`SIGINT` by closing the server.
+>      * Handles `EADDRINUSE` with a console warning (no crash loop).
+>    * Guard with `if (!(global as any).__vs_booted__) { ... }` to prevent double boot if the module is imported twice.
+>
+> 4. **Do NOT** modify any public pages, navbar/footer, or customer/admin UI. No styling or routing changes. Only the server boot code.
+>
+> 5. **Run** the project. Confirm:
+>
+>    * Logs show “🎉 VictorySync server is running successfully!” and the health endpoint URL.
+>    * `GET /health` returns `{ ok: true }`.
+>    * No `EADDRINUSE` occurs after code changes or hot reloads.
+>
+> 6. **Report back** with:
+>
+>    * Files edited and diff hunks.
+>    * Confirmation there is exactly one `listen` in the codebase.
+>    * Health endpoint response and that the server stays up through a save/reload.
+
+---
+
+If you still see the error after this, it means there’s another hidden `listen()` (for example in a custom script or a second entry file). In that case, repeat the repo search for `listen(` and remove any extra listeners so only the `httpServer.listen(...)` above remains.
