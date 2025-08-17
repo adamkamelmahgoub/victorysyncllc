@@ -1,0 +1,272 @@
+You’re seeing the client-side 404 because your SPA router doesn’t have a route for `/admin/*` yet. The server fallback is fine (it’s sending `index.html`), but React Router doesn’t know what to render at `/admin`, so it shows your app’s 404 page.
+
+Here’s a **copy-paste master prompt for Claude** that adds a proper **Admin Portal** under `/admin/*` **without touching the public navbar/footer**. It wires a login form, a protected dashboard, and a clean route guard so `/admin` works immediately.
+
+---
+
+**MASTER PROMPT FOR CLAUDE — FIX /admin 404 & ADD ADMIN PORTAL ROUTES (NO PUBLIC UI CHANGES)**
+
+You are editing THIS Replit repo. Implement the Admin Portal routes so `/admin/*` renders properly and does not change the public navbar/footer/theme. Keep all public pages exactly as they are.
+
+### 1) Wire `/admin/*` into the SPA router
+
+* If the app uses `client/src/App.tsx` as the top-level router, **replace its contents** with the version below.
+* If the app routes in `client/src/main.tsx`, put the `<Router>` there – but ensure **`/admin/*`** is present. Use the code below as the canonical shape.
+
+```tsx
+// client/src/App.tsx
+import { Suspense, lazy } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+// EXISTING public pages (keep as-is; replace with your actual imports)
+import Home from "@/pages/home";
+import Services from "@/pages/services";
+import Pricing from "@/pages/pricing";
+import About from "@/pages/about";
+import Contact from "@/pages/contact";
+
+// Lazy-load Admin app so public bundle stays lean
+const AdminApp = lazy(() => import("@/admin/App"));
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* PUBLIC SITE — DO NOT CHANGE VISUALS */}
+        <Route path="/" element={<Home />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+
+        {/* ADMIN PORTAL — its own layout, separate from public navbar/footer */}
+        <Route
+          path="/admin/*"
+          element={
+            <Suspense fallback={null}>
+              <AdminApp />
+            </Suspense>
+          }
+        />
+
+        {/* Catch-all → home (public 404 stays as-is if you have one) */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+### 2) Create the Admin Portal shell (own layout, no public navbar/footer)
+
+Create folder `client/src/admin/` and add the files below.
+
+```tsx
+// client/src/admin/App.tsx
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import LoginPage from "./LoginPage";
+import OverviewPage from "./OverviewPage";
+import { getToken } from "./auth";
+
+// Simple guard: if no token, send to /admin/login
+function ProtectedRoute() {
+  const token = getToken();
+  return token ? <Outlet /> : <Navigate to="/admin/login" replace />;
+}
+
+// Minimal Admin layout — NOT the public navbar/footer
+function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-white text-slate-900">
+      <header className="border-b">
+        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+          <div className="font-semibold">VictorySync Admin</div>
+          <nav className="text-sm">
+            <a href="/admin/overview" className="hover:underline">Overview</a>
+            <span className="mx-2">•</span>
+            <a href="/admin/logout" className="hover:underline">Logout</a>
+          </nav>
+        </div>
+      </header>
+      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+    </div>
+  );
+}
+
+export default function AdminApp() {
+  return (
+    <Routes>
+      {/* /admin → /admin/login */}
+      <Route index element={<Navigate to="login" replace />} />
+      <Route path="login" element={<LoginPage />} />
+
+      {/* Protected section */}
+      <Route element={<ProtectedRoute />}>
+        <Route
+          path="overview"
+          element={
+            <AdminLayout>
+              <OverviewPage />
+            </AdminLayout>
+          }
+        />
+        {/* Add more protected routes below, e.g. users, orgs, billing, etc. */}
+      </Route>
+
+      {/* Logout route: clears token then back to login */}
+      <Route path="logout" element={<LogoutNow />} />
+
+      {/* Fallback to /admin/login */}
+      <Route path="*" element={<Navigate to="/admin/login" replace />} />
+    </Routes>
+  );
+}
+
+function LogoutNow() {
+  localStorage.removeItem("vs_token");
+  return <Navigate to="/admin/login" replace />;
+}
+```
+
+```tsx
+// client/src/admin/auth.ts
+export function getToken(): string | null {
+  return localStorage.getItem("vs_token");
+}
+
+export function setToken(t: string) {
+  localStorage.setItem("vs_token", t);
+}
+
+export async function api<T = any>(path: string, init: RequestInit = {}): Promise<T> {
+  const token = getToken();
+  const headers = new Headers(init.headers);
+  headers.set("Content-Type", "application/json");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const res = await fetch(`/api${path}`, { ...init, headers });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+```
+
+```tsx
+// client/src/admin/LoginPage.tsx
+import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { setToken } from "./auth";
+
+export default function LoginPage() {
+  const nav = useNavigate();
+  const [email, setEmail] = useState("admin@victorysync.com");
+  const [password, setPassword] = useState("victorysync2025");
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    setLoading(true);
+    try {
+      // expects /api/auth/login to return { token: string, user: PublicUser }
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      if (!data?.token) throw new Error("Missing token");
+      setToken(data.token);
+      nav("/admin/overview", { replace: true });
+    } catch (e: any) {
+      setErr(e?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen grid place-items-center bg-white text-slate-900">
+      <form
+        onSubmit={onSubmit}
+        className="w-full max-w-sm rounded-xl border px-6 py-6 shadow-sm space-y-4"
+      >
+        <h1 className="text-lg font-semibold">Sign in to VictorySync Admin</h1>
+        {err ? <div className="text-red-600 text-sm">{err}</div> : null}
+        <div className="space-y-1">
+          <label className="text-sm">Email</label>
+          <input
+            className="w-full rounded-md border px-3 py-2 outline-none focus:ring"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-sm">Password</label>
+          <input
+            type="password"
+            className="w-full rounded-md border px-3 py-2 outline-none focus:ring"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+          />
+        </div>
+        <button
+          disabled={loading}
+          className="w-full rounded-md px-3 py-2 font-medium bg-slate-900 text-white disabled:opacity-60"
+        >
+          {loading ? "Signing in..." : "Sign In"}
+        </button>
+      </form>
+    </div>
+  );
+}
+```
+
+```tsx
+// client/src/admin/OverviewPage.tsx
+export default function OverviewPage() {
+  return (
+    <section className="space-y-6">
+      <h2 className="text-xl font-semibold">Overview</h2>
+      <p className="text-sm text-slate-600">
+        Welcome to VictorySync Admin. Add Users, Orgs, Billing, Integrations, etc. here.
+      </p>
+    </section>
+  );
+}
+```
+
+### 3) Keep public UI untouched
+
+* Do **not** import the public navbar/footer into admin.
+* The admin header in `AdminLayout` is local to `/admin/*` only.
+* No changes to public color, spacing, fonts, or routes.
+
+### 4) Server is already providing SPA fallback
+
+* We already serve `/client/dist/index.html` for non-`/api` routes, so `/admin/*` will reach the SPA correctly.
+* All admin API calls are under `/api/...` (e.g., `/api/auth/login`).
+
+### 5) Test flow
+
+1. Stop any running process.
+2. Build client: `cd client && vite build && cd ..`
+3. Run server with static in dev:
+   `cross-env DEV_STATIC=1 NODE_ENV=development tsx server/index.ts`
+4. Open Preview:
+
+   * `/admin` should redirect to `/admin/login`.
+   * Log in using:
+
+     * **Email**: `admin@victorysync.com` (or the seeded admin email in your DB)
+     * **Password**: `victorysync2025`
+   * On success you land on `/admin/overview`.
+
+---
+
+This keeps your public site pixel-perfect and fixes the `/admin` 404 by adding the missing SPA route and pages. If you already have an auth API and seeded admin, the login will work immediately; otherwise, ensure `/api/auth/login` returns `{ token, user }` as expected.
