@@ -1,0 +1,105 @@
+You’ve hit a real error now (good catch): Vite can’t resolve `@/lib/queryClient` in `client/src/main.tsx`. That means your **alias isn’t configured**, and/or the **queryClient file doesn’t exist**. Here’s a drop-in **master prompt for Claude** that fixes both cleanly and keeps the “build then serve” flow stable.
+
+---
+
+## MASTER PROMPT FOR CLAUDE — “Fix `@` alias + QueryClient so build works”
+
+Work **inside this same Replit**. Do not change any public UI. Make the following exact edits so the project builds and runs with our “build → serve via Express” setup.
+
+### 1) Vite aliases
+
+Open `client/vite.config.ts` and replace the file with this:
+
+```ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { fileURLToPath, URL } from 'node:url';
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@shared': fileURLToPath(new URL('../shared', import.meta.url))
+    }
+  },
+  build: {
+    sourcemap: false,
+    chunkSizeWarningLimit: 1500
+  }
+});
+```
+
+### 2) TS path mapping (for editor/typecheck)
+
+Open `client/tsconfig.json` and ensure it contains (merge if needed):
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@shared/*": ["../shared/*"]
+    }
+  }
+}
+```
+
+### 3) Provide a real QueryClient
+
+Create **`client/src/lib/queryClient.ts`** (or replace it if it exists) with:
+
+```ts
+import { QueryClient } from '@tanstack/react-query';
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 60_000
+    },
+    mutations: {
+      retry: 0
+    }
+  }
+});
+
+export default queryClient;
+```
+
+### 4) Ensure app uses that client (do not restyle anything)
+
+Open `client/src/main.tsx` and confirm the imports and provider use this client. It should include `QueryClientProvider` wrapping `<App />` and import from the alias path:
+
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { QueryClientProvider } from '@tanstack/react-query';
+import queryClient from '@/lib/queryClient';
+import App from './App';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  </React.StrictMode>
+);
+```
+
+(Keep any other existing Providers you already had around `<App />` — Auth/Theme/Toaster/etc. — just make sure `QueryClientProvider` is there and uses the same `queryClient`.)
+
+### 5) Re-run in Replit
+
+1. `npm run build`
+2. `npm run dev`
+
+Expected: build succeeds, server logs “🎉 VictorySync server is running successfully!”, preview is stable, and **no more** `Rollup failed to resolve import "@/lib/queryClient"` or “No QueryClient set” errors.
+
+If any other `@shared/...` imports appear, the alias above already maps `@shared` to `../shared`, so they’ll resolve too.
+
+---
+
+Use that as-is with Claude. After those three quick edits, your build should complete and the app will run without the Vite alias error.
