@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import routes from "./routes";
+import registerRoutes from "./routes";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,27 +23,23 @@ async function main() {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 
-  // Health (early)
+  // Optional top-level health
   app.get("/health", (_req, res) => res.json({ ok: true, env: process.env.NODE_ENV }));
 
-  // Mount API routes (robust, async)
-  await routes(app);
+  // ----- API under /api -----
+  await registerRoutes(app);
 
-  // --- SPA hosting ---
+  // ----- SPA hosting & fallback -----
+  const clientDist = path.resolve(__dirname, "../client/dist");
   if (isProd || process.env.DEV_STATIC === "1") {
-    const clientDist = path.resolve(__dirname, "../client/dist");
     app.use(express.static(clientDist));
-    // SPA fallback for non-/api routes
-    app.get(/^(?!\/api\/).*/, (_req, res) => {
-      res.sendFile(path.join(clientDist, "index.html"));
-    });
-  } else {
-    // Dev: attach Vite middleware if you do that in your project,
-    // or leave this section as-is if you already set it elsewhere.
-    // (Most Replit setups build and serve static from dist even in dev.)
   }
 
-  // Start server
+  // Anything NOT starting with /api should serve index.html (SPA fallback)
+  app.get(/^(?!\/api\/).*/, (_req, res) => {
+    res.sendFile(path.join(clientDist, "index.html"));
+  });
+
   app.listen(port, "0.0.0.0", () => {
     console.log(`🚀 VictorySync server listening on http://0.0.0.0:${port}`);
   });
