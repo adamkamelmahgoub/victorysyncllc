@@ -24,7 +24,8 @@ async function runMigrations() {
   await pool.end();
 }
 
-if (require.main === module) {
+// Check if this file is being run directly (ES module compatible)
+if (import.meta.url === `file://${process.argv[1]}`) {
   runMigrations().catch((err) => {
     console.error("❌ Migration failed:", err);
     process.exit(1);
