@@ -1,39 +1,32 @@
-
-// --- server/index.ts (bootstrap first) ---
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import "dotenv/config";
 import express from "express";
-import cookieParser from "cookie-parser";
+import path from "path";
+import { fileURLToPath } from "url";
+import helmet from "helmet";
 import compression from "compression";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import morgan from "morgan";
-import helmet from "helmet";
 import { registerRoutes } from "./routes.js";
 
-// Resolve ESM dirname/filename early
+// ______________________________________
+// Replit / static-dev detection
+const IN_REPLIT = !!process.env.REPL_ID || !!process.env.REPLIT_DB_URL;
+const DEV_STATIC = IN_REPLIT || process.env.DEV_STATIC === "1";
+const NODE_ENV = process.env.NODE_ENV ?? "development";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Environment & flags — define BEFORE any usage
-const NODE_ENV = process.env.NODE_ENV ?? "development";
-const isProd = NODE_ENV === "production";
-const PORT = Number(process.env.PORT ?? 5000);
-
-// Project roots
-const repoRoot = path.resolve(__dirname, "..");               // /workspace/server/..
-const clientRoot = path.resolve(repoRoot, "client");          // /workspace/client
-const clientDist = path.resolve(clientRoot, "dist");          // /workspace/client/dist
-
-// Create app
+const PORT = Number(process.env.PORT || 5000);
 const app = express();
 
-app.set("trust proxy", 1); // behind Replit proxy
+app.set("trust proxy", 1);
 
 // Health check early
 app.get("/health", (_req, res) => res.json({ ok: true, env: NODE_ENV }));
 
 // Middleware setup
-if (!isProd) {
+if (NODE_ENV !== "production") {
   app.use(helmet({ contentSecurityPolicy: false }));
 } else {
   app.use(helmet());
@@ -44,35 +37,46 @@ app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 app.use(morgan("tiny"));
 
-async function boot() {
-  // Register API routes first
-  await registerRoutes(app);
+// Register API routes
+await registerRoutes(app);
 
-  if (!isProd) {
-    const { createServer } = await import("vite");
-    const vite = await createServer({
-      root: clientRoot,
-      server: {
-        middlewareMode: true,
-        hmr: { protocol: "wss", clientPort: 443, path: "/hmr" },
-        watch: { usePolling: true, interval: 300, awaitWriteFinish: { stabilityThreshold: 500, pollInterval: 300 } },
-      },
-      appType: "custom",
-    });
-    app.use(vite.middlewares);
+// ______________________________________
+// SPA: serve built client in Replit (DEV_STATIC) and in production
+const distDir = path.resolve(__dirname, "../client/dist");
+const indexHtml = path.resolve(distDir, "index.html");
 
-    // Serve transformed index.html so Vite injects @vite/client + React refresh preamble
-    const fs = await import("node:fs");
-    app.get("*", async (req, res, next) => {
-      if (req.path.startsWith("/api")) return next();
-      try {
-        const indexPath = path.resolve(clientRoot, "index.html");
-        let html = fs.readFileSync(indexPath, "utf-8");
-        html = await vite.transformIndexHtml(req.originalUrl, html);
+if (NODE_ENV === "production" || DEV_STATIC) {
+  app.use(express.static(distDir, { maxAge: NODE_ENV === "production" ? "1h" : 0 }));
 
-        // Extra guard: if preamble didn't inject for any reason, inject it manually
-        if (!html.includes("/@vite/client") || !html.includes("__vite_plugin_react_preamble_installed__")) {
-          const preamble = `
+  // SPA fallback for non-API routes
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    res.sendFile(indexHtml);
+  });
+} else {
+  // Local (non-Replit) dev can still use Vite middleware if you want.
+  // For Replit we don't use this branch.
+  const { createServer: createViteServer } = await import("vite");
+  const vite = await createViteServer({
+    root: path.resolve(__dirname, "../client"),
+    server: {
+      middlewareMode: true,
+      hmr: { protocol: "wss", clientPort: 443, path: "/hmr" },
+      watch: { usePolling: true, interval: 300, awaitWriteFinish: { stabilityThreshold: 500, pollInterval: 300 } },
+    },
+    appType: "custom"
+  });
+  app.use(vite.middlewares);
+  app.get("*", async (req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    try {
+      const indexPath = path.resolve(clientRoot, "index.html");
+      let html = fs.readFileSync(indexPath, "utf-8");
+      html = await vite.transformIndexHtml(req.originalUrl, html);
+
+      // Extra guard: if preamble didn't inject for any reason, inject it manually
+      if (!html.includes("/@vite/client") || !html.includes("__vite_plugin_react_preamble_installed__")) {
+        const preamble = `
             <script type="module" src="/@vite/client"></script>
             <script type="module">
               import RefreshRuntime from "/@react-refresh";
@@ -81,40 +85,25 @@ async function boot() {
               window.$RefreshSig$ = () => (type) => type;
               window.__vite_plugin_react_preamble_installed__ = true;
             </script>`;
-          html = html.replace("</head>", `${preamble}\n</head>`);
-        }
-
-        res.status(200).setHeader("Content-Type", "text/html").end(html);
-      } catch (err) {
-        vite.ssrFixStacktrace(err as Error);
-        next(err);
+        html = html.replace("</head>", `${preamble}\n</head>`);
       }
-    });
-  } else {
-    // Production: serve built SPA with fallback (no changes to public UI)
-    const sirv = (await import("sirv")).default;
-    app.use(sirv(clientDist, { dev: false, etag: true, single: true }));
-  }
 
-  const server = app.listen(PORT, "0.0.0.0", async () => {
-    console.log(`🎉 VictorySync running on http://0.0.0.0:${PORT} (env=${NODE_ENV})`);
-    console.log(`Health: http://0.0.0.0:${PORT}/health`);
-    console.log("📦 Initializing default packages...");
-    try {
-      const { seedDefaultPackages } = await import("./db/seed.js");
-      await seedDefaultPackages();
-      console.log("📦 Packages ready.");
+      res.status(200).setHeader("Content-Type", "text/html").end(html);
     } catch (e) {
-      console.error("⚠️ Package seed failed (continuing):", e);
-      // Do not throw; app must keep running.
+      vite.ssrFixStacktrace(e as Error);
+      next(e);
     }
   });
-
-  // Keep sockets alive long enough for proxy/HMR
-  server.keepAliveTimeout = 70_000;
-  server.headersTimeout   = 75_000;
-  server.on("connection", (socket) => socket.setKeepAlive(true, 60_000));
 }
+
+// ______________________________________
+// Keep-alive so proxy doesn't kill sockets prematurely
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🎉 VictorySync on http://0.0.0.0:${PORT}  env=${NODE_ENV}  IN_REPLIT=${IN_REPLIT}  DEV_STATIC=${DEV_STATIC}`);
+});
+server.keepAliveTimeout = 70_000;
+server.headersTimeout = 75_000;
+server.on("connection", s => s.setKeepAlive(true, 60_000));
 
 // Never hard-crash the process for unhandled errors
 process.on("unhandledRejection", (e) => console.error("UNHANDLED REJECTION", e));
