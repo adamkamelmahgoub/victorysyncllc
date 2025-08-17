@@ -42,7 +42,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
             alt="VictorySync Logo" 
             className="w-8 h-8 rounded-lg bg-white p-1"
           />
-              <span className="text-xl brand-font victory-dark">
+              <span className="text-xl brand-font victory-dark font-bold">
                 VictorySync
               </span>
             </div>
