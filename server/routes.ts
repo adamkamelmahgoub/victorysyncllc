@@ -1,8 +1,13 @@
 
 import { Express } from "express";
 import { registerAuthRoutes } from "./routes/auth";
+import { registerAdminRoutes } from "./routes/admin";
+import { registerAccessRoutes } from "./routes/access";
+import { registerKPIRoutes } from "./routes/kpi";
 
 export function registerRoutes(app: Express) {
   registerAuthRoutes(app);
-  // future: add more route modules here (billing, admin, etc.)
+  registerAdminRoutes(app);
+  registerAccessRoutes(app);
+  registerKPIRoutes(app);
 }

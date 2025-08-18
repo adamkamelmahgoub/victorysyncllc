@@ -1,47 +1,14 @@
-
-type HttpMethod = "GET"|"POST"|"PUT"|"PATCH"|"DELETE";
-
-export class ApiError extends Error {
-  status: number; 
-  data?: unknown;
-  
-  constructor(message: string, status: number, data?: unknown) { 
-    super(message); 
-    this.status = status; 
-    this.data = data; 
-  }
-}
-
-async function request<T>(method: HttpMethod, url: string, body?: unknown, init?: RequestInit): Promise<T> {
+export type HttpMethod = "GET"|"POST"|"PATCH"|"DELETE";
+export async function apiRequest<T>(url: string, opts: { method?: HttpMethod; body?: any; token?: string } = {}): Promise<T> {
   const res = await fetch(url, {
-    method,
-    headers: { 
-      "Content-Type": "application/json", 
-      ...(init?.headers || {}) 
+    method: opts.method || "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(opts.token ? { Authorization: `Bearer ${opts.token}` } : {})
     },
-    credentials: "include",
-    body: body ? JSON.stringify(body) : undefined,
-    ...init,
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
   });
-  
-  const ct = res.headers.get("content-type") || "";
-  const data = ct.includes("application/json") ? await res.json() : await res.text();
-  
-  if (!res.ok) {
-    throw new ApiError(
-      typeof data === "string" ? data : (data?.error || "Request failed"), 
-      res.status, 
-      data
-    );
-  }
-  
+  const data = await res.json().catch(()=> ({}));
+  if (!res.ok) throw new Error(data?.error || `Request failed: ${res.status}`);
   return data as T;
 }
-
-export const api = {
-  get:   <T>(url: string, init?: RequestInit) => request<T>("GET", url, undefined, init),
-  post:  <T>(url: string, body?: unknown, init?: RequestInit) => request<T>("POST", url, body, init),
-  put:   <T>(url: string, body?: unknown, init?: RequestInit) => request<T>("PUT", url, body, init),
-  patch: <T>(url: string, body?: unknown, init?: RequestInit) => request<T>("PATCH", url, body, init),
-  del:   <T>(url: string, init?: RequestInit) => request<T>("DELETE", url, undefined, init),
-};

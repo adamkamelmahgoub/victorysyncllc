@@ -25,16 +25,11 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 // API
 registerRoutes(app);
 
-// Serve built client when DEV_STATIC=1 (vite already ran)
+// Serve client dist (SPA) when building statically
 if (DEV_STATIC) {
   const distDir = path.resolve(__dirname, "../client/dist");
   app.use(express.static(distDir));
-  // SPA fallback — everything not /api should serve index.html
-  app.get(/^(?!\/api).*/, (_req, res) => {
-    res.sendFile(path.join(distDir, "index.html"));
-  });
+  app.get(/^(?!\/api).*/, (_req, res) => res.sendFile(path.join(distDir, "index.html")));
 }
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`[express] serving on port ${PORT}`);
-});
+app.listen(PORT, "0.0.0.0", () => console.log(`[express] serving on ${PORT}`));

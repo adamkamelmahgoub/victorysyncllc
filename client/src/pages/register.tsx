@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { registerUserSchema } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
+import { z } from "zod";
+import { apiRequest } from "@/lib/apiRequest";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,9 +13,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
-import { z } from "zod";
 
-type RegisterFormData = z.infer<typeof registerUserSchema>;
+const registerSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  org: z.string().optional(),
+  accessCode: z.string().min(4, "Access code is required"),
+});
+
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function Register() {
   const [, setLocation] = useLocation();
@@ -22,43 +30,33 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<RegisterFormData>({
-    resolver: zodResolver(registerUserSchema),
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
+      org: "",
+      accessCode: "",
     },
   });
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterFormData) => {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+      return await apiRequest<{ token: string; user: any }>("/api/auth/register", {
+        method: "POST",
+        body: data,
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Registration failed');
-      }
-
-      return response.json();
     },
     onSuccess: (data) => {
-      // Store the JWT token
-      localStorage.setItem('auth_token', data.token);
-
+      localStorage.setItem("vs_token", data.token);
       toast({
         title: "Account created successfully!",
         description: "Welcome to VictorySync. You can now access all features.",
       });
-
-      // Redirect to dashboard or home
-      setLocation('/customer-dashboard');
+      setLocation("/customer-dashboard");
     },
     onError: (error: any) => {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       toast({
         title: "Registration failed",
         description: error.message || "Please try again.",
@@ -114,6 +112,33 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="org">Organization (Optional)</Label>
+              <Input
+                id="org"
+                type="text"
+                placeholder="Your company name"
+                {...form.register("org")}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="accessCode">Access Code</Label>
+              <Input
+                id="accessCode"
+                type="text"
+                placeholder="Enter your access code"
+                {...form.register("accessCode")}
+                className={form.formState.errors.accessCode ? "border-red-500" : ""}
+              />
+              {form.formState.errors.accessCode && (
+                <p className="text-sm text-red-500">{form.formState.errors.accessCode.message}</p>
+              )}
+              <p className="text-xs text-gray-500">
+                Contact your administrator for an access code
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
@@ -135,7 +160,7 @@ export default function Register() {
                 <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
               )}
               <p className="text-xs text-gray-500">
-                Password must be at least 8 characters and contain at least one number
+                Password must be at least 8 characters
               </p>
             </div>
 

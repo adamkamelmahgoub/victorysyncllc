@@ -1,75 +1,172 @@
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { apiRequest } from "@/lib/apiRequest";
+import "./admin.css";
 
 export default function AdminForgot() {
-  const [step, setStep] = useState<"start"|"complete">("start");
-  const [email, setEmail] = useState("admin@victorysync.com");
+  const [step, setStep] = useState<"email" | "verify">("email");
+  const [email, setEmail] = useState("");
   const [resetId, setResetId] = useState("");
   const [otp, setOtp] = useState("");
-  const [verificationPhrase, setPhrase] = useState("");
+  const [verificationPhrase, setVerificationPhrase] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [msg, setMsg] = useState<string|null>(null);
-  const [err, setErr] = useState<string|null>(null);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  async function start(e: FormEvent) {
-    e.preventDefault();
-    setErr(null); setMsg(null);
-    const res = await fetch("/api/auth/admin/forgot/start", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ email })
-    });
-    const data = await res.json();
-    if (!res.ok) return setErr(data?.error||"Failed");
-    setResetId(data.resetId);
-    setMsg("OTP sent. Check server logs (email provider to be wired).");
-    setStep("complete");
+  async function startReset() {
+    try {
+      setError(null);
+      const data = await apiRequest<{ resetId: string; challenge: string }>("/api/auth/admin/forgot/start", {
+        method: "POST",
+        body: { email }
+      });
+      setResetId(data.resetId);
+      setStep("verify");
+    } catch (e: any) {
+      setError(e.message);
+    }
   }
-  async function complete(e: FormEvent) {
-    e.preventDefault();
-    setErr(null); setMsg(null);
-    const res = await fetch("/api/auth/admin/forgot/complete", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ resetId, otp, verificationPhrase, newPassword })
-    });
-    const data = await res.json();
-    if (!res.ok) return setErr(data?.error||"Failed");
-    setMsg("Password reset. You can sign in now.");
+
+  async function completeReset() {
+    try {
+      setError(null);
+      if (newPassword !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+      if (newPassword.length < 12) {
+        setError("Admin password must be at least 12 characters");
+        return;
+      }
+      
+      await apiRequest("/api/auth/admin/forgot/complete", {
+        method: "POST",
+        body: { resetId, otp, verificationPhrase, newPassword }
+      });
+      setSuccess(true);
+    } catch (e: any) {
+      setError(e.message);
+    }
+  }
+
+  if (success) {
+    return (
+      <div className="vs-admin min-h-screen grid place-items-center">
+        <div className="w-full max-w-md rounded-2xl overflow-hidden shadow border">
+          <div className="vs-gradient p-5 text-white">
+            <h1 className="text-xl font-semibold">Password Reset Complete</h1>
+          </div>
+          <div className="p-6 text-center">
+            <p className="text-green-700 mb-4">Your admin password has been successfully reset.</p>
+            <Link to="/admin/login" className="text-blue-600 hover:underline">
+              Sign in with your new password
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen grid place-items-center">
-      <div className="w-full max-w-md border rounded-xl p-6 space-y-4">
-        <h1 className="text-lg font-semibold">Admin Password Reset</h1>
-        {msg && <div className="text-green-700 text-sm">{msg}</div>}
-        {err && <div className="text-red-700 text-sm">{err}</div>}
-        {step === "start" ? (
-          <form onSubmit={start} className="space-y-3">
+    <div className="vs-admin min-h-screen grid place-items-center">
+      <div className="w-full max-w-md rounded-2xl overflow-hidden shadow border">
+        <div className="vs-gradient p-5 text-white">
+          <h1 className="text-xl font-semibold">Admin Password Reset</h1>
+        </div>
+        
+        {step === "email" ? (
+          <div className="p-6 space-y-4">
+            {error && <div className="text-sm text-red-700">{error}</div>}
             <div>
-              <label className="text-sm">Admin Email</label>
-              <input className="w-full border rounded-md px-3 py-2" value={email} onChange={e=>setEmail(e.target.value)} />
+              <label className="block text-sm font-medium mb-1">Admin Email</label>
+              <input
+                type="email"
+                className="w-full border rounded-md px-3 py-2"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Enter your admin email"
+              />
             </div>
-            <button className="w-full rounded-md bg-slate-900 text-white px-3 py-2">Send OTP</button>
-          </form>
+            <button
+              onClick={startReset}
+              className="w-full rounded-md px-3 py-2 text-white"
+              style={{ background: "linear-gradient(90deg,#6D28D9,#4F46E5,#2563EB)" }}
+            >
+              Send Reset Code
+            </button>
+            <div className="text-center">
+              <Link to="/admin/login" className="text-sm text-gray-600 hover:underline">
+                Back to login
+              </Link>
+            </div>
+          </div>
         ) : (
-          <form onSubmit={complete} className="space-y-3">
-            <div>
-              <label className="text-sm">Reset ID</label>
-              <input className="w-full border rounded-md px-3 py-2" value={resetId} readOnly />
+          <div className="p-6 space-y-4">
+            {error && <div className="text-sm text-red-700">{error}</div>}
+            <div className="text-sm text-gray-600 bg-yellow-50 p-3 rounded-md">
+              Check your server logs for the OTP code. You'll also need the admin verification phrase.
             </div>
+            
             <div>
-              <label className="text-sm">OTP</label>
-              <input className="w-full border rounded-md px-3 py-2" value={otp} onChange={e=>setOtp(e.target.value)} />
+              <label className="block text-sm font-medium mb-1">OTP Code</label>
+              <input
+                type="text"
+                className="w-full border rounded-md px-3 py-2"
+                value={otp}
+                onChange={e => setOtp(e.target.value)}
+                placeholder="6-digit code from server logs"
+              />
             </div>
+            
             <div>
-              <label className="text-sm">Verification Phrase</label>
-              <input className="w-full border rounded-md px-3 py-2" value={verificationPhrase} onChange={e=>setPhrase(e.target.value)} placeholder="Provided out-of-band" />
+              <label className="block text-sm font-medium mb-1">Verification Phrase</label>
+              <input
+                type="text"
+                className="w-full border rounded-md px-3 py-2"
+                value={verificationPhrase}
+                onChange={e => setVerificationPhrase(e.target.value)}
+                placeholder="Admin verification phrase"
+              />
             </div>
+            
             <div>
-              <label className="text-sm">New Password (min 12 chars)</label>
-              <input type="password" className="w-full border rounded-md px-3 py-2" value={newPassword} onChange={e=>setNewPassword(e.target.value)} />
+              <label className="block text-sm font-medium mb-1">New Password</label>
+              <input
+                type="password"
+                className="w-full border rounded-md px-3 py-2"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                placeholder="At least 12 characters"
+              />
             </div>
-            <button className="w-full rounded-md bg-slate-900 text-white px-3 py-2">Reset Password</button>
-          </form>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Confirm Password</label>
+              <input
+                type="password"
+                className="w-full border rounded-md px-3 py-2"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+              />
+            </div>
+            
+            <button
+              onClick={completeReset}
+              className="w-full rounded-md px-3 py-2 text-white"
+              style={{ background: "linear-gradient(90deg,#6D28D9,#4F46E5,#2563EB)" }}
+            >
+              Reset Password
+            </button>
+            
+            <div className="text-center">
+              <Link to="/admin/login" className="text-sm text-gray-600 hover:underline">
+                Back to login
+              </Link>
+            </div>
+          </div>
         )}
       </div>
     </div>
