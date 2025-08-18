@@ -10,6 +10,7 @@ import morgan from 'morgan';
 import { log } from "./vite.js";
 import { setupVite } from "./vite.js";
 import routes from "./routes/index.js";
+import { seedOnce } from "./lib/seed.js";
 import { migrate } from "./db/migrate.js";
 import "./storage.js";
 import "./publicAuth.js";
