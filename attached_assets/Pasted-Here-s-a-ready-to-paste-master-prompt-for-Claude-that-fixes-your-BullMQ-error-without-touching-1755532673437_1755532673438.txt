@@ -1,0 +1,209 @@
+Here’s a ready-to-paste **master prompt for Claude** that fixes your BullMQ error **without touching `.replit` or `.replit.nix`**, preserves all features, and future-proofs the job system.
+
+---
+
+**PROMPT FOR CLAUDE**
+
+You are working **inside this Replit repo**. Do not touch `.replit` or `.replit.nix`. All existing features (admin + customer flows, billing, access codes, integrations, KPIs, etc.) must remain intact.
+
+We currently crash on startup with:
+
+```
+TypeError: import_bullmq.QueueScheduler is not a constructor
+```
+
+Root cause: the code was written for **BullMQ v3** (which has `QueueScheduler`), but the project is resolving **BullMQ v4/v5** (which removed it). Fix this in a way that is **robust across versions** and requires no UI/DB changes.
+
+### What to do (exact steps)
+
+#### 0) Constraints
+
+* Do **not** change public UI, routing, copy, or design tokens.
+* Do **not** modify `.replit` or `.replit.nix`.
+* Preserve all features. Only change the background job layer.
+* Use TypeScript throughout.
+
+---
+
+### 1) Add a BullMQ compatibility layer
+
+Create a new file: `server/lib/bullmqCompat.ts` with the following code.
+This module works with both BullMQ v3 (has `QueueScheduler`) and v4/v5 (no `QueueScheduler`).
+
+```ts
+// server/lib/bullmqCompat.ts
+import IORedis from 'ioredis'
+import * as Bull from 'bullmq'
+
+export type QueueCompat = InstanceType<typeof (Bull as any).Queue>
+export type WorkerCompat = InstanceType<typeof (Bull as any).Worker>
+export type QueueEventsCompat = InstanceType<typeof (Bull as any).QueueEvents>
+
+const redisUrl = process.env.REDIS_URL ?? 'redis://127.0.0.1:6379'
+export const connection = new IORedis(redisUrl, { maxRetriesPerRequest: null })
+
+const { Queue, Worker, QueueEvents } = Bull as any
+const QueueScheduler = (Bull as any).QueueScheduler // v3 only; undefined on v4/v5
+
+/** Create a queue (works on all versions) */
+export function createQueue(name: string): QueueCompat {
+  return new Queue(name, { connection })
+}
+
+/** Create a worker (works on all versions) */
+export function createWorker(
+  name: string,
+  processor: Bull.Processor<any, any, string>,
+  opts: Omit<Bull.WorkerOptions, 'connection'> = {}
+): WorkerCompat {
+  return new Worker(name, processor, { connection, ...opts })
+}
+
+/** Subscribe to queue events */
+export function createQueueEvents(name: string): QueueEventsCompat {
+  const events = new QueueEvents(name, { connection })
+  // Optional: centralized logging
+  events.on('completed', ({ jobId }) => console.log(`[bullmq] ${name} job ${jobId} completed`))
+  events.on('failed', ({ jobId, failedReason }) => console.error(`[bullmq] ${name} job ${jobId} failed: ${failedReason}`))
+  return events
+}
+
+/** Start a scheduler if available (v3); no-op on v4/v5 */
+export async function ensureScheduler(name: string): Promise<void> {
+  if (typeof QueueScheduler === 'function') {
+    const scheduler = new QueueScheduler(name, { connection })
+    // @ts-ignore - only present on some versions
+    if (typeof scheduler.waitUntilReady === 'function') {
+      await scheduler.waitUntilReady()
+    }
+    console.log(`[bullmq] QueueScheduler started for '${name}' (v3)`)
+  } else {
+    console.log(`[bullmq] QueueScheduler not needed for '${name}' (v4/v5)`)
+  }
+}
+
+/** Add a delayed or repeatable job in a version-safe way */
+export async function addJob(
+  queue: QueueCompat,
+  name: string,
+  data: any,
+  opts?: Bull.JobsOptions
+): Promise<Bull.Job<any, any, string>> {
+  return queue.add(name, data, opts)
+}
+```
+
+---
+
+### 2) Replace direct BullMQ usage with the compat module
+
+Find **all** places that import from `"bullmq"` and either **construct** a `QueueScheduler` or create queues/workers directly (e.g., `worker/index.ts`, `server/routes/integrations.ts`, `server/worker/*.ts`, etc.). Replace those imports with the compat API.
+
+Create (or replace) `worker/index.ts` with:
+
+```ts
+// worker/index.ts
+import { createQueue, createWorker, createQueueEvents, ensureScheduler, addJob } from '../server/lib/bullmqCompat'
+
+const QUEUE_NAME = 'sync'
+
+async function bootstrap() {
+  const queue = createQueue(QUEUE_NAME)
+  createQueueEvents(QUEUE_NAME)
+  await ensureScheduler(QUEUE_NAME) // starts only on v3; no-op on v4/v5
+
+  // Worker logic
+  createWorker(QUEUE_NAME, async job => {
+    // 🔧 Existing job logic goes here.
+    // Example:
+    if (job.name === 'crmSync') {
+      // call existing CRM/Dialer sync pipelines
+    }
+  })
+
+  // Example: schedule a repeat job (works both w/ and w/o scheduler)
+  await addJob(
+    queue,
+    'crmSync',
+    { startedAt: Date.now() },
+    {
+      removeOnComplete: 100,
+      removeOnFail: 100,
+      // every 10 minutes
+      repeat: { every: 10 * 60 * 1000 },
+    }
+  )
+}
+
+bootstrap().catch(err => {
+  console.error('[worker] bootstrap failed', err)
+  process.exit(1)
+})
+```
+
+If you had multiple queues/workers (e.g., `sync`, `webhooks`, `billing`), extract each into a file under `worker/` and wire them with the same compat helpers.
+
+---
+
+### 3) Ensure all previous “`new QueueScheduler(...)`” usages are removed
+
+* Grep the repo for `QueueScheduler(`. Remove direct instantiations and replace with `ensureScheduler(name)`.
+* For delayed jobs, use `addJob(queue, 'name', data, { delay })`.
+* For cron/repeat, use `addJob(queue, 'name', data, { repeat: { every: ms } })` **or** `{ repeat: { cron: '*/10 * * * *' } }`.
+
+No other behavior changes are needed.
+
+---
+
+### 4) Keep dependencies as-is (preferred), or pin BullMQ v3 if needed
+
+**Preferred**: keep your current BullMQ version (likely v4/v5). The compat layer fully supports it.
+
+If you want the **quickest rollback** instead, pin to v3 (no code changes required):
+
+```bash
+npm pkg set dependencies.bullmq=^3.15.8
+npm pkg set dependencies.ioredis=^5.3.2
+npm i
+```
+
+But do this **only** if you decide not to keep the compat layer. The compat approach is already future-proof and avoids surprises.
+
+---
+
+### 5) Verify
+
+1. Build + run (unchanged dev command):
+
+   ```bash
+   npm run build && cross-env DEV_STATIC=1 NODE_ENV=development tsx server/index.ts
+   ```
+
+   Expect: no “QueueScheduler is not a constructor” error.
+
+2. Hit `/health`: still OK.
+
+3. Confirm background jobs:
+
+   * Check logs for `[bullmq] QueueScheduler started...` **or** `QueueScheduler not needed...` (depending on version).
+   * Confirm recurring job executions (e.g., `crmSync` messages in logs).
+
+4. Smoke test **all existing features** (no UI/DB changes were made by this task):
+
+   * Admin login, 2FA flows, access code registration, customer login, billing endpoints, integrations, KPI dashboards, webhooks, etc.
+
+---
+
+### 6) Notes
+
+* This change is **strictly internal** to the job layer; it must not alter any public UI, routes, or data models.
+* Do not loosen TypeScript/ESLint rules.
+* If environment variable `REDIS_URL` isn’t set, the compat layer defaults to `redis://127.0.0.1:6379`.
+
+When done, post:
+
+* Files changed and their diffs.
+* BullMQ version detected at runtime.
+* A short log excerpt showing a job completed.
+
+**End of prompt**
