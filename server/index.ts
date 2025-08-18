@@ -6,11 +6,14 @@ import cors from "cors";
 import compression from "compression";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import morgan from "morgan";
 import morgan from 'morgan';
 import { log } from "./vite.js";
 import { setupVite } from "./vite.js";
 import routes from "./routes/index.js";
-import { seedOnce } from "./lib/seed.js";
+import { ENV } from "./lib/env.js";
+import { getQueue, startWorker } from "./lib/queue.js";
+import { seedOnce } from "./db/seed.js";
 import { migrate } from "./db/migrate.js";
 import "./storage.js";
 import "./publicAuth.js";
@@ -39,7 +42,17 @@ const clientDir = path.resolve(__dirname, '../client');
 const distDir = path.resolve(clientDir, 'dist');
 
 async function start() {
-  await seedOnce();
+  // BullMQ worker only if Redis configured
+  await startWorker(async (job) => {
+    // Route all sync jobs through here
+    console.log("[sync] received job:", job);
+    // TODO: call your real sync handlers here
+  });
+
+  // Seed once on boot (idempotent)
+  if (ENV.SEED_ON_BOOT) {
+    await seedOnce();
+  }
 
   if (!isProd) {
     const { createServer } = await import('vite');
@@ -67,8 +80,7 @@ async function start() {
 
   app.use((err:any,_req:any,res:any,_next:any)=>res.status(err.status||500).json({ error: err.message||'Internal Server Error' }));
 
-  const port = Number(process.env.PORT || 5000);
-  app.listen(port, () => console.log(`[express] serving on port ${port}`));
+  app.listen(ENV.PORT, () => console.log(`[express] serving on port ${ENV.PORT}`));
 }
 start();
 export default app;

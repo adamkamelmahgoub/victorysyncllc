@@ -1,55 +1,15 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 
 import { db } from "../db";
-import { packages } from "../../shared/schema";
-import { eq } from "drizzle-orm";
+import { packages, users, organizations, roles, permissions, rolePermissions } from "./schema";
+import bcrypt from "bcryptjs"
+import { eq } from "drizzle-orm"
 
-type InsertPackage = {
-  name: string;
-  price: string;
-  description?: string;
-  features: string[];
-};
+// If you already have Drizzle or a proper seed system, call into it here instead.
+// This file provides an idempotent, minimal "seed once" that you can expand.
 
-const DEFAULT_PACKAGES: InsertPackage[] = [
-  {
-    name: "Starter",
-    price: "1200.00",
-    description: "Perfect for small businesses",
-    features: [
-      "1 Dedicated Agent",
-      "Business Hours Support", 
-      "Basic CRM Integration",
-      "Email Support",
-      "Monthly Reports"
-    ],
-  },
-  {
-    name: "Growth",
-    price: "2500.00",
-    description: "For growing companies",
-    features: [
-      "2 Dedicated Agents",
-      "Extended Hours Support",
-      "Appointment Setting",
-      "Advanced CRM Integration",
-      "Live Chat Support", 
-      "Weekly Reports"
-    ],
-  },
-  {
-    name: "Scale",
-    price: "4500.00",
-    description: "For enterprise needs",
-    features: [
-      "24/7 Blended Team",
-      "AI Automation Suite",
-      "Dedicated Success Manager",
-      "Custom Integrations",
-      "Priority Support",
-      "Real-time Analytics"
-    ],
-  },
-];
+const lockFile = path.join(process.cwd(), ".seeded.lock");
 
 // Guard against accidental strings/null
 function ensureArray(v: unknown): string[] {
@@ -58,13 +18,54 @@ function ensureArray(v: unknown): string[] {
   return [String(v)];
 }
 
-export async function seedDefaultPackages() {
+async function seedDefaultPackages() {
+  const DEFAULT_PACKAGES: InsertPackage[] = [
+    {
+      name: "Starter",
+      price: "1200.00",
+      description: "Perfect for small businesses",
+      features: [
+        "1 Dedicated Agent",
+        "Business Hours Support",
+        "Basic CRM Integration",
+        "Email Support",
+        "Monthly Reports"
+      ],
+    },
+    {
+      name: "Growth",
+      price: "2500.00",
+      description: "For growing companies",
+      features: [
+        "2 Dedicated Agents",
+        "Extended Hours Support",
+        "Appointment Setting",
+        "Advanced CRM Integration",
+        "Live Chat Support",
+        "Weekly Reports"
+      ],
+    },
+    {
+      name: "Scale",
+      price: "4500.00",
+      description: "For enterprise needs",
+      features: [
+        "24/7 Blended Team",
+        "AI Automation Suite",
+        "Dedicated Success Manager",
+        "Custom Integrations",
+        "Priority Support",
+        "Real-time Analytics"
+      ],
+    },
+  ];
+
   console.log('Creating default packages...');
-  
+
   for (const pkg of DEFAULT_PACKAGES) {
     try {
       const existing = await db.select().from(packages).where(eq(packages.name, pkg.name));
-      
+
       if (existing.length === 0) {
         await db.insert(packages)
           .values({
@@ -82,12 +83,8 @@ export async function seedDefaultPackages() {
     }
   }
 }
-import bcrypt from "bcryptjs"
-import { eq } from "drizzle-orm"
-import { db } from "../db"
-import { users, organizations, packages, roles, permissions, rolePermissions } from "./schema"
 
-export async function seedData() {
+async function seedData() {
   try {
     // Create default organization
     const defaultOrg = await db.select().from(organizations).where(eq(organizations.id, 1)).limit(1)
@@ -112,7 +109,7 @@ export async function seedData() {
     // Create admin user
     const adminEmail = process.env.ADMIN_EMAIL || "admin@victorysync.com"
     const adminPassword = process.env.ADMIN_PASSWORD || "victorysync2025"
-    
+
     const existingAdmin = await db.select().from(users).where(eq(users.email, adminEmail)).limit(1)
     if (!existingAdmin.length) {
       const hashedPassword = await bcrypt.hash(adminPassword, 12)
@@ -130,7 +127,7 @@ export async function seedData() {
       console.log(`✅ Admin user created: ${adminEmail} / ${adminPassword}`)
     }
 
-    // Create default packages
+    // Create default packages (from original seedData function)
     const existingPackages = await db.select().from(packages).limit(1)
     if (!existingPackages.length) {
       await db.insert(packages).values([
@@ -147,7 +144,7 @@ export async function seedData() {
         },
         {
           name: "Growth",
-          pricePerSeat: "199.00", 
+          pricePerSeat: "199.00",
           features: JSON.stringify([
             "Everything in Starter",
             "AI Chat Automation",
@@ -178,3 +175,30 @@ export async function seedData() {
     console.error("❌ Database seeding failed:", error)
   }
 }
+
+
+export async function seedOnce() {
+  try {
+    await fs.access(lockFile);
+    // lock exists => already seeded
+    return;
+  } catch {
+    // proceed
+  }
+
+  // TODO: replace with your real seed (roles, super admin, packages…)
+  // This keeps your previous logic but ensures it won't throw when re-run.
+  console.info("Seeding baseline roles, permissions, superAdmin…");
+  await seedDefaultPackages(); // Call the original package seeding logic
+  await seedData(); // Call the original general seeding logic
+
+  await fs.writeFile(lockFile, new Date().toISOString(), "utf8");
+  console.info("Seed complete (lock created).");
+}
+
+type InsertPackage = {
+  name: string;
+  price: string;
+  description?: string;
+  features: string[];
+};
