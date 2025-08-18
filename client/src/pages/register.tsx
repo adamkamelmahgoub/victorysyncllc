@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
@@ -236,7 +235,7 @@ export default function Register() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
-              <Link href="/login" className="text-victory-purple hover:underline font-medium">
+              <Link to="/login" className="font-medium text-victory-purple hover:text-victory-purple/80">
                 Sign in here
               </Link>
             </p>

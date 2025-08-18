@@ -78,6 +78,12 @@ async function start() {
     });
   }
 
+  // SPA fallback - serve index.html for non-API routes
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(distDir, 'index.html'));
+  });
+
   app.use((err:any,_req:any,res:any,_next:any)=>res.status(err.status||500).json({ error: err.message||'Internal Server Error' }));
 
   app.listen(ENV.PORT, () => console.log(`[express] serving on port ${ENV.PORT}`));

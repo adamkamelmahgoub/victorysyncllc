@@ -1,9 +1,9 @@
-import { Link, useLocation } from "wouter";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, User, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 
 const scrollToTop = () => {
@@ -15,7 +15,8 @@ interface NavigationProps {
 }
 
 export default function Navigation({ onCartClick }: NavigationProps) {
-  const [location] = useLocation();
+  const [location] = useLocation(); // This line seems to be from wouter, but the changes indicate react-router-dom
+  const navigate = useNavigate(); // Added for react-router-dom navigation
   const { getItemCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -35,23 +36,21 @@ export default function Navigation({ onCartClick }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" onClick={scrollToTop}>
-            <div className="flex items-center space-x-3 cursor-pointer">
-              <img 
-            src="/LOGO_VS.png" 
-            alt="VictorySync Logo" 
-            className="w-8 h-8 rounded-lg bg-white p-1"
-          />
-              <span className="text-xl brand-font victory-dark font-bold">
-                VictorySync
-              </span>
-            </div>
+          <Link to="/" onClick={scrollToTop} className="flex items-center space-x-3 cursor-pointer">
+            <img
+              src="/LOGO_VS.png"
+              alt="VictorySync Logo"
+              className="w-8 h-8 rounded-lg bg-white p-1"
+            />
+            <span className="text-xl brand-font victory-dark font-bold">
+              VictorySync
+            </span>
           </Link>
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
+              <Link key={link.href} to={link.href}>
                 <span
                   className={`font-medium transition-colors cursor-pointer ${
                     location === link.href
@@ -81,14 +80,14 @@ export default function Navigation({ onCartClick }: NavigationProps) {
 
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
-                <Link href="/dashboard">
+                <Link to="/dashboard">
                   <Button variant="ghost" size="sm">
                     <User className="w-4 h-4 mr-2" />
                     Dashboard
                   </Button>
                 </Link>
                 {user && ['admin', 'super_admin', 'billing', 'crm_manager'].includes(user.role) && (
-                  <Link href="/admin">
+                  <Link to="/admin">
                     <Button variant="ghost" size="sm">
                       Admin Portal
                     </Button>
@@ -104,12 +103,14 @@ export default function Navigation({ onCartClick }: NavigationProps) {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link href="/login">
+                <Link to="/login">
                   <Button variant="ghost" size="sm">
                     Sign In
                   </Button>
                 </Link>
-
+                <Link to="/register" className="btn-vs">
+                  Get Started
+                </Link>
               </div>
             )}
           </div>
@@ -145,7 +146,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
           <div className="md:hidden py-4 border-t border-slate-200">
             <div className="flex flex-col space-y-4">
               {navLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
+                <Link key={link.href} to={link.href}>
                   <span
                     className={`font-medium transition-colors cursor-pointer block py-2 ${
                       location === link.href
@@ -162,7 +163,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
               <div className="pt-4 border-t border-slate-200">
                 {isAuthenticated ? (
                   <div className="flex flex-col space-y-2">
-                    <Link href="/dashboard">
+                    <Link to="/dashboard">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -173,7 +174,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                       </Button>
                     </Link>
                     {user && ['admin', 'super_admin', 'billing', 'crm_manager'].includes(user.role) && (
-                      <Link href="/admin">
+                      <Link to="/admin">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -194,15 +195,24 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                   </div>
                 ) : (
                   <div className="flex flex-col space-y-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => (window.location.href = "/login")}
-                    >
-                      Sign In
-                    </Button>
-
+                    <Link to="/login">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start"
+                      >
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/register" className="w-full justify-start">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                      >
+                        Get Started
+                      </Button>
+                    </Link>
                   </div>
                 )}
               </div>

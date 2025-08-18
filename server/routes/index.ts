@@ -1,8 +1,8 @@
-
 import { Router } from 'express';
 import auth from './auth.js';
 import oauth from './oauth.js';
 import password from './password.js';
+import authReset from "./auth.reset.js";
 import admin from './admin.js';
 import billing from './billing.js';
 import integrations from './integrations.js';
@@ -13,6 +13,7 @@ r.get('/health', (_req, res) => res.json({ ok: true }));
 r.use('/auth', auth);
 r.use('/oauth', oauth);
 r.use('/password', password);
+r.use('/auth', authReset);
 r.use('/admin', admin);
 r.use('/billing', billing);
 r.use('/integrations', integrations);

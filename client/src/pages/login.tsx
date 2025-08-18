@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -201,6 +200,26 @@ export default function Login() {
                   </Button>
                 </div>
               )}
+
+              <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-victory-purple focus:ring-victory-purple border-gray-300 rounded"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                  Remember me
+                </label>
+              </div>
+
+              <div className="text-sm">
+                <Link to="/forgot-password" className="font-medium text-victory-purple hover:text-victory-purple/80">
+                  Forgot your password?
+                </Link>
+              </div>
+            </div>
 
               <Button
                 type="submit"
