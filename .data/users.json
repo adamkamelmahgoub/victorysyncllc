@@ -1,0 +1,11 @@
+{
+  "users": [
+    {
+      "id": "u_admin",
+      "email": "admin@victorysync.com",
+      "role": "superAdmin",
+      "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$P7gN4M0US5qKH9Ukx16Clg$+46DhJXRwmjf3AIDM3hNzmHHDZzg5iQJ5jo5nBidCNI",
+      "createdAt": "2025-08-17T23:13:08.616Z"
+    }
+  ]
+}

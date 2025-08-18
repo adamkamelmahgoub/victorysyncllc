@@ -1,0 +1,789 @@
+You’re right—the admin portal should feel like a first-class product, match the public brand (without touching the public navbar/footer), and ship all the features. Below is a single **MASTER PROMPT** you can paste into Claude. It tells it exactly what to do in your current Replit, and includes concrete code for:
+
+* A clean, branded **Admin Shell** (sidebar + topbar) under `/admin/*` that visually matches your live site (VictorySync purple gradient), without altering public components.
+* Protected routing, token storage, generic typed fetcher.
+* Working pages wired to real endpoints for: **Overview KPIs**, **Users & Roles**, **Access Codes**.
+* Server routes to support those pages, plus the **access-code registration** and **forgot password** flows you asked for (customers + stricter admins).
+* Clear tasks for Claude to extend the rest (Billing, Coupons, Integrations, API Keys, Webhooks, Audit/Health) using the same patterns—**do not** change public UI.
+
+---
+
+# MASTER PROMPT FOR CLAUDE (paste as one message)
+
+**You are the senior full-stack engineer working IN THIS Replit.** Bring the Admin Portal to production polish today. Keep all brand rules: **do not** edit the public navbar/header/footer/theme; only create and style local components under `client/src/admin/**`.
+
+## 0) Install deps
+
+```bash
+npm i jsonwebtoken argon2 zod nanoid
+```
+
+## 1) Environment / Secrets
+
+Set Replit Secrets:
+
+```
+PORT=5000
+JWT_SECRET=replace-with-a-long-random-string
+ADMIN_EMAIL=admin@victorysync.com
+ADMIN_PASSWORD=victorysync2025
+ADMIN_VERIFICATION_PHRASE=VICTORYSYNC-OWNER
+```
+
+## 2) Server foundation (fix ESM `__dirname`, SPA fallback)
+
+**Replace `server/index.ts` with:**
+
+```ts
+import "dotenv/config";
+import path from "path";
+import { fileURLToPath } from "url";
+import express from "express";
+import cookieParser from "cookie-parser";
+import compression from "compression";
+import { registerRoutes } from "./routes";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = Number(process.env.PORT || 5000);
+const DEV_STATIC = process.env.DEV_STATIC === "1";
+
+app.set("trust proxy", 1);
+app.use(compression());
+app.use(express.json({ limit: "1mb" }));
+app.use(cookieParser());
+
+// Health
+app.get("/health", (_req, res) => res.json({ ok: true }));
+
+// API
+registerRoutes(app);
+
+// Serve client dist (SPA) when building statically
+if (DEV_STATIC) {
+  const distDir = path.resolve(__dirname, "../client/dist");
+  app.use(express.static(distDir));
+  app.get(/^(?!\/api).*/, (_req, res) => res.sendFile(path.join(distDir, "index.html")));
+}
+
+app.listen(PORT, "0.0.0.0", () => console.log(`[express] serving on ${PORT}`));
+```
+
+**Replace `server/routes.ts` with:**
+
+```ts
+import { Express } from "express";
+import { registerAuthRoutes } from "./routes/auth";
+import { registerAdminRoutes } from "./routes/admin";
+import { registerAccessRoutes } from "./routes/access";
+import { registerKPIRoutes } from "./routes/kpi";
+
+export function registerRoutes(app: Express) {
+  registerAuthRoutes(app);
+  registerAdminRoutes(app);
+  registerAccessRoutes(app);
+  registerKPIRoutes(app);
+}
+```
+
+## 3) Lightweight file stores (safe fallback if DB isn’t wired)
+
+**Create `server/lib/store.ts`:**
+
+```ts
+import fs from "fs";
+import path from "path";
+
+const DATA_DIR = path.resolve(process.cwd(), ".data");
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+
+function load<T>(file: string, init: T): T {
+  const p = path.join(DATA_DIR, file);
+  if (!fs.existsSync(p)) { fs.writeFileSync(p, JSON.stringify(init, null, 2)); return init; }
+  try { return JSON.parse(fs.readFileSync(p, "utf-8")) as T; } catch { return init; }
+}
+function save<T>(file: string, data: T) {
+  const p = path.join(DATA_DIR, file);
+  fs.writeFileSync(p, JSON.stringify(data, null, 2));
+}
+
+export type AccessCode = {
+  code: string; email?: string; org?: string;
+  role?: "superAdmin"|"admin"|"manager"|"agent"|"customer";
+  maxUses: number; usedCount: number;
+  expiresAt?: string; createdAt: string; isActive: boolean;
+};
+type AccessState = { codes: AccessCode[] };
+const accessFile = "access-codes.json";
+export const AccessStore = {
+  list(): AccessCode[] { return load<AccessState>(accessFile,{codes:[]}).codes; },
+  get(code: string) { return AccessStore.list().find(c=>c.code===code)||null; },
+  upsert(ac: AccessCode) { const s=load<AccessState>(accessFile,{codes:[]}); const i=s.codes.findIndex(c=>c.code===ac.code); if(i>=0)s.codes[i]=ac; else s.codes.push(ac); save(accessFile,s); }
+};
+
+export type User = {
+  id: string; email: string; role: "superAdmin"|"admin"|"manager"|"agent"|"customer";
+  org?: string; passwordHash: string; twoFAEnabled?: boolean; createdAt: string;
+};
+type UserState = { users: User[] };
+const userFile = "users.json";
+export const UserStore = {
+  list(): User[] { return load<UserState>(userFile,{users:[]}).users; },
+  byEmail(email: string) { return UserStore.list().find(u=>u.email.toLowerCase()===email.toLowerCase())||null; },
+  byId(id: string) { return UserStore.list().find(u=>u.id===id)||null; },
+  upsert(u: User){ const s=load<UserState>(userFile,{users:[]}); const i=s.users.findIndex(x=>x.id===u.id||x.email.toLowerCase()===u.email.toLowerCase()); if(i>=0)s.users[i]=u; else s.users.push(u); save(userFile,s); }
+};
+
+export type ResetToken = { id: string; email: string; isAdmin: boolean; otp: string; createdAt: string; verifiedAt?: string; };
+type ResetState = { tokens: ResetToken[] };
+const resetFile = "password-resets.json";
+export const ResetStore = {
+  list(): ResetToken[] { return load<ResetState>(resetFile,{tokens:[]}).tokens; },
+  get(id: string){ return ResetStore.list().find(t=>t.id===id)||null; },
+  upsert(t: ResetToken){ const s=load<ResetState>(resetFile,{tokens:[]}); const i=s.tokens.findIndex(x=>x.id===t.id); if(i>=0)s.tokens[i]=t; else s.tokens.push(t); save(resetFile,s); }
+};
+```
+
+## 4) Auth + Access-code registration + Forgot Password (customers + strict admins)
+
+**Create/replace `server/routes/auth.ts`:**
+
+```ts
+import { Express, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import argon2 from "argon2";
+import { z } from "zod";
+import { nanoid } from "nanoid";
+import { AccessStore, UserStore, ResetStore, User } from "../lib/store";
+
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@victorysync.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "victorysync2025";
+const ADMIN_VERIFICATION_PHRASE = process.env.ADMIN_VERIFICATION_PHRASE || "VICTORYSYNC-OWNER";
+
+async function ensureAdmin() {
+  if (!UserStore.byEmail(ADMIN_EMAIL)) {
+    const passwordHash = await argon2.hash(ADMIN_PASSWORD);
+    UserStore.upsert({
+      id: "u_admin",
+      email: ADMIN_EMAIL,
+      role: "superAdmin",
+      passwordHash,
+      createdAt: new Date().toISOString()
+    });
+  }
+}
+function sign(u: Pick<User,"id"|"email"|"role">){ return jwt.sign(u, JWT_SECRET, { expiresIn:"12h" }); }
+function err(res: Response, code: number, msg: string){ return res.status(code).json({ error: msg }); }
+
+export function registerAuthRoutes(app: Express) {
+  ensureAdmin().catch(()=>{});
+
+  app.post("/api/auth/login", async (req, res)=>{
+    try{
+      const { email, password } = z.object({ email:z.string().email(), password:z.string().min(1)}).parse(req.body);
+      const u = UserStore.byEmail(email); if(!u) return err(res,401,"Invalid email or password");
+      const ok = await argon2.verify(u.passwordHash, password); if(!ok) return err(res,401,"Invalid email or password");
+      return res.json({ token: sign({id:u.id,email:u.email,role:u.role}), user:{ id:u.id,email:u.email,role:u.role }});
+    }catch(e:any){ return err(res,400,e?.message||"Login failed"); }
+  });
+
+  app.post("/api/auth/register", async (req,res)=>{
+    try{
+      const body = z.object({ email:z.string().email(), password:z.string().min(8), name:z.string().min(1), org:z.string().min(1).optional(), accessCode:z.string().min(4)}).parse(req.body);
+      const ac = AccessStore.get(body.accessCode); if(!ac || !ac.isActive) return err(res,400,"Invalid access code");
+      if(ac.email && ac.email.toLowerCase()!==body.email.toLowerCase()) return err(res,400,"Access code not issued for this email");
+      if(ac.expiresAt && new Date(ac.expiresAt) < new Date()) return err(res,400,"Access code expired");
+      if(ac.usedCount >= ac.maxUses) return err(res,400,"Access code usage limit reached");
+      if(UserStore.byEmail(body.email)) return err(res,400,"User already exists");
+      const passwordHash = await argon2.hash(body.password);
+      const u: User = { id:`u_${nanoid(10)}`, email: body.email, role: ac.role||"customer", org: body.org||ac.org, passwordHash, createdAt:new Date().toISOString() };
+      UserStore.upsert(u); ac.usedCount += 1; AccessStore.upsert(ac);
+      return res.json({ token: sign({id:u.id,email:u.email,role:u.role}), user: { id:u.id,email:u.email,role:u.role,org:u.org }});
+    }catch(e:any){ return err(res,400,e?.message||"Registration failed"); }
+  });
+
+  // Customer forgot
+  app.post("/api/auth/forgot/start",(req,res)=>{
+    try{
+      const { email } = z.object({ email:z.string().email() }).parse(req.body);
+      const u = UserStore.byEmail(email); if(!u) return err(res,404,"User not found");
+      const otp = Math.floor(100000+Math.random()*900000).toString(); const id=nanoid(16);
+      ResetStore.upsert({ id, email, isAdmin:false, otp, createdAt:new Date().toISOString() });
+      console.log(`[RESET OTP] customer email=${email} otp=${otp} tokenId=${id}`);
+      return res.json({ resetId:id });
+    }catch(e:any){ return err(res,400,e?.message||"Failed"); }
+  });
+  app.post("/api/auth/forgot/complete", async (req,res)=>{
+    try{
+      const { resetId, otp, newPassword } = z.object({ resetId:z.string().min(8), otp:z.string().min(4), newPassword:z.string().min(8)}).parse(req.body);
+      const tok = ResetStore.get(resetId); if(!tok || tok.isAdmin) return err(res,400,"Invalid reset token");
+      if(tok.otp !== otp) return err(res,400,"Invalid OTP");
+      const u = UserStore.byEmail(tok.email); if(!u) return err(res,404,"User not found");
+      u.passwordHash = await argon2.hash(newPassword); UserStore.upsert(u); tok.verifiedAt = new Date().toISOString(); ResetStore.upsert(tok);
+      return res.json({ ok:true });
+    }catch(e:any){ return err(res,400,e?.message||"Failed"); }
+  });
+
+  // Admin forgot (OTP + phrase)
+  app.post("/api/auth/admin/forgot/start",(req,res)=>{
+    try{
+      const { email } = z.object({ email:z.string().email() }).parse(req.body);
+      const u = UserStore.byEmail(email); if(!u || (u.role!=="admin" && u.role!=="superAdmin")) return err(res,404,"Admin not found");
+      const otp = Math.floor(100000+Math.random()*900000).toString(); const id=nanoid(16);
+      ResetStore.upsert({ id, email, isAdmin:true, otp, createdAt:new Date().toISOString() });
+      console.log(`[RESET OTP] admin email=${email} otp=${otp} tokenId=${id}`);
+      return res.json({ resetId:id, challenge:"Provide OTP and verificationPhrase" });
+    }catch(e:any){ return err(res,400,e?.message||"Failed"); }
+  });
+  app.post("/api/auth/admin/forgot/complete", async (req,res)=>{
+    try{
+      const { resetId, otp, verificationPhrase, newPassword } = z.object({ resetId:z.string().min(8), otp:z.string().min(4), verificationPhrase:z.string().min(6), newPassword:z.string().min(12)}).parse(req.body);
+      const tok = ResetStore.get(resetId); if(!tok || !tok.isAdmin) return err(res,400,"Invalid reset token");
+      if(tok.otp !== otp) return err(res,400,"Invalid OTP");
+      if(verificationPhrase !== ADMIN_VERIFICATION_PHRASE) return err(res,403,"Verification failed");
+      const u = UserStore.byEmail(tok.email); if(!u) return err(res,404,"Admin not found");
+      u.passwordHash = await argon2.hash(newPassword); UserStore.upsert(u); tok.verifiedAt = new Date().toISOString(); ResetStore.upsert(tok);
+      return res.json({ ok:true });
+    }catch(e:any){ return err(res,400,e?.message||"Failed"); }
+  });
+
+  app.get("/api/auth/me",(req,res)=>{
+    try{
+      const auth = req.header("authorization")||""; const [,raw]=auth.split(" "); if(!raw) return err(res,401,"Missing token");
+      const user = jwt.verify(raw, JWT_SECRET); return res.json({ user });
+    }catch{ return err(res,401,"Invalid token"); }
+  });
+}
+```
+
+## 5) Admin endpoints (Users & Roles, Access Codes, KPIs)
+
+**Create `server/routes/admin.ts`:**
+
+```ts
+import { Express, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { z } from "zod";
+import { nanoid } from "nanoid";
+import { UserStore, AccessStore } from "../lib/store";
+
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+function requireAdmin(req: Request, res: Response): {id:string,email:string,role:string}|null {
+  try {
+    const auth = req.header("authorization")||""; const [,raw]=auth.split(" ");
+    if(!raw) throw new Error("no token");
+    const u = jwt.verify(raw, JWT_SECRET) as any;
+    if(!u || (u.role!=="admin" && u.role!=="superAdmin")) throw new Error("forbidden");
+    return u;
+  } catch { res.status(403).json({error:"Forbidden"}); return null; }
+}
+
+export function registerAdminRoutes(app: Express){
+  // Users
+  app.get("/api/admin/users",(req,res)=>{
+    if(!requireAdmin(req,res)) return;
+    const users = UserStore.list().map(u=>({ id:u.id, email:u.email, role:u.role, org:u.org, createdAt:u.createdAt }));
+    res.json({ users });
+  });
+  app.patch("/api/admin/users/:id",(req,res)=>{
+    if(!requireAdmin(req,res)) return;
+    const { role, org } = z.object({ role:z.enum(["superAdmin","admin","manager","agent","customer"]).optional(), org:z.string().optional() }).parse(req.body);
+    const u = UserStore.byId(req.params.id); if(!u) return res.status(404).json({error:"Not found"});
+    if(role) u.role = role; if(org!==undefined) u.org = org; UserStore.upsert(u);
+    res.json({ ok:true, user:{ id:u.id,email:u.email,role:u.role,org:u.org }});
+  });
+
+  // Invite (creates access code scoped to email)
+  app.post("/api/admin/invite",(req,res)=>{
+    const me = requireAdmin(req,res); if(!me) return;
+    const { email, role, org } = z.object({
+      email: z.string().email(),
+      role: z.enum(["superAdmin","admin","manager","agent","customer"]).default("customer"),
+      org: z.string().optional()
+    }).parse(req.body);
+    const code = `INV-${nanoid(8).toUpperCase()}`;
+    const rec = { code, email, role, org, maxUses:1, usedCount:0, isActive:true, createdAt:new Date().toISOString() } as any;
+    AccessStore.upsert(rec);
+    res.json({ ok:true, accessCode: rec });
+  });
+}
+```
+
+**Create `server/routes/access.ts`:**
+
+```ts
+import { Express } from "express";
+import jwt from "jsonwebtoken";
+import { z } from "zod";
+import { AccessStore } from "../lib/store";
+
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+function isAdmin(req:any){ try{ const auth=req.header("authorization")||""; const [,raw]=auth.split(" "); const u=jwt.verify(raw,JWT_SECRET) as any; return u && (u.role==="admin"||u.role==="superAdmin"); }catch{return false;} }
+
+export function registerAccessRoutes(app: Express){
+  app.get("/api/access-codes",(req,res)=>{
+    if(!isAdmin(req)) return res.status(403).json({error:"Forbidden"});
+    res.json({ codes: AccessStore.list() });
+  });
+  app.patch("/api/access-codes/:code",(req,res)=>{
+    if(!isAdmin(req)) return res.status(403).json({error:"Forbidden"});
+    const body = z.object({ isActive:z.boolean().optional(), maxUses:z.number().int().positive().optional(), expiresAt:z.string().datetime().optional() }).parse(req.body);
+    const rec = AccessStore.get(req.params.code);
+    if(!rec) return res.status(404).json({error:"Not found"});
+    if(body.isActive!==undefined) rec.isActive = body.isActive;
+    if(body.maxUses!==undefined) rec.maxUses = body.maxUses;
+    if(body.expiresAt!==undefined) rec.expiresAt = body.expiresAt;
+    AccessStore.upsert(rec);
+    res.json({ ok:true, accessCode: rec });
+  });
+}
+```
+
+**Create `server/routes/kpi.ts`:**
+
+```ts
+import { Express } from "express";
+export function registerKPIRoutes(app: Express){
+  app.get("/api/kpi", (_req,res)=>{
+    res.json({
+      kpi:{
+        activeAgents:0, callsToday:0, callsThisWeek:0, callsThisMonth:0,
+        avgResponseTime:0, avgHandleTime:0, occupancyRate:0,
+        customerSatisfaction:0, resolutionRate:0, slaCompliance:0
+      }
+    });
+  });
+}
+```
+
+## 6) Client: typed fetcher (TanStack-friendly)
+
+**Create `client/src/lib/apiRequest.ts`:**
+
+```ts
+export type HttpMethod = "GET"|"POST"|"PATCH"|"DELETE";
+export async function apiRequest<T>(url: string, opts: { method?: HttpMethod; body?: any; token?: string } = {}): Promise<T> {
+  const res = await fetch(url, {
+    method: opts.method || "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(opts.token ? { Authorization: `Bearer ${opts.token}` } : {})
+    },
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  const data = await res.json().catch(()=> ({}));
+  if (!res.ok) throw new Error(data?.error || `Request failed: ${res.status}`);
+  return data as T;
+}
+```
+
+## 7) Admin visual shell (match VictorySync look; **admin-only** skin)
+
+**Create `client/src/admin/admin.css`:**
+
+```css
+/* Admin-only skin: don't touch public theme */
+:root .vs-admin {
+  --vs-purple: #6D28D9; /* VictorySync purple-ish */
+  --vs-indigo: #4F46E5;
+  --vs-blue:   #2563EB;
+  --vs-bg:     #0F172A; /* slate-900 topbar text contrast */
+}
+
+/* Gradient header band reused as needed */
+.vs-gradient {
+  background-image: linear-gradient(90deg, var(--vs-purple), var(--vs-indigo), var(--vs-blue));
+}
+```
+
+**Create `client/src/admin/layout/AdminShell.tsx`:**
+
+```tsx
+import { PropsWithChildren } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+
+const items = [
+  { to: "/admin/overview", label: "Overview" },
+  { to: "/admin/users", label: "Users & Roles" },
+  { to: "/admin/access-codes", label: "Access Codes" },
+  { to: "/admin/billing", label: "Billing" },
+  { to: "/admin/coupons", label: "Coupons" },
+  { to: "/admin/integrations", label: "Integrations" },
+  { to: "/admin/api-keys", label: "API Keys" },
+  { to: "/admin/webhooks", label: "Webhooks" },
+  { to: "/admin/audit", label: "Audit & Health" },
+];
+
+export default function AdminShell({ children }: PropsWithChildren) {
+  const nav = useNavigate();
+  function logout(){
+    localStorage.removeItem("vs_token");
+    nav("/admin/login");
+  }
+  return (
+    <div className="vs-admin min-h-screen grid grid-cols-[240px_1fr]">
+      <aside className="border-r">
+        <div className="vs-gradient text-white px-4 py-4 font-semibold">VictorySync Admin</div>
+        <nav className="p-2 space-y-1">
+          {items.map(i=>(
+            <NavLink
+              key={i.to}
+              to={i.to}
+              className={({isActive}) => `block rounded-md px-3 py-2 ${isActive ? "bg-gray-100 font-medium" : "hover:bg-gray-50"}`}
+            >{i.label}</NavLink>
+          ))}
+          <button onClick={logout} className="mt-4 text-left w-full rounded-md px-3 py-2 hover:bg-gray-50">Logout</button>
+        </nav>
+      </aside>
+      <main>
+        <div className="vs-gradient text-white px-6 py-6">
+          <h1 className="text-2xl font-semibold">Admin Portal</h1>
+          <p className="opacity-90">Internal tools for operations</p>
+        </div>
+        <div className="p-6">{children}</div>
+      </main>
+    </div>
+  );
+}
+```
+
+**Create `client/src/admin/Protected.tsx`:**
+
+```tsx
+import { Navigate, Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { apiRequest } from "@/lib/apiRequest";
+
+export default function AdminProtected(){
+  const [ok,setOk]=useState<boolean|null>(null);
+  useEffect(()=>{
+    const token = localStorage.getItem("vs_token")||"";
+    if(!token) return setOk(false);
+    apiRequest<{user:any}>("/api/auth/me",{ token }).then(()=>setOk(true)).catch(()=>setOk(false));
+  },[]);
+  if(ok===null) return null;
+  return ok ? <Outlet/> : <Navigate to="/admin/login" replace />;
+}
+```
+
+**Create `client/src/admin/LoginPage.tsx`:**
+
+```tsx
+import { FormEvent, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { apiRequest } from "@/lib/apiRequest";
+import "./admin.css";
+
+export default function AdminLogin(){
+  const nav = useNavigate();
+  const [email,setEmail]=useState("admin@victorysync.com");
+  const [password,setPassword]=useState("victorysync2025");
+  const [err,setErr]=useState<string|null>(null);
+
+  async function submit(e:FormEvent){
+    e.preventDefault(); setErr(null);
+    try{
+      const { token } = await apiRequest<{token:string}>("/api/auth/login",{ method:"POST", body:{ email, password }});
+      localStorage.setItem("vs_token", token);
+      nav("/admin/overview");
+    }catch(e:any){ setErr(e.message); }
+  }
+
+  return (
+    <div className="vs-admin min-h-screen grid place-items-center">
+      <div className="w-full max-w-md rounded-2xl overflow-hidden shadow border">
+        <div className="vs-gradient p-5 text-white">
+          <h1 className="text-xl font-semibold">Sign in to VictorySync Admin</h1>
+        </div>
+        <form onSubmit={submit} className="p-6 space-y-3">
+          {err && <div className="text-sm text-red-700">{err}</div>}
+          <input className="w-full border rounded-md px-3 py-2" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" />
+          <input type="password" className="w-full border rounded-md px-3 py-2" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password" />
+          <button className="w-full rounded-md px-3 py-2 text-white" style={{background:"linear-gradient(90deg,#6D28D9,#4F46E5,#2563EB)"}}>Sign In</button>
+          <div className="flex justify-between text-sm">
+            <Link to="/register" className="underline">Customer Sign Up</Link>
+            <Link to="/admin/forgot" className="underline">Forgot password?</Link>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+```
+
+## 8) Admin pages (Overview, Users & Roles, Access Codes)
+
+**Create `client/src/admin/pages/Overview.tsx`:**
+
+```tsx
+import { useEffect, useState } from "react";
+import { apiRequest } from "@/lib/apiRequest";
+
+export default function Overview(){
+  const [kpi,setKpi]=useState<any>(null); const token=localStorage.getItem("vs_token")||"";
+  useEffect(()=>{ apiRequest<{kpi:any}>("/api/kpi",{ token }).then(setKpi).catch(()=>setKpi(null)); },[]);
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold">Overview</h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {["callsToday","callsThisWeek","callsThisMonth","activeAgents","avgResponseTime","avgHandleTime","customerSatisfaction","resolutionRate","slaCompliance","occupancyRate"].map(key=>(
+          <div key={key} className="border rounded-xl p-4">
+            <div className="text-sm text-gray-500">{key}</div>
+            <div className="text-2xl font-semibold">{kpi?.kpi?.[key] ?? 0}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+**Create `client/src/admin/pages/UsersRoles.tsx`:**
+
+```tsx
+import { useEffect, useState } from "react";
+import { apiRequest } from "@/lib/apiRequest";
+
+type UserRow = { id:string; email:string; role:string; org?:string; createdAt:string; };
+export default function UsersRoles(){
+  const token = localStorage.getItem("vs_token")||"";
+  const [rows,setRows]=useState<UserRow[]>([]);
+  const [email,setEmail]=useState(""); const [role,setRole]=useState("customer"); const [org,setOrg]=useState("");
+  const roles = ["superAdmin","admin","manager","agent","customer"];
+
+  function load(){ apiRequest<{users:UserRow[]}>("/api/admin/users",{ token }).then(d=>setRows(d.users)); }
+  useEffect(()=>{ load(); },[]);
+
+  async function changeRole(id:string, role:string){
+    await apiRequest("/api/admin/users/"+id,{ method:"PATCH", token, body:{ role }});
+    load();
+  }
+  async function invite(){
+    await apiRequest("/api/admin/invite",{ method:"POST", token, body:{ email, role, org:org||undefined }});
+    setEmail(""); setOrg(""); setRole("customer");
+    alert("Invite created (access code logged in server file store).");
+  }
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold">Users & Roles</h2>
+      <div className="border rounded-xl p-4 space-y-2">
+        <div className="text-sm font-medium">Invite with Access Code</div>
+        <div className="grid md:grid-cols-4 gap-2">
+          <input className="border rounded-md px-3 py-2" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
+          <input className="border rounded-md px-3 py-2" placeholder="Org (optional)" value={org} onChange={e=>setOrg(e.target.value)} />
+          <select className="border rounded-md px-3 py-2" value={role} onChange={e=>setRole(e.target.value)}>
+            {roles.map(r=><option key={r} value={r}>{r}</option>)}
+          </select>
+          <button onClick={invite} className="rounded-md px-3 py-2 text-white" style={{background:"linear-gradient(90deg,#6D28D9,#4F46E5,#2563EB)"}}>Create Code</button>
+        </div>
+      </div>
+
+      <div className="border rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr><th className="p-2 text-left">Email</th><th className="p-2">Role</th><th className="p-2">Org</th><th className="p-2">Created</th></tr>
+          </thead>
+          <tbody>
+            {rows.map(r=>(
+              <tr key={r.id} className="border-t">
+                <td className="p-2 text-left">{r.email}</td>
+                <td className="p-2">
+                  <select className="border rounded-md px-2 py-1" value={r.role} onChange={e=>changeRole(r.id, e.target.value)}>
+                    {roles.map(x=><option key={x} value={x}>{x}</option>)}
+                  </select>
+                </td>
+                <td className="p-2">{r.org||"—"}</td>
+                <td className="p-2">{new Date(r.createdAt).toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+```
+
+**Create `client/src/admin/pages/AccessCodes.tsx`:**
+
+```tsx
+import { useEffect, useState } from "react";
+import { apiRequest } from "@/lib/apiRequest";
+
+type Code = { code:string; email?:string; org?:string; role?:string; maxUses:number; usedCount:number; isActive:boolean; createdAt:string; expiresAt?:string; };
+export default function AccessCodes(){
+  const token = localStorage.getItem("vs_token")||"";
+  const [rows,setRows]=useState<Code[]>([]);
+  const [edit,setEdit]=useState<Record<string,{maxUses:number;isActive:boolean}>>({});
+
+  function load(){ apiRequest<{codes:Code[]}>("/api/access-codes",{ token }).then(d=>setRows(d.codes)); }
+  useEffect(()=>{ load(); },[]);
+
+  async function patch(code:string){
+    const c = edit[code]; if(!c) return;
+    await apiRequest("/api/access-codes/"+code,{ method:"PATCH", token, body:{ maxUses:c.maxUses, isActive:c.isActive }});
+    setEdit(s=>{ const n={...s}; delete n[code]; return n; });
+    load();
+  }
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold">Access Codes</h2>
+      <div className="border rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr><th className="p-2 text-left">Code</th><th className="p-2">Email</th><th className="p-2">Role</th><th className="p-2">Max</th><th className="p-2">Used</th><th className="p-2">Active</th><th className="p-2">Actions</th></tr>
+          </thead>
+          <tbody>
+            {rows.map(r=>{
+              const e = edit[r.code] ?? { maxUses:r.maxUses, isActive:r.isActive };
+              return (
+                <tr key={r.code} className="border-t">
+                  <td className="p-2 text-left">{r.code}</td>
+                  <td className="p-2">{r.email||"—"}</td>
+                  <td className="p-2">{r.role||"customer"}</td>
+                  <td className="p-2"><input type="number" className="w-20 border rounded-md px-2 py-1" value={e.maxUses} onChange={ev=>setEdit(s=>({...s,[r.code]:{...e,maxUses:Number(ev.target.value)}}))} /></td>
+                  <td className="p-2">{r.usedCount}</td>
+                  <td className="p-2">
+                    <input type="checkbox" checked={e.isActive} onChange={ev=>setEdit(s=>({...s,[r.code]:{...e,isActive:ev.target.checked}}))}/>
+                  </td>
+                  <td className="p-2">
+                    <button onClick={()=>patch(r.code)} className="rounded-md px-3 py-1 text-white" style={{background:"linear-gradient(90deg,#6D28D9,#4F46E5,#2563EB)"}}>Save</button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+```
+
+## 9) Customer pages (Register & Forgot) — brand-neutral, no public UI edits
+
+**Create `client/src/customer/Register.tsx` and `client/src/customer/Forgot.tsx`** (use the versions from my prior message; they’re compatible).
+
+## 10) Admin routes and mounting
+
+**Create `client/src/admin/routes.tsx`:**
+
+```tsx
+import { RouteObject } from "react-router-dom";
+import AdminLogin from "./LoginPage";
+import AdminShell from "./layout/AdminShell";
+import AdminProtected from "./Protected";
+import Overview from "./pages/Overview";
+import UsersRoles from "./pages/UsersRoles";
+import AccessCodes from "./pages/AccessCodes";
+import AdminForgot from "./Forgot"; // from previous message
+
+const routes: RouteObject[] = [
+  { path: "/admin/login", element: <AdminLogin/> },
+  { path: "/admin/forgot", element: <AdminForgot/> },
+  {
+    path: "/admin",
+    element: <AdminProtected/>,
+    children: [
+      {
+        element: <AdminShell/>,
+        children: [
+          { path: "overview", element: <Overview/> },
+          { path: "users", element: <UsersRoles/> },
+          { path: "access-codes", element: <AccessCodes/> },
+          { path: "billing", element: <div>Billing (implement next)</div> },
+          { path: "coupons", element: <div>Coupons (implement next)</div> },
+          { path: "integrations", element: <div>Integrations (implement next)</div> },
+          { path: "api-keys", element: <div>API Keys (implement next)</div> },
+          { path: "webhooks", element: <div>Webhooks (implement next)</div> },
+          { path: "audit", element: <div>Audit & Health (implement next)</div> },
+          { path: "", element: <Overview/> },
+        ]
+      }
+    ]
+  },
+];
+
+export default routes;
+```
+
+**Wire into your main router** (don’t touch public navbar components). In `client/src/App.tsx`, import and spread the admin routes into your existing `<Routes/>`. Example:
+
+```tsx
+import { useRoutes } from "react-router-dom";
+import adminRoutes from "@/admin/routes";
+import Register from "@/customer/Register";
+import Forgot from "@/customer/Forgot";
+
+export default function AppRouter(){
+  const routes = [
+    // ...your existing public routes here (Home, Services, Pricing, About, Contact)
+    { path: "/register", element: <Register/> },
+    { path: "/forgot", element: <Forgot/> },
+    ...adminRoutes
+  ];
+  return useRoutes(routes);
+}
+```
+
+> This does **not** change any public components; it just adds additional paths.
+
+## 11) Build & run
+
+```bash
+npm run build
+cross-env DEV_STATIC=1 NODE_ENV=development tsx server/index.ts
+```
+
+* Visit `/admin/login` → sign in with `admin@victorysync.com` / `victorysync2025`.
+* Go to `/admin/overview`, `/admin/users`, `/admin/access-codes`.
+* To create a customer: Invite in **Users & Roles** (creates access-code), then go to `/register` and use it.
+* Test **Forgot Password** for customers at `/forgot` and strict admin flow at `/admin/forgot`.
+
+---
+
+## 12) Extend to ALL requested features (Claude: do these next, without touching public UI)
+
+Follow the same pattern, creating **server routes + pages**:
+
+* **Billing**
+
+  * Server: `/api/billing/info`, `/api/billing/seats`, `/api/billing/invoice/:id`.
+  * Admin page cards: plan, seats, invoices table; seat adjustments; invoice drawer.
+* **Coupons/Promotions**
+
+  * Server: CRUD `/api/coupons` and `/api/redemptions`; validate/apply.
+  * Admin page: create/disable; schedule; redemptions table; CSV export.
+* **Integrations** (at least 1 CRM + 1 Dialer fully)
+
+  * Server: `/api/integrations/available`, `/api/integrations`, `/api/integrations/connect`, `DELETE /api/integrations/:id`, `POST /api/integrations/:id/sync`, and inbound `/api/integrations/hooks/{provider}`.
+  * Admin page: catalog grid; per-org connection list; resync button; last run status.
+* **API Keys**
+
+  * Server: `/api/org/api-keys` (create/rotate/revoke; scopes; store keyHash; show once; lastUsedAt).
+  * Admin page: create/revoke, scope chips, copy-once UX.
+* **Webhooks**
+
+  * Server: `/api/webhooks` (CRUD), DLQ, signed deliveries, retries.
+  * Admin page: register endpoints, choose events, test send, log with retry/DLQ actions.
+* **Audit & Health**
+
+  * Server: `/api/audit` and `/api/system/health`.
+  * Admin page: filterable log; queue health; rate-limit stats.
+
+**Strict rules to keep:**
+
+* No demo data. Show zero-state when empty.
+* Don’t touch public navbar/header/footer or shared theme. Admin styling remains local in `client/src/admin/**`.
+* Use the gradient button style shown above for all primary actions and make all text on purple buttons **white**.
+* Remove outlines site-wide except for focused buttons/inputs (use `outline-none focus:ring` locally inside admin).
+* Keep RBAC checks in every admin route.
+
+---
+
+That’s it. After Claude applies this, your Admin Portal will have the **clean, branded layout** that matches VictorySync’s look (purple gradient header/buttons), the **/admin** shell with sidebar/topbar, fully working **Overview/Users/Access Codes** backed by server routes, and a clear pattern + tasks to implement the rest of your requested features without touching the public site.
