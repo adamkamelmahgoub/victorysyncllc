@@ -1,0 +1,206 @@
+That error is a straight-up peer-dep mismatch:
+
+* You have **[drizzle-orm@0.33.x](mailto:drizzle-orm@0.33.x)**
+* You asked npm to install **drizzle-zod\@0.7.0**
+* But `drizzle-zod@0.7.0` requires **drizzle-orm >= 0.36.0**
+
+You can fix it in one of two clean ways. I recommend **Option A (upgrade drizzle-orm)**.
+
+---
+
+# Option A — Upgrade `drizzle-orm` to match `drizzle-zod@0.7`
+
+### 1) Paste this “do-it” script in the Replit shell
+
+```bash
+# from the repo root
+rm -rf node_modules package-lock.json
+npm i drizzle-orm@^0.44.4 drizzle-zod@^0.7.0
+
+# If you use these, keep them aligned too:
+npm i -D drizzle-kit@^0.26.2
+npm i pg@^8.11.5                # for Postgres driver (if you use pg)
+npm i @types/pg@^8.10.2 -D      # types (if TS + pg)
+```
+
+> Why 0.44.x? It’s current and fully compatible with drizzle-zod\@0.7.
+
+### 2) Make sure your Drizzle imports match modern `drizzle-orm`
+
+Check your DB/bootstrap files. They should look like this (adjust driver as needed):
+
+```ts
+// server/db/client.ts
+import { Pool } from 'pg'
+import { drizzle } from 'drizzle-orm/node-postgres'
+import * as schema from './schema' // your tables
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL!,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+})
+
+export const db = drizzle(pool, { schema })
+```
+
+```ts
+// server/db/schema.ts
+import {
+  pgTable, serial, varchar, text, integer, timestamp, boolean, jsonb
+} from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
+import { z } from 'zod'
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
+
+// Example table
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  role: varchar('role', { length: 32 }).notNull(),
+  orgId: integer('org_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const insertUserSchema = createInsertSchema(users)
+export const selectUserSchema = createSelectSchema(users)
+export type User = typeof users.$inferSelect
+export type NewUser = typeof users.$inferInsert
+```
+
+And when you query:
+
+```ts
+import { eq, and, desc } from 'drizzle-orm'
+import { db } from '../db/client'
+import { users } from '../db/schema'
+
+const u = await db.query.users.findFirst({
+  where: eq(users.email, email.toLowerCase()),
+})
+```
+
+If you previously imported from deprecated paths, update them to:
+
+* `drizzle-orm/pg-core`
+* `drizzle-orm/node-postgres`
+* `drizzle-orm` (for `eq`, `and`, etc.)
+
+### 3) Reinstall and build
+
+```bash
+npm i
+npm run build
+```
+
+If you also maintain a **client/** folder, run its install separately (it’s unrelated to this error but good hygiene):
+
+```bash
+npm --prefix client i
+```
+
+---
+
+# Option B — Keep `drizzle-orm@0.33.x` and **downgrade** `drizzle-zod`
+
+If you can’t upgrade `drizzle-orm` right now, pin `drizzle-zod` to a version that still supports it (e.g. `0.6.1`):
+
+```bash
+rm -rf node_modules package-lock.json
+npm i drizzle-orm@0.33.x drizzle-zod@0.6.1
+npm i
+```
+
+(If 0.6.1 still complains, try `0.5.x`; the constraint changed around 0.7.)
+
+---
+
+## Copy-paste “Master Prompt” for Claude (automates Option A)
+
+> You are in the repo root. Fix the npm ERESOLVE conflict between drizzle-zod\@0.7.0 and drizzle-orm\@0.33.0 by upgrading drizzle-orm and aligning related packages, then patch DB imports for modern drizzle-orm. Perform these exact steps:
+>
+> 1. In the root, run:
+>
+>    ```bash
+>    rm -rf node_modules package-lock.json
+>    npm i drizzle-orm@^0.44.4 drizzle-zod@^0.7.0
+>    npm i -D drizzle-kit@^0.26.2
+>    npm i pg@^8.11.5
+>    npm i @types/pg@^8.10.2 -D
+>    ```
+> 2. Open `server/db/client.ts` and replace contents with:
+>
+>    ```ts
+>    import { Pool } from 'pg'
+>    import { drizzle } from 'drizzle-orm/node-postgres'
+>    import * as schema from './schema'
+>
+>    const pool = new Pool({
+>      connectionString: process.env.DATABASE_URL!,
+>      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+>    })
+>
+>    export const db = drizzle(pool, { schema })
+>    ```
+> 3. Open `server/db/schema.ts` and ensure modern imports + zod bindings:
+>
+>    ```ts
+>    import {
+>      pgTable, serial, varchar, text, integer, timestamp, boolean, jsonb
+>    } from 'drizzle-orm/pg-core'
+>    import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
+>
+>    export const users = pgTable('users', {
+>      id: serial('id').primaryKey(),
+>      email: varchar('email', { length: 255 }).notNull().unique(),
+>      passwordHash: text('password_hash').notNull(),
+>      role: varchar('role', { length: 32 }).notNull(),
+>      orgId: integer('org_id'),
+>      createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+>      updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+>    })
+>
+>    export const insertUserSchema = createInsertSchema(users)
+>    export const selectUserSchema = createSelectSchema(users)
+>    export type User = typeof users.$inferSelect
+>    export type NewUser = typeof users.$inferInsert
+>    ```
+> 4. Search-and-replace across the codebase:
+>
+>    * `from "drizzle-orm/pg"` → `from "drizzle-orm/pg-core"`
+>    * `from "drizzle-orm/node-postgres"` remains valid for Node PG.
+>    * Any deprecated imports (e.g., `drizzle-orm/pg/cjs`) should be updated to ESM paths.
+> 5. Ensure all query helpers import from `drizzle-orm`:
+>
+>    ```ts
+>    import { eq, and, desc } from 'drizzle-orm'
+>    ```
+> 6. Reinstall & build:
+>
+>    ```bash
+>    npm i
+>    npm run build
+>    ```
+> 7. If there is a separate `client/` app, run:
+>
+>    ```bash
+>    npm --prefix client i
+>    ```
+> 8. Post back any remaining TypeScript or runtime errors and fix them in place without changing the public site’s navbar/footer styling.
+
+---
+
+### Quick fallback (not recommended long-term)
+
+If you just need to get past the resolver to keep moving while you plan the upgrade:
+
+```bash
+npm i --legacy-peer-deps
+```
+
+…but do follow **Option A** soon; `--legacy-peer-deps` can hide real incompatibilities.
+
+---
+
+If you paste the Master Prompt to Claude or run the commands above yourself, the `ERESOLVE` will be gone and builds will proceed normally.
