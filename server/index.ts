@@ -6,6 +6,7 @@ import cors from "cors";
 import compression from "compression";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import morgan from 'morgan';
 import { log } from "./vite.js";
 import { setupVite } from "./vite.js";
 import routes from "./routes/index.js";
@@ -22,7 +23,9 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const app = express();
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(morgan('tiny'));
+if (process.env.LOGGER_DISABLED !== '1') {
+  app.use(morgan(process.env.LOG_FORMAT || 'tiny'));
+}
 app.use(compression());
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
