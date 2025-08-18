@@ -10,26 +10,42 @@ import {
   uniqueIndex,
   numeric,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const organizations = pgTable("organizations", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 160 }).notNull(),
   idCode: varchar("id_code", { length: 40 }).notNull(), // org "ID code"
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull()
 }, (t) => ({ idCodeIdx: uniqueIndex("org_id_code_idx").on(t.idCode) }));
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  email: varchar("email", { length: 190 }).notNull(),
-  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
-  fullName: varchar("full_name", { length: 160 }).notNull(),
-  phone: varchar("phone", { length: 40 }),
-  orgId: integer("org_id").references(() => organizations.id),
-  role: varchar("role", { length: 24 }).notNull(), // superAdmin | admin | manager | agent | customer
-  permissions: jsonb("permissions").$type<string[]>().default([]).notNull(),
-  mfaEnabled: boolean("mfa_enabled").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull()
-}, (t) => ({ emailIdx: uniqueIndex("users_email_idx").on(t.email) }));
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  fullName: text("full_name"),
+  phone: text("phone"),
+  orgId: integer("org_id"),
+  socialAccounts: jsonb("social_accounts").notNull().default("[]"),
+  privileges: jsonb("privileges"),
+  role: varchar("role").default("customer"),
+  permissions: jsonb("permissions").notNull().default("[]"),
+  mfaEnabled: boolean("mfa_enabled").notNull().default(false),
+  isActive: boolean("is_active").default(true),
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+});
+
+export const passwordResets = pgTable("password_resets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  tokenHash: text("token_hash").notNull(),
+  otpCode: text("otp_code").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
 
 export const mfaBackupCodes = pgTable("mfa_backup_codes", {
   id: serial("id").primaryKey(),

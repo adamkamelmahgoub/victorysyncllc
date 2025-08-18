@@ -1,66 +1,78 @@
 
-import { Routes, Route, Navigate } from "react-router-dom";
-import Home from "./pages/home";
-import Login from "./pages/login";
-import Register from "./pages/register";
-import ForgotPassword from "./pages/auth/ForgotPassword";
-import ResetPassword from "./pages/auth/ResetPassword";
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminForgotPassword from "./pages/admin/AdminForgotPassword";
-import AdminResetPassword from "./pages/admin/AdminResetPassword";
-import AboutUs from "./pages/about-us";
-import Pricing from "./pages/pricing";
-import Services from "./pages/services";
-import Contact from "./pages/contact";
-import Terms from "./pages/terms";
-import PrivacyPolicy from "./pages/privacy-policy";
-import Docs from "./pages/docs";
-import Blog from "./pages/blog";
-import Careers from "./pages/careers";
-import HelpCenter from "./pages/help-center";
-import Checkout from "./pages/checkout";
-import CustomerDashboard from "./pages/customer-dashboard";
-import AdminPortal from "./pages/admin-portal";
-import Navigation from "./components/navigation";
-import Footer from "./components/footer";
+import { lazy, Suspense, useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { CartProvider } from './contexts/CartContext';
+import Layout from './components/ui/layout';
+
+// Lazy load pages
+const Home = lazy(() => import('./pages/home'));
+const About = lazy(() => import('./pages/about-us'));
+const Services = lazy(() => import('./pages/services'));
+const Pricing = lazy(() => import('./pages/pricing'));
+const Contact = lazy(() => import('./pages/contact'));
+const Blog = lazy(() => import('./pages/blog'));
+const Careers = lazy(() => import('./pages/careers'));
+const HelpCenter = lazy(() => import('./pages/help-center'));
+const Terms = lazy(() => import('./pages/terms'));
+const PrivacyPolicy = lazy(() => import('./pages/privacy-policy'));
+const Login = lazy(() => import('./pages/login'));
+const Register = lazy(() => import('./pages/register'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
+const AdminForgotPassword = lazy(() => import('./pages/admin/AdminForgotPassword'));
+const AdminResetPassword = lazy(() => import('./pages/admin/AdminResetPassword'));
+const CustomerDashboard = lazy(() => import('./pages/customer-dashboard'));
+const AdminPortal = lazy(() => import('./pages/admin-portal'));
+const Checkout = lazy(() => import('./pages/checkout'));
+const NotFound = lazy(() => import('./pages/not-found'));
+
+function ScrollToTop() {
+  const location = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+  return null;
+}
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-white">
-      <Navigation />
-      <main>
+    <CartProvider>
+      <ScrollToTop />
+      <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/about" element={<AboutUs />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/docs" element={<Docs />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/careers" element={<Careers />} />
-          <Route path="/help" element={<HelpCenter />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/dashboard" element={<CustomerDashboard />} />
+          {/* Public routes with layout */}
+          <Route path="/" element={<Layout><Home /></Layout>} />
+          <Route path="/about" element={<Layout><About /></Layout>} />
+          <Route path="/services" element={<Layout><Services /></Layout>} />
+          <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
+          <Route path="/contact" element={<Layout><Contact /></Layout>} />
+          <Route path="/blog" element={<Layout><Blog /></Layout>} />
+          <Route path="/careers" element={<Layout><Careers /></Layout>} />
+          <Route path="/help" element={<Layout><HelpCenter /></Layout>} />
+          <Route path="/terms" element={<Layout><Terms /></Layout>} />
+          <Route path="/privacy" element={<Layout><PrivacyPolicy /></Layout>} />
 
-          {/* Customer auth */}
+          {/* Auth routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Admin auth */}
+          {/* Admin auth routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
-          <Route path="/admin/reset-password/:token" element={<AdminResetPassword />} />
-          <Route path="/admin" element={<AdminPortal />} />
+          <Route path="/admin/reset-password" element={<AdminResetPassword />} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Protected routes */}
+          <Route path="/dashboard" element={<CustomerDashboard />} />
+          <Route path="/admin" element={<AdminPortal />} />
+          <Route path="/checkout" element={<Checkout />} />
+
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
-      </main>
-      <Footer />
-    </div>
+      </Suspense>
+    </CartProvider>
   );
 }

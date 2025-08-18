@@ -7,7 +7,6 @@ import compression from "compression";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
-import morgan from 'morgan';
 import { log } from "./vite.js";
 import { setupVite } from "./vite.js";
 import routes from "./routes/index.js";
@@ -34,6 +33,24 @@ app.use(compression());
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 app.use(cors({ origin: true, credentials: true }));
+
+// Optional BullMQ worker with Redis guard
+if (process.env.REDIS_URL && process.env.REDIS_URL !== 'your-redis-url-here') {
+  try {
+    const { Queue, Worker } = await import('bullmq');
+    const IORedis = (await import('ioredis')).default;
+    const connection = new IORedis(process.env.REDIS_URL);
+
+    // Test connection before creating worker
+    await connection.ping();
+    new Worker('sync', async () => {}, { connection });
+    console.log('✅ [bullmq] Worker initialized for queue "sync"');
+  } catch (e) {
+    console.warn('⚠️ [bullmq] Failed to initialize worker:', e?.message || e);
+  }
+} else {
+  console.log('ℹ️ [bullmq] REDIS_URL not configured - worker disabled');
+}
 
 app.use('/api', routes);
 
@@ -86,7 +103,20 @@ async function start() {
 
   app.use((err:any,_req:any,res:any,_next:any)=>res.status(err.status||500).json({ error: err.message||'Internal Server Error' }));
 
-  app.listen(ENV.PORT, () => console.log(`[express] serving on port ${ENV.PORT}`));
+  const port = ENV.PORT;
+  const server = app.listen(port, async () => {
+  const isProduction = process.env.NODE_ENV === "production";
+  console.log(`🚀 Server running on port ${port}`);
+  console.log(`📍 Environment: ${isProduction ? "production" : "development"}`);
+  console.log(`🌐 Health check: http://localhost:${port}/health`);
+
+  // Run seed function
+  try {
+    await seedOnce();
+  } catch (error) {
+    console.error('❌ Seed error:', error);
+  }
+});
 }
 start();
 export default app;

@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, Megaphone, Bot, Check, Star } from 'lucide-react';
@@ -29,12 +29,12 @@ export default function Home() {
                 solutions from New Jersey. 24/7 support at a fraction of US costs.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/pricing">
+                <Link to="/pricing">
                   <Button size="lg" className="btn-vs" onClick={scrollToTop}>
                     View Pricing
                   </Button>
                 </Link>
-                <Link href="/contact">
+                <Link to="/contact">
                   <Button size="lg" className="btn-vs-outline border-white text-white hover:bg-white hover:text-vs-purple" onClick={scrollToTop}>
                     Schedule Demo
                   </Button>
@@ -254,12 +254,12 @@ export default function Home() {
             Join our next webinar to learn how other businesses are cutting costs while improving service quality.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact">
+            <Link to="/contact">
               <Button size="lg" className="btn-vs" onClick={scrollToTop}>
                 Schedule Demo
               </Button>
             </Link>
-            <Link href="/pricing">
+            <Link to="/pricing">
               <Button size="lg" className="btn-vs-outline border-white text-white hover:bg-white hover:text-vs-purple" onClick={scrollToTop}>
                 View Pricing
               </Button>

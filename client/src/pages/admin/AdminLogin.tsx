@@ -1,66 +1,57 @@
 
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('admin@victorysync.com');
+  const [password, setPassword] = useState('victorysync2025');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
 
-  async function submit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-
+    
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role: "admin" }),
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, admin: true })
       });
-
-      if (res.ok) {
-        navigate("/admin");
-      } else {
-        const data = await res.json();
-        setError(data.error || "Invalid credentials");
-      }
-    } catch (err) {
-      setError("Network error. Please try again.");
-    } finally {
+      
       setLoading(false);
+      
+      if (res.ok) {
+        window.location.href = '/admin';
+      } else {
+        alert('Invalid credentials or insufficient permissions.');
+      }
+    } catch (error) {
+      setLoading(false);
+      alert('An error occurred. Please try again.');
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link to="/" className="flex justify-center">
-          <img 
-            src="/vs_favicon_32.png" 
-            alt="VictorySync" 
-            className="h-12 w-12"
+        <div className="text-center">
+          <img
+            className="mx-auto h-12 w-auto"
+            src="/LOGO_VS.png"
+            alt="VictorySync"
           />
-        </Link>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Admin Portal
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Sign in to your admin account
-        </p>
+          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+            Admin Portal
+          </h2>
+          <p className="mt-2 text-gray-600">
+            Sign in to access the administration panel
+          </p>
+        </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form onSubmit={submit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
-
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -68,11 +59,13 @@ export default function AdminLogin() {
               <div className="mt-1">
                 <input
                   id="email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-victory-purple focus:border-victory-purple sm:text-sm"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
                 />
               </div>
             </div>
@@ -84,20 +77,14 @@ export default function AdminLogin() {
               <div className="mt-1">
                 <input
                   id="password"
+                  name="password"
                   type="password"
+                  autoComplete="current-password"
                   required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-victory-purple focus:border-victory-purple sm:text-sm"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
                 />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="text-sm">
-                <Link to="/admin/forgot-password" className="font-medium text-victory-purple hover:text-victory-purple/80">
-                  Forgot your password?
-                </Link>
               </div>
             </div>
 
@@ -105,10 +92,19 @@ export default function AdminLogin() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-victory-purple hover:bg-victory-purple/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-victory-purple disabled:opacity-50"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
               >
-                {loading ? "Signing in..." : "Sign in"}
+                {loading ? 'Signing in...' : 'Sign in'}
               </button>
+            </div>
+
+            <div className="text-center">
+              <Link
+                to="/admin/forgot-password"
+                className="text-purple-600 hover:text-purple-500 text-sm"
+              >
+                Forgot your password?
+              </Link>
             </div>
           </form>
         </div>
