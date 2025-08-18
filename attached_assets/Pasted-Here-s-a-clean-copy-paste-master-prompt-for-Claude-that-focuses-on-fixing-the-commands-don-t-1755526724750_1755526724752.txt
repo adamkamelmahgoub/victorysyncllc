@@ -1,0 +1,422 @@
+Here’s a clean, copy-paste **master prompt for Claude** that focuses on fixing the **“commands don’t run / build-start loop / HMR disconnect / ESM \_\_dirname / port busy / wrong exports”** problems you’re seeing in Replit. It tells Claude exactly what to change (and includes the code) so `npm run dev` and `npm run start` work reliably, the preview stays up, and the admin & customer pages can actually hit the API.
+
+---
+
+## 👉 Prompt to give Claude
+
+You are the senior full-stack engineer working **inside this Replit**. Our immediate goal is:
+**Fix the command/run pipeline so the app builds and runs cleanly in Replit, with stable HMR, a single server process, correct ESM behavior, and proper SPA fallback.**
+Do **not** change any public branding/nav/footer styles (brand rules remain in force). Do not loosen TS/ESLint. Keep current feature code; only touch infra/build/server glue needed to make dev/prod commands work.
+
+### 0) Guardrails (do not violate)
+
+* Do **NOT** modify the public navbar/footer styling, colors, spacing, copy, routes.
+* Do **NOT** introduce demo data.
+* Do **NOT** loosen TS/ESLint rules.
+* Do **NOT** remove existing business logic; only fix infra so commands actually run and the app stays online.
+
+---
+
+## 1) Unify package manager + clean install
+
+**Goal:** Standardize on **npm** to avoid Replit run confusion.
+
+1. In the repo root, delete `yarn.lock` and `pnpm-lock.yaml` if present (keep only `package-lock.json`).
+2. Ensure the root has a `package.json` with these scripts and engine (create/replace as below).
+   **Write this file verbatim (replace contents if needed):**
+
+```json
+{
+  "name": "victorysync",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "postinstall": "npm --prefix client i && npm --prefix server i",
+    "dev": "node --enable-source-maps server/dev-entry.cjs",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "npm --prefix client run build",
+    "build:server": "tsc -p server/tsconfig.json",
+    "start": "NODE_ENV=production node dist/server/index.js",
+    "typecheck": "tsc -b server && tsc -b client"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
+```
+
+> We run dev via a tiny CJS bootstrap (`server/dev-entry.cjs`) so Replit-friendly HMR and Vite middleware work without ESM loader quirks.
+
+3. Run:
+
+   ```bash
+   rm -rf node_modules client/node_modules server/node_modules
+   npm i
+   ```
+
+---
+
+## 2) Replit runner config
+
+Create **`.replit`** in the repo root (replace if it exists) so the preview uses our dev server:
+
+```
+run = "npm run dev"
+```
+
+> This prevents double processes and “port busy” errors.
+
+---
+
+## 3) Fix Vite config (stable HMR + aliases + fallback)
+
+Create/replace **`client/vite.config.ts`**:
+
+```ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  root: path.resolve(__dirname),
+  server: {
+    host: true,
+    port: 5173,
+    strictPort: false,
+    hmr: {
+      clientPort: 443, // Replit tunnels HMR through 443
+    },
+    fs: {
+      strict: false,
+    },
+  },
+  preview: {
+    port: 5173,
+    host: true,
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      '@shared': path.resolve(__dirname, '../shared'),
+    },
+  },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  }
+})
+```
+
+Install the plugin if missing:
+
+```bash
+npm --prefix client i @vitejs/plugin-react
+```
+
+> This fixes the “vite plugin react can’t detect preamble” / HMR disconnect / polling loop seen in Replit.
+
+---
+
+## 4) TS configs and path aliases (client + server)
+
+**`client/tsconfig.json`** (create/replace):
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@shared/*": ["../shared/*"]
+    },
+    "isolatedModules": true,
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src", "../shared"]
+}
+```
+
+**`server/tsconfig.json`** (create/replace):
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "outDir": "../dist/server",
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../shared/*"]
+    },
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["**/*.ts", "../shared/**/*.ts"]
+}
+```
+
+---
+
+## 5) Dev bootstrap to avoid ESM edge cases in Replit
+
+Create **`server/dev-entry.cjs`**:
+
+```js
+// CJS bootstrap that imports the ESM server with Vite middleware.
+// This avoids __dirname/ESM loader weirdness in the Replit runner.
+
+(async () => {
+  try {
+    // Cleanly abort any previous listeners held by watch restarts
+    process.on('SIGTERM', () => process.exit(0))
+    process.on('SIGINT', () => process.exit(0))
+
+    await import('./index.ts')
+  } catch (err) {
+    console.error('[dev-entry] Failed to start server:', err)
+    process.exit(1)
+  }
+})()
+```
+
+---
+
+## 6) Express server with Vite middleware in dev, static in prod
+
+Create/replace **`server/index.ts`**:
+
+```ts
+import express from 'express'
+import path from 'path'
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
+import { fileURLToPath } from 'url'
+import { createServer as createViteServer, ViteDevServer } from 'vite'
+import fs from 'fs'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const isProd = process.env.NODE_ENV === 'production'
+const PORT = Number(process.env.PORT || 5000)
+
+async function createApp() {
+  const app = express()
+
+  app.use(express.json({ limit: '1mb' }))
+  app.use(cookieParser())
+  app.use(cors({ origin: true, credentials: true }))
+
+  // Health check
+  app.get('/health', (_req, res) => res.json({ ok: true }))
+
+  // ===== API routes (keep your existing routers) =====
+  // Import your existing routers here; ensure they are named exports and mounted.
+  // Example:
+  // import { authRouter } from './routes/auth.js'
+  // import { billingRouter } from './routes/billing.js'
+  // app.use('/api/auth', authRouter)
+  // app.use('/api/billing', billingRouter)
+
+  if (!isProd) {
+    // ----- DEV: Vite middleware -----
+    const vite: ViteDevServer = await createViteServer({
+      server: { middlewareMode: true, hmr: { clientPort: 443 }, host: true },
+      appType: 'custom',
+    })
+
+    app.use(vite.middlewares)
+
+    // SPA fallback to client index.html via Vite
+    app.use('*', async (req, res, next) => {
+      if (req.originalUrl.startsWith('/api/')) return next()
+      try {
+        const url = req.originalUrl
+        let template = fs.readFileSync(path.resolve(__dirname, '../client/index.html'), 'utf-8')
+        template = await vite.transformIndexHtml(url, template)
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template)
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error)
+        next(e)
+      }
+    })
+  } else {
+    // ----- PROD: serve built static -----
+    const distDir = path.resolve(__dirname, '../client/dist')
+    const clientIndex = path.join(distDir, 'index.html')
+
+    app.use(express.static(distDir, { index: false }))
+
+    // SPA fallback for non-API routes
+    app.get('*', (req, res, next) => {
+      if (req.originalUrl.startsWith('/api/')) return next()
+      res.sendFile(clientIndex)
+    })
+  }
+
+  return app
+}
+
+createApp()
+  .then((app) => {
+    app.listen(PORT, () => {
+      console.log(`[express] listening on :${PORT} (isProd=${isProd})`)
+    })
+  })
+  .catch((err) => {
+    console.error('Fatal boot error:', err)
+    process.exit(1)
+  })
+```
+
+> Notes:
+>
+> * Fixes the prior `__dirname is not defined in ES module scope`.
+> * Prevents “Cannot GET /” by serving SPA fallback.
+> * Prevents HMR disconnects by proxying Vite inside Express during dev.
+
+---
+
+## 7) Fix broken route imports/exports
+
+Wherever we import routes like `import routes from "./routes"` and the file actually does **not** export a default, convert to this pattern:
+
+* In each router file (e.g., `server/routes/auth.ts`), **export a named router**:
+
+```ts
+import { Router } from 'express'
+export const authRouter = Router()
+
+// define endpoints...
+// authRouter.post('/login', ...
+```
+
+* In `server/index.ts`, **import named**:
+
+```ts
+import { authRouter } from './routes/auth.js'
+app.use('/api/auth', authRouter)
+```
+
+> Remove any imports like `import routes from './routes'` unless `routes.ts` truly does `export default router`. This removes the “does not provide an export named 'default'” error.
+
+---
+
+## 8) Ensure client index.html exists where the server expects it
+
+* Confirm `client/index.html` exists (Vite default).
+* In dev, we read that file for middleware mode; in prod we serve `client/dist/index.html`.
+* If your index is elsewhere, adjust the `path.resolve(__dirname, '../client/index.html')` path.
+
+---
+
+## 9) Stabilize ports / prevent EADDRINUSE
+
+* The server reads `process.env.PORT || 5000`. Replit supplies `PORT`, so there’s no double-binding on 5000.
+* Don’t start a separate `vite dev` process in Replit; our Express mounts Vite middleware in dev.
+
+---
+
+## 10) Install missing modules used by server
+
+If the server references these, install them (no-op otherwise):
+
+```bash
+npm --prefix server i express cookie-parser cors vite
+npm --prefix server i -D @types/express @types/cookie-parser @types/cors
+```
+
+If you had `tsx`/`ts-node` in old scripts, we no longer need it for dev because `dev-entry.cjs` bootstraps ESM safely. If you still want it, keep it as a dev dep.
+
+---
+
+## 11) Tailwind “content” warning (client)
+
+If Tailwind is used, ensure `client/tailwind.config.js` has proper content globs so styles don’t vanish:
+
+```js
+module.exports = {
+  content: [
+    "./index.html",
+    "./src/**/*.{ts,tsx}",
+    "../shared/**/*.{ts,tsx}"
+  ],
+  theme: { extend: {} },
+  plugins: []
+}
+```
+
+---
+
+## 12) Run and verify (the important part)
+
+1. Clean & install:
+
+   ```bash
+   rm -rf node_modules client/node_modules server/node_modules
+   npm i
+   ```
+2. Dev:
+
+   ```bash
+   npm run dev
+   ```
+
+   * Replit preview should show the site.
+   * No Vite polling loops, no HMR disconnects, no EADDRINUSE.
+   * `/health` returns `{ ok: true }`.
+   * Non-API routes render SPA.
+3. Prod build/start:
+
+   ```bash
+   npm run build
+   npm run start
+   ```
+
+   * Express serves `client/dist` with SPA fallback.
+   * No “Cannot GET /”.
+
+If any step fails, print the exact error and fix it **in place**.
+
+---
+
+## 13) Keep feature code intact
+
+Do **not** alter Admin/Customer feature code. This task is strictly infra/glue so commands **run reliably** and the app stays online in Replit. If a router import fails, fix the import/export only (Section 7).
+
+---
+
+### Deliverables
+
+* New/updated files:
+
+  * `package.json` (root) with scripts above
+  * `.replit`
+  * `client/vite.config.ts`
+  * `client/tsconfig.json`
+  * `server/tsconfig.json`
+  * `server/dev-entry.cjs`
+  * `server/index.ts` (with Vite middleware in dev & SPA fallback in prod)
+
+* Install logs showing clean `npm i`, `npm run dev` boots, preview stays connected, HMR works, and `/health` returns ok.
+
+* If any additional missing dependency stops the run, install it and note it.
+
+---
+
+**End of prompt.**
