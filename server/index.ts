@@ -1,18 +1,24 @@
-
 import 'dotenv/config';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import express from 'express';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import morgan from 'morgan';
-import routes from './routes/index.js';
-import { seedOnce } from './services/seed.js';
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import express from "express";
+import cors from "cors";
+import compression from "compression";
+import helmet from "helmet";
+import cookieParser from "cookie-parser";
+import { log } from "./vite.js";
+import { setupVite } from "./vite.js";
+import routes from "./routes/index.js";
+import { migrate } from "./db/migrate.js";
+import "./storage.js";
+import "./publicAuth.js";
 
+// ESM-safe __dirname shim for Node 20
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const isProduction = process.env.NODE_ENV === "production";
+
 
 const app = express();
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
