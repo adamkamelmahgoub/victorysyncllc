@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 
 export default function AboutUs() {
   return (
@@ -177,12 +177,12 @@ export default function AboutUs() {
             satisfaction with VictorySync.
           </p>
           <div className="space-x-4">
-            <Link href="/contact">
+            <Link to="/contact">
               <button className="btn-vs">
                 Get Started Today
               </button>
             </Link>
-            <Link href="/pricing">
+            <Link to="/pricing">
               <button className="btn-vs-outline">
                 View Pricing
               </button>
