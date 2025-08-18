@@ -1,0 +1,298 @@
+Here’s a tight, copy-paste **master prompt for Claude** that fixes the exact build error you’re seeing:
+
+> **Vite build fails**
+> `Could not resolve: "./pages/auth/ForgotPassword" from "src/App.tsx"`
+
+It also wires the other new pages so the router compiles, and standardizes the alias so you don’t hit path/case issues again.
+
+---
+
+## MASTER PROMPT FOR CLAUDE — Fix missing imports + alias + pages
+
+You’re inside my existing Replit repo. Do **not** touch `.replit` or `replit.nix`. Only make the file changes listed here. Keep all features already added.
+
+### 1) Standardize the client alias and fix imports
+
+**Edit:** `client/vite.config.ts` (create or update)
+Add a stable alias for `@ → client/src`:
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+    },
+  },
+});
+```
+
+**Edit:** `client/tsconfig.json` (ensure baseUrl/paths exist)
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}
+```
+
+**Edit:** `client/src/App.tsx`
+Change all page imports to use the alias **exactly** as below (this avoids relative/case issues). If any page doesn’t exist yet, you’ll add it in step 2.
+
+```tsx
+import { Routes, Route, Navigate } from "react-router-dom";
+import Layout from "@/components/Layout";
+
+// Public pages
+import Home from "@/pages/Home";
+import Services from "@/pages/Services";
+import Pricing from "@/pages/Pricing";
+import About from "@/pages/About";
+
+// Customer auth
+import Login from "@/pages/auth/Login";
+import Register from "@/pages/auth/Register";
+import ForgotPassword from "@/pages/auth/ForgotPassword";
+import ResetPassword from "@/pages/auth/ResetPassword";
+
+// Admin auth
+import AdminLogin from "@/pages/admin/AdminLogin";
+import AdminForgotPassword from "@/pages/admin/AdminForgotPassword";
+import AdminResetPassword from "@/pages/admin/AdminResetPassword";
+
+export default function App() {
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/about" element={<About />} />
+
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
+        <Route path="/admin/reset-password/:token" element={<AdminResetPassword />} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Layout>
+  );
+}
+```
+
+> Make sure the **file names and folders match casing exactly**:
+> `client/src/pages/auth/ForgotPassword.tsx` (not `.tsx` in a different folder or casing). Linux builds are case-sensitive.
+
+---
+
+### 2) Create ANY missing page files so imports resolve
+
+Create these **exact files** with the minimal components (if they’re already present, leave them as is):
+
+**`client/src/pages/auth/ForgotPassword.tsx`**
+
+```tsx
+import { useState } from "react";
+export default function ForgotPassword() {
+  const [email, setEmail] = useState(""); const [sent, setSent] = useState(false);
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await fetch("/api/auth/forgot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, role: "customer" })
+    });
+    setSent(true);
+  }
+  return (
+    <div className="container max-w-md mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-4">Forgot your password?</h1>
+      {sent ? <p>Check your email (or dev console) for the reset link.</p> : (
+        <form onSubmit={onSubmit} className="space-y-4">
+          <input className="input w-full" placeholder="Your email"
+            value={email} onChange={(e)=>setEmail(e.target.value)} />
+          <button className="btn btn-primary w-full">Send reset link</button>
+        </form>
+      )}
+    </div>
+  );
+}
+```
+
+**`client/src/pages/auth/ResetPassword.tsx`**
+
+```tsx
+import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+export default function ResetPassword() {
+  const { token } = useParams(); const nav = useNavigate();
+  const [password, setPassword] = useState(""); const [ok, setOk] = useState(false);
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const res = await fetch("/api/auth/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, password, role: "customer" })
+    });
+    if (res.ok) { setOk(true); setTimeout(()=>nav("/login"), 1200); }
+  }
+  return (
+    <div className="container max-w-md mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-4">Set a new password</h1>
+      {ok ? <p>Password updated. Redirecting…</p> : (
+        <form onSubmit={onSubmit} className="space-y-4">
+          <input className="input w-full" type="password"
+            placeholder="New password"
+            value={password} onChange={(e)=>setPassword(e.target.value)} />
+          <button className="btn btn-primary w-full">Update password</button>
+        </form>
+      )}
+    </div>
+  );
+}
+```
+
+**`client/src/pages/admin/AdminForgotPassword.tsx`**
+
+```tsx
+import { useState } from "react";
+export default function AdminForgotPassword() {
+  const [email, setEmail] = useState(""); const [sent, setSent] = useState(false);
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await fetch("/api/auth/forgot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, role: "admin" })
+    });
+    setSent(true);
+  }
+  return (
+    <div className="container max-w-md mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-4">Admin — Forgot password</h1>
+      {sent ? <p>Check your email (or dev console) for the reset link.</p> : (
+        <form onSubmit={onSubmit} className="space-y-4">
+          <input className="input w-full" placeholder="Admin email"
+            value={email} onChange={(e)=>setEmail(e.target.value)} />
+          <button className="btn btn-primary w-full">Send reset link</button>
+        </form>
+      )}
+    </div>
+  );
+}
+```
+
+**`client/src/pages/admin/AdminResetPassword.tsx`**
+
+```tsx
+import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+export default function AdminResetPassword() {
+  const { token } = useParams(); const nav = useNavigate();
+  const [password, setPassword] = useState(""); const [ok, setOk] = useState(false);
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const res = await fetch("/api/auth/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, password, role: "admin" })
+    });
+    if (res.ok) { setOk(true); setTimeout(()=>nav("/admin/login"), 1200); }
+  }
+  return (
+    <div className="container max-w-md mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-4">Admin — Set a new password</h1>
+      {ok ? <p>Password updated. Redirecting…</p> : (
+        <form onSubmit={onSubmit} className="space-y-4">
+          <input className="input w-full" type="password"
+            placeholder="New password"
+            value={password} onChange={(e)=>setPassword(e.target.value)} />
+          <button className="btn btn-primary w-full">Update password</button>
+        </form>
+      )}
+    </div>
+  );
+}
+```
+
+> If `Login`, `Register`, `AdminLogin` already exist, leave them intact. If any are missing, add simple placeholders so imports resolve.
+
+---
+
+### 3) Ensure router wiring exists
+
+**Edit (if missing):** `client/src/main.tsx`
+
+```tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+);
+```
+
+---
+
+### 4) Case-sensitivity audit
+
+Confirm these **exact** paths exist (case matters):
+
+```
+client/src/pages/auth/ForgotPassword.tsx
+client/src/pages/auth/ResetPassword.tsx
+client/src/pages/admin/AdminForgotPassword.tsx
+client/src/pages/admin/AdminResetPassword.tsx
+client/src/components/Layout.tsx
+client/src/pages/Home.tsx
+client/src/pages/Services.tsx
+client/src/pages/Pricing.tsx
+client/src/pages/About.tsx
+```
+
+If your repo uses different casing (e.g., `Auth` vs `auth`), **rename the folders/files** to match the imports above or adjust imports to match existing files. Stay consistent.
+
+---
+
+### 5) Build & verify
+
+* Run: `npm run build` (or your existing dev/build commands)
+* The previous error (`Could not resolve "./pages/auth/ForgotPassword"`) must be gone.
+* Open the app; navigate to `/forgot-password` and `/admin/forgot-password`. Each form should submit and log the reset link on the server (dev mode).
+
+When done, reply with:
+
+* The list of files you created/edited.
+* Confirmation that `npm run build` now completes without the missing-module error.
+* Any additional missing pages you had to stub to make all imports resolve.
+
+---
+
+**End of prompt.**
