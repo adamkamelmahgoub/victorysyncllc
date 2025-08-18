@@ -18,11 +18,14 @@ export default function AdminForgot() {
   async function startReset() {
     try {
       setError(null);
-      const data = await apiRequest<{ resetId: string; challenge: string }>("/api/auth/admin/forgot/start", {
+      const response = await fetch("/api/password/admin/request", {
         method: "POST",
-        body: { email }
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, orgIdCode: verificationPhrase })
       });
-      setResetId(data.resetId);
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
       setStep("verify");
     } catch (e: any) {
       setError(e.message);
@@ -41,10 +44,14 @@ export default function AdminForgot() {
         return;
       }
       
-      await apiRequest("/api/auth/admin/forgot/complete", {
+      const response = await fetch("/api/password/admin/reset", {
         method: "POST",
-        body: { resetId, otp, verificationPhrase, newPassword }
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ token: otp, newPassword, orgIdCode: verificationPhrase })
       });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
       setSuccess(true);
     } catch (e: any) {
       setError(e.message);
@@ -87,6 +94,16 @@ export default function AdminForgot() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="Enter your admin email"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Organization ID Code</label>
+              <input
+                type="text"
+                className="w-full border rounded-md px-3 py-2"
+                value={verificationPhrase}
+                onChange={e => setVerificationPhrase(e.target.value)}
+                placeholder="Enter organization ID code"
               />
             </div>
             <button

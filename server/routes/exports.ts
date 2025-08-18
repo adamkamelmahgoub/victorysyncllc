@@ -1,15 +1,8 @@
 
-import { Router } from "express";
-
-const router = Router();
-
-router.get("/csv/:type", async (req, res) => {
-  try {
-    const { type } = req.params;
-    res.status(200).json({ downloadUrl: null, status: "pending" });
-  } catch (err) {
-    res.status(500).json({ error: "export_failed" });
-  }
-});
-
-export default router;
+import { Router } from 'express';
+import { requireAuth } from '../services/auth.js';
+import { stringify } from 'csv-stringify/sync';
+const r = Router();
+r.use(requireAuth);
+r.get('/csv', async (_req,res)=>{ const rows=[{a:1,b:2},{a:3,b:4}]; const csv=stringify(rows,{header:true}); res.setHeader('Content-Type','text/csv'); res.setHeader('Content-Disposition','attachment; filename="export.csv"'); res.send(csv); });
+export default r;

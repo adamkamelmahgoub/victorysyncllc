@@ -18,7 +18,9 @@ const registerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  org: z.string().optional(),
+  phone: z.string().min(1, "Phone is required"),
+  organizationName: z.string().min(1, "Organization name is required"),
+  orgIdCode: z.string().min(1, "Organization ID Code is required"),
   accessCode: z.string().min(4, "Access code is required"),
 });
 
@@ -35,20 +37,34 @@ export default function Register() {
       name: "",
       email: "",
       password: "",
-      org: "",
+      phone: "",
+      organizationName: "",
+      orgIdCode: "",
       accessCode: "",
     },
   });
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterFormData) => {
-      return await apiRequest<{ token: string; user: any }>("/api/auth/register", {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
-        body: data,
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          fullName: data.name,
+          email: data.email,
+          phone: data.phone,
+          organizationName: data.organizationName,
+          orgIdCode: data.orgIdCode,
+          accessCode: data.accessCode,
+          password: data.password
+        }),
       });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      return result;
     },
     onSuccess: (data) => {
-      localStorage.setItem("vs_token", data.token);
       toast({
         title: "Account created successfully!",
         description: "Welcome to VictorySync. You can now access all features.",
@@ -112,13 +128,48 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="org">Organization (Optional)</Label>
+              <Label htmlFor="phone">Phone Number</Label>
               <Input
-                id="org"
-                type="text"
-                placeholder="Your company name"
-                {...form.register("org")}
+                id="phone"
+                type="tel"
+                placeholder="Enter your phone number"
+                {...form.register("phone")}
+                className={form.formState.errors.phone ? "border-red-500" : ""}
               />
+              {form.formState.errors.phone && (
+                <p className="text-sm text-red-500">{form.formState.errors.phone.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="organizationName">Organization Name</Label>
+              <Input
+                id="organizationName"
+                type="text"
+                placeholder="Enter organization name"
+                {...form.register("organizationName")}
+                className={form.formState.errors.organizationName ? "border-red-500" : ""}
+              />
+              {form.formState.errors.organizationName && (
+                <p className="text-sm text-red-500">{form.formState.errors.organizationName.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="orgIdCode">Organization ID Code</Label>
+              <Input
+                id="orgIdCode"
+                type="text"
+                placeholder="Enter organization ID code"
+                {...form.register("orgIdCode")}
+                className={form.formState.errors.orgIdCode ? "border-red-500" : ""}
+              />
+              {form.formState.errors.orgIdCode && (
+                <p className="text-sm text-red-500">{form.formState.errors.orgIdCode.message}</p>
+              )}
+              <p className="text-xs text-gray-500">
+                Contact your administrator for the organization ID code
+              </p>
             </div>
 
             <div className="space-y-2">

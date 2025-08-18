@@ -16,8 +16,8 @@ const items = [
 
 export default function AdminShell({ children }: PropsWithChildren) {
   const nav = useNavigate();
-  function logout(){
-    localStorage.removeItem("vs_token");
+  async function logout(){
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     nav("/admin/login");
   }
   return (

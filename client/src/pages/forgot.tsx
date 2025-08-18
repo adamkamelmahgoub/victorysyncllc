@@ -66,11 +66,13 @@ export default function Forgot() {
   async function startReset() {
     try {
       setError(null);
-      const data = await apiRequest<{ resetId: string }>("/api/auth/forgot/start", {
+      const response = await fetch("/api/password/request", {
         method: "POST",
-        body: { email }
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email })
       });
-      setResetId(data.resetId);
+      await response.json();
       setStep("verify");
     } catch (e: any) {
       setError(e.message);
@@ -89,10 +91,14 @@ export default function Forgot() {
         return;
       }
       
-      await apiRequest("/api/auth/forgot/complete", {
+      const response = await fetch("/api/password/reset", {
         method: "POST",
-        body: { resetId, otp, newPassword }
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ token: otp, newPassword })
       });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
       setSuccess(true);
     } catch (e: any) {
       setError(e.message);
@@ -186,15 +192,15 @@ export default function Forgot() {
               </Alert>
               
               <div className="space-y-2">
-                <Label htmlFor="otp">Verification Code</Label>
+                <Label htmlFor="otp">Reset Token</Label>
                 <Input
                   id="otp"
                   type="text"
                   value={otp}
                   onChange={e => setOtp(e.target.value)}
-                  placeholder="Enter 6-digit code"
+                  placeholder="Enter reset token from email"
                 />
-              </div>
+              </div></old_str>
               
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>

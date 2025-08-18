@@ -1,7 +1,6 @@
 
 import { FormEvent, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { apiRequest } from "@/lib/apiRequest";
 import "./admin.css";
 
 export default function AdminLogin(){
@@ -13,8 +12,14 @@ export default function AdminLogin(){
   async function submit(e:FormEvent){
     e.preventDefault(); setErr(null);
     try{
-      const { token } = await apiRequest<{token:string}>("/api/auth/login",{ method:"POST", body:{ email, password }});
-      localStorage.setItem("vs_token", token);
+      const res = await fetch('/api/auth/login', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error);
       nav("/admin/overview");
     }catch(e:any){ setErr(e.message); }
   }
