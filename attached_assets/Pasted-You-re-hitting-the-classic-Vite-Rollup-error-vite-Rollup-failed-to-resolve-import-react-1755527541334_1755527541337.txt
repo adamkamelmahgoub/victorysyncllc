@@ -1,0 +1,163 @@
+You’re hitting the classic Vite/Rollup error:
+
+```
+[vite]: Rollup failed to resolve import "react/jsx-runtime"
+```
+
+That means your **client** app doesn’t actually have `react` (and/or `react-dom`) installed in `client/node_modules`, or versions are mismatched. Here’s a tight master prompt for Claude that **adds the missing React deps**, **locks versions**, **fixes Vite config** (dedupe), and **reinstalls cleanly** so `npm run dev` / `npm run build` work.
+
+---
+
+## Paste this into Claude
+
+You are working inside this Replit. Fix the Vite build error:
+
+```
+[vite]: Rollup failed to resolve import "react/jsx-runtime" from client/src/main.tsx
+```
+
+This means `react`/`react-dom` aren’t correctly installed under **client/** (or the versions are mismatched). Do the following exactly:
+
+### 1) Create/replace client/package.json with pinned React + proper scripts
+
+Write this file verbatim at `client/package.json` (replace contents if it exists):
+
+```json
+{
+  "name": "victorysync-client",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host --port 5173"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.4",
+    "@types/react-dom": "18.3.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.8"
+  }
+}
+```
+
+> Notes:
+> • We pin **react** and **react-dom** to 18.3.1 (includes `react/jsx-runtime`).
+> • We ensure the client has its **own** vite + plugin-react, so Vite builds don’t depend on hoisting.
+
+### 2) Ensure client/tsconfig.json compiles JSX with the automatic runtime
+
+Create/replace `client/tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@shared/*": ["../shared/*"]
+    },
+    "isolatedModules": true,
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src", "../shared"]
+}
+```
+
+### 3) Harden Vite config (dedupe react to avoid duplicates)
+
+Open `client/vite.config.ts` and make sure it looks like this (add/adjust the `resolve.dedupe` line):
+
+```ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    host: true,
+    port: 5173,
+    hmr: { clientPort: 443 },
+    fs: { strict: false }
+  },
+  preview: { host: true, port: 5173 },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      '@shared': path.resolve(__dirname, '../shared')
+    },
+    dedupe: ['react', 'react-dom']
+  },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true
+  }
+})
+```
+
+### 4) Verify client/src/main.tsx uses React 18’s createRoot
+
+Open `client/src/main.tsx` and ensure it uses React 18’s API:
+
+```tsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+
+const root = ReactDOM.createRoot(document.getElementById('root')!)
+root.render(<App />)
+```
+
+### 5) Clean installs (root + client) to ensure modules are where Vite expects
+
+Run these commands in the Replit shell:
+
+```bash
+rm -rf node_modules client/node_modules server/node_modules
+npm i
+npm --prefix client i
+```
+
+> `npm i` installs root deps (if any); `npm --prefix client i` ensures **client/node\_modules** contains **react**, **react-dom**, **vite**, **@vitejs/plugin-react**, etc.
+
+### 6) Build and run again
+
+Run:
+
+```bash
+npm run build
+```
+
+You should no longer see the `react/jsx-runtime` resolution error. Then:
+
+```bash
+npm run dev
+```
+
+Confirm:
+
+* Preview loads without Vite polling loops,
+* HMR works,
+* No “Cannot GET /” for non-API routes.
+
+If any error remains, paste the exact console output and fix **in place**. Do not change public navbar/footer branding.
+
+**End of instructions.**
+
+---
+
+If you’d rather do it yourself without Claude, follow the exact same 6 steps above in Replit. This resolves the `react/jsx-runtime` error and stabilizes the build.
