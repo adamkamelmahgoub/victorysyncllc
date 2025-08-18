@@ -1,0 +1,152 @@
+Here’s a single, copy-paste **MASTER PROMPT for Claude** that fixes the crash you’re seeing ( `ReferenceError: morgan is not defined` ), preserves all features, and **does not touch** `.replit` or Nix. It includes the exact commands and file patches Claude should apply inside your current Replit.
+
+---
+
+**MASTER PROMPT FOR CLAUDE**
+
+You are working **inside this exact Replit repo**. Do **not** change `.replit` or any Nix files. Keep every feature as-is. Your only job now is to fix the backend crash shown in the console:
+
+```
+ReferenceError: morgan is not defined
+ at server/index.ts:25:5  (line may vary)
+```
+
+This happens because `app.use(morgan('tiny'))` is called without importing or installing `morgan`.
+
+### Hard constraints
+
+* Do not modify `.replit` or any Nix config.
+* Do not remove or alter existing features, routes, queue workers, or build scripts.
+* Prefer minimal, explicit fixes. Keep TypeScript strictness intact.
+
+### What to do (in order)
+
+1. **Add runtime + types deps**
+   Update `package.json` to include:
+
+   * `morgan@1.10.0` (runtime)
+   * `@types/morgan@1.9.9` (dev)
+
+   If you edit files directly, also run the install commands.
+
+   #### Commands to run in the Replit shell
+
+   ```bash
+   npm i -E morgan@1.10.0
+   npm i -D -E @types/morgan@1.9.9
+   ```
+
+2. **Import Morgan in the server**
+   Open `server/index.ts`. At the top with the other imports, add:
+
+   ```ts
+   // Prefer default import if esModuleInterop is enabled
+   import morgan from 'morgan';
+   ```
+
+   If `tsconfig.json` does **not** have `"esModuleInterop": true`, then use:
+
+   ```ts
+   import * as morgan from 'morgan';
+   ```
+
+3. **Wire the logger (keep behavior, add safety)**
+   Ensure the existing usage becomes:
+
+   ```ts
+   // Logging is enabled unless explicitly disabled via env
+   if (process.env.LOGGER_DISABLED !== '1') {
+     app.use(morgan(process.env.LOG_FORMAT || 'tiny'));
+   }
+   ```
+
+   Leave the rest of the file unchanged (queues, routes, health check, static serving, vite middleware, etc.).
+
+4. **Verify build + boot**
+   Re-run the same dev command the project uses (don’t change scripts):
+
+   ```bash
+   npm run build && cross-env DEV_STATIC=1 NODE_ENV=development tsx server/index.ts
+   ```
+
+   Expected logs:
+
+   * Vite build summary
+   * (If applicable) BullMQ messages like “QueueScheduler not needed…” and “Worker initialized…”
+   * Database connection message
+   * Server listen banner
+   * **No** “morgan is not defined” error
+
+5. **Smoke test**
+
+   * Hit `GET /health` → should return 200.
+   * Trigger any API route to confirm request lines appear in logs (format `tiny` unless `LOG_FORMAT` is set).
+
+### Exact file patch (apply verbatim)
+
+**`server/index.ts`** (show only the new/changed parts; do not remove any of your code)
+
+```ts
+// ⬅️ Add near the rest of your imports
+import morgan from 'morgan'; // or: import * as morgan from 'morgan';
+
+// … existing imports remain …
+
+// … existing app setup …
+const app = express();
+
+// ⬅️ Replace any existing bare morgan usage with guarded usage below
+if (process.env.LOGGER_DISABLED !== '1') {
+  app.use(morgan(process.env.LOG_FORMAT || 'tiny'));
+}
+
+// … keep the rest of your middleware, routes, vite/static, queues, etc. unchanged …
+```
+
+**`package.json`** (merge these; do not remove anything you already have)
+
+```json
+{
+  "dependencies": {
+    "morgan": "1.10.0"
+  },
+  "devDependencies": {
+    "@types/morgan": "1.9.9"
+  }
+}
+```
+
+*(If those keys already exist, just add/merge the exact entries above.)*
+
+### Acceptance criteria
+
+* `npm run build && cross-env DEV_STATIC=1 NODE_ENV=development tsx server/index.ts` starts successfully.
+* No `ReferenceError: morgan is not defined`.
+* Requests log using `tiny` format (or env-configured format).
+* All existing features (auth, access codes, queues, billing, admin portal, customer portal, integrations, etc.) continue to work untouched.
+
+### Contingency (zero-dependency fallback)
+
+If you must avoid adding any new dependency, **remove** the `morgan` call and use this tiny logger instead (keep features intact):
+
+```ts
+if (process.env.LOGGER_DISABLED !== '1') {
+  app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+      const ms = Date.now() - start;
+      console.log(`${req.method} ${req.originalUrl} ${res.statusCode} - ${ms}ms`);
+    });
+    next();
+  });
+}
+```
+
+Do **not** choose this fallback unless the package install is impossible, because `morgan` is a standard production logger and already intended here.
+
+### Troubleshooting checklist
+
+* If TypeScript complains about the import, switch between `import morgan from 'morgan'` and `import * as morgan from 'morgan'` depending on `esModuleInterop`.
+* If the server still crashes on boot, paste the **first error block** from the console and fix only that; do not change unrelated files.
+
+Apply all steps now.
