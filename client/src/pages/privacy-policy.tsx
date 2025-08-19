@@ -1,3 +1,4 @@
+
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -18,133 +19,138 @@ export default function PrivacyPolicy() {
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="prose prose-lg max-w-none">
             <p className="text-gray-600 mb-8">
-              <strong>Last updated:</strong> January 1, 2025
+              <strong>Effective:</strong> August 19, 2025
             </p>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Information We Collect</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Scope</h2>
               <p className="text-gray-600 mb-4">
-                We collect information you provide directly to us, such as when you create an account, 
-                use our services, or contact us for support.
+                This Policy covers visitors to victorysync.com, prospects, and customers who use our Services. If a separate agreement applies to your engagement with us, that agreement controls where it conflicts with this Policy.
               </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Information We Collect</h2>
               <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>Contact information (name, email address, phone number)</li>
-                <li>Account credentials and billing information</li>
-                <li>Customer service communications and call recordings</li>
-                <li>Usage data and analytics from our platform</li>
-                <li>Technical information about your devices and network connection</li>
+                <li><strong>Contact & Business Data:</strong> name, company, role, email, phone, addresses.</li>
+                <li><strong>Communications:</strong> messages, call recordings/voicemails (where permitted), meeting notes.</li>
+                <li><strong>Service & Account Data:</strong> project settings, usage logs, CRM records you share.</li>
+                <li><strong>Device/Usage Data:</strong> cookies, IP address, pages viewed, browser type, timestamps.</li>
+                <li><strong>Payment/Billing:</strong> limited billing details processed by our payment processors; we do not store full card numbers.</li>
               </ul>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">2. How We Use Your Information</h2>
-              <p className="text-gray-600 mb-4">
-                We use the information we collect to provide, maintain, and improve our services:
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">How We Use Information</h2>
               <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>Delivering call center services and customer support</li>
-                <li>Processing payments and managing your account</li>
-                <li>Communicating with you about our services</li>
-                <li>Analyzing usage patterns to improve our platform</li>
-                <li>Complying with legal obligations and protecting our rights</li>
+                <li>Provide, operate, and improve the Services; support and quality assurance.</li>
+                <li>Communicate about appointments, updates, invoices, and administrative notices.</li>
+                <li>Configure integrations (telephony, CRM, analytics) you request.</li>
+                <li>Detect, prevent, and address security, fraud, or abuse.</li>
+                <li>Comply with legal obligations and enforce agreements.</li>
               </ul>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Information Sharing</h2>
-              <p className="text-gray-600 mb-4">
-                We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy:
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Legal Bases (EEA/UK)</h2>
               <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>With service providers who assist in delivering our services</li>
-                <li>When required by law or to protect our legal rights</li>
-                <li>With your explicit consent for specific purposes</li>
-                <li>In connection with a business transfer or acquisition</li>
+                <li><strong>Contract:</strong> to deliver Services you request.</li>
+                <li><strong>Legitimate interests:</strong> to secure, improve, and support our Services.</li>
+                <li><strong>Consent:</strong> for optional activities such as certain cookies or SMS programs.</li>
+                <li><strong>Legal obligation:</strong> to meet regulatory and tax requirements.</li>
               </ul>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Data Security</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Cookies & Analytics</h2>
               <p className="text-gray-600 mb-4">
-                We implement industry-standard security measures to protect your information:
+                We use cookies and similar technologies to operate and improve the site and understand usage. You can control cookies through your browser settings. Where required, we obtain consent before setting non-essential cookies.
               </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">SMS Program Privacy</h2>
+              <p className="text-gray-600 mb-4">
+                If you opt in to our service-related SMS Program, we process your mobile number and message content to deliver confirmations, reminders, and status updates. Message & data rates may apply. Message frequency varies.
+              </p>
+              <p className="text-gray-600 mb-4">
+                <strong>Opt-out:</strong> reply STOP, STOPALL, UNSUBSCRIBE, CANCEL, END, or QUIT.<br />
+                <strong>Help:</strong> reply HELP or email info@victorysync.com.
+              </p>
+              <p className="text-gray-600 mb-4">
+                We do not sell or share mobile numbers for third-party marketing. We do not use public URL shorteners in SMS. Texts are sent via registered A2P 10DLC and/or verified Toll-Free programs through vetted providers and are intended for non-marketing communications unless you separately consent to marketing.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Sharing of Information</h2>
               <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>Encryption of data in transit and at rest</li>
-                <li>Regular security audits and assessments</li>
-                <li>Access controls and employee training</li>
-                <li>Secure data centers with physical safeguards</li>
-                <li>Incident response procedures for potential breaches</li>
+                <li>Service providers/sub-processors (telephony, email, CRM, analytics, hosting, payments) bound by confidentiality and security obligations.</li>
+                <li>Business transfers (merger, acquisition, asset sale).</li>
+                <li>Legal compliance and protection of rights.</li>
               </ul>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Your Rights</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Data Retention</h2>
               <p className="text-gray-600 mb-4">
-                You have certain rights regarding your personal information:
+                We retain information as needed to provide the Services, meet legal obligations, resolve disputes, and enforce agreements. Call recordings and SMS logs are retained per your instructions and our retention policies.
               </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Security</h2>
+              <p className="text-gray-600 mb-4">
+                We use administrative, technical, and physical safeguards appropriate to the nature of data processed. No system is 100% secure; use strong passwords and notify us of suspected unauthorized activity.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">International Transfers</h2>
+              <p className="text-gray-600 mb-4">
+                We are based in the United States and may process data in the U.S. and other countries. Where required, we use appropriate safeguards (e.g., Standard Contractual Clauses).
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Privacy Rights</h2>
               <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>Access and review your personal data</li>
-                <li>Correct inaccurate or incomplete information</li>
-                <li>Request deletion of your personal data</li>
-                <li>Opt out of marketing communications</li>
-                <li>Export your data in a portable format</li>
+                <li><strong>EEA/UK:</strong> rights to access, correct, delete, restrict, object, and data portability; you may lodge a complaint with your supervisory authority.</li>
+                <li><strong>California (CPRA):</strong> rights to know, delete, correct, limit use of sensitive data, and opt out of certain sharing. We do not sell personal information.</li>
               </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">6. Cookies and Tracking</h2>
               <p className="text-gray-600 mb-4">
-                We use cookies and similar technologies to enhance your experience and analyze usage patterns. 
-                You can control cookie settings through your browser preferences.
+                To exercise rights, contact info@victorysync.com. We will verify your request as required by law.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Data Retention</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Children</h2>
               <p className="text-gray-600 mb-4">
-                We retain your personal information for as long as necessary to provide our services and comply with legal obligations. 
-                Call recordings are typically retained for quality assurance and training purposes for up to 12 months.
+                Our Services are for business users and not for individuals under 13. We do not knowingly collect personal information from children under 13.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">8. International Transfers</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Changes</h2>
               <p className="text-gray-600 mb-4">
-                Your information may be processed in countries other than where you reside. We ensure appropriate 
-                safeguards are in place to protect your data in accordance with this privacy policy.
+                We may update this Policy; material changes will be posted with a new effective date. Continued use after changes acknowledges the updated Policy.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">9. Children's Privacy</h2>
-              <p className="text-gray-600 mb-4">
-                Our services are not intended for children under 13 years of age. We do not knowingly collect 
-                personal information from children under 13.
-              </p>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Changes to This Policy</h2>
-              <p className="text-gray-600 mb-4">
-                We may update this privacy policy from time to time. We will notify you of significant changes 
-                by email or through our platform. Your continued use of our services constitutes acceptance of the updated policy.
-              </p>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Contact Us</h2>
-              <p className="text-gray-600 mb-4">
-                If you have questions about this privacy policy or our data practices, please contact us:
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Contact</h2>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-600">
-                  <strong>VictorySync</strong><br />
-                  Email: privacy@victorysync.com<br />
-                  Phone: 1-800-VICTORY<br />
-                  Address: Millstone, New Jersey, United States
+                  <strong>VictorySync LLC</strong><br />
+                  New Jersey, USA<br />
+                  Email: info@victorysync.com
                 </p>
               </div>
             </section>
+
+            <div className="text-center mt-8 pt-8 border-t border-gray-200">
+              <p className="text-gray-500">© 2025 VictorySync LLC. All rights reserved.</p>
+            </div>
           </div>
         </div>
       </div>
