@@ -1,3 +1,4 @@
+
 export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -18,174 +19,152 @@ export default function TermsOfService() {
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="prose prose-lg max-w-none">
             <p className="text-gray-600 mb-8">
-              <strong>Last updated:</strong> January 1, 2025
+              <strong>VictorySync LLC</strong><br />
+              <strong>Effective:</strong> August 19, 2025
             </p>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Acceptance of Terms</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceptance of Terms</h2>
               <p className="text-gray-600 mb-4">
-                By accessing or using VictorySync services, you agree to be bound by these Terms of Service. 
-                If you do not agree to these terms, you may not use our services.
+                By accessing victorysync.com, booking a call, or using our services, you agree to these Terms. If you act on behalf of a company, you confirm you're authorized to bind that company. If you do not agree, do not use our services.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Description of Services</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Services</h2>
               <p className="text-gray-600 mb-4">
-                VictorySync provides call center services, customer support solutions, AI automation, and digital marketing services. 
-                Our services are designed to help businesses improve customer service operations and reduce costs.
+                VictorySync provides business process outsourcing (BPO), inbound/outbound contact-center services, AI workflow/automation implementation, and related consulting ("Services"). If a separate written agreement or order form applies, that document controls for those Services where there is a conflict.
               </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Accounts & Eligibility</h2>
               <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>24/7 inbound customer support services</li>
-                <li>Outbound sales and lead generation</li>
-                <li>AI-powered automation and chatbot solutions</li>
-                <li>Digital marketing and social media management</li>
-                <li>Integration with existing business systems</li>
+                <li>You must be at least 18 and able to enter a contract.</li>
+                <li>Keep credentials confidential; you're responsible for all activity under your account.</li>
+                <li>Provide accurate business information and keep it updated.</li>
               </ul>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">3. User Accounts</h2>
-              <p className="text-gray-600 mb-4">
-                To access our services, you must create an account and provide accurate information. You are responsible for:
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceptable Use</h2>
               <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>Maintaining the confidentiality of your account credentials</li>
-                <li>All activities that occur under your account</li>
-                <li>Promptly notifying us of any unauthorized use</li>
-                <li>Ensuring your account information remains current and accurate</li>
+                <li>Do not use the Services for unlawful, infringing, deceptive, harassing, or abusive activity.</li>
+                <li>Do not interfere with or compromise our systems or our providers.</li>
+                <li>Do not send spam, unauthorized marketing, or prohibited content (including SHAFT: sex, hate, alcohol, firearms, tobacco).</li>
               </ul>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Acceptable Use</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Communications; SMS Program</h2>
               <p className="text-gray-600 mb-4">
-                You agree to use our services only for lawful purposes and in accordance with these terms. You may not:
+                By providing a phone number, you may opt in to receive non-marketing, service-related text messages (e.g., confirmations, reminders, ticket/status updates). Consent is not a condition of purchase. Message & data rates may apply. Message frequency varies.
               </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>Violate any applicable laws or regulations</li>
-                <li>Infringe on intellectual property rights of others</li>
-                <li>Transmit harmful, offensive, or inappropriate content</li>
-                <li>Attempt to interfere with or disrupt our services</li>
-                <li>Use our services for competitive intelligence or reverse engineering</li>
-              </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Payment Terms</h2>
               <p className="text-gray-600 mb-4">
-                Service fees are billed according to your selected plan and payment schedule:
+                <strong>Opt-in methods we use:</strong> (a) web form checkbox, (b) inbound SMS keyword you send to us, or (c) verbal consent recorded in CRM notes.
               </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>Payments are due in advance on a monthly or annual basis</li>
-                <li>All fees are non-refundable except as expressly stated</li>
-                <li>Late payments may result in service suspension</li>
-                <li>Price changes will be communicated with 30 days notice</li>
-                <li>Taxes are the responsibility of the customer</li>
-              </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">6. Service Levels</h2>
               <p className="text-gray-600 mb-4">
-                We strive to provide high-quality services with the following commitments:
+                <strong>Opt-out:</strong> reply STOP, STOPALL, UNSUBSCRIBE, CANCEL, END, or QUIT to any message.
               </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>99.9% uptime for our platform and services</li>
-                <li>24/7 customer support availability</li>
-                <li>Response times according to your service plan</li>
-                <li>Regular quality assurance and monitoring</li>
-                <li>Continuous improvement of service delivery</li>
-              </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Data and Privacy</h2>
               <p className="text-gray-600 mb-4">
-                We are committed to protecting your data and privacy:
+                <strong>Help:</strong> reply HELP or email info@victorysync.com.
               </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>Customer data remains the property of the customer</li>
-                <li>We implement industry-standard security measures</li>
-                <li>Data processing complies with applicable privacy laws</li>
-                <li>Call recordings are used for quality assurance and training</li>
-                <li>Data retention policies are outlined in our Privacy Policy</li>
-              </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Intellectual Property</h2>
               <p className="text-gray-600 mb-4">
-                VictorySync retains all rights to our platform, technology, and proprietary materials. 
-                You retain rights to your content and data. Our platform and services are protected by copyright, 
-                trademark, and other intellectual property laws.
+                We send texts via registered A2P 10DLC and/or verified Toll-Free programs through vetted providers. We do not send promotional SMS without explicit marketing consent. We do not use public URL shorteners in SMS.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">9. Limitation of Liability</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Third-Party Services</h2>
               <p className="text-gray-600 mb-4">
-                To the maximum extent permitted by law, VictorySync shall not be liable for any indirect, 
-                incidental, special, or consequential damages arising from your use of our services. 
-                Our total liability shall not exceed the amount paid by you for services in the 12 months 
-                preceding the claim.
+                We rely on integrations and vendors (telephony, CRM, analytics, payments). Your use of those services is subject to their terms and privacy policies.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Termination</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Fees & Payment</h2>
               <p className="text-gray-600 mb-4">
-                Either party may terminate this agreement with 30 days written notice. We may suspend or 
-                terminate services immediately for violations of these terms or non-payment. Upon termination:
-              </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>Access to services will be discontinued</li>
-                <li>Outstanding fees become immediately due</li>
-                <li>Customer data will be available for export for 30 days</li>
-                <li>Confidentiality obligations survive termination</li>
-              </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Dispute Resolution</h2>
-              <p className="text-gray-600 mb-4">
-                Any disputes arising from these terms or our services shall be resolved through binding 
-                arbitration in accordance with the rules of the American Arbitration Association. 
-                The arbitration shall take place in New Jersey, United States.
+                Fees appear in an order form, statement of work, or written agreement. Invoices are due upon receipt unless stated otherwise. Late balances may accrue interest at the lesser of 1.5%/month or the maximum allowed by law. You are responsible for applicable taxes other than our income taxes.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">12. Governing Law</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Confidentiality</h2>
               <p className="text-gray-600 mb-4">
-                These terms are governed by the laws of the State of New Jersey and the United States, 
-                without regard to conflict of law principles.
+                Each party may receive non-public information from the other. The receiving party will protect it with reasonable care and use it only to perform under these Terms or an applicable agreement.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">13. Changes to Terms</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Intellectual Property</h2>
               <p className="text-gray-600 mb-4">
-                We may update these terms from time to time. Material changes will be communicated via email 
-                or through our platform. Continued use of our services after changes constitutes acceptance 
-                of the updated terms.
+                We retain rights in our pre-existing IP, software, templates, and know-how. Unless otherwise agreed in writing, deliverables created specifically for you under a paid engagement are licensed for your internal business use. All trademarks and logos remain the property of their owners.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">14. Contact Information</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">AI & Automation Notice</h2>
               <p className="text-gray-600 mb-4">
-                For questions about these terms or our services, please contact us:
+                Some Services may leverage AI or automation. We don't guarantee the accuracy of automatically generated outputs. You are responsible for reviewing outputs and ensuring your use complies with laws and your policies.
               </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Warranties & Disclaimers</h2>
+              <p className="text-gray-600 mb-4">
+                Except as expressly stated, the Services and site are provided "as is," without warranties of any kind (express, implied, or statutory), including merchantability, fitness for a particular purpose, and non-infringement.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Limitation of Liability</h2>
+              <p className="text-gray-600 mb-4">
+                To the maximum extent permitted by law, neither party is liable for indirect, incidental, special, consequential, cover, or punitive damages, or lost profits, revenue, data, or goodwill. Each party's total liability relating to the Services will not exceed the amounts you paid or owed to VictorySync for the Services giving rise to the claim in the 12 months before the event.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Indemnification</h2>
+              <p className="text-gray-600 mb-4">
+                You will indemnify and hold VictorySync harmless from third-party claims arising from your misuse of the Services, breach of these Terms, or violation of law.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Suspension & Termination</h2>
+              <p className="text-gray-600 mb-4">
+                We may suspend or terminate access for material breach or misuse. You may cease use at any time. Sections that by their nature should survive (e.g., confidentiality, IP, limitations) survive termination.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Changes</h2>
+              <p className="text-gray-600 mb-4">
+                We may update these Terms; material changes will be posted with a new effective date. Continued use after changes means you accept the updated Terms.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Governing Law; Disputes</h2>
+              <p className="text-gray-600 mb-4">
+                New Jersey law governs these Terms (without regard to conflicts rules). The parties consent to exclusive jurisdiction and venue in state or federal courts located in New Jersey, USA.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Contact</h2>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-600">
-                  <strong>VictorySync</strong><br />
-                  Email: info@victorysync.com<br />
-                  Phone: + (718)-813-2106<br />
-                  Address: 11 Brookside Rd, Millstone, New Jersey, 08510, United States
+                  <strong>VictorySync LLC</strong><br />
+                  New Jersey, USA<br />
+                  Email: info@victorysync.com
                 </p>
               </div>
             </section>
+
+            <div className="text-center mt-8 pt-8 border-t border-gray-200">
+              <p className="text-gray-500">© 2025 VictorySync LLC. All rights reserved.</p>
+            </div>
           </div>
         </div>
       </div>
