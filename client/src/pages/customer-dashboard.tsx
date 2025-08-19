@@ -177,9 +177,6 @@ export default function CustomerDashboard() {
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 Browse Services
               </Button>
-              <Button variant="outline" onClick={logout}>
-                Logout
-              </Button>
             </div>
           </div>
         </div>
