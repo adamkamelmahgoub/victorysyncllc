@@ -1,22 +1,24 @@
 
-import { Router } from "express";
+import { Router } from 'express';
+import { requireAuth } from '../services/auth.js';
 
 const router = Router();
 
-router.get("/", async (req, res) => {
-  try {
-    res.status(200).json([]);
-  } catch (err) {
-    res.status(500).json({ error: "orders_fetch_failed" });
-  }
+router.use(requireAuth);
+
+router.get('/', (req, res) => {
+  // Get orders
+  res.json({ orders: [] });
 });
 
-router.post("/", async (req, res) => {
-  try {
-    res.status(201).json({ id: null, status: "pending", total: 0 });
-  } catch (err) {
-    res.status(500).json({ error: "order_create_failed" });
-  }
+router.post('/', (req, res) => {
+  // Create order
+  res.json({ message: 'Create order endpoint' });
+});
+
+router.get('/:id', (req, res) => {
+  // Get specific order
+  res.json({ order: null });
 });
 
 export default router;

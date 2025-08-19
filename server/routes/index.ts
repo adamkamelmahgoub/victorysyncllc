@@ -1,5 +1,7 @@
 
 import { Router } from 'express';
+
+// Import route modules as default Router exports
 import authRoutes from './auth.js';
 import adminRoutes from './admin.js';
 import accessRoutes from './access.js';
@@ -10,14 +12,28 @@ import webhooksRoutes from './webhooks.js';
 
 const router = Router();
 
-// Mount all route modules
-router.use('/auth', authRoutes);
-router.use('/admin', adminRoutes);
-router.use('/access', accessRoutes);
-router.use('/billing', billingRoutes);
-router.use('/orders', ordersRoutes);
-router.use('/exports', exportsRoutes);
-router.use('/webhooks', webhooksRoutes);
+/**
+ * Assert the import is a valid Express Router (functions in Express are Routers).
+ * This prevents "Router.use() requires a middleware function but got undefined".
+ */
+function asRouter(name: string, mod: any): Router {
+  const candidate = (mod && (mod.default ?? mod)) as unknown;
+  if (typeof candidate !== 'function') {
+    throw new TypeError(
+      `Route module "${name}" must export a default Express.Router(), got ${typeof candidate}`
+    );
+  }
+  return candidate as Router;
+}
+
+// Mount all route modules with safety checks
+router.use('/auth', asRouter('auth', authRoutes));
+router.use('/admin', asRouter('admin', adminRoutes));
+router.use('/access', asRouter('access', accessRoutes));
+router.use('/billing', asRouter('billing', billingRoutes));
+router.use('/orders', asRouter('orders', ordersRoutes));
+router.use('/exports', asRouter('exports', exportsRoutes));
+router.use('/webhooks', asRouter('webhooks', webhooksRoutes));
 
 // Health check endpoint
 router.get('/health', (req, res) => {
