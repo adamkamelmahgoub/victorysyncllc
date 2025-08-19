@@ -33,7 +33,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
           <Link href="/">
             <div className="flex items-center space-x-3 cursor-pointer">
               <img
-                src="/LOGO_VS.png"
+                src="LOGO_VS.png"
                 alt="VictorySync Logo"
                 className="w-8 h-8 rounded-lg"
               />
@@ -82,11 +82,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     Dashboard
                   </Button>
                 </Link>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={logout}
-                >
+                <Button variant="ghost" size="sm" onClick={logout}>
                   Sign Out
                 </Button>
               </div>
@@ -97,7 +93,6 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     Sign In
                   </Button>
                 </Link>
-                
               </div>
             )}
           </div>
@@ -179,7 +174,6 @@ export default function Navigation({ onCartClick }: NavigationProps) {
                     >
                       Sign In
                     </Button>
-                    
                   </div>
                 )}
               </div>
