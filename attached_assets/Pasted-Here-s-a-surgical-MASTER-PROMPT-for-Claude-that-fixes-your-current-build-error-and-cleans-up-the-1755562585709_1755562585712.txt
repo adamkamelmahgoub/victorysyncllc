@@ -1,0 +1,266 @@
+Here’s a **surgical MASTER PROMPT for Claude** that fixes your current build error and cleans up the auth routes without touching `.replit` or `replit.nix`. Paste this into Claude exactly as-is.
+
+---
+
+## MASTER PROMPT — FIX “Cannot resolve ./pages/admin/AdminForgotPassword” + wire unified Forgot/Reset flows
+
+You are working **in THIS Replit repo**. Do **not** modify `.replit` or `replit.nix`. Keep all public-site UI as-is. We must fix the Vite build error:
+
+```
+Could not resolve "./pages/admin/AdminForgotPassword" from "src/App.tsx"
+```
+
+We removed old admin-only auth pages; `App.tsx` still imports them. Replace them with a single shared **ForgotPassword**/**ResetPassword** pair that supports both **customer** and **admin** variants.
+
+### 0) Pre-flight: remove stale imports and files
+
+1. In the codebase, remove any *remaining* imports/usages of:
+
+   * `./pages/admin/AdminForgotPassword`
+   * `./pages/admin/AdminResetPassword`
+2. Delete the files if they still exist:
+
+   * `client/src/pages/admin/AdminForgotPassword.tsx`
+   * `client/src/pages/admin/AdminResetPassword.tsx`
+
+Use ripgrep or git rm; don’t leave dangling re-exports.
+
+### 1) Add the shared pages (create/overwrite these files)
+
+#### `client/src/pages/auth/ForgotPassword.tsx`
+
+```tsx
+import { useState } from 'react';
+
+type Props = { variant?: 'customer' | 'admin' };
+
+export default function ForgotPassword({ variant = 'customer' }: Props) {
+  const [email, setEmail] = useState('');
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    try {
+      const res = await fetch(`/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, variant }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.message || 'Request failed');
+      }
+      setSent(true);
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-md py-16">
+      <h1 className="text-2xl font-semibold mb-2">
+        Forgot password ({variant})
+      </h1>
+      <p className="text-sm text-gray-500 mb-6">
+        Enter your email and we’ll send a reset link.
+      </p>
+
+      {sent ? (
+        <div className="rounded-md bg-green-50 p-4 text-green-700">
+          If an account exists for <b>{email}</b>, a reset link has been sent.
+        </div>
+      ) : (
+        <form onSubmit={submit} className="space-y-4">
+          <input
+            className="w-full rounded border px-3 py-2"
+            type="email"
+            required
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="you@company.com"
+          />
+          {error && (
+            <div className="rounded-md bg-red-50 p-2 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+          <button className="w-full rounded bg-[#6D28D9] px-4 py-2 text-white">
+            Send reset link
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+```
+
+#### `client/src/pages/auth/ResetPassword.tsx`
+
+```tsx
+import { useMemo, useState } from 'react';
+
+export default function ResetPassword() {
+  const params = useMemo(() => new URLSearchParams(window.location.search), []);
+  const token = params.get('token') || '';
+  const [password, setPassword] = useState('');
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    try {
+      const res = await fetch(`/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.message || 'Reset failed');
+      }
+      setDone(true);
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-md py-16">
+      <h1 className="text-2xl font-semibold mb-2">Set a new password</h1>
+      {!token && (
+        <div className="rounded-md bg-yellow-50 p-3 text-yellow-800 mb-4">
+          Missing reset token. Please use the link sent to your email.
+        </div>
+      )}
+      {done ? (
+        <div className="rounded-md bg-green-50 p-4 text-green-700">
+          Your password has been reset. You can now sign in.
+        </div>
+      ) : (
+        <form onSubmit={submit} className="space-y-4">
+          <input
+            className="w-full rounded border px-3 py-2"
+            type="password"
+            required
+            minLength={8}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="New strong password"
+          />
+          {error && (
+            <div className="rounded-md bg-red-50 p-2 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+          <button
+            disabled={!token}
+            className="w-full rounded bg-[#6D28D9] px-4 py-2 text-white disabled:opacity-50"
+          >
+            Reset password
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+```
+
+### 2) Update app routing to use shared pages (replace `client/src/App.tsx` completely)
+
+> Assumption: You’re using React Router v6. Keep public layout/branding intact.
+
+```tsx
+// client/src/App.tsx
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+// PUBLIC PAGES (existing)
+import Home from './pages/Home';
+import Services from './pages/Services';
+import Pricing from './pages/Pricing';
+import About from './pages/About';
+import Contact from './pages/Contact';
+
+// CUSTOMER AUTH
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
+
+// ADMIN AUTH (login screen only; forgot uses shared with variant="admin")
+import AdminLogin from './pages/admin/Login';
+
+// PUBLIC SHELL (existing site header/footer)
+import PublicLayout from './layouts/PublicLayout';
+
+// ADMIN APP SHELL (already implemented separately; do not alter styles)
+import AdminApp from './admin/App';
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Public site */}
+        <Route element={<PublicLayout />}>
+          <Route index element={<Home />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+
+          {/* Customer auth */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword variant="customer" />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* Admin auth (looks like customer login but tailored) */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/forgot-password" element={<ForgotPassword variant="admin" />} />
+          {/* Admin reset can reuse same route if token is universal; keep as-is */}
+        </Route>
+
+        {/* Admin portal app (already exists) */}
+        <Route path="/admin/*" element={<AdminApp />} />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+### 3) Fix internal navigation that only changed the address bar
+
+If some buttons/links change the URL but don’t render the page:
+
+* Ensure all **internal** links use `Link` / `NavLink` from `react-router-dom` **not** raw `<a href>`.
+* Find/replace examples:
+
+  * Replace `<a href="/login">` → `<Link to="/login">`
+  * Replace `<a href="/register">` → `<Link to="/register">`
+  * Import `Link` at the top of those components.
+* Keep external links (to other domains) as `<a>`.
+
+### 4) Server SPA fallback already present — keep it
+
+You have Express serving `/client/dist` and SPA fallback for non-`/api` paths. Leave intact.
+
+### 5) Re-run and verify
+
+* `npm run dev`
+* Confirm build succeeds, no “Cannot resolve ./pages/admin/AdminForgotPassword” in logs.
+* Visit:
+
+  * `/login` (customer)
+  * `/register` (customer)
+  * `/forgot-password` (customer)
+  * `/admin/login` (admin)
+  * `/admin/forgot-password` (admin)
+  * `/reset-password?token=...` (both)
+* Each page renders; form submits to `/api/auth/*` endpoints.
+
+**Important:** Do not change any public layout/header/footer styles. Only touch imports, routes, and the two shared auth pages above to resolve the build and make forgot/reset work for both roles.
