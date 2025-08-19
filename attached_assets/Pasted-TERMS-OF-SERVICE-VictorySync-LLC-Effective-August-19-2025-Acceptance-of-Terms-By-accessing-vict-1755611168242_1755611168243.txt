@@ -1,0 +1,65 @@
+TERMS OF SERVICE — VictorySync LLC
+Effective: August 19, 2025
+
+Acceptance of Terms
+By accessing victorysync.com, booking a call, or using our services, you agree to these Terms. If you act on behalf of a company, you confirm you’re authorized to bind that company. If you do not agree, do not use our services.
+
+Our Services
+VictorySync provides business process outsourcing (BPO), inbound/outbound contact-center services, AI workflow/automation implementation, and related consulting (“Services”). If a separate written agreement or order form applies, that document controls for those Services where there is a conflict.
+
+Accounts & Eligibility
+• You must be at least 18 and able to enter a contract.
+• Keep credentials confidential; you’re responsible for all activity under your account.
+• Provide accurate business information and keep it updated.
+
+Acceptable Use
+• Do not use the Services for unlawful, infringing, deceptive, harassing, or abusive activity.
+• Do not interfere with or compromise our systems or our providers.
+• Do not send spam, unauthorized marketing, or prohibited content (including SHAFT: sex, hate, alcohol, firearms, tobacco).
+
+Communications; SMS Program
+By providing a phone number, you may opt in to receive non-marketing, service-related text messages (e.g., confirmations, reminders, ticket/status updates). Consent is not a condition of purchase. Message & data rates may apply. Message frequency varies.
+Opt-in methods we use: (a) web form checkbox, (b) inbound SMS keyword you send to us, or (c) verbal consent recorded in CRM notes.
+Opt-out: reply STOP, STOPALL, UNSUBSCRIBE, CANCEL, END, or QUIT to any message.
+Help: reply HELP or email info@victorysync.com
+.
+We send texts via registered A2P 10DLC and/or verified Toll-Free programs through vetted providers. We do not send promotional SMS without explicit marketing consent. We do not use public URL shorteners in SMS.
+
+Third-Party Services
+We rely on integrations and vendors (telephony, CRM, analytics, payments). Your use of those services is subject to their terms and privacy policies.
+
+Fees & Payment
+Fees appear in an order form, statement of work, or written agreement. Invoices are due upon receipt unless stated otherwise. Late balances may accrue interest at the lesser of 1.5%/month or the maximum allowed by law. You are responsible for applicable taxes other than our income taxes.
+
+Confidentiality
+Each party may receive non-public information from the other. The receiving party will protect it with reasonable care and use it only to perform under these Terms or an applicable agreement.
+
+Intellectual Property
+We retain rights in our pre-existing IP, software, templates, and know-how. Unless otherwise agreed in writing, deliverables created specifically for you under a paid engagement are licensed for your internal business use. All trademarks and logos remain the property of their owners.
+
+AI & Automation Notice
+Some Services may leverage AI or automation. We don’t guarantee the accuracy of automatically generated outputs. You are responsible for reviewing outputs and ensuring your use complies with laws and your policies.
+
+Warranties & Disclaimers
+Except as expressly stated, the Services and site are provided “as is,” without warranties of any kind (express, implied, or statutory), including merchantability, fitness for a particular purpose, and non-infringement.
+
+Limitation of Liability
+To the maximum extent permitted by law, neither party is liable for indirect, incidental, special, consequential, cover, or punitive damages, or lost profits, revenue, data, or goodwill. Each party’s total liability relating to the Services will not exceed the amounts you paid or owed to VictorySync for the Services giving rise to the claim in the 12 months before the event.
+
+Indemnification
+You will indemnify and hold VictorySync harmless from third-party claims arising from your misuse of the Services, breach of these Terms, or violation of law.
+
+Suspension & Termination
+We may suspend or terminate access for material breach or misuse. You may cease use at any time. Sections that by their nature should survive (e.g., confidentiality, IP, limitations) survive termination.
+
+Changes
+We may update these Terms; material changes will be posted with a new effective date. Continued use after changes means you accept the updated Terms.
+
+Governing Law; Disputes
+New Jersey law governs these Terms (without regard to conflicts rules). The parties consent to exclusive jurisdiction and venue in state or federal courts located in New Jersey, USA.
+
+Contact
+VictorySync LLC, New Jersey, USA
+Email: info@victorysync.com
+
+© 2025 VictorySync LLC. All rights reserved.
