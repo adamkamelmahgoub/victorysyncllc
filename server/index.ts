@@ -105,18 +105,18 @@ async function start() {
 
   const port = ENV.PORT;
   const server = app.listen(port, async () => {
-  const isProduction = process.env.NODE_ENV === "production";
-  console.log(`🚀 Server running on port ${port}`);
-  console.log(`📍 Environment: ${isProduction ? "production" : "development"}`);
-  console.log(`🌐 Health check: http://localhost:${port}/health`);
+    const isProduction = process.env.NODE_ENV === "production";
+    console.log(`🚀 Server running on port ${port}`);
+    console.log(`📍 Environment: ${isProduction ? "production" : "development"}`);
+    console.log(`🌐 Health check: http://localhost:${port}/health`);
 
-  // Run seed function
-  try {
-    await seedOnce();
-  } catch (error) {
-    console.error('❌ Seed error:', error);
-  }
-});
+    // Run seed function
+    try {
+      await seedOnce();
+    } catch (error) {
+      console.error('❌ Seed error:', error);
+    }
+  });
 }
 start();
 export default app;

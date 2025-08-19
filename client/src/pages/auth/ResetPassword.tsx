@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();

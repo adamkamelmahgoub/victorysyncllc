@@ -1,4 +1,3 @@
-
 import { seedOnce as seedOnceFromServices } from '../services/seed.js';
 
 let inMemoryGuard = false;
@@ -12,7 +11,7 @@ export async function seedOnce(): Promise<void> {
   inMemoryGuard = true;
 
   console.log('🔗 Starting database seeding...');
-  
+
   try {
     await seedOnceFromServices();
     console.log('🎉 Bootstrap complete');
@@ -21,32 +20,24 @@ export async function seedOnce(): Promise<void> {
     throw error;
   }
 }
-import { eq } from 'drizzle-orm';
 import { db } from '../db/client';
 import { users } from '../db/schema';
 import argon2 from 'argon2';
 
-let seeded = false;
+export async function ensureSuperAdmin() {
+  const email = 'admin@victorysync.com';
+  const existing = await db.query.users.findFirst({
+    where: (u, { eq }) => eq(u.email, email),
+  });
 
-export async function seedOnce() {
-  if (seeded) return;
-  seeded = true;
-  
-  try {
-    const [existing] = await db.select().from(users).where(eq(users.email, 'admin@victorysync.com'));
-    
-    if (!existing) {
-      const hash = await argon2.hash('victorysync2025');
-      await db.insert(users).values({
-        email: 'admin@victorysync.com',
-        passwordHash: hash,
-        role: 'superAdmin',
-        fullName: 'VictorySync Admin',
-        permissions: ['*']
-      });
-      console.log('✅ Seeded super admin admin@victorysync.com');
-    }
-  } catch (error) {
-    console.error('❌ Seed error:', error);
+  if (!existing) {
+    await db.insert(users).values({
+      email,
+      password_hash: await argon2.hash('victorysync2025'),
+      role: 'super_admin',
+      full_name: 'VictorySync Admin',
+      mfa_enabled: false,
+    });
+    console.log('[seed] super admin created');
   }
 }
