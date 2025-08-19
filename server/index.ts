@@ -9,7 +9,7 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import { log } from "./vite.js";
 import { setupVite } from "./vite.js";
-import routes from "./routes/index.js";
+import { router as routes } from "./routes/index.js";
 import { ENV } from "./lib/env.js";
 import { getQueue, startWorker } from "./lib/queue.js";
 import { seedOnce } from "./db/seed.js";

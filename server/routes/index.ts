@@ -1,28 +1,27 @@
 
-import type { Express } from 'express';
-import auth from './auth';
-import billing from './billing';
-import integrations from './integrations';
-import admin from './admin';
-import orders from './orders';
-import webhooks from './webhooks';
-import apikeys from './apikeys';
-import access from './access';
-import kpi from './kpi';
-import exports from './exports';
+import { Router } from 'express';
+import authRoutes from './auth.js';
+import adminRoutes from './admin.js';
+import accessRoutes from './access.js';
+import billingRoutes from './billing.js';
+import ordersRoutes from './orders.js';
+import exportsRoutes from './exports.js';
+import webhooksRoutes from './webhooks.js';
 
-export function registerRoutes(app: Express) {
-  app.use('/api/auth', auth);
-  app.use('/api/billing', billing);
-  app.use('/api/integrations', integrations);
-  app.use('/api/admin', admin);
-  app.use('/api/orders', orders);
-  app.use('/api/webhooks', webhooks);
-  app.use('/api/apikeys', apikeys);
-  app.use('/api/access', access);
-  app.use('/api/kpi', kpi);
-  app.use('/api/exports', exports);
+const router = Router();
 
-  // health check
-  app.get('/api/health', (_req, res) => res.json({ ok: true }));
-}
+// Mount all route modules
+router.use('/auth', authRoutes);
+router.use('/admin', adminRoutes);
+router.use('/access', accessRoutes);
+router.use('/billing', billingRoutes);
+router.use('/orders', ordersRoutes);
+router.use('/exports', exportsRoutes);
+router.use('/webhooks', webhooksRoutes);
+
+// Health check endpoint
+router.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+export default router;
