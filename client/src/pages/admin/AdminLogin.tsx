@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -10,16 +9,16 @@ export default function AdminLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, admin: true })
       });
-      
+
       setLoading(false);
-      
+
       if (res.ok) {
         window.location.href = '/admin';
       } else {
@@ -101,8 +100,7 @@ export default function AdminLogin() {
             <div className="text-center">
               <Link
                 to="/admin/forgot-password"
-                className="text-purple-600 hover:text-purple-500 text-sm"
-              >
+                className="text-sm text-gray-600 hover:underline">
                 Forgot your password?
               </Link>
             </div>

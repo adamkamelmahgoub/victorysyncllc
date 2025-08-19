@@ -2,17 +2,22 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function ForgotPassword() {
+type Props = { variant?: 'customer' | 'admin' };
+
+export default function ForgotPassword({ variant = 'customer' }: Props) {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     
     try {
-      const res = await fetch('/api/auth/forgot-password', {
+      const endpoint = variant === 'admin' ? '/api/auth/admin/forgot-password' : '/api/auth/forgot-password';
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -22,19 +27,25 @@ export default function ForgotPassword() {
       if (res.ok) {
         setSent(true);
       } else {
-        alert('If that email exists, we sent reset instructions.');
+        const data = await res.json().catch(() => ({}));
+        setError(data.message || 'If that email exists, we sent reset instructions.');
       }
     } catch (error) {
       setLoading(false);
-      alert('An error occurred. Please try again.');
+      setError('An error occurred. Please try again.');
     }
   };
+
+  const isAdmin = variant === 'admin';
+  const loginPath = isAdmin ? '/admin/login' : '/login';
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Reset your password</h2>
+          <h2 className="text-3xl font-bold text-gray-900">
+            Reset your {isAdmin ? 'admin' : ''} password
+          </h2>
           <p className="mt-2 text-gray-600">
             Enter your email address and we'll send you a verification code.
           </p>
@@ -55,7 +66,7 @@ export default function ForgotPassword() {
                 We've sent a verification code and reset link to your email address.
               </p>
               <Link
-                to="/login"
+                to={loginPath}
                 className="text-purple-600 hover:text-purple-500 font-medium"
               >
                 Back to sign in
@@ -82,6 +93,12 @@ export default function ForgotPassword() {
                 </div>
               </div>
 
+              {error && (
+                <div className="rounded-md bg-red-50 p-3 text-red-700 text-sm">
+                  {error}
+                </div>
+              )}
+
               <div>
                 <button
                   type="submit"
@@ -94,7 +111,7 @@ export default function ForgotPassword() {
 
               <div className="text-center">
                 <Link
-                  to="/login"
+                  to={loginPath}
                   className="text-purple-600 hover:text-purple-500 font-medium"
                 >
                   Back to sign in

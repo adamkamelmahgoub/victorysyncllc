@@ -20,8 +20,6 @@ const Register = lazy(() => import('./pages/register'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
-const AdminForgotPassword = lazy(() => import('./pages/admin/AdminForgotPassword'));
-const AdminResetPassword = lazy(() => import('./pages/admin/AdminResetPassword'));
 const CustomerDashboard = lazy(() => import('./pages/customer-dashboard'));
 const AdminPortal = lazy(() => import('./pages/admin-portal'));
 const Checkout = lazy(() => import('./pages/checkout'));
@@ -56,13 +54,13 @@ export default function App() {
           {/* Auth routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword variant="customer" />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Admin auth routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
-          <Route path="/admin/reset-password" element={<AdminResetPassword />} />
+          <Route path="/admin/forgot-password" element={<ForgotPassword variant="admin" />} />
+          <Route path="/admin/reset-password" element={<ResetPassword />} />
 
           {/* Protected routes */}
           <Route path="/dashboard" element={<CustomerDashboard />} />
