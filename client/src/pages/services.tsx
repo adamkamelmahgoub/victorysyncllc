@@ -1,125 +1,97 @@
-import {
-  Phone,
-  Megaphone,
-  Bot,
-  BarChart3,
-  Check,
-  ArrowRight,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "wouter";
+import { Phone, Megaphone, Bot, BarChart3, Check, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Link } from 'wouter';
 
 export default function Services() {
   const services = [
     {
       icon: Phone,
-      title: "Inbound Contact Center",
+      title: "Inbound Call Center",
+      description: "Professional customer support with multilingual capabilities",
       features: [
-        "24/7 Multilingual Customer Support with native English speakers",
-        "Advanced Technical Help Desk with tier-1, tier-2, and tier-3 escalation protocols",
-        "Complete Order Processing & Billing management with payment gateway integrations",
-        "Real-time Live Chat Support with instant response capabilities and chatbot handoffs",
-        "Comprehensive Email Support Management with ticketing systems and automated routing",
-        "Professional Complaint Resolution with empathy training and satisfaction tracking",
-        "Call recording and quality monitoring with performance analytics",
-        "CRM integration with Salesforce, HubSpot, and custom systems",
+        "24/7 Customer Support",
+        "Technical Help Desk",
+        "Order Processing & Billing",
+        "Live Chat Support",
+        "Email Support Management",
+        "Complaint Resolution"
       ],
       benefits: [
-        "Reduce average response times by 80% with intelligent call routing",
-        "Improve customer satisfaction scores by 45% through empathetic support",
-        "Handle peak volumes effortlessly with scalable agent deployment",
-        "Decrease operational costs by 60% compared to in-house teams",
-        "Increase first-call resolution rates by 35% with proper training",
-        "Maintain 99.9% uptime with redundant systems and backup protocols",
-      ],
+        "Reduce response times by 80%",
+        "Improve customer satisfaction scores",
+        "Handle peak volumes effortlessly"
+      ]
     },
     {
       icon: Megaphone,
       title: "Outbound Sales & Marketing",
+      description: "Drive revenue growth with targeted outreach campaigns",
       features: [
-        "Advanced Lead Generation & Qualification using AI-powered prospect identification",
-        "Professional Appointment Setting with calendar integration and automated confirmations",
-        "Strategic Cold Calling Campaigns with personalized scripts and objection handling",
-        "Automated Follow-up Sequences with drip campaigns and nurture tracks",
-        "Comprehensive Market Research including competitor analysis and demographic studies",
-        "Detailed Customer Surveys with statistical analysis and reporting",
-        "Multi-channel outreach including phone, email, and LinkedIn campaigns",
-        "Real-time CRM updates with lead scoring and pipeline management",
+        "Lead Generation & Qualification",
+        "Appointment Setting",
+        "Cold Calling Campaigns",
+        "Follow-up Sequences",
+        "Market Research",
+        "Customer Surveys"
       ],
       benefits: [
-        "Increase qualified leads by 150% through targeted prospecting",
-        "Boost conversion rates by 65% with proven sales methodologies",
-        "Expand market reach by 200% with multi-channel approaches",
-        "Reduce sales cycle length by 40% through effective nurturing",
-        "Improve lead quality scores by 80% with advanced qualification",
-        "Generate 300% ROI on marketing spend with optimized campaigns",
-      ],
+        "Increase qualified leads by 150%",
+        "Boost conversion rates",
+        "Expand market reach"
+      ]
     },
     {
       icon: Bot,
       title: "AI Automation",
+      description: "Intelligent solutions to streamline your operations",
       features: [
-        "Intelligent AI-Powered Chatbots with natural language processing and machine learning",
-        "Custom Automated Workflows with business rule engines and process optimization",
-        "Advanced Call Summary Generation with sentiment analysis and action item extraction",
-        "Real-time Sentiment Analysis for customer mood detection and response adjustment",
-        "Predictive Analytics with forecasting models and trend identification",
-        "Sophisticated Voice Recognition with accent adaptation and language detection",
-        "Seamless integration with existing systems through robust APIs",
-        "24/7 automated operations with human oversight and intervention capabilities",
+        "AI-Powered Chatbots",
+        "Automated Workflows",
+        "Call Summary Generation",
+        "Sentiment Analysis",
+        "Predictive Analytics",
+        "Voice Recognition"
       ],
       benefits: [
-        "Handle 60% more inquiries simultaneously without increasing staff",
-        "Reduce operational costs by 70% through intelligent automation",
-        "Improve data accuracy by 95% with automated data entry and validation",
-        "Decrease response times by 90% with instant AI-powered responses",
-        "Increase customer engagement by 120% with personalized interactions",
-        "Achieve 24/7 availability with no downtime or breaks required",
-      ],
+        "Handle 60% more inquiries",
+        "Reduce operational costs",
+        "Improve data accuracy"
+      ]
     },
     {
       icon: BarChart3,
       title: "Digital Marketing",
+      description: "Complete digital marketing solutions to grow your brand",
       features: [
-        "Full-Service Social Media Management across all major platforms with content calendars",
-        "Professional Content Creation including copywriting, graphic design, and video production",
-        "Advanced SEO Optimization with keyword research, on-page and off-page strategies",
-        "Targeted Email Marketing Campaigns with segmentation and automation workflows",
-        "Strategic Pay-Per-Click Advertising on Google, Facebook, and LinkedIn platforms",
-        "Comprehensive Analytics & Reporting with ROI tracking and performance insights",
-        "Brand strategy development with positioning and messaging frameworks",
-        "Conversion rate optimization with A/B testing and user experience improvements",
+        "Social Media Management",
+        "Content Creation",
+        "SEO Optimization",
+        "Email Marketing Campaigns",
+        "Pay-Per-Click Advertising",
+        "Analytics & Reporting"
       ],
       benefits: [
-        "Increase brand visibility by 250% across all digital channels",
-        "Generate 300% more qualified leads through optimized campaigns",
-        "Improve ROI tracking accuracy by 90% with advanced analytics",
-        "Boost website traffic by 180% through SEO and content marketing",
-        "Increase social media engagement by 400% with strategic content",
-        "Achieve 85% email open rates with personalized campaigns",
-      ],
-    },
+        "Increase brand visibility",
+        "Generate more qualified leads",
+        "Improve ROI tracking"
+      ]
+    }
   ];
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-vs-hero py-20 text-white">
+      <section className="gradient-victory py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Complete Business Solutions
           </h1>
           <p className="text-xl text-purple-100 max-w-3xl mx-auto mb-8">
-            From customer support to sales growth, we provide end-to-end
-            services that help your business thrive while reducing costs by up
-            to 60%.
+            From customer support to sales growth, we provide end-to-end services that help your business thrive while reducing costs by up to 60%.
           </p>
           <Link href="/pricing">
-            <Button
-              size="lg"
-              className="btn-vs"
-            >
+            <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6750f0]">
               View Our Packages
             </Button>
           </Link>
@@ -133,47 +105,35 @@ export default function Services() {
             {services.map((service, index) => {
               const IconComponent = service.icon;
               const isEven = index % 2 === 0;
-
+              
               return (
-                <div
-                  key={service.title}
-                  className={`grid md:grid-cols-2 gap-12 items-center ${!isEven ? "md:flex-row-reverse" : ""}`}
-                >
-                  <div className={isEven ? "order-1" : "order-2"}>
+                <div key={service.title} className={`grid md:grid-cols-2 gap-12 items-center ${!isEven ? 'md:flex-row-reverse' : ''}`}>
+                  <div className={isEven ? 'order-1' : 'order-2'}>
                     <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
                       <IconComponent className="victory-purple w-8 h-8" />
                     </div>
-                    <h2 className="text-3xl font-bold victory-dark mb-6">
-                      {service.title}
-                    </h2>
-
+                    <h2 className="text-3xl font-bold victory-dark mb-4">{service.title}</h2>
+                    <p className="text-lg victory-gray mb-6">{service.description}</p>
+                    
                     <div className="mb-8">
-                      <h3 className="font-semibold victory-dark mb-4">
-                        Key Features:
-                      </h3>
+                      <h3 className="font-semibold victory-dark mb-4">Key Features:</h3>
                       <div className="grid grid-cols-1 gap-2">
                         {service.features.map((feature, idx) => (
                           <div key={idx} className="flex items-center">
                             <Check className="text-green-500 w-4 h-4 mr-3 flex-shrink-0" />
-                            <span className="text-sm victory-gray">
-                              {feature}
-                            </span>
+                            <span className="text-sm victory-gray">{feature}</span>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     <div className="mb-8">
-                      <h3 className="font-semibold victory-dark mb-4">
-                        Benefits:
-                      </h3>
+                      <h3 className="font-semibold victory-dark mb-4">Benefits:</h3>
                       <div className="space-y-2">
                         {service.benefits.map((benefit, idx) => (
                           <div key={idx} className="flex items-center">
                             <ArrowRight className="victory-purple w-4 h-4 mr-3 flex-shrink-0" />
-                            <span className="text-sm font-medium victory-dark">
-                              {benefit}
-                            </span>
+                            <span className="text-sm font-medium victory-dark">{benefit}</span>
                           </div>
                         ))}
                       </div>
@@ -185,17 +145,14 @@ export default function Services() {
                       </Button>
                     </Link>
                   </div>
-
-                  <div className={isEven ? "order-2" : "order-1"}>
+                  
+                  <div className={isEven ? 'order-2' : 'order-1'}>
                     <Card className="p-8 shadow-lg">
                       <CardContent className="text-center">
                         <IconComponent className="victory-purple w-20 h-20 mx-auto mb-6" />
-                        <h3 className="text-2xl font-bold victory-dark mb-4">
-                          Ready to Get Started?
-                        </h3>
+                        <h3 className="text-2xl font-bold victory-dark mb-4">Ready to Get Started?</h3>
                         <p className="victory-gray mb-6">
-                          Discover how our {service.title.toLowerCase()}{" "}
-                          services can transform your business operations.
+                          Discover how our {service.title.toLowerCase()} services can transform your business operations.
                         </p>
                         <div className="space-y-3">
                           <Link href="/pricing">
@@ -227,8 +184,7 @@ export default function Services() {
               Why Choose VictorySync?
             </h2>
             <p className="text-xl victory-gray max-w-3xl mx-auto">
-              We combine Egyptian talent with cutting-edge technology to deliver
-              exceptional results
+              We combine Egyptian talent with cutting-edge technology to deliver exceptional results
             </p>
           </div>
 
@@ -238,12 +194,9 @@ export default function Services() {
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Check className="text-green-600 w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold victory-dark mb-4">
-                  Proven Results
-                </h3>
+                <h3 className="text-xl font-bold victory-dark mb-4">Proven Results</h3>
                 <p className="victory-gray">
-                  Our clients see an average of 60% cost reduction and 40%
-                  improvement in customer satisfaction scores.
+                  Our clients see an average of 60% cost reduction and 40% improvement in customer satisfaction scores.
                 </p>
               </CardContent>
             </Card>
@@ -253,12 +206,9 @@ export default function Services() {
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Bot className="victory-blue w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold victory-dark mb-4">
-                  Advanced Technology
-                </h3>
+                <h3 className="text-xl font-bold victory-dark mb-4">Advanced Technology</h3>
                 <p className="victory-gray">
-                  We leverage the latest AI and automation tools to maximize
-                  efficiency and deliver superior results.
+                  We leverage the latest AI and automation tools to maximize efficiency and deliver superior results.
                 </p>
               </CardContent>
             </Card>
@@ -268,12 +218,9 @@ export default function Services() {
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Phone className="victory-purple w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold victory-dark mb-4">
-                  24/7 Support
-                </h3>
+                <h3 className="text-xl font-bold victory-dark mb-4">24/7 Support</h3>
                 <p className="victory-gray">
-                  Round-the-clock availability ensures your customers are always
-                  taken care of, no matter the time zone.
+                  Round-the-clock availability ensures your customers are always taken care of, no matter the time zone.
                 </p>
               </CardContent>
             </Card>
@@ -282,29 +229,22 @@ export default function Services() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-vs-cta py-20 text-white">
+      <section className="gradient-victory py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Transform Your Business?
           </h2>
           <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
-            Let's discuss how our services can help you reduce costs, improve
-            efficiency, and drive growth.
+            Let's discuss how our services can help you reduce costs, improve efficiency, and drive growth.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button
-                size="lg"
-                className="btn-vs"
-              >
+              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#7046ee]">
                 Get Free Consultation
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button
-                size="lg"
-                className="btn-vs-outline border-white text-white hover:bg-white hover:text-vs-purple"
-              >
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#7147ef]">
                 View Pricing
               </Button>
             </Link>

@@ -1,113 +1,137 @@
-import 'dotenv/config';
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import express from "express";
-import cors from "cors";
-import compression from "compression";
-import helmet from "helmet";
-import cookieParser from "cookie-parser";
-import morgan from "morgan";
-import { log } from "./vite.js";
-import { setupVite } from "./vite.js";
-import routes from './routes/index.js';
-import { ENV } from "./lib/env.js";
-import { getQueue, startWorker } from "./lib/queue.js";
-import { seedOnce } from "./db/seed.js";
+import express, { type Request, Response, NextFunction } from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+import { testDatabaseConnection } from "./db";
+import passport from "./auth/passport";
 
-// ESM-safe __dirname shim for Node 20
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const app = express();
-
-// ---------- ENV ----------
-const NODE_ENV = process.env.NODE_ENV ?? 'development';
-const isProd = NODE_ENV === 'production';
-
-// ---------- CORE MIDDLEWARE (NO UNDEFINED PASSED) ----------
-app.set('trust proxy', 1);
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-
-// CORS (adjust origins as needed; leaving permissive for now)
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
-
-// Helmet (safe defaults)
-app.use(
-  helmet({
-    crossOriginResourcePolicy: false, // allows static assets if needed
-  })
-);
-
-// Compression
-app.use(compression());
-
-// Logging — guard explicitly so we never pass undefined
-if (isProd) {
-  app.use(morgan('tiny'));
-} else {
-  app.use(morgan('dev'));
+// Validate required environment variables at startup
+function validateEnvironment() {
+  const requiredEnvVars = ['DATABASE_URL'];
+  const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
+  
+  if (missing.length > 0) {
+    console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+  
+  console.log(`✅ All required environment variables are set`);
 }
 
-// ---------- API ROUTES ----------
-app.use('/api', routes);
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// ---------- STATIC + SPA FALLBACK ----------
-const distDir = path.resolve(__dirname, '../client/dist');
-app.use(express.static(distDir));
+// Initialize Passport
+app.use(passport.initialize());
 
-// Health checks
-app.get('/healthz', (_req, res) => res.json({ ok: true, env: NODE_ENV }));
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
-// Send index.html for any non-API route (SPA fallback)
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) return next();
-  res.sendFile(path.join(distDir, 'index.html'));
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      log(logLine);
+    }
+  });
+
+  next();
 });
 
-const isProduction = NODE_ENV === "production";
-
-// Initialize database and worker
 (async () => {
   try {
-    log('🔗 Connecting to database...');
-
-    if (!isProduction) {
-      await seedOnce();
+    console.log(`🚀 Starting VictorySync application...`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    
+    // Validate environment variables
+    validateEnvironment();
+    
+    // Test database connection
+    const dbConnected = await testDatabaseConnection();
+    if (!dbConnected) {
+      throw new Error('Database connection failed - cannot start server');
     }
+    
+    const server = await registerRoutes(app);
+    console.log(`✅ Routes registered successfully`);
 
-    // Initialize BullMQ worker
-    const queue = getQueue('sync');
-    startWorker('sync');
-
-    // Set up Vite in development
-    if (!isProduction) {
-      await setupVite(app);
-    }
-
-    const PORT = ENV.PORT;
-    const server = app.listen(PORT, '0.0.0.0', () => {
-      const env = isProduction ? 'production' : 'development';
-      log(`Server running on port ${PORT} in ${env} mode`);
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      
+      console.error(`❌ Application error: ${message}`, err);
+      res.status(status).json({ message });
     });
 
-    process.on('SIGINT', () => {
-      log('Shutting down gracefully...');
+    // importantly only setup vite in development and after
+    // setting up all the other routes so the catch-all route
+    // doesn't interfere with the other routes
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+      console.log(`✅ Vite development server setup complete`);
+    } else {
+      try {
+        serveStatic(app);
+        console.log(`✅ Static file serving setup complete`);
+      } catch (error) {
+        console.error(`❌ Failed to setup static file serving:`, error);
+        console.log(`This might happen if the build files are missing.`);
+        console.log(`In production, ensure you run 'npm run build' before starting the server.`);
+        throw error;
+      }
+    }
+
+
+
+    // ALWAYS serve the app on port 5000
+    // this serves both the API and the client.
+    // It is the only port that is not firewalled.
+    const port = process.env.PORT || 5000;
+    server.listen({
+      port: Number(port),
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      console.log(`🎉 VictorySync server is running successfully!`);
+      log(`serving on port ${port}`);
+      console.log(`Health check available at: http://0.0.0.0:${port}/health`);
+    });
+
+    // Handle graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received, shutting down gracefully');
       server.close(() => {
+        console.log('Server closed');
         process.exit(0);
       });
     });
 
+    process.on('SIGINT', () => {
+      console.log('SIGINT received, shutting down gracefully');
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+    });
+    
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error(`❌ Failed to start server:`, error);
     process.exit(1);
   }
 })();
-
-export default app;

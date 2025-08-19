@@ -1,54 +1,52 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, Megaphone, Bot, Check, Star } from 'lucide-react';
-
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
 
 export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section
-        style={{
-          background: "linear-gradient(90deg, #6D3AFF 0%, #2E80FF 100%)",
-        }}
-        className="text-white"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section className="gradient-victory py-20 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
-                Reduce Customer Service Costs by{" "}
-                <span className="text-yellow-300">60%</span>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                Reduce Customer Service Costs by <span className="text-yellow-300">60%</span>
               </h1>
-              <p className="text-xl text-white/90 mb-8 max-w-prose">
-                Professional contact center services, AI automation, and marketing
-                solutions from New Jersey. 24/7 support at a fraction of US costs.
+              <p className="text-xl mb-8 text-purple-100">
+                Professional call center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/pricing">
-                  <Button size="lg" className="btn-vs" onClick={scrollToTop}>
+                <Link href="/pricing">
+                  <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#5d5df2]">
                     View Pricing
                   </Button>
                 </Link>
-                <Link to="/contact">
-                  <Button size="lg" className="btn-vs-outline border-white text-white hover:bg-white hover:text-vs-purple" onClick={scrollToTop}>
+                <Link href="/contact">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#506bf4]">
                     Schedule Demo
                   </Button>
                 </Link>
               </div>
             </div>
-
-            <div className="justify-self-center">
-              <img
-                src="/hero-office.jpg"
-                alt="Modern VictorySync office"
-                className="rounded-xl shadow-xl w-full max-w-md"
-                loading="eager"
+            <div className="relative">
+              <img 
+                src="https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                alt="Modern call center workspace with professional agents" 
+                className="rounded-2xl shadow-2xl w-full" 
               />
+              <div className="absolute -bottom-6 -left-6 p-4 rounded-xl shadow-lg text-victory-dark bg-[#5d5df2]">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <Check className="text-green-600 w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">93% Cost Savings</p>
+                    <p className="text-sm text-victory-gray">vs US-based agents</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -95,7 +93,7 @@ export default function Home() {
                 <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
                   <Phone className="victory-purple w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold mb-4">Inbound Contact Center</h3>
+                <h3 className="text-xl font-bold mb-4">Inbound Call Center</h3>
                 <p className="victory-gray mb-6">
                   Professional customer support, technical assistance, and order processing with multilingual capabilities.
                 </p>
@@ -175,10 +173,10 @@ export default function Home() {
                   "VictorySync helped us reduce our customer service costs by 65% while improving response times. Their team is professional and reliable."
                 </p>
                 <div className="flex items-center">
-                  <img
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100"
-                    alt="Professional business executive"
-                    className="w-12 h-12 rounded-full mr-4 object-cover"
+                  <img 
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
+                    alt="Professional business executive" 
+                    className="w-12 h-12 rounded-full mr-4 object-cover" 
                   />
                   <div>
                     <div className="font-semibold">Michael Rodriguez</div>
@@ -202,10 +200,10 @@ export default function Home() {
                   "The AI automation features have streamlined our entire customer support process. Highly recommend their services."
                 </p>
                 <div className="flex items-center">
-                  <img
-                    src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100"
-                    alt="Professional business leader"
-                    className="w-12 h-12 rounded-full mr-4 object-cover"
+                  <img 
+                    src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
+                    alt="Professional business leader" 
+                    className="w-12 h-12 rounded-full mr-4 object-cover" 
                   />
                   <div>
                     <div className="font-semibold">Sarah Chen</div>
@@ -229,10 +227,10 @@ export default function Home() {
                   "Outstanding service quality and cost savings. VictorySync has become an essential part of our business operations."
                 </p>
                 <div className="flex items-center">
-                  <img
-                    src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100"
-                    alt="Business executive"
-                    className="w-12 h-12 rounded-full mr-4 object-cover"
+                  <img 
+                    src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
+                    alt="Business executive" 
+                    className="w-12 h-12 rounded-full mr-4 object-cover" 
                   />
                   <div>
                     <div className="font-semibold">David Thompson</div>
@@ -245,7 +243,7 @@ export default function Home() {
         </div>
       </section>
       {/* CTA Section */}
-      <section className="bg-vs-cta py-20 text-white">
+      <section className="gradient-victory py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Save 60% on Customer Service?
@@ -254,13 +252,13 @@ export default function Home() {
             Join our next webinar to learn how other businesses are cutting costs while improving service quality.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/contact">
-              <Button size="lg" className="btn-vs" onClick={scrollToTop}>
+            <Link href="/contact">
+              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6950f0]">
                 Schedule Demo
               </Button>
             </Link>
-            <Link to="/pricing">
-              <Button size="lg" className="btn-vs-outline border-white text-white hover:bg-white hover:text-vs-purple" onClick={scrollToTop}>
+            <Link href="/pricing">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
                 View Pricing
               </Button>
             </Link>

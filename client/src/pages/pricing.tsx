@@ -244,7 +244,7 @@ export default function Pricing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-white border-2 border-white">
+              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#f6a4df]">
                 Schedule Free Demo
               </Button>
             </Link>

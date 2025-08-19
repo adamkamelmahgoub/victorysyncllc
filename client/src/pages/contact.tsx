@@ -53,7 +53,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-vs-hero py-20 text-white">
+      <section className="gradient-victory py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Ready to Get Started?
@@ -214,7 +214,7 @@ export default function Contact() {
                   <p className="mb-4 text-purple-100">
                     Join our next webinar to learn how other businesses are cutting costs while improving service.
                   </p>
-                  <Button className="btn-vs">
+                  <Button className="text-victory-purple hover:bg-gray-100 bg-[#5268f3]">
                     Register for Webinar
                   </Button>
                 </CardContent>
@@ -284,7 +284,7 @@ export default function Contact() {
         </div>
       </section>
       {/* CTA Section */}
-      <section className="bg-vs-cta py-20 text-white">
+      <section className="gradient-victory py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Let's Start the Conversation

@@ -1,10 +1,10 @@
-# VictorySync - Contact Center & AI Automation Platform
+# VictorySync - Call Center & AI Automation Platform
 
-A comprehensive contact center and AI automation platform built with React and Express, helping US businesses reduce customer service costs by up to 60%.
+A comprehensive call center and AI automation platform built with React and Express, helping US businesses reduce customer service costs by up to 60%.
 
 ## Features
 
-- 🏢 **Professional Contact Center Services** - 24/7 inbound/outbound support
+- 🏢 **Professional Call Center Services** - 24/7 inbound/outbound support
 - 🤖 **AI Automation Suite** - Intelligent chatbots and workflow automation  
 - 📊 **Customer Dashboard** - Order tracking and service management
 - 🛒 **E-commerce Integration** - Service packages with shopping cart
@@ -181,7 +181,3 @@ For technical support or questions:
 ## License
 
 © 2025 VictorySync. All rights reserved.
-
-## Replit Notes
-
-We serve prebuilt assets via Express (`npm run dev` runs build then serves). Vite HMR is intentionally not used in Replit to avoid WebSocket disconnects. This ensures a stable preview with no blank flashes or connection lost errors.

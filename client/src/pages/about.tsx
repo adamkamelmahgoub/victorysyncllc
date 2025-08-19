@@ -2,7 +2,6 @@ import { Globe, Users, Shield, Award, Target, Heart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
-import PageHero from "@/components/PageHero";
 
 export default function About() {
   const values = [
@@ -36,11 +35,34 @@ export default function About() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      <PageHero
-        title="About VictorySync"
-        subtitle="Transforming customer service operations with professional call center solutions and AI automation from Millstone, New Jersey."
-      />
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="gradient-victory py-20 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">
+                About VictorySync
+              </h1>
+              <p className="text-xl text-purple-100 mb-8">
+                Based in Millstone, New Jersey, we're your trusted partner for customer engagement and back-office support. We leverage our strategic East Coast location to deliver exceptional service at competitive rates.
+              </p>
+              <Link href="/contact">
+                <Button size="lg" className="bg-victory-purple text-white hover:bg-purple-700">
+                  Get in Touch
+                </Button>
+              </Link>
+            </div>
+            <div>
+              <img 
+                src="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                alt="Modern Cairo business district with skyscrapers" 
+                className="rounded-2xl shadow-lg w-full" 
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Stats Section */}
       <section className="bg-white py-16">
@@ -227,7 +249,7 @@ export default function About() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-vs-cta py-20 text-white">
+      <section className="gradient-victory py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Partner with Us?
