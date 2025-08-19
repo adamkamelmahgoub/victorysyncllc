@@ -2,13 +2,12 @@
 import { Router } from 'express';
 
 // Import route modules as default Router exports
-import authRoutes from './auth.js';
-import adminRoutes from './admin.js';
-import accessRoutes from './access.js';
-import billingRoutes from './billing.js';
-import ordersRoutes from './orders.js';
-import exportsRoutes from './exports.js';
-import webhooksRoutes from './webhooks.js';
+import auth from './auth.js';
+import billing from './billing.js';
+import orders from './orders.js';
+import webhooks from './webhooks.js';
+import access from './access.js';
+import exports from './exports.js';
 
 const router = Router();
 
@@ -27,13 +26,12 @@ function asRouter(name: string, mod: any): Router {
 }
 
 // Mount all route modules with safety checks
-router.use('/auth', asRouter('auth', authRoutes));
-router.use('/admin', asRouter('admin', adminRoutes));
-router.use('/access', asRouter('access', accessRoutes));
-router.use('/billing', asRouter('billing', billingRoutes));
-router.use('/orders', asRouter('orders', ordersRoutes));
-router.use('/exports', asRouter('exports', exportsRoutes));
-router.use('/webhooks', asRouter('webhooks', webhooksRoutes));
+router.use('/auth', asRouter('auth', auth));
+router.use('/billing', asRouter('billing', billing));
+router.use('/orders', asRouter('orders', orders));
+router.use('/webhooks', asRouter('webhooks', webhooks));
+router.use('/access', asRouter('access', access));
+router.use('/exports', asRouter('exports', exports));
 
 // Health check endpoint
 router.get('/health', (req, res) => {

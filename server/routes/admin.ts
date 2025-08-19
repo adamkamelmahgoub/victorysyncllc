@@ -56,3 +56,21 @@ r.get('/access-codes', async (req,res)=>{
 });
 
 export default r;
+import { Router } from 'express';
+import { requireAuth } from '../services/auth.js';
+
+const router = Router();
+
+router.use(requireAuth);
+
+router.get('/users', (req, res) => {
+  // Get users
+  res.json({ users: [] });
+});
+
+router.get('/stats', (req, res) => {
+  // Get admin stats
+  res.json({ stats: {} });
+});
+
+export default router;
