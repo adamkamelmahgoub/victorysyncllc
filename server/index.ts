@@ -35,22 +35,27 @@ app.use(cookieParser());
 app.use(cors({ origin: true, credentials: true }));
 
 // Optional BullMQ worker with Redis guard
-if (process.env.REDIS_URL && process.env.REDIS_URL !== 'your-redis-url-here') {
-  try {
-    const { Queue, Worker } = await import('bullmq');
-    const IORedis = (await import('ioredis')).default;
-    const connection = new IORedis(process.env.REDIS_URL);
+async function initBullMQ() {
+  if (process.env.REDIS_URL && process.env.REDIS_URL !== 'your-redis-url-here') {
+    try {
+      const { Queue, Worker } = await import('bullmq');
+      const IORedis = (await import('ioredis')).default;
+      const connection = new IORedis(process.env.REDIS_URL);
 
-    // Test connection before creating worker
-    await connection.ping();
-    new Worker('sync', async () => {}, { connection });
-    console.log('✅ [bullmq] Worker initialized for queue "sync"');
-  } catch (e) {
-    console.warn('⚠️ [bullmq] Failed to initialize worker:', e?.message || e);
+      // Test connection before creating worker
+      await connection.ping();
+      new Worker('sync', async () => {}, { connection });
+      console.log('✅ [bullmq] Worker initialized for queue "sync"');
+    } catch (e) {
+      console.warn('⚠️ [bullmq] Failed to initialize worker:', e?.message || e);
+    }
+  } else {
+    console.log('ℹ️ [bullmq] REDIS_URL not configured - worker disabled');
   }
-} else {
-  console.log('ℹ️ [bullmq] REDIS_URL not configured - worker disabled');
 }
+
+// Initialize BullMQ
+initBullMQ();
 
 app.use('/api', routes);
 
