@@ -1,0 +1,69 @@
+PRIVACY POLICY — VictorySync LLC
+Effective: August 19, 2025
+
+Scope
+This Policy covers visitors to victorysync.com, prospects, and customers who use our Services. If a separate agreement applies to your engagement with us, that agreement controls where it conflicts with this Policy.
+
+Information We Collect
+• Contact & Business Data: name, company, role, email, phone, addresses.
+• Communications: messages, call recordings/voicemails (where permitted), meeting notes.
+• Service & Account Data: project settings, usage logs, CRM records you share.
+• Device/Usage Data: cookies, IP address, pages viewed, browser type, timestamps.
+• Payment/Billing: limited billing details processed by our payment processors; we do not store full card numbers.
+
+How We Use Information
+• Provide, operate, and improve the Services; support and quality assurance.
+• Communicate about appointments, updates, invoices, and administrative notices.
+• Configure integrations (telephony, CRM, analytics) you request.
+• Detect, prevent, and address security, fraud, or abuse.
+• Comply with legal obligations and enforce agreements.
+
+Legal Bases (EEA/UK)
+• Contract: to deliver Services you request.
+• Legitimate interests: to secure, improve, and support our Services.
+• Consent: for optional activities such as certain cookies or SMS programs.
+• Legal obligation: to meet regulatory and tax requirements.
+
+Cookies & Analytics
+We use cookies and similar technologies to operate and improve the site and understand usage. You can control cookies through your browser settings. Where required, we obtain consent before setting non-essential cookies.
+
+SMS Program Privacy
+If you opt in to our service-related SMS Program, we process your mobile number and message content to deliver confirmations, reminders, and status updates. Message & data rates may apply. Message frequency varies.
+Opt-out: reply STOP, STOPALL, UNSUBSCRIBE, CANCEL, END, or QUIT.
+Help: reply HELP or email info@victorysync.com
+.
+We do not sell or share mobile numbers for third-party marketing. We do not use public URL shorteners in SMS. Texts are sent via registered A2P 10DLC and/or verified Toll-Free programs through vetted providers and are intended for non-marketing communications unless you separately consent to marketing.
+
+Sharing of Information
+• Service providers/sub-processors (telephony, email, CRM, analytics, hosting, payments) bound by confidentiality and security obligations.
+• Business transfers (merger, acquisition, asset sale).
+• Legal compliance and protection of rights.
+
+Data Retention
+We retain information as needed to provide the Services, meet legal obligations, resolve disputes, and enforce agreements. Call recordings and SMS logs are retained per your instructions and our retention policies.
+
+Security
+We use administrative, technical, and physical safeguards appropriate to the nature of data processed. No system is 100% secure; use strong passwords and notify us of suspected unauthorized activity.
+
+International Transfers
+We are based in the United States and may process data in the U.S. and other countries. Where required, we use appropriate safeguards (e.g., Standard Contractual Clauses).
+
+Your Privacy Rights
+• EEA/UK: rights to access, correct, delete, restrict, object, and data portability; you may lodge a complaint with your supervisory authority.
+• California (CPRA): rights to know, delete, correct, limit use of sensitive data, and opt out of certain sharing. We do not sell personal information.
+To exercise rights, contact privacy@victorysync.com
+ or info@victorysync.com
+. We will verify your request as required by law.
+
+Children
+Our Services are for business users and not for individuals under 13. We do not knowingly collect personal information from children under 13.
+
+Changes
+We may update this Policy; material changes will be posted with a new effective date. Continued use after changes acknowledges the updated Policy.
+
+Contact
+VictorySync LLC, New Jersey, USA
+Email: privacy@victorysync.com
+ or info@victorysync.com
+
+© 2025 VictorySync LLC. All rights reserved.
