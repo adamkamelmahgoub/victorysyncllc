@@ -33,7 +33,7 @@ export default function Navigation({ onCartClick }: NavigationProps) {
           <Link href="/">
             <div className="flex items-center space-x-3 cursor-pointer">
               <img
-                src="/vs_favicon_32.png"
+                src="/LOGO_VS.png"
                 alt="VictorySync Logo"
                 className="w-8 h-8 rounded-lg"
               />
