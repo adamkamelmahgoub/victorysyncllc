@@ -1,0 +1,600 @@
+Here’s a tight, copy-pasteable **master prompt for Claude** that fixes your current build/runtime errors, restores SPA navigation, adds working Forgot Password (Admin + Customer), and cleans up the hero while preserving all features and your “don’t touch public navbar/footer look” rule.
+
+---
+
+## 🔧 MASTER PROMPT FOR CLAUDE (paste this verbatim)
+
+You are operating **inside this exact Replit repo**. Do not change `.replit` or Nix files. Keep the public navbar/footer styling/colors intact. Fix the build/runtime issues and fully wire SPA routing + Forgot Password (Admin + Customer). Preserve all previously-implemented features (admin portal, access codes, org checks, RBAC, etc).
+
+### Goals
+
+1. **Fix build/runtime** errors:
+
+   * `Top-level await is currently not supported with the "cjs" output format` (Vite config).
+   * `Router.use() requires a middleware function but got undefined` (routes import/export).
+   * Missing imports like `useLocation is not defined`.
+   * Ensure **Express serves SPA** with fallback so routes load on refresh.
+   * If `REDIS_URL` not set, **disable queues gracefully** (no crash).
+
+2. **SPA navigation works**: clicking nav/buttons actually renders routes (no “URL changes only”).
+
+3. **Forgot Password flows** implemented for:
+
+   * **Customer** (`/forgot-password`, `/reset-password?token=...`).
+   * **Admin** (`/admin/forgot-password`, `/admin/reset-password?token=...`).
+   * Use DB table `password_resets` with token + expiry. Send mail via `NODEMAILER_*` env or log fallback.
+
+4. **Hero cleanup**: keep existing brand gradient, ensure image block renders and LCP is good. Only adjust section code/CSS locally (no global theme changes).
+
+5. **Do not alter** public navbar/footer theme tokens. Keep all previously implemented Admin/Customer features.
+
+---
+
+### Step 1 — **Make the project fully ESM** and remove top-level await from Vite config
+
+**A. package.json**
+
+* Ensure `"type": "module"` exists (if not, add).
+* Keep scripts intact.
+
+**B. tsconfig (root + client + server)**
+
+* Root `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "NodeNext",
+    "jsx": "react-jsx",
+    "types": ["node"],
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["client/src/*"],
+      "@shared/*": ["shared/*"]
+    }
+  }
+}
+```
+
+**C. Rename & replace Vite config**
+
+* Rename **`vite.config.ts` → `vite.config.mts`** (no top-level `await`).
+* Replace contents with:
+
+```ts
+// vite.config.mts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'node:path'
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(process.cwd(), 'client/src'),
+      '@shared': path.resolve(process.cwd(), 'shared')
+    }
+  },
+  server: {
+    host: true,
+    port: 5173,
+    hmr: { clientPort: 443 },
+    allowedHosts: true
+  },
+  build: {
+    outDir: 'client/dist',
+    sourcemap: true
+  }
+})
+```
+
+---
+
+### Step 2 — **Express SPA fallback + safe queues + route wiring**
+
+**A. `server/index.ts`** (replace file with this complete version)
+
+```ts
+// server/index.ts
+import 'dotenv/config'
+import express from 'express'
+import path from 'node:path'
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
+import morgan from 'morgan'
+import { fileURLToPath } from 'node:url'
+import { registerRoutes } from './routes/index.js'
+
+// Resolve __dirname in ESM
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const app = express()
+const isProd = process.env.NODE_ENV === 'production'
+
+// Core middlewares
+app.use(cors({ origin: true, credentials: true }))
+app.use(express.json({ limit: '1mb' }))
+app.use(cookieParser())
+app.use(morgan('tiny'))
+
+// Safe queue init (no crash if REDIS_URL missing)
+if (process.env.REDIS_URL) {
+  console.log('[queue] Using Redis:', process.env.REDIS_URL)
+} else {
+  console.log('[queue] REDIS_URL not set—queue features disabled gracefully.')
+}
+
+// API routes
+registerRoutes(app)
+
+// Serve client
+const clientDist = path.resolve(__dirname, '../client/dist')
+app.use(express.static(clientDist))
+
+// SPA fallback (non-/api routes)
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(clientDist, 'index.html'))
+})
+
+const port = process.env.PORT ? Number(process.env.PORT) : 5000
+app.listen(port, () => {
+  console.log(`Server listening on http://localhost:${port}`)
+})
+```
+
+**B. `server/routes/index.ts`** (replace file)
+
+```ts
+// server/routes/index.ts
+import type { Express, RequestHandler } from 'express'
+import express from 'express'
+import authRouter from './auth.js'
+import webhooksRouter from './webhooks.js'
+import billingRouter from './billing.js'
+import integrationsRouter from './integrations.js'
+
+export function registerRoutes(app: Express) {
+  const api = express.Router()
+
+  // Make sure each import is an express.Router()
+  api.use('/auth', authRouter as unknown as RequestHandler)
+  api.use('/billing', billingRouter as unknown as RequestHandler)
+  api.use('/integrations', integrationsRouter as unknown as RequestHandler)
+  api.use('/webhooks', webhooksRouter as unknown as RequestHandler)
+
+  app.use('/api', api)
+}
+```
+
+**C. Ensure each route module default-exports a Router**
+
+Create/replace the following:
+
+```ts
+// server/routes/auth.ts
+import { Router } from 'express'
+import crypto from 'node:crypto'
+import { z } from 'zod'
+import { db } from '../db/index.js' // <-- your drizzle instance
+// implement your users table accessor here
+// implement password_resets table here
+
+const router = Router()
+
+// Forgot Password (customer + admin share this path; UI decides which screen)
+const forgotSchema = z.object({ email: z.string().email() })
+router.post('/forgot-password', async (req, res) => {
+  const parse = forgotSchema.safeParse(req.body)
+  if (!parse.success) return res.status(400).json({ error: 'Invalid payload' })
+  const { email } = parse.data
+
+  // 1) find user
+  const user = await db.user.findByEmail(email) // implement in your repo
+  if (!user) return res.json({ ok: true }) // do not leak
+
+  // 2) issue token
+  const token = crypto.randomBytes(32).toString('hex')
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 30) // 30 min
+  await db.passwordResets.create({ userId: user.id, token, expiresAt })
+
+  // 3) email link (or log if mail not configured)
+  const base = process.env.PUBLIC_APP_URL ?? ''
+  const admin = user.role === 'admin' || user.role === 'superAdmin'
+  const resetUrl = admin
+    ? `${base}/admin/reset-password?token=${token}`
+    : `${base}/reset-password?token=${token}`
+
+  try {
+    if (process.env.SMTP_HOST) {
+      // send via nodemailer (configured in your repo)
+      await db.mailer.send({
+        to: email,
+        subject: 'Reset your VictorySync password',
+        html: `<p>Click to reset: <a href="${resetUrl}">${resetUrl}</a></p>`
+      })
+    } else {
+      console.log('[mail:reset-link]', resetUrl)
+    }
+  } catch (e) {
+    console.error('[mail error]', e)
+  }
+
+  return res.json({ ok: true })
+})
+
+const resetSchema = z.object({
+  token: z.string().min(10),
+  password: z.string().min(8)
+})
+
+router.post('/reset-password', async (req, res) => {
+  const parse = resetSchema.safeParse(req.body)
+  if (!parse.success) return res.status(400).json({ error: 'Invalid payload' })
+  const { token, password } = parse.data
+
+  const row = await db.passwordResets.findByToken(token)
+  if (!row || row.expiresAt < new Date()) {
+    return res.status(400).json({ error: 'Invalid or expired token' })
+  }
+
+  await db.user.updatePassword(row.userId, password) // use argon2/bcrypt as in your auth
+  await db.passwordResets.consume(token) // delete or mark used
+
+  return res.json({ ok: true })
+})
+
+export default router
+```
+
+```ts
+// server/routes/webhooks.ts
+import { Router } from 'express'
+const router = Router()
+
+router.post('/provider/:name', (req, res) => {
+  // verify signature & enqueue if REDIS_URL exists; otherwise, log and 202
+  console.log('[webhook]', req.params.name, req.body)
+  res.sendStatus(202)
+})
+
+export default router
+```
+
+```ts
+// server/routes/billing.ts
+import { Router } from 'express'
+const router = Router()
+
+router.get('/info', async (_req, res) => {
+  res.json({ plan: 'starter', seats: 1, invoices: [] })
+})
+
+export default router
+```
+
+```ts
+// server/routes/integrations.ts
+import { Router } from 'express'
+const router = Router()
+
+router.get('/', async (_req, res) => {
+  res.json({ connected: [] })
+})
+
+export default router
+```
+
+> If any `import` path ends with `.ts`, change to `.js` for runtime ESM.
+
+---
+
+### Step 3 — **Client routing & imports (SPA that actually navigates)**
+
+**A. `client/src/main.tsx`** (replace file)
+
+```tsx
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App'
+
+const el = document.getElementById('root')!
+createRoot(el).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+)
+```
+
+**B. `client/src/App.tsx`** (replace file — keeps your navbar/footer untouched)
+
+```tsx
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Home from './pages/home'
+import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
+import ForgotPassword from './pages/auth/ForgotPassword'
+import ResetPassword from './pages/auth/ResetPassword'
+import AdminLogin from './pages/admin/AdminLogin'
+import AdminForgotPassword from './pages/admin/AdminForgotPassword'
+import AdminResetPassword from './pages/admin/AdminResetPassword'
+import CustomerDashboard from './pages/customer/Dashboard'
+// import your existing components for Services, Pricing, About, Contact, etc.
+
+export default function App() {
+  return (
+    <>
+      {/* your existing Navbar component here (unchanged styles) */}
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Customer password flows */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Admin auth */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
+        <Route path="/admin/reset-password" element={<AdminResetPassword />} />
+
+        <Route path="/dashboard" element={<CustomerDashboard />} />
+
+        {/* your existing static pages */}
+        {/* <Route path="/services" element={<Services />} /> */}
+        {/* <Route path="/pricing" element={<Pricing />} /> */}
+        {/* <Route path="/about" element={<About />} /> */}
+        {/* <Route path="/contact" element={<Contact />} /> */}
+
+        {/* 404 → home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      {/* your existing Footer component here (unchanged styles) */}
+    </>
+  )
+}
+```
+
+**C. Fix missing imports like `useLocation`**
+
+* Grep and fix: wherever `useLocation` is used, add
+
+```tsx
+import { useLocation } from 'react-router-dom'
+```
+
+**D. Use `<Link>` instead of raw `<a>` for internal routes**
+
+* In navbar/hero/buttons that go to internal pages, ensure:
+
+```tsx
+import { Link } from 'react-router-dom'
+{/* example */}
+<Link to="/register" className="btn btn-primary">Create Account</Link>
+```
+
+This prevents the “URL changes but no render” issue and lets React Router handle navigation.
+
+---
+
+### Step 4 — **Forgot Password screens (Customer + Admin)**
+
+Create these minimal pages (matching API above). They share the same backend; admin routes live at `/admin/*`.
+
+```tsx
+// client/src/pages/auth/ForgotPassword.tsx
+import { useState } from 'react'
+
+export default function ForgotPassword() {
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    })
+    setSent(true)
+  }
+
+  if (sent) {
+    return <div className="container py-16">
+      <h1>Check your email</h1>
+      <p>If an account exists, a reset link was sent.</p>
+    </div>
+  }
+
+  return (
+    <div className="container py-16">
+      <h1>Forgot your password?</h1>
+      <form onSubmit={submit} className="space-y-4 max-w-md">
+        <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" className="input" />
+        <button className="btn btn-primary">Send reset link</button>
+      </form>
+    </div>
+  )
+}
+```
+
+```tsx
+// client/src/pages/auth/ResetPassword.tsx
+import { useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
+
+export default function ResetPassword() {
+  const [params] = useSearchParams()
+  const token = params.get('token') ?? ''
+  const [password, setPassword] = useState('')
+  const [done, setDone] = useState(false)
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, password })
+    })
+    setDone(true)
+  }
+
+  if (!token) return <div className="container py-16">Invalid token</div>
+  if (done) return <div className="container py-16">Password updated. You can sign in now.</div>
+
+  return (
+    <div className="container py-16">
+      <h1>Set a new password</h1>
+      <form onSubmit={submit} className="space-y-4 max-w-md">
+        <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="New password" className="input" />
+        <button className="btn btn-primary">Update password</button>
+      </form>
+    </div>
+  )
+}
+```
+
+```tsx
+// client/src/pages/admin/AdminForgotPassword.tsx
+import ForgotPassword from '../auth/ForgotPassword'
+export default ForgotPassword
+```
+
+```tsx
+// client/src/pages/admin/AdminResetPassword.tsx
+import ResetPassword from '../auth/ResetPassword'
+export default ResetPassword
+```
+
+```tsx
+// client/src/pages/admin/AdminLogin.tsx
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+
+export default function AdminLogin() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, admin: true })
+    })
+    // handle result & redirect to /admin/overview
+  }
+
+  return (
+    <div className="container py-16">
+      <div className="card max-w-md mx-auto p-8">
+        <div className="text-xl font-semibold mb-4">Sign in to VictorySync Admin</div>
+        <form onSubmit={submit} className="space-y-4">
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="admin@victorysync.com" className="input" />
+          <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password" className="input" />
+          <button className="btn btn-primary w-full">Sign In</button>
+        </form>
+        <div className="flex justify-between mt-3 text-sm">
+          <span />
+          <Link to="/admin/forgot-password" className="link">Forgot password?</Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+```
+
+---
+
+### Step 5 — **Hero section refinement (local only, no global theme impact)**
+
+In your home page component (e.g., `client/src/pages/home.tsx`), ensure:
+
+* The gradient stays (#6e34ff → #3183ff).
+* The hero image tag actually renders and has width/height attributes for LCP.
+* Buttons use `<Link>`.
+
+Example block to drop into your home component where the hero lives (only **inside** that file):
+
+```tsx
+import { Link } from 'react-router-dom'
+
+// inside the component return:
+<section className="relative isolate overflow-hidden">
+  <div className="bg-gradient-to-r from-[#6e34ff] to-[#3183ff] text-white">
+    <div className="container py-20 grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 className="text-5xl font-extrabold leading-tight">
+          Reduce Customer Service Costs by <span className="text-yellow-300">60%</span>
+        </h1>
+        <p className="mt-4 text-lg opacity-90">
+          Professional contact center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
+        </p>
+        <div className="mt-8 flex gap-4">
+          <Link to="/pricing" className="btn btn-primary">View Pricing</Link>
+          <Link to="/contact" className="btn btn-outline">Schedule Demo</Link>
+        </div>
+      </div>
+      <div className="justify-self-center">
+        <img
+          src="/hero-office.jpg" /* put your deployed hero image into /client/public */
+          width="720" height="480" alt="VictorySync office"
+          className="rounded-lg shadow-lg"
+          loading="eager"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+```
+
+Put the image file in `client/public/hero-office.jpg`.
+
+---
+
+### Step 6 — **Tidy & verify**
+
+1. **Search/fix undefined imports**:
+
+   * Add missing `import { useLocation } from 'react-router-dom'` where used.
+2. Ensure any internal nav uses `<Link>` not `<a>`.
+3. Start app:
+
+   * **`npm run dev`** (no changes to `.replit` / Nix).
+4. Verify:
+
+   * Public pages load, hero shows, buttons navigate.
+   * `/login`, `/register`, `/forgot-password`, `/reset-password` work.
+   * `/admin/login`, `/admin/forgot-password`, `/admin/reset-password` work.
+   * API responds; SPA fallback works on refresh.
+
+**If a route import still throws `Router.use() ... undefined`:**
+
+* Confirm each route file **default-exports** an `express.Router()` and `registerRoutes` uses that default.
+
+**If the CJS/ESM warning reappears:**
+
+* Make sure `vite.config.mts` exists (not `.ts`), and root `package.json` has `"type": "module"`.
+
+---
+
+### Absolutely do not:
+
+* Change global navbar/footer theme/spacing.
+* Remove any existing Admin/Customer features.
+* Modify `.replit` or Nix files.
+
+Return with a short summary of what you changed, and the exact files modified.
+
+---
+
+**End of prompt.**
