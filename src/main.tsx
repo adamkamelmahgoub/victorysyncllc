@@ -2,9 +2,8 @@
 import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import "../client/src/index.css";
+import "./index.css";
 
-// ROUTES / PAGES - using correct paths for existing files
 import App from "./routes/App";
 import Home from "../client/src/pages/home";
 import Solutions from "../client/src/pages/services";
@@ -19,12 +18,9 @@ import Login from "./pages/login";
 import CustomerDashboard from "./pages/customer-dashboard";
 import ResourceDetail from "./pages/ResourceDetail";
 
-// PROVIDERS
-import { CartProvider } from "./contexts/CartContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { CartProvider } from "./contexts/CartContext";
 import { AuthProvider } from "./contexts/AuthContext";
-
-// GUARD
 import PrivateRoute from "./ui/PrivateRoute";
 
 const router = createBrowserRouter([
@@ -49,11 +45,11 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <CustomerDashboard />
           </PrivateRoute>
-        )
+        ),
       },
-      { path: "*", element: <div className="p-8 text-center">404 — Not found</div> }
-    ]
-  }
+      { path: "*", element: <div className="p-8 text-center">404 — Not found</div> },
+    ],
+  },
 ]);
 
 const qc = new QueryClient();
