@@ -4,15 +4,15 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import App from "./routes/App";
-import Home from "./pages/Home";
-import Solutions from "./pages/Solutions";
+import Home from "./pages/home";
+import Solutions from "./pages/solutions";
 import Platform from "./pages/Platform";
 import Industries from "./pages/Industries";
-import Pricing from "./pages/Pricing";
+import Pricing from "./pages/pricing";
 import RoiCenter from "./pages/RoiCenter";
 import Resources from "./pages/Resources";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
+import About from "./pages/about";
+import Contact from "./pages/contact";
 import NotFound from "./pages/NotFound";
 
 const router = createBrowserRouter([
