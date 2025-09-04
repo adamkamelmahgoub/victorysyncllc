@@ -4,10 +4,10 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "../client/src/index.css";
 
-// ROUTES / PAGES - using actual file paths from your structure
+// ROUTES / PAGES - using correct paths for existing files
 import App from "./routes/App";
 import Home from "../client/src/pages/home";
-import Solutions from "../client/src/pages/solutions";
+import Solutions from "../client/src/pages/services";
 import Platform from "../client/src/pages/Platform";
 import Industries from "../client/src/pages/Industries";
 import Pricing from "../client/src/pages/pricing";
