@@ -13,10 +13,10 @@ import Pricing from "../client/src/pages/pricing";
 import RoiCenter from "../client/src/pages/RoiCenter";
 import Resources from "../client/src/pages/Resources";
 import About from "../client/src/pages/about";
-import Contact from "./pages/contact";
-import Login from "./pages/login";
-import CustomerDashboard from "./pages/customer-dashboard";
-import ResourceDetail from "./pages/ResourceDetail";
+import Contact from "../client/src/pages/contact";
+import Login from "../client/src/pages/login";
+import CustomerDashboard from "../client/src/pages/customer-dashboard";
+import ResourceDetail from "../client/src/pages/ResourceDetail";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CartProvider } from "./contexts/CartContext";
