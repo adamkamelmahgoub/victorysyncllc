@@ -2,18 +2,18 @@
 import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import "./index.css";
+import "../client/src/index.css";
 
-// ROUTES / PAGES  
+// ROUTES / PAGES - using actual file paths from your structure
 import App from "./routes/App";
-import Home from "./pages/home";
-import Solutions from "./pages/solutions";
-import Platform from "./pages/Platform";
-import Industries from "./pages/Industries";
-import Pricing from "./pages/pricing";
-import RoiCenter from "./pages/RoiCenter";
-import Resources from "./pages/Resources";
-import About from "./pages/about";
+import Home from "../client/src/pages/home";
+import Solutions from "../client/src/pages/solutions";
+import Platform from "../client/src/pages/Platform";
+import Industries from "../client/src/pages/Industries";
+import Pricing from "../client/src/pages/pricing";
+import RoiCenter from "../client/src/pages/RoiCenter";
+import Resources from "../client/src/pages/Resources";
+import About from "../client/src/pages/about";
 import Contact from "./pages/contact";
 import Login from "./pages/login";
 import CustomerDashboard from "./pages/customer-dashboard";
