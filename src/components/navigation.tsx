@@ -167,3 +167,4 @@ export default function Navigation() {
     </nav>
   );
 }
+export { default } from "../../client/src/components/navigation";

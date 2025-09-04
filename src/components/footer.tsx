@@ -98,3 +98,4 @@ export default function Footer() {
     </footer>
   );
 }
+export { default } from "../../client/src/components/footer";
