@@ -1,4 +1,3 @@
-
 import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -22,6 +21,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CartProvider } from "./contexts/CartContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./ui/PrivateRoute";
+
+import "../client/src/main.tsx";
 
 const router = createBrowserRouter([
   {
