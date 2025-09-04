@@ -1,186 +1,48 @@
-import { Link, useLocation } from "wouter";
-import { ShoppingCart, User, Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
+import { NavLink, useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
-interface NavigationProps {
-  onCartClick: () => void;
-}
+export default function Navigation() {
+  const { isAuthenticated, logout } = useAuth();
+  const nav = useNavigate();
 
-export default function Navigation({ onCartClick }: NavigationProps) {
-  const [location] = useLocation();
-  const { getItemCount } = useCart();
-  const { user, isAuthenticated, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const cartItemCount = getItemCount();
-
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/services", label: "Services" },
-    { href: "/pricing", label: "Pricing" },
-    { href: "/about-us", label: "About" },
-    { href: "/contact", label: "Contact" },
+  const items = [
+    { to: "/", label: "Home", end: true },
+    { to: "/solutions", label: "Solutions" },
+    { to: "/platform", label: "Platform" },
+    { to: "/industries", label: "Industries" },
+    { to: "/pricing", label: "Pricing" },
+    { to: "/resources", label: "Resources" },
+    { to: "/about", label: "About" }
   ];
 
   return (
-    <nav className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/">
-            <div className="flex items-center space-x-3 cursor-pointer">
-              <img
-                src="/LOGO_VS.png"
-                alt="VictorySync Logo"
-                className="w-8 h-8 rounded-lg"
-              />
-              <span className="text-xl brand-font victory-dark">
-                VictorySync
-              </span>
-            </div>
-          </Link>
-
-          {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
-                <span
-                  className={`font-medium transition-colors cursor-pointer ${
-                    location === link.href
-                      ? "victory-purple"
-                      : "victory-gray hover:victory-purple"
-                  }`}
-                >
-                  {link.label}
-                </span>
-              </Link>
-            ))}
-          </div>
-
-          {/* Desktop CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <button
-              onClick={onCartClick}
-              className="relative p-2 victory-gray hover:victory-purple transition-colors"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-victory-purple text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-            </button>
-
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-2">
-                <Link href="/dashboard">
-                  <Button variant="ghost" size="sm">
-                    <User className="w-4 h-4 mr-2" />
-                    Dashboard
-                  </Button>
-                </Link>
-                <Button variant="ghost" size="sm" onClick={logout}>
-                  Sign Out
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">
-                    Sign In
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-2">
-            <button
-              onClick={onCartClick}
-              className="relative p-2 victory-gray hover:victory-purple transition-colors"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-victory-purple text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 victory-gray hover:victory-purple transition-colors"
-            >
-              {mobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </button>
-          </div>
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b">
+      <div className="mx-auto max-w-7xl h-16 px-4 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <img src="/LOGO_VS.png" alt="VictorySync" className="h-7 w-auto" />
+        </Link>
+        <nav className="hidden md:flex gap-2" aria-label="Main">
+          {items.map(i => (
+            <NavLink key={i.to} to={i.to} end={i.end as boolean}
+              className={({isActive}) => "px-3 py-2 rounded-md transition " + (isActive ? "text-primary font-semibold" : "text-slate-700 hover:text-primary")}>
+              {i.label}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="hidden md:flex items-center gap-3">
+          {!isAuthenticated ? (
+            <>
+              <Link to="/login" className="rounded-lg border px-4 py-2 hover:bg-slate-50 transition">Sign in</Link>
+              <Link to="/contact" className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary-600 transition">Get a Demo</Link>
+            </>
+          ) : (
+            <>
+              <Link to="/customer-dashboard" className="rounded-lg border px-4 py-2 hover:bg-slate-50 transition">Dashboard</Link>
+              <button onClick={() => { logout(); nav("/"); }} className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary-600 transition">Sign out</button>
+            </>
+          )}
         </div>
-
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-slate-200">
-            <div className="flex flex-col space-y-4">
-              {navLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
-                  <span
-                    className={`font-medium transition-colors cursor-pointer block py-2 ${
-                      location === link.href
-                        ? "victory-purple"
-                        : "victory-gray hover:victory-purple"
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </span>
-                </Link>
-              ))}
-
-              <div className="pt-4 border-t border-slate-200">
-                {isAuthenticated ? (
-                  <div className="flex flex-col space-y-2">
-                    <Link href="/dashboard">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Dashboard
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={logout}
-                    >
-                      Sign Out
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col space-y-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => (window.location.href = "/login")}
-                    >
-                      Sign In
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-    </nav>
+    </header>
   );
 }
