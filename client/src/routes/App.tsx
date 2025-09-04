@@ -1,7 +1,7 @@
 
 import { Outlet } from "react-router-dom";
 import Header from "../ui/Header";
-import Footer from "../ui/Footer";
+import Footer from "../components/footer";
 import ScrollToTop from "../ui/ScrollToTop";
 
 export default function App() {
