@@ -98,7 +98,7 @@ export default function Contact() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="company">Company (Optional)</Label>
                     <Input
@@ -107,7 +107,7 @@ export default function Contact() {
                       placeholder="Your Company"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -121,7 +121,7 @@ export default function Contact() {
                       <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
                     )}
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="message">Message</Label>
                     <Textarea
@@ -135,9 +135,9 @@ export default function Contact() {
                       <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
                     )}
                   </div>
-                  
-                  <Button 
-                    type="submit" 
+
+                  <Button
+                    type="submit"
                     className="w-full bg-victory-purple hover:bg-purple-700 text-white"
                     disabled={contactMutation.isPending}
                   >
@@ -214,7 +214,7 @@ export default function Contact() {
                   <p className="mb-4 text-purple-100">
                     Join our next webinar to learn how other businesses are cutting costs while improving service.
                   </p>
-                  <Button className="text-victory-purple hover:bg-gray-100 bg-[#5268f3]">
+                  <Button className="text-victory-purple hover:bg-gray-100 bg-[#526868]">
                     Register for Webinar
                   </Button>
                 </CardContent>
@@ -292,7 +292,27 @@ export default function Contact() {
           <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
             Ready to reduce costs and improve customer satisfaction? We're here to help make it happen.
           </p>
-          
+
+        </div>
+      </section>
+      <section className="py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-8">
+          <div>
+            <h1 className="text-3xl font-bold">Talk to Sales</h1>
+            <p className="mt-2 text-slate-600">Book a 20-minute discovery call. We'll map goals, channels, KPIs, and timelines.</p>
+            <div className="mt-4 space-y-2 text-sm">
+              <p>Call: <a className="text-primary hover:underline" href="tel:+17188132106">+1 (718) 813-2106</a></p>
+              <p>Email: <a className="text-primary hover:underline" href="mailto:victorysynccx@gmail.com">victorysynccx@gmail.com</a></p>
+            </div>
+          </div>
+          <div className="rounded-2xl border overflow-hidden">
+            <iframe
+              title="Book a demo"
+              src="https://calendly.com/your-calendly-url"
+              className="w-full h-[620px]"
+              loading="lazy"
+            ></iframe>
+          </div>
         </div>
       </section>
     </div>

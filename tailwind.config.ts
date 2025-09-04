@@ -11,6 +11,16 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
+        'victory-purple': '#8B5CF6',
+        'victory-blue': '#3B82F6',
+        'victory-dark': '#1E293B',
+        'victory-gray': '#64748B',
+        'victory-light': '#F1F5F9',
+        primary: {
+          DEFAULT: "#8B5CF6",
+          600: "#7C3AED",
+          700: "#6D28D9"
+        },
         background: "var(--background)",
         foreground: "var(--foreground)",
         card: {
@@ -20,10 +30,6 @@ export default {
         popover: {
           DEFAULT: "var(--popover)",
           foreground: "var(--popover-foreground)",
-        },
-        primary: {
-          DEFAULT: "var(--primary)",
-          foreground: "var(--primary-foreground)",
         },
         secondary: {
           DEFAULT: "var(--secondary)",
@@ -61,6 +67,12 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+      },
+      fontFamily: {
+        'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+      },
+      boxShadow: {
+        vs: "0 8px 30px rgba(0,0,0,.08)"
       },
       keyframes: {
         "accordion-down": {

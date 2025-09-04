@@ -28,6 +28,13 @@ export default function Pricing() {
     });
   };
 
+  // Removed original pricing cards and related sections.
+  // Replaced with the new pricing structure.
+  const tiers = [
+    { name: "Starter", price: "$1,200/mo", bullets: ["1 dedicated agent", "Business hours", "Email/Chat/Voice", "Monthly report"] },
+    { name: "Growth", price: "$2,500/mo", bullets: ["2 agents", "Extended hours", "Appointment setting", "Weekly report"] },
+    { name: "Scale", price: "$4,500/mo", bullets: ["24/7 blended team", "Automations suite", "Success manager", "Custom reporting"] }
+  ];
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -45,57 +52,23 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* Pricing Cards */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {packages && packages.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-8">
-              {packages.map((pkg: any, index: number) => {
-                const isPopular = index === 1; // Make middle plan popular
-                return (
-                  <Card key={pkg.id} className={`relative hover:shadow-lg transition-shadow ${isPopular ? 'border-victory-purple border-2' : 'border-slate-200'}`}>
-                    {isPopular && (
-                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <Badge className="bg-victory-purple text-white px-4 py-1">
-                          Most Popular
-                        </Badge>
-                      </div>
-                    )}
-                    <CardContent className="p-8">
-                      <div className="text-center mb-8">
-                        <h3 className="text-2xl font-bold victory-dark mb-2">{pkg.name}</h3>
-                        <div className="text-4xl font-bold victory-purple mb-2">
-                          ${parseFloat(pkg.price).toLocaleString()}
-                          <span className="text-base font-normal victory-gray">/month</span>
-                        </div>
-                        <p className="victory-gray">{pkg.description}</p>
-                      </div>
-                      
-                      <ul className="space-y-4 mb-8">
-                        {pkg.features.map((feature: string, idx: number) => (
-                          <li key={idx} className="flex items-center">
-                            <Check className="text-green-500 w-5 h-5 mr-3 flex-shrink-0" />
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      
-                      <Button 
-                        onClick={() => handleAddToCart(pkg)}
-                        className={`w-full ${isPopular ? 'bg-victory-purple hover:bg-purple-700' : 'bg-victory-purple hover:bg-purple-700'} text-white`}
-                      >
-                        Add to Cart
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-xl victory-gray">Loading pricing packages...</p>
-            </div>
-          )}
+      {/* New Pricing Cards */}
+      <section className="py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold">Simple, transparent pricing</h1>
+          <p className="mt-2 text-slate-600">Add-ons: after-hours, QA program, advanced dashboards, custom integrations.</p>
+          <div className="mt-6 grid gap-6 md:grid-cols-3">
+            {tiers.map(t => (
+              <div key={t.name} className="rounded-2xl border p-6 flex flex-col">
+                <h3 className="font-semibold">{t.name}</h3>
+                <div className="text-3xl font-bold mt-2">{t.price}</div>
+                <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                  {t.bullets.map(b => <li key={b}>• {b}</li>)}
+                </ul>
+                <a href="/contact" className="mt-6 rounded-lg bg-primary px-4 py-2 text-white text-center hover:bg-primary-600 transition">Get a Demo</a>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -259,4 +232,3 @@ export default function Pricing() {
     </div>
   );
 }
-
