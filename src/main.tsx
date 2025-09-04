@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 
-// ROUTES / PAGES
+// ROUTES / PAGES  
 import App from "./routes/App";
 import Home from "./pages/home";
 import Solutions from "./pages/solutions";
