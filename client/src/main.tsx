@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 
-// Routes / pages (match your actual filenames/casing)
+// Pages/routes (use exact filenames/casing)
 import App from "./routes/App";
 import Home from "./pages/home";
 import Solutions from "./pages/services";
@@ -17,8 +17,6 @@ import About from "./pages/about";
 import Contact from "./pages/contact";
 import Login from "./pages/login";
 import CustomerDashboard from "./pages/customer-dashboard";
-
-// Optional detail route (remove if you don't have the file)
 import ResourceDetail from "./pages/ResourceDetail";
 
 // Providers
