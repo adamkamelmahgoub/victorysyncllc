@@ -18,18 +18,13 @@ import Login from "./pages/login";
 import CustomerDashboard from "./pages/customer-dashboard";
 import ResourceDetail from "./pages/ResourceDetail";
 
-// Providers
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "./contexts/AuthContext";
-import { CartProvider } from "./contexts/CartContext";
-
 // Guard
 import PrivateRoute from "./ui/PrivateRoute";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <App />, // Providers are inside App
     children: [
       { index: true, element: <Home /> },
       { path: "solutions", element: <Solutions /> },
@@ -55,18 +50,10 @@ const router = createBrowserRouter([
   },
 ]);
 
-const qc = new QueryClient();
-
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={qc}>
-      <AuthProvider>
-        <CartProvider>
-          <Suspense fallback={<div className="p-6">Loading…</div>}>
-            <RouterProvider router={router} />
-          </Suspense>
-        </CartProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <Suspense fallback={<div className="p-6">Loading…</div>}>
+      <RouterProvider router={router} />
+    </Suspense>
   </StrictMode>
 );
