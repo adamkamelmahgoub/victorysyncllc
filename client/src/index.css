@@ -25,7 +25,21 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* Micro animations */
+@keyframes vs-fade-in-up { from {opacity:0; transform: translateY(8px);} to {opacity:1; transform: translateY(0);} }
+@keyframes vs-float { 0% { transform: translateY(0);} 50% { transform: translateY(-4px);} 100% { transform: translateY(0);} }
+@keyframes vs-underline { from { width: 0; } to { width: 100%; } }
+
+.vs-anim-in { animation: vs-fade-in-up .6s ease-out both; }
+.vs-float { animation: vs-float 6s ease-in-out infinite; }
+
+/* Focus rings */
+:focus-visible { outline: 2px solid theme(colors.indigo.600); outline-offset: 2px; }
+
+/* Smooth scrolling */
+html { scroll-behavior: smooth; }
+
+::root {
   --background: hsl(210, 40%, 98%);
   --foreground: hsl(222.2, 84%, 4.9%);
   --muted: hsl(210, 40%, 96%);
@@ -51,7 +65,7 @@
   --chart-3: hsl(197, 37%, 24%);
   --chart-4: hsl(43, 74%, 66%);
   --chart-5: hsl(27, 87%, 67%);
-  
+
   /* Victory Sync Brand Colors */
   --victory-purple: hsl(262.1, 83.3%, 57.8%);
   --victory-blue: hsl(217.2, 91.2%, 59.8%);
@@ -85,7 +99,7 @@
   --chart-3: hsl(30, 80%, 55%);
   --chart-4: hsl(280, 65%, 60%);
   --chart-5: hsl(340, 75%, 55%);
-  
+
   /* Victory Sync Brand Colors - Dark Mode */
   --victory-purple: hsl(262.1, 83.3%, 57.8%);
   --victory-blue: hsl(217.2, 91.2%, 59.8%);
@@ -97,10 +111,6 @@
 @layer base {
   * {
     @apply border-border;
-  }
-
-  html {
-    scroll-behavior: smooth;
   }
 
   body {

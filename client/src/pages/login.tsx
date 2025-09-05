@@ -1,36 +1,31 @@
 
 import { FormEvent, useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { Input } from "../components/ui/Input";
+import Button from "../components/ui/Button";
 
 export default function Login() {
-  const { login } = useAuth();
-  const [email, setEmail] = useState("demo@victorysync.com");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { login, loading } = useAuth();
   const nav = useNavigate();
   const loc = useLocation() as any;
-  const redirect = loc.state?.from || "/customer-dashboard";
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault(); setLoading(true);
-    await login(email, password); nav(redirect, { replace: true });
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") || "");
+    const password = String(fd.get("password") || "");
+    await login(email, password);
+    nav(loc?.state?.from || "/customer-dashboard", { replace: true });
   }
-
   return (
-    <section className="py-16">
-      <div className="mx-auto max-w-md px-4">
-        <h1 className="text-3xl font-bold">Sign in</h1>
-        <form onSubmit={onSubmit} className="mt-6 grid gap-4">
-          <label className="text-sm">Email
-            <input className="mt-1 w-full rounded border px-3 py-2" value={email} onChange={e=>setEmail(e.target.value)} />
-          </label>
-          <label className="text-sm">Password
-            <input type="password" className="mt-1 w-full rounded border px-3 py-2" value={password} onChange={e=>setPassword(e.target.value)} />
-          </label>
-          <button disabled={loading} className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary-600 transition">{loading ? "Signing in…" : "Sign in"}</button>
-        </form>
-      </div>
-    </section>
+    <div className="mx-auto max-w-md px-4 sm:px-6 lg:px-8 py-12">
+      <h1 className="text-3xl font-bold mb-6">Sign in</h1>
+      <form onSubmit={onSubmit} className="grid gap-4 rounded-2xl border border-slate-200 p-6 bg-white">
+        <Input label="Email" type="email" name="email" required />
+        <Input label="Password" type="password" name="password" required />
+        <Button disabled={loading}>{loading ? "Signing in…" : "Sign in"}</Button>
+      </form>
+    </div>
   );
 }

@@ -1,48 +1,75 @@
-import { NavLink, useNavigate, Link } from "react-router-dom";
+
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import Button from "./ui/Button";
 
 export default function Navigation() {
-  const { isAuthenticated, logout } = useAuth();
-  const nav = useNavigate();
-
-  const items = [
-    { to: "/", label: "Home", end: true },
-    { to: "/solutions", label: "Solutions" },
-    { to: "/platform", label: "Platform" },
-    { to: "/industries", label: "Industries" },
-    { to: "/pricing", label: "Pricing" },
-    { to: "/resources", label: "Resources" },
-    { to: "/about", label: "About" }
-  ];
+  const [open, setOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b">
-      <div className="mx-auto max-w-7xl h-16 px-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <img src="/LOGO_VS.png" alt="VictorySync" className="h-7 w-auto" />
+    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 font-bold">
+          <img src="/vs_favicon_32.png" alt="" className="h-6 w-6" />
+          VictorySync
         </Link>
-        <nav className="hidden md:flex gap-2" aria-label="Main">
-          {items.map(i => (
-            <NavLink key={i.to} to={i.to} end={i.end as boolean}
-              className={({isActive}) => "px-3 py-2 rounded-md transition " + (isActive ? "text-primary font-semibold" : "text-slate-700 hover:text-primary")}>
-              {i.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="hidden md:flex items-center gap-3">
-          {!isAuthenticated ? (
+
+        <button className="lg:hidden rounded-md p-2 hover:bg-slate-100" onClick={() => setOpen(!open)} aria-label="Toggle menu">☰</button>
+
+        <ul className="hidden lg:flex items-center gap-6 text-sm">
+          {["Home","Solutions","Platform","Industries","Pricing","Resources","About"].map((item) => {
+            const to = item === "Home" ? "/" : `/${item.toLowerCase()}`;
+            return (
+              <li key={item}>
+                <NavLink to={to} className={({isActive}) => `hover:text-indigo-600 ${isActive ? "text-indigo-600" : "text-slate-700"}`}>
+                  {item}
+                </NavLink>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="hidden lg:flex items-center gap-3">
+          {isAuthenticated ? (
             <>
-              <Link to="/login" className="rounded-lg border px-4 py-2 hover:bg-slate-50 transition">Sign in</Link>
-              <Link to="/contact" className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary-600 transition">Get a Demo</Link>
+              <span className="text-sm text-slate-700">Hi, {user?.email}</span>
+              <Button variant="secondary" onClick={() => navigate("/customer-dashboard")}>Dashboard</Button>
+              <Button variant="ghost" onClick={() => logout()}>Logout</Button>
             </>
           ) : (
             <>
-              <Link to="/customer-dashboard" className="rounded-lg border px-4 py-2 hover:bg-slate-50 transition">Dashboard</Link>
-              <button onClick={() => { logout(); nav("/"); }} className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary-600 transition">Sign out</button>
+              <Button variant="ghost" onClick={() => navigate("/login")}>Sign in</Button>
+              <Button onClick={() => navigate("/contact")}>Get a Demo</Button>
             </>
           )}
         </div>
-      </div>
+      </nav>
+
+      {open && (
+        <div className="lg:hidden border-t border-slate-200">
+          <ul className="px-4 py-3 grid gap-2">
+            {["Home","Solutions","Platform","Industries","Pricing","Resources","About","Contact"].map((item) => {
+              const to = item === "Home" ? "/" : `/${item.toLowerCase()}`;
+              return (
+                <li key={item} onClick={() => setOpen(false)}>
+                  <NavLink to={to} className="block rounded-md px-3 py-2 hover:bg-slate-100">{item}</NavLink>
+                </li>
+              );
+            })}
+            {!isAuthenticated ? (
+              <li onClick={() => setOpen(false)}><NavLink to="/login" className="block rounded-md px-3 py-2 hover:bg-slate-100">Sign in</NavLink></li>
+            ) : (
+              <>
+                <li><NavLink to="/customer-dashboard" onClick={() => setOpen(false)} className="block rounded-md px-3 py-2 hover:bg-slate-100">Dashboard</NavLink></li>
+                <li><button className="w-full text-left rounded-md px-3 py-2 hover:bg-slate-100" onClick={() => { setOpen(false); logout(); }}>Logout</button></li>
+              </>
+            )}
+          </ul>
+        </div>
+      )}
     </header>
   );
 }
