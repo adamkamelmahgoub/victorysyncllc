@@ -1,75 +1,186 @@
-
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "wouter";
+import { ShoppingCart, User, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import Button from "./ui/Button";
 
-export default function Navigation() {
-  const [open, setOpen] = useState(false);
-  const { isAuthenticated, user, logout } = useAuth();
-  const navigate = useNavigate();
+interface NavigationProps {
+  onCartClick: () => void;
+}
+
+export default function Navigation({ onCartClick }: NavigationProps) {
+  const [location] = useLocation();
+  const { getItemCount } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const cartItemCount = getItemCount();
+
+  const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/services", label: "Services" },
+    { href: "/pricing", label: "Pricing" },
+    { href: "/about-us", label: "About" },
+    { href: "/contact", label: "Contact" },
+  ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-bold">
-          <img src="/vs_favicon_32.png" alt="" className="h-6 w-6" />
-          VictorySync
-        </Link>
+    <nav className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link href="/">
+            <div className="flex items-center space-x-3 cursor-pointer">
+              <img
+                src="/LOGO_VS.png"
+                alt="VictorySync Logo"
+                className="w-8 h-8 rounded-lg"
+              />
+              <span className="text-xl brand-font victory-dark">
+                VictorySync
+              </span>
+            </div>
+          </Link>
 
-        <button className="lg:hidden rounded-md p-2 hover:bg-slate-100" onClick={() => setOpen(!open)} aria-label="Toggle menu">☰</button>
+          {/* Desktop Navigation Links */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href}>
+                <span
+                  className={`font-medium transition-colors cursor-pointer ${
+                    location === link.href
+                      ? "victory-purple"
+                      : "victory-gray hover:victory-purple"
+                  }`}
+                >
+                  {link.label}
+                </span>
+              </Link>
+            ))}
+          </div>
 
-        <ul className="hidden lg:flex items-center gap-6 text-sm">
-          {["Home","Solutions","Platform","Industries","Pricing","Resources","About"].map((item) => {
-            const to = item === "Home" ? "/" : `/${item.toLowerCase()}`;
-            return (
-              <li key={item}>
-                <NavLink to={to} className={({isActive}) => `hover:text-indigo-600 ${isActive ? "text-indigo-600" : "text-slate-700"}`}>
-                  {item}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
+          {/* Desktop CTA Buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            <button
+              onClick={onCartClick}
+              className="relative p-2 victory-gray hover:victory-purple transition-colors"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-victory-purple text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
+            </button>
 
-        <div className="hidden lg:flex items-center gap-3">
-          {isAuthenticated ? (
-            <>
-              <span className="text-sm text-slate-700">Hi, {user?.email}</span>
-              <Button variant="secondary" onClick={() => navigate("/customer-dashboard")}>Dashboard</Button>
-              <Button variant="ghost" onClick={() => logout()}>Logout</Button>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" onClick={() => navigate("/login")}>Sign in</Button>
-              <Button onClick={() => navigate("/contact")}>Get a Demo</Button>
-            </>
-          )}
-        </div>
-      </nav>
-
-      {open && (
-        <div className="lg:hidden border-t border-slate-200">
-          <ul className="px-4 py-3 grid gap-2">
-            {["Home","Solutions","Platform","Industries","Pricing","Resources","About","Contact"].map((item) => {
-              const to = item === "Home" ? "/" : `/${item.toLowerCase()}`;
-              return (
-                <li key={item} onClick={() => setOpen(false)}>
-                  <NavLink to={to} className="block rounded-md px-3 py-2 hover:bg-slate-100">{item}</NavLink>
-                </li>
-              );
-            })}
-            {!isAuthenticated ? (
-              <li onClick={() => setOpen(false)}><NavLink to="/login" className="block rounded-md px-3 py-2 hover:bg-slate-100">Sign in</NavLink></li>
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-2">
+                <Link href="/dashboard">
+                  <Button variant="ghost" size="sm">
+                    <User className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={logout}>
+                  Sign Out
+                </Button>
+              </div>
             ) : (
-              <>
-                <li><NavLink to="/customer-dashboard" onClick={() => setOpen(false)} className="block rounded-md px-3 py-2 hover:bg-slate-100">Dashboard</NavLink></li>
-                <li><button className="w-full text-left rounded-md px-3 py-2 hover:bg-slate-100" onClick={() => { setOpen(false); logout(); }}>Logout</button></li>
-              </>
+              <div className="flex items-center space-x-2">
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+              </div>
             )}
-          </ul>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center space-x-2">
+            <button
+              onClick={onCartClick}
+              className="relative p-2 victory-gray hover:victory-purple transition-colors"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-victory-purple text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 victory-gray hover:victory-purple transition-colors"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </button>
+          </div>
         </div>
-      )}
-    </header>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-slate-200">
+            <div className="flex flex-col space-y-4">
+              {navLinks.map((link) => (
+                <Link key={link.href} href={link.href}>
+                  <span
+                    className={`font-medium transition-colors cursor-pointer block py-2 ${
+                      location === link.href
+                        ? "victory-purple"
+                        : "victory-gray hover:victory-purple"
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </span>
+                </Link>
+              ))}
+
+              <div className="pt-4 border-t border-slate-200">
+                {isAuthenticated ? (
+                  <div className="flex flex-col space-y-2">
+                    <Link href="/dashboard">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={logout}
+                    >
+                      Sign Out
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col space-y-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => (window.location.href = "/login")}
+                    >
+                      Sign In
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </nav>
   );
 }
