@@ -1,22 +1,31 @@
 
+import Hero from "../components/Hero";
+
 export default function Platform() {
   return (
-    <section className="py-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
-        <h1 className="text-3xl font-bold">Open by Default</h1>
-        <p className="text-slate-600 max-w-3xl">
-          VictorySync connects your CRM, dialer, helpdesk and reporting. Smart routing directs simple issues to self-service and urgent ones to trained agents. QA and analytics drive continuous improvement.
-        </p>
-        <div className="rounded-2xl border p-6">
-          <h3 className="font-semibold mb-2">High-Level Flow</h3>
-          <ol className="list-decimal pl-5 text-sm text-slate-700 space-y-1">
-            <li>Inbound channel (voice/chat/email/webhook) identifies intent.</li>
-            <li>Router → self-service or best-fit agent.</li>
-            <li>Agent assist & knowledge → faster, accurate answers.</li>
-            <li>Auto-summary + QA scorecards → coaching & reports.</li>
-          </ol>
+    <>
+      <Hero
+        eyebrow="Platform"
+        title={`The contact stack,<br/>without the mess`}
+        subtitle="One pane of glass: bring your CRM + helpdesk into our platform; we handle triage, routing, and automations."
+        image="/assets/hero-platform.webp"
+        primary={{ label: "See Integrations", to: "/resources#integrations" }}
+        secondary={{ label: "Case Studies", to: "/resources#case-studies" }}
+      />
+
+      <section className="section">
+        <div className="container narrow">
+          <h2>Architecture that just works</h2>
+          <ul className="pill-list">
+            <li><strong>Routing</strong> — skills-based, priority, & after-hours rules</li>
+            <li><strong>Agent</strong> — superlight console with macros, screen pop, and knowledge search</li>
+            <li><strong>Knowledge</strong> — unified search, policy sync, templates</li>
+            <li><strong>Automation</strong> — triage, ticket creation, refunds, returns</li>
+            <li><strong>Analytics</strong> — SLAs, AHT, CSAT, QA, revenue captured</li>
+            <li><strong>Integrations</strong> — CRM + Helpdesk + BI</li>
+          </ul>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

@@ -1,24 +1,35 @@
 
+import Hero from "../components/Hero";
+
 export default function Industries() {
-  const inds = [
-    { h: "Ecommerce", p: "Pre-/post-purchase, returns, subscriptions, live chat." },
-    { h: "Real Estate", p: "Lead capture, appointment set, after-hours inquiries." },
-    { h: "Healthcare", p: "Scheduling, reminders, triage handoff; compliance-aware." },
-    { h: "Local Services", p: "Dispatch, estimates, job updates, payments support." }
-  ];
   return (
-    <section className="py-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold">Industries</h1>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {inds.map(i => (
-            <div key={i.h} className="rounded-2xl border p-5">
-              <h3 className="font-semibold">{i.h}</h3>
-              <p className="mt-1 text-sm text-slate-600">{i.p}</p>
-            </div>
+    <>
+      <Hero
+        eyebrow="Industries"
+        title={`Tailored flows for your<br/>business`}
+        subtitle="From retail to fintech, we ship playbooks that match your risk and compliance needs."
+        image="/assets/hero-industries.webp"
+        primary={{ label: "Talk to Solutions", to: "/demo" }}
+        secondary={{ label: "Case Studies", to: "/resources#case-studies" }}
+      />
+
+      <section className="section">
+        <div className="container grid cols-3 gap-16">
+          {[
+            ["Retail", "High volume: support, returns, billing, status."],
+            ["E-commerce", "Order questions, payments, and cart recovery."],
+            ["Fintech", "KYC, disputes, and fraud notifications."],
+            ["Healthcare", "Scheduling, reminders, and benefit questions."],
+            ["Telecom", "Provisioning, outages, upsell campaigns."],
+            ["Logistics", "Delivery updates, exceptions, and claims."],
+          ].map(([title, copy]) => (
+            <article className="card" key={title}>
+              <h3>{title}</h3>
+              <p>{copy}</p>
+            </article>
           ))}
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
