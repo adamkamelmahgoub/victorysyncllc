@@ -1,36 +1,51 @@
 
-import { useEffect, useState } from "react";
-import { apiRequest } from "../lib/api";
 import { Link } from "react-router-dom";
+import Navigation from "../components/navigation";
+import FooterPro from "../components/FooterPro";
+import HeroBanner from "../components/HeroBanner";
+import Reveal from "../components/Reveal";
 
-type Resource = { id: string; title: string; type: string; href: string };
-
-export default function Resources() {
-  const [items, setItems] = useState<Resource[]>([]);
-  const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const r = await apiRequest<{ items: Resource[] }>("GET", "/resources");
-        setItems(r.items);
-      } catch (e: any) { setErr(e.message); }
-    })();
-  }, []);
-
+export default function ResourcesPage(){
+  const res = [
+    ["After-Hours Playbook","Capture missed revenue with blended on-call coverage.","/contact"],
+    ["QA Scorecard Template","What to measure and how to coach.","/contact"],
+    ["Missed Calls Cost Calculator","Quantify the impact of slow response times.","/contact"]
+  ];
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12 grid gap-6">
-      <h1 className="text-3xl font-bold">Resources</h1>
-      {err && <div className="text-sm text-red-600">{err}</div>}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map(it => (
-          <Link key={it.id} to={`/resources/${it.id}`} className="rounded-2xl border p-5 hover:shadow-md transition bg-white">
-            <div className="text-sm text-slate-500 uppercase">{it.type}</div>
-            <div className="font-semibold">{it.title}</div>
-            <div className="text-indigo-600 mt-2 text-sm">Open →</div>
-          </Link>
-        ))}
-      </div>
+    <div className="min-h-screen bg-white">
+      <Navigation/>
+      <main>
+        <HeroBanner
+          eyebrow="Resources"
+          title="Playbooks, templates,"
+          accent="and calculators"
+          subtitle="Everything you need to modernize your contact center—fast."
+          ctas={[{label:"Get the Bundle", to:"/contact"}]}
+          rightPanel
+        />
+
+        <section className="py-16">
+          <div className="mx-auto max-w-7xl px-4">
+            <Reveal variant="up">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-slate-900">Latest</h2>
+              </div>
+            </Reveal>
+            <div className="mt-6 grid gap-6 md:grid-cols-3">
+              {res.map(([t, d, link], i)=>(
+                <Reveal key={String(t)} variant="up" delay={i%3}>
+                  <Link to={String(link)} className="card glass rounded-2xl border border-slate-100 bg-white/70 p-5 block">
+                    <div className="font-bold">{t}</div>
+                    <p className="mt-2 text-sm text-slate-600">{d}</p>
+                    <span className="mt-4 inline-block text-sm font-bold text-indigo-600">Open →</span>
+                  </Link>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+      <FooterPro/>
     </div>
   );
 }
