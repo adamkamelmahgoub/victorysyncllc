@@ -1,20 +1,18 @@
 
-import Hero from "../components/sections/Hero";
-import OutcomesGrid from "../components/sections/OutcomesGrid";
-import PlatformStrip from "../components/sections/PlatformStrip";
-import LogoProof from "../components/sections/LogoProof";
-import Testimonial from "../components/sections/Testimonial";
-import CTABand from "../components/sections/CTABand";
+import HeroPro from "../components/HeroPro";
+import FeatureShowcase from "../components/FeatureShowcase";
+import PlatformTabs from "../components/PlatformTabs";
+import TestimonialsSlider from "../components/TestimonialsSlider";
+import PricingPro from "../components/PricingPro";
 
-export default function Home() {
+export default function HomePage(){
   return (
     <>
-      <Hero />
-      <OutcomesGrid />
-      <PlatformStrip />
-      <LogoProof />
-      <Testimonial />
-      <CTABand />
+      <HeroPro />
+      <FeatureShowcase />
+      <PlatformTabs />
+      <TestimonialsSlider />
+      <PricingPro />
     </>
   );
 }
