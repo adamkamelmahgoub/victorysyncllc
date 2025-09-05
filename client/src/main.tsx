@@ -1,9 +1,10 @@
+
 import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 
+// Routes / pages (match your actual filenames/casing)
 import App from "./routes/App";
 import Home from "./pages/home";
 import Solutions from "./pages/services";
@@ -16,9 +17,16 @@ import About from "./pages/about";
 import Contact from "./pages/contact";
 import Login from "./pages/login";
 import CustomerDashboard from "./pages/customer-dashboard";
+
+// Optional detail route (remove if you don't have the file)
 import ResourceDetail from "./pages/ResourceDetail";
+
+// Providers
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
+
+// Guard
 import PrivateRoute from "./ui/PrivateRoute";
 
 const router = createBrowserRouter([
@@ -50,11 +58,11 @@ const router = createBrowserRouter([
   },
 ]);
 
-const queryClient = new QueryClient();
+const qc = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={qc}>
       <AuthProvider>
         <CartProvider>
           <Suspense fallback={<div className="p-6">Loading…</div>}>

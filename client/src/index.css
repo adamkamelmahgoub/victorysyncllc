@@ -1,3 +1,26 @@
+/* Visually hide the skip link until keyboard focus */
+.skip-link{
+  position:absolute;
+  left:-9999px;
+  top:auto;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+}
+.skip-link:focus{
+  left:1rem;
+  top:1rem;
+  width:auto;
+  height:auto;
+  padding:.5rem .75rem;
+  background:#ffffff;
+  color:#0f172a;               /* slate-900 */
+  border:1px solid #cbd5e1;    /* slate-300 */
+  border-radius:.5rem;
+  box-shadow:0 4px 12px rgba(0,0,0,.12);
+  z-index:10000;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
