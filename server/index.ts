@@ -201,15 +201,28 @@ async function initializeApp() {
     // ALWAYS serve the app on port 5000
     // this serves both the API and the client.
     // It is the only port that is not firewalled.
-    const port = process.env.PORT || 5000;
-    server.listen({
-      port: Number(port),
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
-      console.log(`🎉 VictorySync server is running successfully!`);
-      log(`serving on port ${port}`);
-      console.log(`Health check available at: http://0.0.0.0:${port}/health`);
+    const PORT = Number(process.env.PORT) || 5000;
+    const BIND = () => {
+      server.listen(PORT, '0.0.0.0', () => {
+        console.log(`(express) serving on port ${PORT} (pid ${process.pid})`);
+      });
+    };
+
+    // Guard against double start in the same Node process
+    if (!(globalThis as any).__vs_server_started__) {
+      (globalThis as any).__vs_server_started__ = true;
+      BIND();
+    } else {
+      console.warn(`[boot] server already started in this process (pid ${process.pid}), skip second listen.`);
+    }
+
+    // Helpful diagnostics
+    server.on('error', (err: any) => {
+      if (err?.code === 'EADDRINUSE') {
+        console.error(`[boot] Port ${PORT} is in use. Another process or double-start is binding 5000.`);
+        console.error('[hint] Run: pkill -f node || true   then npm run dev');
+      }
+      throw err;
     });
 
     // Handle graceful shutdown
