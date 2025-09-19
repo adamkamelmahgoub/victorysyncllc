@@ -1,0 +1,88 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are a senior backend engineer working in a **Replit** TypeScript monorepo (Node/Express API on **port 5000**, React/Vite client, ESM with `tsx`).
+Fix a server crash caused by **EADDRINUSE: address already in use 0.0.0.0:5000**. The Preview shows “app is running, but the preview isn’t ready”. Ensure there is **exactly one** listener for port 5000 and no duplicate starts.
+
+### Error Context
+
+* Console shows:
+
+  ```
+  Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+  code: 'EADDRINUSE', syscall: 'listen', address: '0.0.0.0', port: 5000
+  ```
+* Replit may also be starting the app twice if a file imported by `server/index.ts` calls `listen()`.
+
+### Tasks
+
+1. **Enforce a single listener in `server/index.ts`**
+
+   * Use this canonical pattern (createServer + one `listen` only). Keep your middlewares/routes, but ensure no other file calls `listen`.
+
+     ```ts
+     // server/index.ts
+     import 'dotenv/config';
+     import express from 'express';
+     import cors from 'cors';
+     import { createServer } from 'http';
+     import path from 'path';
+     import { fileURLToPath } from 'url';
+     import { router as apiRouter } from './routes/index';
+
+     const app = express();
+     app.use(cors());
+     app.use(express.json({ verify: (req, _res, buf) => ((req as any).rawBody = buf) }));
+     app.use('/api', apiRouter);
+
+     const __filename = fileURLToPath(import.meta.url);
+     const __dirname = path.dirname(__filename);
+     app.use(express.static(path.join(__dirname, 'public')));
+     app.get('/health', (_req, res) => res.json({ ok: true }));
+
+     const PORT = Number(process.env.PORT) || 5000;
+     const httpServer = createServer(app);
+     httpServer.listen(PORT, '0.0.0.0', () => {
+       console.log(`(express) serving on port ${PORT}`);
+     });
+     ```
+   * If `app.listen(...)` exists anywhere, replace it with the `httpServer.listen(...)` above and remove any other listeners.
+
+2. **Remove duplicate listeners elsewhere**
+
+   * Search the repo and delete any extra `.listen(` calls:
+
+     * Typical offenders: files under `server/routes/*` (e.g., `ivr.ts`), utility modules, or a second bootstrap file.
+     * Those modules must **export routers/functions only**, not start servers.
+   * Ensure no imported file creates another `httpServer` or calls `app.listen`.
+
+3. **Verify dev scripts don’t start the API twice**
+
+   * Keep exactly **one** process that starts the API. Running Vite on 5173 is fine; just avoid any second API bootstrap.
+   * Do not use PM2/nodemon concurrently for the same file in dev.
+
+4. **(Optional) Kill a stale process on port 5000**
+
+   * If Replit left a stuck process, include a note in the summary to stop run and restart; no code change required.
+
+### Output Format
+
+* Show **unified diffs** for every file you change.
+* Then provide a short **summary** of what was removed/changed and why it prevents `EADDRINUSE`.
+* Add a **test plan** (3–5 steps) to confirm the fix in Replit.
+
+### Guardrails
+
+* Minimal edits only; **no new dependencies**.
+* Do not change ports or environment variables (keep `PORT || 5000`).
+* Do not modify client/Vite code.
+* Preserve existing middlewares, routes, and static serving.
+
+### Acceptance Criteria
+
+* `npm run dev` starts cleanly with **only one** “serving on port 5000” log line.
+* No `EADDRINUSE` errors in the console.
+* Preview loads and stays stable.
+* `GET /health` returns `{ ok: true }`.
+* `grep -R "listen(" server` returns **exactly one** occurrence (the canonical listener in `server/index.ts`).
