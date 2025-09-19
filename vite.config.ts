@@ -1,37 +1,37 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+
+// Compute Replit hostname for HMR
+const REPL_HOST = process.env.REPL_SLUG && process.env.REPL_OWNER 
+  ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` 
+  : "localhost";
 
 export default defineConfig({
-  plugins: [
-    react(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-        ]
-      : []),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
-    },
-  },
-  root: path.resolve(import.meta.dirname, "client"),
+  plugins: [react()],
+  root: "./client",
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: "./dist",
     emptyOutDir: true,
   },
-  server: {
-    fs: {
-      strict: true,
-      deny: ["**/.*"],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./client/src"),
     },
+  },
+  server: {
+    host: "0.0.0.0",
+    port: 5173,
+    strictPort: true,
+    hmr: {
+      protocol: "wss",
+      clientPort: 443,
+      host: REPL_HOST
+    },
+    proxy: {
+      "/api": "http://localhost:5000",
+      "/webhooks": "http://localhost:5000"
+    }
   },
 });
