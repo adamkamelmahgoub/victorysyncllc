@@ -2,17 +2,21 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Compute Replit hostname for HMR
-const REPL_HOST = process.env.REPL_SLUG && process.env.REPL_OWNER 
-  ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` 
+const REPL_HOST = (process.env.REPL_SLUG && process.env.REPL_OWNER)
+  ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
   : "localhost";
 
 export default defineConfig({
   plugins: [react()],
-  root: "./client",
+  root: "client",
   build: {
-    outDir: "./dist",
+    outDir: "../server/public",
     emptyOutDir: true,
   },
   resolve: {
