@@ -14,7 +14,7 @@ import {
   orderItems,
   organizations,
   entitlements,
-} from "@shared/schema";
+} from "../shared/schema";
 import ivrRouter from "./routes/ivr";
 import inboundEmailRouter from "./routes/inbound-email";
 import hubspotWebhook from "./webhooks/hubspot";
@@ -82,6 +82,64 @@ app.use((req, res, next) => {
     const dbConnected = await testDatabaseConnection();
     if (!dbConnected) {
       throw new Error('Database connection failed - cannot start server');
+    }
+
+    // Initialize default packages if none exist
+    console.log(`📦 Initializing default packages...`);
+    const existingPackages = await db.query.packages?.findMany() || [];
+    
+    if (!existingPackages || existingPackages.length === 0) {
+      const defaultPackages = [
+        {
+          name: 'Basic',
+          price: '499.00',
+          description: 'Perfect for small businesses getting started',
+          features: [
+            'Up to 500 calls/month',
+            'Email support',
+            'Basic reporting',
+            'Standard business hours',
+            'CRM integration'
+          ]
+        },
+        {
+          name: 'Growth',
+          price: '1299.00', 
+          description: 'Ideal for growing companies with higher volumes',
+          features: [
+            'Up to 2,000 calls/month',
+            'Priority support',
+            'Advanced reporting',
+            'Extended hours (8AM-10PM)',
+            'Custom workflows',
+            'API access',
+            'Dedicated account manager'
+          ]
+        },
+        {
+          name: 'Scale',
+          price: '2499.00',
+          description: 'Enterprise solution for high-volume operations',
+          features: [
+            'Unlimited calls',
+            '24/7 premium support',
+            'Real-time analytics',
+            '24/7 availability',
+            'White-label branding',
+            'Custom integrations',
+            'Dedicated team',
+            'SLA guarantees'
+          ]
+        }
+      ];
+
+      for (const pkg of defaultPackages) {
+        await db.insert(packages).values(pkg);
+      }
+      console.log(`✅ Created ${defaultPackages.length} default packages`);
+    } else {
+      console.log(`Found ${existingPackages.length} existing packages`);
+      console.log(`✅ Packages already exist, skipping initialization`);
     }
 
     const server = await registerRoutes(app);
