@@ -1,0 +1,67 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are a senior full-stack engineer working in a Replit TypeScript monorepo (Node/Express API + React client, ESM, `tsx` runner).
+Apply **Option A (no aliases)** to fix a runtime import error by replacing path-alias imports with **direct relative imports** only. Make minimal, production-safe edits.
+
+**Error Context (from console):**
+`SyntaxError: The requested module '@shared/schema' does not provide an export named 'organizations'`
+File: `server/routes/ivr.ts`
+
+### Tasks
+
+1. **Fix the broken import in `server/routes/ivr.ts`:**
+
+   * Replace:
+
+     ```ts
+     import { organizations } from "@shared/schema";
+     ```
+   * With:
+
+     ```ts
+     import { organizations } from "../db/schema";
+     ```
+
+2. **Search and replace any remaining `@shared/*` imports in the API codebase** (do NOT add alias support):
+
+   * Match patterns:
+
+     * `from '@shared/schema'` → `from '../db/schema'` (adjust `../` depth per file)
+     * `from '@shared/*'` → replace with correct relative path to the real file.
+   * Update call sites only if path change causes unused imports; remove stray unused symbols.
+
+3. **Do not modify build/run scripts or add dependencies.**
+
+   * No `tsconfig-paths`, no new stubs, no alias barrels. Strictly path fixes.
+
+4. **Validate**
+
+   * Typecheck and run the API. Ensure no `@shared/schema` references remain and no new TS errors are introduced.
+
+### Output format
+
+* Print a **list of changed files**.
+* Provide **unified diffs** for each changed file.
+* Then print a short **summary** of what changed and why.
+* Finally, provide a **quick test plan** (3–5 steps) to verify the server boots in Replit.
+
+### Guardrails
+
+* Make only minimal edits required to replace alias imports with correct relative paths.
+* Do not alter runtime behavior besides fixing import paths.
+* If a file’s correct relative path isn’t obvious, compute it based on directory structure; never introduce new modules.
+
+### Acceptance Criteria
+
+* `npm run dev` boots cleanly (no `@shared/schema` errors).
+* `server/routes/ivr.ts` imports `organizations` from `../db/schema`.
+* No remaining `@shared/*` imports in server code.
+* No new TypeScript errors or lints introduced.
+* API responds on the expected port; existing endpoints continue to work.
+
+**Key Improvements:**
+• Focused on Option A only (remove alias usage).
+• Includes exact replace target, repo-wide search patterns, and acceptance criteria.
+• Requires diffs + a test plan so you can confirm the fix fast.
