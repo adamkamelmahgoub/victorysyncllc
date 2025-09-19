@@ -3,10 +3,8 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
 import passport from "./auth/passport";
-import { publicProcedure, router } from "./trpc";
 import { logMessage, openaiChatCompletion, getEmbeddings } from "./lib";
 import { z } from "zod";
-import type { Request, Response } from "express";
 import { db } from "./db";
 import {
   users,
@@ -115,58 +113,7 @@ app.use((req, res, next) => {
       }
     }
 
-    // Create a tRPC router
-    const appRouter = router({
-      // Add your tRPC procedures here
-      logMessage: publicProcedure.input(z.string()).mutation(logMessage),
-      openaiChatCompletion: publicProcedure
-        .input(
-          z.object({
-            model: z.string(),
-            messages: z.array(
-              z.object({ role: z.enum(["user", "system", "assistant"]), content: z.string() })
-            ),
-          })
-        )
-        .mutation(openaiChatCompletion),
-      getEmbeddings: publicProcedure
-        .input(z.string())
-        .mutation(getEmbeddings),
-      // Example of adding a tRPC route to interact with the database
-      getUsers: publicProcedure.query(async () => {
-        return await db.select().from(users);
-      }),
-      createContactSubmission: publicProcedure
-        .input(
-          z.object({
-            name: z.string(),
-            email: z.string().email(),
-            message: z.string(),
-          })
-        )
-        .mutation(async ({ input }) => {
-          await db.insert(contactSubmissions).values(input);
-          return { success: true };
-        }),
-      getServicePlans: publicProcedure.query(async () => {
-        return await db.select().from(servicePlans);
-      }),
-      getPurchaseOrders: publicProcedure.query(async () => {
-        return await db.select().from(purchaseOrders);
-      }),
-      getOrderItems: publicProcedure.query(async () => {
-        return await db.select().from(orderItems);
-      }),
-      getOrganizations: publicProcedure.query(async () => {
-        return await db.select().from(organizations);
-      }),
-      getEntitlements: publicProcedure.query(async () => {
-        return await db.select().from(entitlements);
-      }),
-    });
-
-    // Use the tRPC Express middleware to handle requests
-    app.use("/api", createExpressMiddleware({ router: appRouter, req, res }));
+    // API routes will be handled by registerRoutes
 
     // Wire up production routes
     app.use("/ivr", ivrRouter);
@@ -176,13 +123,10 @@ app.use((req, res, next) => {
     // Start report generation jobs
     startReportJobs();
 
-    if (NODE_ENV === "development") {
-      setupVite(app, server);
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
     } else {
-      app.use(express.static("client/dist"));
-      app.get("*", (req, res) => {
-        res.sendFile(path.resolve(path.join(__dirname, "../client/dist", "index.html")));
-      });
+      serveStatic(app);
     }
 
 
