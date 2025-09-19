@@ -1,9 +1,14 @@
 
 import { Pool } from '@neondatabase/serverless';
 import bcrypt from 'bcrypt';
-import { config } from 'dotenv';
 
-config();
+// Optional .env loader: works locally if installed, no-op on Replit
+try {
+  const { config } = await import('dotenv');
+  config();
+} catch {
+  // dotenv not installed (expected on Replit) — environment comes from Replit Secrets
+}
 
 const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
