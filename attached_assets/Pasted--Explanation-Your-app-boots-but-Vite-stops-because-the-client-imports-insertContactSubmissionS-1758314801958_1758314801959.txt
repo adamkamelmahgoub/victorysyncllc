@@ -1,0 +1,66 @@
+# Explanation
+
+Your app boots, but Vite stops because the client imports `insertContactSubmissionSchema` from `@shared/schema` and that export doesn’t exist in `client/src/shared/schema.ts`. Let’s add a **browser-safe Zod schema** with the exact export name the page expects.
+
+# Code
+
+Create/replace `client/src/shared/schema.ts` with:
+
+```ts
+// client/src/shared/schema.ts
+// Browser-safe types & validation only (no DB, no server code)
+import { z } from "zod";
+
+export const insertContactSubmissionSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Valid email required"),
+  message: z.string().min(1, "Message is required"),
+  organizationId: z.string().optional(),
+  consent: z.boolean().optional(),
+});
+export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
+
+// Optional: keep lightweight public types so other client code can import safely
+export type PlanId = "starter" | "growth" | "scale";
+export type OrganizationPublic = {
+  id: string;
+  name: string;
+  timezone?: string;
+  planId?: PlanId;
+};
+export const organizations: OrganizationPublic[] = [];
+```
+
+If you don’t already have Zod:
+
+```bash
+npm i zod
+```
+
+# Instructions
+
+1. Ensure your Vite alias routes `@shared/schema` to this file (in `vite.config.ts`):
+
+   ```ts
+   resolve: {
+     alias: {
+       "@": path.resolve(__dirname, "./client/src"),
+       "@shared/schema": path.resolve(__dirname, "./client/src/shared/schema.ts"),
+     }
+   }
+   ```
+2. (Cleanup) Remove any old client build folder that Vite might try to scan:
+
+   ```bash
+   rm -rf client/dist
+   ```
+3. Restart:
+
+   ```bash
+   npm run dev
+   ```
+4. Open the Preview. The `insertContactSubmissionSchema` import error should be gone.
+
+# Warnings
+
+* Keep `@shared/schema` **client-only** (types/constants/validation). Do not import server DB schema or Node modules in the browser. If the UI needs data, fetch it from `/api` instead of importing server code.
