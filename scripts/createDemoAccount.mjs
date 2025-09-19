@@ -10,6 +10,15 @@ try {
   // dotenv not installed (expected on Replit) — environment comes from Replit Secrets
 }
 
+// Validate DATABASE_URL exists
+if (!process.env.DATABASE_URL) {
+  console.error('❌ DATABASE_URL environment variable is not set');
+  console.log('💡 Please set your DATABASE_URL in Replit Secrets');
+  process.exit(1);
+}
+
+console.log('🔗 Using DATABASE_URL:', process.env.DATABASE_URL.substring(0, 20) + '...');
+
 const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
   max: 20,
@@ -18,7 +27,11 @@ const pool = new Pool({
 });
 
 async function createDemoAccount() {
-  const client = await pool.connect();
+  let client;
+  try {
+    console.log('🔌 Attempting to connect to database...');
+    client = await pool.connect();
+    console.log('✅ Database connection successful');
   
   try {
     console.log('🚀 Creating demo customer account...');
@@ -98,9 +111,16 @@ async function createDemoAccount() {
     console.log('\n🔗 You can now log in at: http://0.0.0.0:5000/login');
     
   } catch (error) {
-    console.error('❌ Error creating demo account:', error);
+    console.error('❌ Error creating demo account:', error.message);
+    if (error.message.includes('WebSocket')) {
+      console.log('💡 This might be a database connection issue.');
+      console.log('💡 Please check that your DATABASE_URL is correctly set in Replit Secrets');
+      console.log('💡 Format should be: postgresql://user:pass@host/database');
+    }
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
     await pool.end();
   }
 }
