@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -19,6 +20,7 @@ import ivrRouter from "./routes/ivr";
 import inboundEmailRouter from "./routes/inbound-email";
 import hubspotWebhook from "./webhooks/hubspot";
 import { startReportJobs } from "./jobs/reports";
+import { createServer } from "http";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -33,44 +35,45 @@ function validateEnvironment() {
   console.log(`✅ All required environment variables are set`);
 }
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Function to initialize the Express app
+async function initializeApp() {
+  const app = express();
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
 
-// Initialize Passport
-app.use(passport.initialize());
+  // Initialize Passport
+  app.use(passport.initialize());
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+  app.use((req, res, next) => {
+    const start = Date.now();
+    const path = req.path;
+    let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
+    const originalResJson = res.json;
+    res.json = function (bodyJson, ...args) {
+      capturedJsonResponse = bodyJson;
+      return originalResJson.apply(res, [bodyJson, ...args]);
+    };
 
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+    res.on("finish", () => {
+      const duration = Date.now() - start;
+      if (path.startsWith("/api")) {
+        let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+        if (capturedJsonResponse) {
+          logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        }
+
+        if (logLine.length > 80) {
+          logLine = logLine.slice(0, 79) + "…";
+        }
+
+        log(logLine);
       }
+    });
 
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
+    next();
   });
 
-  next();
-});
-
-(async () => {
   try {
     console.log(`🚀 Starting VictorySync application...`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -87,7 +90,7 @@ app.use((req, res, next) => {
     // Initialize default packages if none exist
     console.log(`📦 Initializing default packages...`);
     const existingPackages = await db.query.packages?.findMany() || [];
-    
+
     if (!existingPackages || existingPackages.length === 0) {
       const defaultPackages = [
         {
@@ -104,7 +107,7 @@ app.use((req, res, next) => {
         },
         {
           name: 'Growth',
-          price: '1299.00', 
+          price: '1299.00',
           description: 'Ideal for growing companies with higher volumes',
           features: [
             'Up to 2,000 calls/month',
@@ -178,6 +181,17 @@ app.use((req, res, next) => {
         throw error;
       }
     }
+    return server;
+
+  } catch (error) {
+    console.error(`❌ Failed to initialize app:`, error);
+    throw error; // Re-throw to be caught by the main server start logic
+  }
+}
+
+(async () => {
+  try {
+    const server = await initializeApp();
 
     // ALWAYS serve the app on port 5000
     // this serves both the API and the client.
