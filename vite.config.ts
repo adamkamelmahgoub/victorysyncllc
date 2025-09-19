@@ -22,6 +22,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./client/src"),
+      // Map server-only alias to a client-safe module
+      "@shared/schema": path.resolve(__dirname, "./client/src/shared/schema.ts"),
     },
   },
   server: {
