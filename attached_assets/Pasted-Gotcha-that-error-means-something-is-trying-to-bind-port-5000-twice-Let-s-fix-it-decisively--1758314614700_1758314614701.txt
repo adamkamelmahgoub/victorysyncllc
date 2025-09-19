@@ -1,0 +1,78 @@
+Gotcha — that error means something is trying to bind **port 5000 twice**. Let’s fix it decisively.
+
+# Explanation
+
+Even if you killed stray processes, the most common remaining cause is **a second `listen()` call** somewhere (often in a route file or a secondary bootstrap). We’ll (1) hard-guard your server so it cannot double-bind in a single process, and (2) quickly verify there’s only one listener in the codebase, and (3) clear any stale process.
+
+# Code (add a one-line global guard + better logs)
+
+Put this **at the bottom** of your `server/index.ts`, where you call `listen()`. Replace your existing listen block with this:
+
+```ts
+// server/index.ts (bottom portion)
+
+// Ensure we never bind twice in the same process
+const PORT = Number(process.env.PORT) || 5000;
+const BIND = () => {
+  httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`(express) serving on port ${PORT} (pid ${process.pid})`);
+  });
+};
+
+// Guard against double start in the same Node process
+if (!(globalThis as any).__vs_server_started__) {
+  (globalThis as any).__vs_server_started__ = true;
+  BIND();
+} else {
+  console.warn(`[boot] server already started in this process (pid ${process.pid}), skip second listen.`);
+}
+
+// Helpful diagnostics
+httpServer.on('error', (err: any) => {
+  if (err?.code === 'EADDRINUSE') {
+    console.error(`[boot] Port ${PORT} is in use. Another process or double-start is binding 5000.`);
+    console.error('[hint] Run: pkill -f node || true   then npm run dev');
+  }
+  throw err;
+});
+```
+
+> This won’t hide real problems — it only prevents a second `.listen()` from executing in the same process and prints a loud warning.
+
+# Instructions (do these now)
+
+1. **Search for extra listeners and remove them**
+   In the Replit shell:
+
+   ```bash
+   grep -R "listen(" -n server | grep -v node_modules
+   ```
+
+   Expected: **one** result in `server/index.ts` only.
+   If you see any match in files like `server/routes/ivr.ts`, `server/app.ts`, or helpers, delete those `listen()` calls (routes should export Routers/functions only).
+
+2. **Make sure you’re not starting the API twice**
+
+   * Your `npm run dev` should start **one** API process. Don’t also start another “Run”/Workflow that calls the same entry file.
+   * If you previously embedded Vite inside the API (via `import { createServer as createViteServer } from 'vite'`), remove that — you already run Vite separately.
+
+3. **Kill stale processes and restart**
+
+   ```bash
+   pkill -f node || true
+   npm run dev
+   ```
+
+   (If needed: `npx -y kill-port 5000 5173`.)
+
+4. **Quick verification**
+
+   * Console should show **one** line: `(express) serving on port 5000 (pid …)`.
+   * Open `/health` in Preview → `{ ok: true }`.
+   * The preview should stay stable.
+
+# Why this works
+
+* The **global guard** makes it impossible for the current Node process to call `listen()` twice (common when an imported file re-runs bootstrap code).
+* The **grep check** finds any rogue `listen()` calls elsewhere.
+* The **kill step** clears any orphaned process that might still be holding 5000 from a previous run.
