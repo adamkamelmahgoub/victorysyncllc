@@ -32,8 +32,7 @@ async function createDemoAccount() {
     console.log('🔌 Attempting to connect to database...');
     client = await pool.connect();
     console.log('✅ Database connection successful');
-  
-  try {
+    
     console.log('🚀 Creating demo customer account...');
     
     // Hash password for demo account
