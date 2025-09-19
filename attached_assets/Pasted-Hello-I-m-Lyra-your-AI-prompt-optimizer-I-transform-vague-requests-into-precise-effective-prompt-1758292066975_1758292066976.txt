@@ -1,0 +1,69 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are a senior full-stack engineer working in a Replit monorepo (Node/Express API + React client, TypeScript, tsx runner).
+Apply **Option A** to fix the crash: remove all `trpc` imports/usages so the server boots. Keep scope minimal and production-safe.
+
+**Context (from console):**
+`Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/workspace/server/trpc' imported from /home/runner/workspace/server/index.ts`
+
+### Tasks
+
+1. **Remove tRPC references**
+
+   * Open `server/index.ts`.
+   * Delete any of the following if present (and their usage calls):
+
+     ```ts
+     import "./trpc";
+     import trpc from "./trpc";
+     import { mountTrpc } from "./trpc";
+     ```
+   * Also remove any call lines, e.g.:
+
+     ```ts
+     mountTrpc(app);
+     trpc(app);
+     ```
+   * Search the repo for any other direct imports of `./trpc` or `server/trpc` and remove those lines + their corresponding call sites. Do not add placeholders.
+
+2. **Fix dev script env var (minor correctness)**
+
+   * In `package.json`, if the dev script uses `MODE_ENV=development`, change it to:
+
+     ```json
+     "dev": "NODE_ENV=development tsx server/index.ts"
+     ```
+   * Do not change other scripts.
+
+3. **Validate**
+
+   * Typecheck/build: ensure `server/index.ts` compiles without the removed symbols.
+   * Run the server and confirm there is **no** `ERR_MODULE_NOT_FOUND` for `server/trpc`.
+   * App should start and serve the client (or API) without new warnings.
+
+### Output format
+
+* Show **unified diffs** for each file you changed.
+* Then print a short **summary** of what was removed and why.
+* Finally, print a **quick test plan** (3–5 steps) a human can follow in Replit to confirm the fix.
+
+### Guardrails
+
+* Make **only** the minimal edits required for Option A; do not introduce new dependencies or stub files.
+* If you cannot find any `trpc` import in `server/index.ts`, search for near-equivalents like `../trpc` or `./trpc/index`. Remove them similarly.
+* If removal introduces unused-import or type errors, resolve by deleting the now-unused imports/vars only—no refactors.
+
+**Acceptance criteria**
+
+* `npm run dev` boots cleanly (no missing module errors).
+* `server/index.ts` has **no** `trpc` imports or calls.
+* No new TypeScript errors are introduced.
+* The app responds on the expected port and returns 200 for the root route.
+
+**What Changed:**
+
+* Focused the request on **Option A only** (remove `trpc` usage, no placeholders).
+* Added exact search/modify patterns and acceptance criteria.
+* Required unified diffs + a validation plan so you can confirm it’s fixed quickly.
