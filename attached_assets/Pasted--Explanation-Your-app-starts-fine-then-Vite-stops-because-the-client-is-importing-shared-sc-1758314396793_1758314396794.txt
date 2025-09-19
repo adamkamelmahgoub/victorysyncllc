@@ -1,0 +1,154 @@
+# Explanation
+
+Your app starts fine, then Vite stops because the **client is importing `@shared/schema`**:
+
+```
+Error: The following dependencies are imported but could not be resolved:
+@shared/schema (imported by client/src/pages/contact.tsx)
+```
+
+That alias points to your **server DB schema** (Drizzle tables). You must not import server-only code into the browser bundle. Fix: map `@shared/schema` to a **client-safe module** (types/constants only) and update the client to use that — or call the API instead.
+
+Below are two parts: a **quick unblocking fix** (alias + stub file) and the **proper fix** (fetch from API rather than importing server schema).
+
+---
+
+# Code
+
+## 1) Add a client-safe alias (unblocks the build)
+
+Update `client/vite.config.ts` resolve block to include a mapping for `@shared/schema` to a new client file:
+
+```diff
+// vite.config.ts (you already have react(), root: "client", etc.)
+ import path from "path";
+ // ... ESM __dirname code you added earlier ...
+
+ export default defineConfig({
+   root: "client",
+   plugins: [react()],
+   build: { outDir: "../server/public", emptyOutDir: true },
+   server: {
+     host: "0.0.0.0",
+     port: 5173,
+     strictPort: true,
+     hmr: { protocol: "wss", clientPort: 443, host: REPL_HOST },
+     proxy: { "/api": "http://localhost:5000", "/webhooks": "http://localhost:5000" }
+   },
+   resolve: {
+     alias: {
+       "@": path.resolve(__dirname, "./client/src"),
++      // Map server-only alias to a client-safe module
++      "@shared/schema": path.resolve(__dirname, "./client/src/shared/schema.ts"),
+     }
+   }
+ });
+```
+
+Create the client-safe module it points to:
+
+```ts
+// client/src/shared/schema.ts
+// ⚠️ Browser-safe exports ONLY (types/constants). No DB, no Node APIs.
+
+export type PlanId = "starter" | "growth" | "scale";
+
+export type ContactRequest = {
+  name: string;
+  email: string;
+  message: string;
+  organizationId?: string;
+};
+
+// If your UI expects an 'organizations' value, export a browser-safe shape:
+export type OrganizationPublic = {
+  id: string;
+  name: string;
+  timezone?: string;
+  planId?: PlanId;
+};
+
+// Optional minimal placeholder to avoid runtime crashes until you wire the API:
+export const organizations: OrganizationPublic[] = [];
+```
+
+> This immediately satisfies Vite. The export list should match what your `contact.tsx` imports from `@shared/schema`.
+
+---
+
+## 2) Proper fix (recommended): stop importing schema in the browser
+
+In `client/src/pages/contact.tsx`, **replace** any usage like:
+
+```ts
+// ❌ Stop importing server schema/tables
+// import { organizations } from "@shared/schema";
+```
+
+Use the API instead:
+
+```ts
+// ✅ Fetch public org info (or whatever data you need)
+import { useEffect, useState } from "react";
+import type { OrganizationPublic } from "@/shared/schema";
+
+export default function ContactPage() {
+  const [orgs, setOrgs] = useState<OrganizationPublic[]>([]);
+
+  useEffect(() => {
+    fetch("/api/orgs/public")           // create this endpoint on the server if needed
+      .then(r => r.json())
+      .then(setOrgs)
+      .catch(() => setOrgs([]));
+  }, []);
+
+  // ... render using 'orgs' ...
+}
+```
+
+Server example for `/api/orgs/public` (browser-safe data only):
+
+```ts
+// server/routes/index.ts
+router.get("/orgs/public", async (_req, res) => {
+  // Query DB and map to safe fields (no secrets)
+  const rows = await db.query.organizations.findMany({
+    columns: { id: true, name: true, timezone: true, planId: true }
+  });
+  res.json(rows);
+});
+```
+
+---
+
+# Instructions
+
+1. **Search and fix all client imports** of `@shared/schema`:
+
+   ```
+   grep -R "from '@shared/schema'" -n client/src || true
+   ```
+
+   * Point them to the **client file** you created (`@shared/schema` alias) and keep imports **type-only** when possible:
+
+     ```ts
+     import type { OrganizationPublic } from "@shared/schema";
+     ```
+   * For any runtime data (like `organizations`), switch to **fetching from `/api`** as shown above.
+
+2. **Restart dev**:
+
+   ```
+   npm run dev
+   ```
+
+   Preview should stay loaded; the Vite error disappears.
+
+3. **Remove server-only imports** anywhere in the client (DB schema, Node modules, server utils). Only import browser-safe code.
+
+---
+
+# Warnings
+
+* Do **not** import Drizzle tables, Node/crypto, or any server-only modules into the client; Vite will try to bundle them and fail (or worse, leak details).
+* Keep `@shared/schema` restricted to **types and constants** that are safe for the browser. All dynamic or sensitive data must come from your API.
