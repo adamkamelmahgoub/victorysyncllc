@@ -153,6 +153,14 @@ app.use((req, res, next) => {
       res.status(status).json({ message });
     });
 
+    // Wire up production routes
+    app.use("/ivr", ivrRouter);
+    app.use("/webhooks", hubspotWebhook);
+    app.use("/webhooks", inboundEmailRouter);
+
+    // Start report generation jobs
+    startReportJobs();
+
     // importantly only setup vite in development and after
     // setting up all the other routes so the catch-all route
     // doesn't interfere with the other routes
@@ -170,24 +178,6 @@ app.use((req, res, next) => {
         throw error;
       }
     }
-
-    // API routes will be handled by registerRoutes
-
-    // Wire up production routes
-    app.use("/ivr", ivrRouter);
-    app.use("/webhooks", hubspotWebhook);
-    app.use("/webhooks", inboundEmailRouter);
-
-    // Start report generation jobs
-    startReportJobs();
-
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-    } else {
-      serveStatic(app);
-    }
-
-
 
     // ALWAYS serve the app on port 5000
     // this serves both the API and the client.
