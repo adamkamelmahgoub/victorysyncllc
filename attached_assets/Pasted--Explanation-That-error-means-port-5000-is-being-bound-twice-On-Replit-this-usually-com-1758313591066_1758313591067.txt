@@ -1,0 +1,106 @@
+# Explanation
+
+That error means port **5000** is being bound **twice**. On Replit this usually comes from one (or more) of these:
+
+1. You call `listen()` in more than one file (e.g., once in `server/index.ts` and again in a route/util).
+2. You start the API **and** also start a Vite dev server **inside** the API process (dev-middleware), and your bootstrap runs twice.
+3. A previous process is still holding 5000.
+
+Below is a clean, production-safe pattern that guarantees exactly **one** listener and avoids the Vite-in-Node trap.
+
+---
+
+# Code
+
+### 1) Split app construction from the network listener
+
+```ts
+// server/app.ts  << NEW
+import express from "express";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+import { router as apiRouter } from "./routes/index";
+
+const app = express();
+app.use(cors());
+app.use(express.json({ verify: (req, _res, buf) => ((req as any).rawBody = buf) }));
+
+app.use("/api", apiRouter);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname, "public")));
+app.get("/health", (_req, res) => res.json({ ok: true }));
+
+export default app;
+```
+
+```ts
+// server/index.ts  << ONLY place that binds the port
+import "dotenv/config";
+import { createServer } from "http";
+import app from "./app";
+
+const PORT = Number(process.env.PORT) || 5000;
+const httpServer = createServer(app);
+
+httpServer.listen(PORT, "0.0.0.0", () => {
+  console.log(`(express) serving on port ${PORT}`);
+});
+```
+
+### 2) Ensure no other file calls `listen()` or starts Vite inside Node
+
+If you have any of these, remove them:
+
+```ts
+// 🚫 in any module
+app.listen(5000);
+createServer(app).listen(5000);
+import { createServer as createViteServer } from "vite"; // dev-middleware inside API – remove
+```
+
+---
+
+# Instructions
+
+1. **Search for duplicate listeners** and delete them:
+
+   ```
+   grep -R "listen(" -n server | grep -v node_modules
+   ```
+
+   You should see **exactly one** hit: `server/index.ts`.
+
+2. **Remove Vite-in-Node** (if present):
+   Search for `from "vite"` or `createServer(` from Vite and delete that code. You already run Vite with a separate process (`vite dev` on 5173). The API should not spin up Vite.
+
+3. **Adopt the split files** above:
+
+   * Create `server/app.ts` and move your middleware/routes/static + `/health` there.
+   * Keep `server/index.ts` as the **only** place that calls `listen()`.
+
+4. **Kill any stale process and restart**:
+
+   * Stop the Replit run.
+   * In Shell:
+
+     ```
+     fuser -k 5000/tcp || true
+     ```
+   * Start again: `npm run dev`.
+
+5. **Verify**
+
+   * Console shows a **single** line: `(express) serving on port 5000)`.
+   * Preview stays loaded.
+   * `GET /health` returns `{ ok: true }`.
+
+---
+
+# Warnings
+
+* Never call `listen()` from routes, webhooks, or utility modules. They should **export routers/functions only**.
+* Don’t mount Vite dev middleware inside the API when you’re already running `vite` separately; that can cause side effects and double starts.
+* Keep `PORT || 5000` to play nice with Replit’s environment.
