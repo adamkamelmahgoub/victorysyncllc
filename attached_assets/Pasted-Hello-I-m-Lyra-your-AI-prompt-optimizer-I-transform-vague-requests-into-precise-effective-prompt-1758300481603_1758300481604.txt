@@ -1,0 +1,56 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are a senior frontend engineer working in a **Replit** project (Vite + React + TypeScript, Node/Express API on port 5000).
+Apply **Option A: Stabilize Vite dev HMR on Replit** to stop the Preview from “loading → shows site → loading” loops. Make minimal, production-safe edits.
+
+### Context
+
+* Express is healthy on **port 5000** with `/health`.
+* Preview keeps reconnecting in **dev** due to Vite HMR websocket not resolving through Replit’s proxy.
+* Goal: configure Vite server + HMR to use **WSS:443** and the Replit hostname, and proxy API to port 5000.
+
+### Tasks
+
+1. **Edit `client/vite.config.ts`**
+
+   * Ensure `react()` plugin is present.
+   * Set server config for Replit:
+
+     * `host: "0.0.0.0"`
+     * `port: 5173`, `strictPort: true`
+     * `hmr: { protocol: "wss", clientPort: 443, host: REPL_HOST }`
+
+       * `REPL_HOST = process.env.REPL_SLUG && process.env.REPL_OWNER ? \`\${process.env.REPL\_SLUG}.\${process.env.REPL\_OWNER}.repl.co\` : "localhost"\`
+     * `proxy: { "/api": "http://localhost:5000", "/webhooks": "http://localhost:5000" }`
+   * Do **not** reference `window` in Vite config.
+
+2. **Keep scripts unchanged** (we already run API and Vite concurrently). No new deps.
+
+3. **Validate**
+
+   * Start dev server. Open Preview and confirm:
+
+     * Root page stays loaded (no oscillation).
+     * In DevTools → Network → WS, HMR connects to `wss://<REPL_HOST>/` with status 101.
+     * API calls go to `/api/*` and are proxied to `:5000` (2xx responses).
+
+### Output format
+
+* Show **unified diff** for `client/vite.config.ts`.
+* Then print a brief **summary** of what changed and why it fixes the loop.
+* Finally, provide a **3–5 step test plan** to confirm HMR stability in Replit.
+
+### Guardrails
+
+* Minimal edits only; no additional packages.
+* Don’t touch Express or build config.
+* If project uses a different client path, compute the correct relative path; otherwise assume `client/vite.config.ts`.
+
+### Acceptance Criteria
+
+* Preview no longer flips between “Loading” and the app.
+* HMR websocket uses **WSS:443** to the current Replit hostname.
+* API proxy to `:5000` works.
+* No TypeScript/build errors introduced.
