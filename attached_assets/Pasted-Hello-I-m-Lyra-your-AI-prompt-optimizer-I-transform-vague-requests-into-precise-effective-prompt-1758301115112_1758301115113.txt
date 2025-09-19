@@ -1,0 +1,78 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are a senior frontend engineer working in a **Replit** TypeScript monorepo: Vite + React client (`client/`), Node/Express API on port **5000**, ESM runtime with `tsx`.
+Fix the dev Preview loop and the error `ReferenceError: __dirname is not defined in ES module scope` by applying **Option A (stable HMR on Replit)** and making the Vite config ESM-safe. Make **minimal, production-safe** edits.
+
+### Repo state & symptoms
+
+* Error: `vite.config.ts: __dirname is not defined` (ESM).
+* Preview “loads → shows site → loads” (HMR websocket not resolving through Replit proxy).
+* Express is healthy on port 5000 with `/health`.
+
+### Tasks
+
+1. **Edit `vite.config.ts` to be ESM-safe and Replit-friendly.**
+
+   * Import `path` and `fileURLToPath` from `url`, derive `__filename`/`__dirname`:
+
+     ```ts
+     import path from "path";
+     import { fileURLToPath } from "url";
+     const __filename = fileURLToPath(import.meta.url);
+     const __dirname = path.dirname(__filename);
+     ```
+   * Keep Vite **root** at `"client"` and **build.outDir** at `"../server/public"`.
+   * Add a stable HMR block for Replit:
+
+     ```ts
+     const REPL_HOST = (process.env.REPL_SLUG && process.env.REPL_OWNER)
+       ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
+       : "localhost";
+     server: {
+       host: "0.0.0.0",
+       port: 5173,
+       strictPort: true,
+       hmr: { protocol: "wss", clientPort: 443, host: REPL_HOST },
+       proxy: { "/api": "http://localhost:5000", "/webhooks": "http://localhost:5000" }
+     }
+     ```
+   * Maintain the alias:
+
+     ```ts
+     resolve: { alias: { "@": path.resolve(__dirname, "./client/src") } }
+     ```
+   * Do **not** reference `window` in the config.
+
+2. **Do not add dependencies or change server code.**
+   No `tsconfig-paths`, no new packages, no changes to Express.
+
+3. **Sanity check**
+
+   * Ensure `root: "client"` and `build.outDir: "../server/public"` remain correct.
+   * Ensure TypeScript types pass.
+
+### Output format
+
+* Provide a **unified diff** for `vite.config.ts` (only this file).
+* Then write a **brief summary** (2–4 sentences) explaining how the changes fix the error and stabilize HMR on Replit.
+* Finally, give a **3–5 step test plan** to verify:
+
+  1. `npm run dev` starts without `__dirname` error,
+  2. Preview stays loaded,
+  3. DevTools → Network → **WS** shows HMR connected to `wss://<repl-host>:443`,
+  4. API proxy to `/api` works (2xx responses).
+
+### Guardrails
+
+* Minimal edits only; no extra dependencies; no config outside `vite.config.ts`.
+* Keep production build behavior unchanged (`npm run build` then `npm run start` serves from Express on :5000).
+* If the project path differs, compute correct relative paths—don’t introduce placeholders.
+
+### Acceptance Criteria
+
+* Error `__dirname is not defined` is resolved.
+* Preview no longer oscillates between loading and the app.
+* HMR websocket connects via **WSS:443** to the current Replit hostname.
+* No TypeScript/build errors introduced.
