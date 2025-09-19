@@ -1,4 +1,9 @@
-import "dotenv/config";
+// Optional .env loader: works locally if installed, no-op on Replit
+try {
+  await import('dotenv/config');
+} catch {
+  // dotenv not installed (expected on Replit) — environment comes from Replit Secrets
+}
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
