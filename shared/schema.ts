@@ -81,6 +81,24 @@ export const contactSubmissions = pgTable("contact_submissions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Organizations table for IVR routing
+export const organizations = pgTable("organizations", {
+  id: varchar("id").primaryKey(),
+  name: varchar("name").notNull(),
+  planId: varchar("plan_id").notNull(), // scale, growth, basic
+  timezone: varchar("timezone").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Entitlements table for feature access
+export const entitlements = pgTable("entitlements", {
+  id: serial("id").primaryKey(),
+  orgId: varchar("org_id").notNull(),
+  featureId: varchar("feature_id").notNull(),
+  enabled: boolean("enabled").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const ordersRelations = relations(orders, ({ many }) => ({
   items: many(orderItems),
@@ -116,6 +134,12 @@ export type OrderItem = typeof orderItems.$inferSelect;
 
 export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+
+export type InsertOrganization = typeof organizations.$inferInsert;
+export type Organization = typeof organizations.$inferSelect;
+
+export type InsertEntitlement = typeof entitlements.$inferInsert;
+export type Entitlement = typeof entitlements.$inferSelect;
 
 // Schemas
 export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({

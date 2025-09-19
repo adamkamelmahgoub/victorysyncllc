@@ -2,7 +2,7 @@
 import { Router } from "express";
 import twilio from "twilio";
 import { db } from "../db";
-import { organizations } from "@shared/schema";
+import { organizations } from "../../shared/schema";
 import { eq } from "drizzle-orm";
 import { DateTime } from "luxon";
 
