@@ -3,17 +3,35 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
 import passport from "./auth/passport";
+import { publicProcedure, router } from "./trpc";
+import { logMessage, openaiChatCompletion, getEmbeddings } from "./lib";
+import { z } from "zod";
+import type { Request, Response } from "express";
+import { db } from "./db";
+import {
+  users,
+  contactSubmissions,
+  servicePlans,
+  purchaseOrders,
+  orderItems,
+  organizations,
+  entitlements,
+} from "@shared/schema";
+import ivrRouter from "./routes/ivr";
+import inboundEmailRouter from "./routes/inbound-email";
+import hubspotWebhook from "./webhooks/hubspot";
+import { startReportJobs } from "./jobs/reports";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
   const requiredEnvVars = ['DATABASE_URL'];
   const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
-  
+
   if (missing.length > 0) {
     console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
     process.exit(1);
   }
-  
+
   console.log(`✅ All required environment variables are set`);
 }
 
@@ -58,23 +76,23 @@ app.use((req, res, next) => {
   try {
     console.log(`🚀 Starting VictorySync application...`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    
+
     // Validate environment variables
     validateEnvironment();
-    
+
     // Test database connection
     const dbConnected = await testDatabaseConnection();
     if (!dbConnected) {
       throw new Error('Database connection failed - cannot start server');
     }
-    
+
     const server = await registerRoutes(app);
     console.log(`✅ Routes registered successfully`);
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
-      
+
       console.error(`❌ Application error: ${message}`, err);
       res.status(status).json({ message });
     });
@@ -95,6 +113,76 @@ app.use((req, res, next) => {
         console.log(`In production, ensure you run 'npm run build' before starting the server.`);
         throw error;
       }
+    }
+
+    // Create a tRPC router
+    const appRouter = router({
+      // Add your tRPC procedures here
+      logMessage: publicProcedure.input(z.string()).mutation(logMessage),
+      openaiChatCompletion: publicProcedure
+        .input(
+          z.object({
+            model: z.string(),
+            messages: z.array(
+              z.object({ role: z.enum(["user", "system", "assistant"]), content: z.string() })
+            ),
+          })
+        )
+        .mutation(openaiChatCompletion),
+      getEmbeddings: publicProcedure
+        .input(z.string())
+        .mutation(getEmbeddings),
+      // Example of adding a tRPC route to interact with the database
+      getUsers: publicProcedure.query(async () => {
+        return await db.select().from(users);
+      }),
+      createContactSubmission: publicProcedure
+        .input(
+          z.object({
+            name: z.string(),
+            email: z.string().email(),
+            message: z.string(),
+          })
+        )
+        .mutation(async ({ input }) => {
+          await db.insert(contactSubmissions).values(input);
+          return { success: true };
+        }),
+      getServicePlans: publicProcedure.query(async () => {
+        return await db.select().from(servicePlans);
+      }),
+      getPurchaseOrders: publicProcedure.query(async () => {
+        return await db.select().from(purchaseOrders);
+      }),
+      getOrderItems: publicProcedure.query(async () => {
+        return await db.select().from(orderItems);
+      }),
+      getOrganizations: publicProcedure.query(async () => {
+        return await db.select().from(organizations);
+      }),
+      getEntitlements: publicProcedure.query(async () => {
+        return await db.select().from(entitlements);
+      }),
+    });
+
+    // Use the tRPC Express middleware to handle requests
+    app.use("/api", createExpressMiddleware({ router: appRouter, req, res }));
+
+    // Wire up production routes
+    app.use("/ivr", ivrRouter);
+    app.use("/webhooks", hubspotWebhook);
+    app.use("/webhooks", inboundEmailRouter);
+
+    // Start report generation jobs
+    startReportJobs();
+
+    if (NODE_ENV === "development") {
+      setupVite(app, server);
+    } else {
+      app.use(express.static("client/dist"));
+      app.get("*", (req, res) => {
+        res.sendFile(path.resolve(path.join(__dirname, "../client/dist", "index.html")));
+      });
     }
 
 
@@ -129,7 +217,7 @@ app.use((req, res, next) => {
         process.exit(0);
       });
     });
-    
+
   } catch (error) {
     console.error(`❌ Failed to start server:`, error);
     process.exit(1);
