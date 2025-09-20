@@ -81,34 +81,6 @@ export const contactSubmissions = pgTable("contact_submissions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Organizations table for IVR routing
-export const organizations = pgTable("organizations", {
-  id: varchar("id").primaryKey(),
-  name: varchar("name").notNull(),
-  planId: varchar("plan_id").notNull(), // scale, growth, basic
-  timezone: varchar("timezone").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Users table for demo authentication
-export const users = pgTable("users", {
-  id: varchar("id", { length: 36 }).primaryKey(),
-  email: varchar("email", { length: 190 }).notNull(),
-  passwordHash: varchar("password_hash", { length: 200 }).notNull(),
-  orgId: varchar("org_id", { length: 36 }).notNull(),
-  role: varchar("role", { length: 32 }).default("member"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Entitlements table for feature access
-export const entitlements = pgTable("entitlements", {
-  id: serial("id").primaryKey(),
-  orgId: varchar("org_id").notNull(),
-  featureId: varchar("feature_id").notNull(),
-  enabled: boolean("enabled").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
 // Relations
 export const ordersRelations = relations(orders, ({ many }) => ({
   items: many(orderItems),
@@ -129,12 +101,20 @@ export const packagesRelations = relations(packages, ({ many }) => ({
   orderItems: many(orderItems),
 }));
 
+export const integrations = pgTable('integrations', {
+  id: serial('id').primaryKey(),
+  customer_id: text('customer_id').notNull(),
+  type: text('type').notNull(), // 'hubspot', 'salesforce', 'five9', etc.
+  access_token: text('access_token').notNull(),
+  refresh_token: text('refresh_token'),
+  is_active: boolean('is_active').default(true),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+});
+
 // Types
 export type InsertPublicUser = typeof publicUsers.$inferInsert;
 export type PublicUser = typeof publicUsers.$inferSelect;
-
-export type InsertUser = typeof users.$inferInsert;
-export type User = typeof users.$inferSelect;
 
 export type InsertPackage = typeof packages.$inferInsert;
 export type Package = typeof packages.$inferSelect;
@@ -147,12 +127,6 @@ export type OrderItem = typeof orderItems.$inferSelect;
 
 export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
-
-export type InsertOrganization = typeof organizations.$inferInsert;
-export type Organization = typeof organizations.$inferSelect;
-
-export type InsertEntitlement = typeof entitlements.$inferInsert;
-export type Entitlement = typeof entitlements.$inferSelect;
 
 // Schemas
 export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
