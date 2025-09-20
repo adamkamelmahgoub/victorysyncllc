@@ -1,0 +1,589 @@
+Here’s a clean, copy-paste **Claude prompt** you can drop into Replit’s Assistant. It tells Claude exactly what to do, gives it all the code, and keeps it within **Option B** (code-level compatibility; no destructive DB migrations; don’t touch `.replit` / `replit.nix`). It wires up the **Pricing** page to real plan upgrades (Starter, Growth, Scale), applies **entitlements** for the chosen plan, and keeps everything production-ready.
+
+---
+
+# Claude — Implement Pricing + Plan Entitlements + Checkout (Option B, Replit-safe)
+
+You’re a senior full-stack engineer working inside my Replit project **VictorySync** (Node/TypeScript + Express + Vite/React, Neon Postgres).
+Your job: **fully implement plan upgrades from the Pricing page** with correct **entitlements** for Starter/Growth/Scale, Stripe checkout (with dev fallback), and bulletproof code-level DB compatibility (Option B). **Do not modify `.replit` or `replit.nix`. No destructive migrations.**
+
+## Hard constraints (read all)
+
+* DB: Neon Postgres.
+* Existing drift you must respect:
+
+  * `organizations.id` is **TEXT** in this environment (some code historically assumed INTEGER).
+  * `organizations.plan_id` exists and is TEXT.
+  * Table **`entitlements`** must have a **`value TEXT`** column; add idempotently if missing.
+* Use **Option B**: fix mismatches in code (e.g., always cast parameters to `::text` when comparing to `organizations.id`).
+* Socket.io is **disabled** in dev. Don’t add it.
+* Stripe should work if keys exist; otherwise use a **safe dev fallback** to apply plan and entitlements without Stripe.
+* Keep everything idempotent. No breaking schema changes.
+
+## What I need working end-to-end
+
+1. **Pricing page buttons** (Starter/Growth/Scale) call a backend to:
+
+   * Create a Stripe Checkout Session **if keys exist** and redirect there, **or**
+   * Use the **dev fallback** to apply plan immediately and return to dashboard.
+2. When a plan is applied (via webhook or fallback), we:
+
+   * Set `organizations.plan_id` to the chosen plan id.
+   * Upsert the **full set of entitlements** for that plan into `entitlements` (with `org_id` as **TEXT** and `value='enabled'`).
+3. `/api/auth/me` must include `{ plan, entitlements }` so the UI can gate features reliably.
+4. A **seed script** creates a demo organization (`id='demo-scale'`) and an admin user `demo@victorysync.com / VictoryScale123!` with **Scale** entitlements, so we can demo immediately.
+5. All queries comparing org ids must use **`::text`** for parameters, never cast the column.
+6. Fix prior Stripe duplicate export name issues and keep build error-free.
+
+---
+
+## Files to add / update
+
+> Keep paths exactly as shown. If a file exists, replace its contents with what I give you.
+
+### 0) Server compatibility helpers (Option B)
+
+**`server/db/compat.ts`**
+
+```ts
+import { neon } from '@neondatabase/serverless';
+
+export const sql = neon(process.env.DATABASE_URL!);
+
+// Ensure entitlements has a `value` column (idempotent)
+export async function ensureEntitlementsValueColumn() {
+  await sql/* sql */`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema='public' AND table_name='entitlements' AND column_name='value'
+      ) THEN
+        ALTER TABLE entitlements ADD COLUMN value TEXT;
+      END IF;
+    END $$;
+  `;
+}
+
+// Always compare params to organizations.id as TEXT
+export const asOrgText = (orgId: string | number) => String(orgId);
+
+// Convenience getters
+export async function getOrgById(orgId: string) {
+  const rows = await sql/* sql */`
+    SELECT id::text AS id, name, plan_id, timezone
+    FROM organizations
+    WHERE id = ${orgId}::text
+    LIMIT 1
+  `;
+  return rows[0] ?? null;
+}
+
+export async function setOrgPlan(orgId: string, planId: string) {
+  await sql/* sql */`
+    UPDATE organizations SET plan_id = ${planId}
+    WHERE id = ${orgId}::text
+  `;
+}
+```
+
+### 1) Canonical plan definitions + entitlements mapping
+
+**`server/billing/plans.ts`**
+
+```ts
+export type PlanId = 'starter' | 'growth' | 'scale';
+
+export const Plans: Record<PlanId, { name: string; price: number; features: string[] }> = {
+  starter: {
+    name: 'Starter',
+    price: 1200,
+    features: [
+      'dedicated_agent_1',
+      'business_hours_support',
+      'crm_basic',
+      'email_support',
+      'reports_monthly'
+    ]
+  },
+  growth: {
+    name: 'Growth',
+    price: 2500,
+    features: [
+      'dedicated_agents_2',
+      'extended_hours',
+      'appointment_setting',
+      'crm_advanced',
+      'live_chat',
+      'reports_weekly'
+    ]
+  },
+  scale: {
+    name: 'Scale',
+    price: 4500,
+    features: [
+      'team_24_7_blended',
+      'ai_automation_suite',
+      'success_manager',
+      'custom_integrations',
+      'priority_support',
+      'analytics_realtime'
+    ]
+  }
+};
+```
+
+### 2) Stripe integration with safe fallback + plan application
+
+**Fix duplicate export/name issues by using unique names.**
+
+**`server/billing/stripe.ts`**
+
+```ts
+import type { PlanId } from './plans';
+import { Plans } from './plans';
+import { neon } from '@neondatabase/serverless';
+import { sql as sharedSql, ensureEntitlementsValueColumn, setOrgPlan } from '../db/compat';
+
+const SQL = sharedSql; // alias for clarity
+
+// Apply plan + entitlements in a single transaction
+export async function applyPlanToOrgTransactional(orgId: string, planId: PlanId) {
+  await ensureEntitlementsValueColumn();
+
+  await SQL/* sql */`BEGIN`;
+  try {
+    await setOrgPlan(orgId, planId);
+
+    // Clear prior entitlements for idempotency
+    await SQL/* sql */`
+      DELETE FROM entitlements WHERE org_id = ${orgId}::text
+    `;
+
+    const features = Plans[planId].features;
+    for (const feature of features) {
+      await SQL/* sql */`
+        INSERT INTO entitlements (org_id, feature_id, enabled, value)
+        VALUES (${orgId}::text, ${feature}, true, 'enabled')
+        ON CONFLICT (org_id, feature_id) DO UPDATE
+          SET enabled = EXCLUDED.enabled, value = EXCLUDED.value
+      `;
+    }
+
+    await SQL/* sql */`COMMIT`;
+  } catch (e) {
+    await SQL/* sql */`ROLLBACK`;
+    throw e;
+  }
+}
+
+// Stripe: only if keys exist; otherwise we use fallback
+const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY;
+let stripe: any = null;
+if (STRIPE_SECRET) {
+  // Lazy import to avoid build issues if stripe isn't installed or keys missing
+  // @ts-ignore
+  stripe = (await import('stripe')).default(STRIPE_SECRET, { apiVersion: '2022-11-15' });
+}
+
+export async function createCheckoutSessionOrFallback(params: {
+  orgId: string;
+  planId: PlanId;
+  successUrl: string;
+  cancelUrl: string;
+}) {
+  const { orgId, planId, successUrl, cancelUrl } = params;
+
+  if (!stripe) {
+    // Dev fallback: apply immediately
+    await applyPlanToOrgTransactional(orgId, planId);
+    return { url: successUrl, mode: 'fallback' as const };
+  }
+
+  // Real Stripe Checkout
+  const price = Plans[planId].price;
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    metadata: { orgId, planId },
+    line_items: [
+      {
+        price_data: {
+          currency: 'usd',
+          unit_amount: price * 100,
+          product_data: { name: `${Plans[planId].name} Plan` }
+        },
+        quantity: 1
+      }
+    ]
+  });
+
+  return { url: session.url as string, mode: 'stripe' as const };
+}
+
+// Webhook handler: apply plan on completion
+export async function handleStripeWebhook(rawBody: string, sig: string | undefined) {
+  if (!stripe) return { ok: true }; // nothing to do in fallback mode
+
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!endpointSecret) return { ok: true };
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
+  } catch (err) {
+    return { ok: false, error: 'Invalid signature' };
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as any;
+    const orgId = session.metadata?.orgId as string;
+    const planId = session.metadata?.planId as PlanId;
+    if (orgId && planId) {
+      await applyPlanToOrgTransactional(orgId, planId);
+    }
+  }
+  return { ok: true };
+}
+```
+
+### 3) Billing routes
+
+**`server/routes/billing.ts`**
+
+```ts
+import { Router } from 'express';
+import type { PlanId } from '../billing/plans';
+import { createCheckoutSessionOrFallback, handleStripeWebhook } from '../billing/stripe';
+import { getOrgById } from '../db/compat';
+
+const router = Router();
+
+// Require auth middleware expected to populate req.user with { org_id, email, ... }
+function requireAuth(req: any, res: any, next: any) {
+  if (!req.user?.org_id) return res.status(401).json({ error: 'Unauthorized' });
+  next();
+}
+
+// POST /api/billing/checkout  { planId }
+router.post('/checkout', requireAuth, async (req, res) => {
+  const { planId } = req.body as { planId: PlanId };
+  if (!planId) return res.status(400).json({ error: 'Missing planId' });
+
+  const orgId = String(req.user.org_id);
+  const successUrl = `${req.protocol}://${req.get('host')}/customer-dashboard?upgraded=${planId}`;
+  const cancelUrl = `${req.protocol}://${req.get('host')}/pricing?cancelled=true`;
+
+  try {
+    // Make sure org exists
+    const org = await getOrgById(orgId);
+    if (!org) return res.status(400).json({ error: 'Org not found' });
+
+    const { url, mode } = await createCheckoutSessionOrFallback({ orgId, planId, successUrl, cancelUrl });
+    res.json({ url, mode });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message ?? 'Failed to start checkout' });
+  }
+});
+
+// Stripe webhook (raw body)
+router.post('/webhook', expressRawBody, async (req: any, res: any) => {
+  const sig = req.headers['stripe-signature'] as string | undefined;
+  try {
+    const result = await handleStripeWebhook(req.rawBody, sig);
+    if (!result.ok) return res.status(400).send(result.error);
+    res.json({ ok: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message ?? 'Webhook error' });
+  }
+});
+
+// Helper to get raw body
+function expressRawBody(req: any, res: any, next: any) {
+  let data = '';
+  req.setEncoding('utf8');
+  req.on('data', (chunk: string) => (data += chunk));
+  req.on('end', () => {
+    req.rawBody = data;
+    next();
+  });
+}
+
+export default router;
+```
+
+> **Note:** Ensure the main server loads these routes and that `requireAuth` relies on your existing cookie/JWT middleware. If not present, add a minimal one (reuse your existing `auth.ts`).
+
+### 4) Attach billing routes in the server
+
+**`server/index.ts`** (only the relevant diff-style snippet; plug into your existing Express app)
+
+```ts
+import billingRouter from './routes/billing';
+
+// … after you set up app, json(), cookies, and auth middleware that sets req.user
+app.use('/api/billing', billingRouter);
+
+// Healthcheck already exists; leave as-is
+```
+
+### 5) Update `/api/auth/me` to return plan + entitlements
+
+**`server/routes/auth.ts`** (only the me handler; keep the rest of your auth intact)
+
+```ts
+router.get('/me', requireAuth, async (req, res) => {
+  const orgId = String(req.user.org_id);
+
+  const [org] = await sql/* sql */`
+    SELECT id::text AS id, name, plan_id FROM organizations WHERE id = ${orgId}::text
+  `;
+  const ent = await sql/* sql */`
+    SELECT feature_id, enabled, COALESCE(value, 'enabled') AS value
+    FROM entitlements
+    WHERE org_id = ${orgId}::text
+    ORDER BY feature_id
+  `;
+
+  res.json({
+    user: { id: req.user.id, email: req.user.email, name: req.user.name },
+    org,
+    plan: org?.plan_id ?? null,
+    entitlements: ent
+  });
+});
+```
+
+### 6) Client — wire up Pricing page
+
+**`client/src/pages/Pricing.tsx`**
+(Replace or create a dedicated component; it matches your existing design & plan cards.)
+
+```tsx
+import React from 'react';
+
+type PlanId = 'starter' | 'growth' | 'scale';
+
+const plans: { id: PlanId; name: string; price: number; bullets: string[] }[] = [
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: 1200,
+    bullets: [
+      '1 Dedicated Agent',
+      'Business Hours Support',
+      'Basic CRM Integration',
+      'Email Support',
+      'Monthly Reports'
+    ]
+  },
+  {
+    id: 'growth',
+    name: 'Growth',
+    price: 2500,
+    bullets: [
+      '2 Dedicated Agents',
+      'Extended Hours Support',
+      'Appointment Setting',
+      'Advanced CRM Integration',
+      'Live Chat Support',
+      'Weekly Reports'
+    ]
+  },
+  {
+    id: 'scale',
+    name: 'Scale',
+    price: 4500,
+    bullets: [
+      '24/7 Blended Team',
+      'AI Automation Suite',
+      'Dedicated Success Manager',
+      'Custom Integrations',
+      'Priority Support',
+      'Real-time Analytics'
+    ]
+  }
+];
+
+async function startCheckout(planId: PlanId) {
+  const res = await fetch('/api/billing/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ planId })
+  });
+  if (!res.ok) {
+    const j = await res.json().catch(() => ({}));
+    throw new Error(j.error || 'Checkout failed');
+  }
+  const { url } = await res.json();
+  window.location.href = url;
+}
+
+export default function Pricing() {
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-16">
+      <h1 className="text-3xl font-bold text-center mb-10">Choose your plan</h1>
+      <div className="grid md:grid-cols-3 gap-6">
+        {plans.map(p => (
+          <div key={p.id} className="border rounded-xl p-6 shadow-sm">
+            <h2 className="text-xl font-semibold">{p.name}</h2>
+            <p className="text-4xl font-bold mt-2">${p.price}<span className="text-base font-medium">/month</span></p>
+            <ul className="mt-4 space-y-2 text-sm">
+              {p.bullets.map(b => <li key={b}>✓ {b}</li>)}
+            </ul>
+            <button
+              className="mt-6 w-full rounded-lg bg-indigo-600 text-white py-2 font-medium hover:bg-indigo-700"
+              onClick={() => startCheckout(p.id)}
+            >
+              Add to Cart
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### 7) Seed script — demo org + admin with Scale entitlements
+
+**`scripts/seedDemoScale.mjs`**
+
+```js
+import bcrypt from 'bcryptjs';
+import { neon } from '@neondatabase/serverless';
+import { Plans } from '../server/billing/plans.js';
+
+const sql = neon(process.env.DATABASE_URL);
+
+async function ensureEntitlementsValueColumn() {
+  await sql/* sql */`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema='public' AND table_name='entitlements' AND column_name='value'
+      ) THEN
+        ALTER TABLE entitlements ADD COLUMN value TEXT;
+      END IF;
+    END $$;
+  `;
+}
+
+async function run() {
+  const orgId = 'demo-scale';
+  const email = 'demo@victorysync.com';
+  const password = 'VictoryScale123!';
+
+  await ensureEntitlementsValueColumn();
+
+  // Upsert organization
+  await sql/* sql */`
+    INSERT INTO organizations (id, name, plan_id, timezone)
+    VALUES (${orgId}, 'VictorySync Demo (Scale)', 'scale', 'America/New_York')
+    ON CONFLICT (id) DO UPDATE SET plan_id='scale'
+  `;
+
+  // Upsert user in public_users
+  const hash = await bcrypt.hash(password, 10);
+  await sql/* sql */`
+    INSERT INTO public_users (name, email, password_hash, provider, privileges)
+    VALUES ('Demo Admin', ${email}, ${hash}, 'local', json_build_object('role','super_admin','org_id',${orgId}))
+    ON CONFLICT (email) DO UPDATE
+      SET password_hash = EXCLUDED.password_hash, provider = 'local', privileges = EXCLUDED.privileges
+  `;
+
+  // Apply entitlements for scale
+  await sql/* sql */`DELETE FROM entitlements WHERE org_id = ${orgId}::text`;
+  for (const f of Plans.scale.features) {
+    await sql/* sql */`
+      INSERT INTO entitlements (org_id, feature_id, enabled, value)
+      VALUES (${orgId}::text, ${f}, true, 'enabled')
+      ON CONFLICT (org_id, feature_id) DO UPDATE
+        SET enabled = EXCLUDED.enabled, value = EXCLUDED.value
+    `;
+  }
+
+  console.log('Seeded demo org + user.');
+  console.log('Login:', email, '/', password);
+}
+
+run().catch(e => {
+  console.error('Seeder failed:', e);
+  process.exit(1);
+});
+```
+
+---
+
+## Hookups & small fixes
+
+1. **Auth middleware** must set `req.user` with `{ id, email, name, org_id }` from the cookie/JWT. If you don’t already have it, add a tiny middleware (use existing `JWT_SECRET`).
+2. **server/index.ts** ensures `app.use(express.json())`, cookies, auth middleware, then `app.use('/api/billing', billingRouter)`.
+3. If you previously had Stripe code with **duplicate function names** (e.g., `applyPlanToOrg` exported twice), those are now replaced by a single canonical `applyPlanToOrgTransactional` in `server/billing/stripe.ts`.
+4. Everywhere you compare `organizations.id`, **cast the parameter**: `WHERE id = ${orgId}::text`.
+
+---
+
+## Exact commands to run in Replit
+
+1. Set secrets (left sidebar → **Secrets**):
+
+   * `DATABASE_URL` = your Neon connection string
+   * `JWT_SECRET` = a long hex string (e.g., from `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`)
+   * Optional for real Stripe: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+
+2. Install any missing deps (if not already):
+
+   ```
+   npm i @neondatabase/serverless bcryptjs
+   # Optional if using real Stripe
+   npm i stripe
+   ```
+
+3. Seed demo (idempotent):
+
+   ```
+   node scripts/seedDemoScale.mjs
+   ```
+
+4. Start the app:
+
+   ```
+   npm run dev
+   ```
+
+5. In the browser:
+
+   * Log in with: **[demo@victorysync.com](mailto:demo@victorysync.com) / VictoryScale123!**
+   * Go to **/pricing**, click a plan.
+
+     * With Stripe keys → you’ll be redirected to Checkout.
+     * Without keys → dev fallback applies plan immediately, you’ll land on dashboard with updated entitlements.
+
+---
+
+## QA checklist (please verify)
+
+* [ ] `/api/auth/me` returns `{ user, org: { id, plan_id }, plan, entitlements[] }` after login.
+* [ ] Clicking **Add to Cart** on the Pricing page either:
+
+  * [ ] Redirects to Stripe Checkout (if keys present), OR
+  * [ ] Applies the plan locally and redirects to `/customer-dashboard?upgraded=...` (fallback).
+* [ ] Organization’s `plan_id` updates and `entitlements` contains the expected feature set for Starter/Growth/Scale.
+* [ ] No errors like “operator does not exist: character varying = integer”.
+* [ ] No duplicate export name/build errors from Stripe code.
+* [ ] No socket.io runtime errors in dev (it’s disabled).
+* [ ] Refreshing the dashboard keeps you signed in (cookie/JWT stable).
+
+---
+
+## Notes & guardrails
+
+* **Do not** modify `.replit` or `replit.nix`.
+* **Never** cast `organizations.id` to int. Always cast **parameters** to `::text`.
+* All SQL uses parameters (no string concatenation).
+* All schema “fixes” are idempotent (`ADD COLUMN IF NOT EXISTS`).
+* Keep the app running on port **5000**; Vite remains proxied as currently set up.
+
+If anything is unclear or you need to adapt to an existing file structure, **stick to the spirit**: Option B compatibility, plan/entitlement application, safe Stripe + fallback, Pricing wired to backend, and a reliable `/api/auth/me` surface for gating features.
