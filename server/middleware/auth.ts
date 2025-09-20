@@ -11,7 +11,7 @@ export function auth(req: Request, _res: Response, next: NextFunction) {
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    const orgId = toIntId(payload.orgId, "orgId");
+    const orgId = payload.orgId ? toIntId(payload.orgId, "orgId") : null;
     (req as any).auth = {
           userId: payload.sub,
           orgId: orgId,

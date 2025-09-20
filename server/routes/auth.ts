@@ -3,9 +3,8 @@ import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { db } from "../db";
-import { users, organizations } from "../../shared/schema";
-import { eq, sql as drizzleSql } from "drizzle-orm";
-import { neon } from "@neondatabase/serverless";
+import { publicUsers, entitlements, features, organizations } from "../../shared/schema";
+import { eq, and } from "drizzle-orm";
 import { toIntId } from "../db/id";
 
 const sql = neon(process.env.DATABASE_URL!);
@@ -20,7 +19,7 @@ authRouter.post("/login", async (req, res) => {
   // Check public_users table for authentication
   const publicUser = await sql`SELECT * FROM public_users WHERE email = ${email} LIMIT 1`;
   if (!publicUser.length) return res.status(401).json({ error: "Invalid credentials" });
-  
+
   const user = publicUser[0];
   if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
@@ -30,7 +29,7 @@ authRouter.post("/login", async (req, res) => {
   // For public_users, get org from the demo org we created (using numeric ID only)
   const orgResult = await sql`SELECT * FROM organizations WHERE name = 'VictorySync Demo (Scale)' LIMIT 1`;
   const org = orgResult[0];
-  
+
   if (!org) return res.status(500).json({ error: "Demo organization not found" });
 
   // get/create the org and ensure it's an integer
