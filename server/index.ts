@@ -18,8 +18,8 @@ import { db } from "./db";
 import {
   users,
   contactSubmissions,
-  servicePlans,
-  purchaseOrders,
+  packages,
+  orders,
   orderItems,
   organizations,
   entitlements,
