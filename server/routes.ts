@@ -7,14 +7,76 @@ import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
+import { Router } from "express";
+import { createCheckout, applyPlanToOrg, stripe } from "./billing/stripe";
+import { requireFeature } from "./middleware/entitlements";
+import { db } from "./db";
+import { organizations, entitlements } from "./db/schema";
+import { eq } from "drizzle-orm";
 
-let stripe: Stripe | null = null;
+let stripeInstance: Stripe | null = null;
 
 if (process.env.STRIPE_SECRET_KEY) {
-  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2025-05-28.basil",
   });
 }
+
+const billingRouter = Router();
+
+// Billing → create checkout
+billingRouter.post("/checkout/:planId", async (req, res, next) => {
+  try {
+    const planId = req.params.planId as "starter"|"growth"|"scale";
+    const orgId = (req as any).auth?.orgId;
+    if (!orgId) throw new Error("Unauthorized");
+    const url = await createCheckout(orgId, planId);
+    res.json({ url });
+  } catch (e) { next(e); }
+});
+
+// Webhook (Stripe)
+billingRouter.post("/webhooks/stripe", async (req, res, next) => {
+  try {
+    const sig = req.headers["stripe-signature"] as string;
+    const evt = stripeInstance!.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+
+    if (evt.type === "checkout.session.completed") {
+      const s = evt.data.object as any;
+      // Resolve org from your metadata or customer mapping
+      const org = await db.query.organizations.findFirst({ where: eq(organizations.stripeCustomerId, s.customer as string) });
+      if (org) {
+        // Map price → planId (store this mapping in DB or env)
+        const price = (s.line_items?.data?.[0]?.price?.id) || s.display_items?.[0]?.price?.id;
+        let planId: "starter"|"growth"|"scale" | null = null;
+        if (price === process.env.STRIPE_PRICE_STARTER) planId = "starter";
+        if (price === process.env.STRIPE_PRICE_GROWTH) planId = "growth";
+        if (planId) await applyPlanToOrg(org.id, planId);
+      }
+    }
+    res.json({ received: true });
+  } catch (e) { next(e); }
+});
+
+// Feature-gated endpoints (examples)
+billingRouter.post("/appointments/book", async (req, res, next) => {
+  try {
+    const orgId = (req as any).auth?.orgId!;
+    await requireFeature(orgId, "appointments");
+    // Call Cal.com or your scheduling API here
+    res.json({ ok: true });
+  } catch (e) { next(e); }
+});
+
+billingRouter.get("/me/entitlements", async (req, res, next) => {
+  try {
+    const orgId = (req as any).auth?.orgId!;
+    const list = await db.select().from(entitlements).where(eq(entitlements.orgId, orgId));
+    res.json({ features: list.map(r => r.featureId) });
+  } catch (e) { next(e); }
+});
+
+
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint - must be first to avoid being caught by other routes
@@ -47,7 +109,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
-
   // Initialize default packages
   await initializePackages();
 
@@ -60,9 +121,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // by removing the token from storage
     res.json({ message: 'Logged out successfully' });
   });
-
-
-
 
 
   // Package routes
@@ -112,106 +170,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stripe payment route for one-time payments
-  app.post("/api/create-payment-intent", authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      if (!stripe) {
-        return res.status(503).json({ 
-          message: "Payment processing is currently unavailable. Please contact support." 
-        });
-      }
-
-      const { items } = req.body;
-      
-      if (!items || !Array.isArray(items) || items.length === 0) {
-        return res.status(400).json({ message: "Items are required" });
-      }
-
-      // Calculate total from items
-      let total = 0;
-      for (const item of items) {
-        const pkg = await storage.getPackage(item.packageId);
-        if (!pkg) {
-          return res.status(400).json({ message: `Package ${item.packageId} not found` });
-        }
-        total += parseFloat(pkg.price) * item.quantity;
-      }
-
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(total * 100), // Convert to cents
-        currency: "usd",
-        metadata: {
-          userId: req.user!.id.toString(),
-          items: JSON.stringify(items),
-        },
-      });
-
-      res.json({ clientSecret: paymentIntent.client_secret });
-    } catch (error: any) {
-      console.error("Error creating payment intent:", error);
-      res.status(500).json({ message: "Error creating payment intent: " + error.message });
-    }
-  });
-
-  // Order routes
-  app.post('/api/orders', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = req.user!.id.toString();
-      const { items, total, stripePaymentIntentId } = req.body;
-      
-      // Create order
-      const order = await storage.createOrder({
-        userId,
-        total: total.toString(),
-        stripePaymentIntentId,
-        status: 'pending',
-      });
-
-      // Create order items
-      for (const item of items) {
-        await storage.createOrderItem({
-          orderId: order.id,
-          packageId: item.packageId,
-          quantity: item.quantity,
-          price: item.price.toString(),
-        });
-      }
-
-      res.json(order);
-    } catch (error) {
-      console.error("Error creating order:", error);
-      res.status(500).json({ message: "Failed to create order" });
-    }
-  });
-
-  app.get('/api/orders', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const userId = req.user!.id.toString();
-      const orders = await storage.getUserOrders(userId);
-      res.json(orders);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      res.status(500).json({ message: "Failed to fetch orders" });
-    }
-  });
-
-  app.get('/api/orders/:id', authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      const orderId = parseInt(req.params.id);
-      const userId = req.user!.id.toString();
-      
-      const order = await storage.getOrder(orderId);
-      if (!order || order.userId !== userId) {
-        return res.status(404).json({ message: "Order not found" });
-      }
-
-      const items = await storage.getOrderItems(orderId);
-      res.json({ ...order, items });
-    } catch (error) {
-      console.error("Error fetching order:", error);
-      res.status(500).json({ message: "Failed to fetch order" });
-    }
-  });
+  // Mount the billing router
+  app.use('/api/billing', billingRouter);
 
   // Add 404 handler for API routes that don't exist
   app.use('/api/*', (req, res) => {

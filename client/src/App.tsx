@@ -1,103 +1,58 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { CartProvider } from "@/contexts/CartContext";
-import { useState, lazy } from "react";
+import { useEffect, useState } from "react";
+import { getEntitlements, checkout } from "./lib/api";
+import CrispLoader from "./components/CrispLoader";
+import Booker from "./components/Booker";
 
-// Layout Components
-import Navigation from "@/components/navigation";
-import Footer from "@/components/footer";
-import CartModal from "@/components/cart-modal";
-
-// Pages
-import Home from "@/pages/home";
-import Services from "@/pages/services";
-import Pricing from "@/pages/pricing";
-import About from "@/pages/about";
-import Contact from "@/pages/contact";
-import Checkout from "@/pages/checkout";
-import CustomerDashboard from "@/pages/customer-dashboard";
-import Register from "@/pages/register";
-import Login from "@/pages/login";
-import NotFound from "@/pages/not-found";
-
-// Footer Pages
-import AboutUs from "@/pages/about-us";
-import Careers from "@/pages/careers";
-import Blog from "@/pages/blog";
-import HelpCenter from "@/pages/help-center";
-import Documentation from "@/pages/docs";
-import PrivacyPolicy from "@/pages/privacy-policy";
-import TermsOfService from "@/pages/terms";
-
-// Import Google Fonts
-import "@fontsource/inter/300.css";
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/700.css";
-import "@fontsource/inter/800.css";
-
-function Router() {
-  const [cartModalOpen, setCartModalOpen] = useState(false);
-
-  const openCartModal = () => setCartModalOpen(true);
-  const closeCartModal = () => setCartModalOpen(false);
+export default function App() {
+  const [features, setFeatures] = useState<string[]>([]);
+  useEffect(() => { getEntitlements().then(r => setFeatures(r.features)); }, []);
+  const can = (f: string) => features.includes(f);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation onCartClick={openCartModal} />
+    <main className="max-w-6xl mx-auto p-6">
+      <header className="flex items-center justify-between py-4">
+        <h1 className="text-2xl font-bold">VictorySync</h1>
+        <div className="text-sm opacity-70">Org: <code>{localStorage.getItem("orgId") || "unset"}</code></div>
+      </header>
 
-      <main className="flex-1">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/services" component={Services} />
-          <Route path="/pricing" component={Pricing} />
-          <Route path="/about" component={About} />
-          <Route path="/contact" component={Contact} />
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/dashboard" component={CustomerDashboard} />
-          <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/register" component={Register} />
-          <Route path="/signup" component={Register} />
-          <Route path="/login" component={Login} />
+      <section className="my-8">
+        <h2 className="text-xl font-semibold mb-4">Pricing</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card title="Starter" price="$1,200" features={["1 Dedicated Agent","Business Hours","Basic CRM","Email","Monthly Reports"]} onClick={() => checkout("starter")} />
+          <Card title="Growth" price="$2,500" popular features={["2 Agents","Extended Hours","Appointments","Advanced CRM","Live Chat","Weekly Reports"]} onClick={() => checkout("growth")} />
+          <Card title="Scale" price="$4,500" cta="Get a quote" disabled onClick={() => alert("We'll contact you for a custom quote.")} />
+        </div>
+      </section>
 
-          {/* Footer Pages */}
-          <Route path="/about-us" component={AboutUs} />
-          <Route path="/careers" component={Careers} />
-          <Route path="/blog" component={Blog} />
-          <Route path="/help-center" component={HelpCenter} />
-          <Route path="/docs" component={Documentation} />
-          <Route path="/privacy-policy" component={PrivacyPolicy} />
-          <Route path="/terms" component={TermsOfService} />
+      <section className="my-10">
+        <h3 className="text-lg font-semibold mb-3">Book an Appointment (Growth+)</h3>
+        <Booker enabled={can("appointments")} />
+      </section>
 
-          <Route component={NotFound} />
-        </Switch>
-      </main>
+      <CrispLoader enabled={can("live_chat")} />
+    </main>
+  );
+}
 
-      <Footer />
-
-      <CartModal 
-        isOpen={cartModalOpen} 
-        onClose={closeCartModal} 
-      />
+function Card({ title, price, features, onClick, cta = "Add to Cart", popular=false, disabled=false }:{
+  title:string; price:string; features?:string[]; onClick:()=>void; cta?:string; popular?:boolean; disabled?:boolean;
+}) {
+  return (
+    <div className={`rounded-2xl border p-6 shadow-sm ${popular ? "ring-2 ring-purple-500" : ""}`}>
+      <div className="flex items-center justify-between">
+        <h4 className="text-lg font-semibold">{title}</h4>
+        {popular && <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Most Popular</span>}
+      </div>
+      <div className="mt-2 text-3xl font-bold">{price}<span className="text-base font-medium opacity-60">/month</span></div>
+      {features && <ul className="mt-4 space-y-2 text-sm">
+        {features.map(f => <li key={f} className="flex items-center gap-2">✅ <span>{f}</span></li>)}
+      </ul>}
+      <button
+        disabled={disabled}
+        onClick={onClick}
+        className={`mt-6 w-full rounded-md py-2 font-medium ${disabled ? "bg-gray-300 cursor-not-allowed" : "bg-purple-600 text-white hover:bg-purple-700"}`}>
+        {cta}
+      </button>
     </div>
   );
 }
-
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </CartProvider>
-    </QueryClientProvider>
-  );
-}
-
-export default App;
