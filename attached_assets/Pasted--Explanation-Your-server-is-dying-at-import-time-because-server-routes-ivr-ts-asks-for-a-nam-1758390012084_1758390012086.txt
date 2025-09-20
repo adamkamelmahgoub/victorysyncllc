@@ -1,0 +1,78 @@
+# Explanation
+
+Your server is dying at import-time because `server/routes/ivr.ts` asks for a **named export** called `organizations`:
+
+```ts
+import { organizations } from "../../shared/schema";
+```
+
+…but `../../shared/schema` does **not** actually export a symbol with that name. (It’s probably exporting a *default object* of tables/schemas, or a differently-named constant like `organizationsTable` / `organizationSchema`.)
+
+Fix it in one of these two safe ways:
+
+---
+
+# Code
+
+## Option A (recommended): export `organizations` from the shared schema
+
+If `shared/schema` currently exports a default object or differently-named symbols, add a proper **named re-export** so the route can import it.
+
+**shared/schema/index.ts** (or `shared/schema.ts`, whichever is the module you import)
+
+```ts
+// If you have the organizations table/schema defined elsewhere, re-export it by name:
+export { organizations } from "./organizations";  // <-- adjust path to where it’s defined
+export type { Organization } from "./organizations"; // optional: the TS type
+
+// If your file currently only had a default export object like:
+//   const schema = { organizations, entitlements, users };
+//   export default schema;
+// keep that, but ADD the named export line above so named import works.
+```
+
+If your symbol is named differently (e.g. `organizationsTable` or `organizationSchema`), alias it:
+
+```ts
+export { organizationsTable as organizations } from "./organizations";
+```
+
+Now your existing route import will work:
+
+```ts
+// server/routes/ivr.ts
+import { organizations } from "../../shared/schema";
+```
+
+---
+
+## Option B (quick patch): import the default and destructure
+
+If `shared/schema` only has a **default export** (an object containing `organizations`) and you don’t want to touch it, change the route import:
+
+```ts
+// server/routes/ivr.ts
+// BEFORE: import { organizations } from "../../shared/schema";
+
+import schema from "../../shared/schema";        // default import
+const { organizations } = schema;               // destructure the member
+
+// ...rest of ivr.ts stays the same
+```
+
+> This avoids the named-export check at import time. Use Option A later so all modules can rely on stable named exports.
+
+---
+
+# Instructions
+
+1. Pick **Option A** (preferred) or **Option B** and apply the minimal change above.
+2. Make sure the **relative path** is correct. The error screenshot shows `../../../shared/schema` in the stack; keep the path that matches your folder depth (e.g., `../../shared/schema` vs `../../../shared/schema`).
+3. Restart your dev server.
+
+---
+
+# Warnings
+
+* Keep export names consistent across your codebase; named exports are safer for tree-shaking and refactors.
+* Don’t export both a default object *and* rely only on members unless you also re-export those members by name (Option A), otherwise you’ll hit this error again elsewhere.

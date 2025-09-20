@@ -1,0 +1,160 @@
+Got you. Your screenshots show two separate (but related) issues:
+
+1. The red toast “Unauthorized → logged out” = your `/api/auth/me` check is coming back 401 (likely because the cookie didn’t get sent yet or you’re treating 401 as a hard logout).
+2. Console: `Query data cannot be undefined … key: ['/api/auth/me']` = your queryFn sometimes returns **undefined** (e.g., on 401 path or missing `return`), and React Query/SWR is complaining.
+
+Below is a production-safe patch that fixes both sides: server always returns JSON for `/api/auth/me`, and the client’s queryFn **always returns a value (null or object)** and never triggers auto-logout just because it saw 401.
+
+# Explanation
+
+* If the server returns 401, your client query **must** resolve to a defined value (e.g., `null`) instead of returning `undefined` or throwing.
+* Don’t immediately “log out” on any 401 from `/api/auth/me`; treat it as “not authenticated yet” and show the login screen. Only run a hard logout when the user clicks logout or when you detect a clearly invalid session during an authenticated flow.
+* Keep cookies working cross-site (Replit iframe): `SameSite=None; Secure`, `app.set('trust proxy', 1)`, CORS `credentials:true`, client `credentials:'include'`. (Sounds like you already did this.)
+
+# Code
+
+### 1) Server: make `/api/auth/me` always return JSON, even on 401
+
+**server/routes/auth.ts**
+
+```ts
+import type { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+
+const COOKIE_NAME = "vs_session";
+
+// GET /api/auth/me
+export function me(req: Request, res: Response) {
+  const bearer = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+  const token = req.cookies?.[COOKIE_NAME] || bearer;
+
+  if (!token) {
+    // Return JSON object — not empty response — so client queryFn can always return defined data
+    return res.status(401).json({ ok: false, user: null });
+  }
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!, { clockTolerance: 5 }) as any;
+    // shape is up to you; just be consistent
+    return res.status(200).json({
+      ok: true,
+      user: {
+        id: payload.sub,
+        orgId: payload.orgId,
+        role: payload.role,
+      },
+    });
+  } catch {
+    return res.status(401).json({ ok: false, user: null });
+  }
+}
+```
+
+> Important: Do **not** send 204 or an empty body. Always send `{ ok: false, user: null }` on 401 so the client can resolve a defined value.
+
+### 2) Client: queryFn must **always** return a value (object or `null`), never `undefined`
+
+If you use **fetch** and React Query:
+
+**client/src/lib/api.ts**
+
+```ts
+export async function fetchMe(): Promise<{ ok: true; user: any } | null> {
+  const res = await fetch("/api/auth/me", {
+    method: "GET",
+    credentials: "include", // IMPORTANT for cookies
+  });
+
+  // Do not throw on 401 here — return a defined value
+  if (res.status === 401) return null;
+
+  if (!res.ok) {
+    // Only throw for unexpected server errors
+    const text = await res.text().catch(() => "");
+    throw new Error(`ME request failed: ${res.status} ${text}`);
+  }
+
+  // Always return something defined
+  const data = await res.json();
+  return data?.ok ? data : null;
+}
+```
+
+**client/src/hooks/useMe.ts** (React Query)
+
+```ts
+import { useQuery } from "@tanstack/react-query";
+import { fetchMe } from "../lib/api";
+
+export function useMe() {
+  return useQuery({
+    queryKey: ["/api/auth/me"],
+    queryFn: fetchMe,
+    // Never undefined because fetchMe returns either object or null
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+}
+```
+
+**client usage example**
+
+```tsx
+const { data: me, isLoading } = useMe();
+
+// me is either an object or null (not undefined)
+// - null => not authenticated; show login UI
+// - object => authenticated; render dashboard
+if (isLoading) return <Spinner />;
+
+return me ? <Dashboard /> : <Login />;
+```
+
+If you use **axios**:
+
+```ts
+import axios from "axios";
+axios.defaults.withCredentials = true;
+
+export async function fetchMeAxios() {
+  try {
+    const { data } = await axios.get("/api/auth/me");
+    return data?.ok ? data : null;
+  } catch (err: any) {
+    if (err?.response?.status === 401) return null;
+    throw err;
+  }
+}
+```
+
+### 3) Don’t hard-logout on 401 from `/api/auth/me`
+
+If you have a global effect that automatically calls `logout()` when `/api/auth/me` returns 401, change it to **stop logging out** and instead treat it as “not signed in”. Only call `logout()` on explicit user action or if your app knows the user is in an authenticated screen and the session is definitely invalid.
+
+### 4) Double-check cookie/CORS (quick checklist)
+
+* Express:
+
+  * `app.set('trust proxy', 1)`
+  * `cors({ origin: allowListOrRegex, credentials: true })`
+  * `cookie-parser` enabled
+* Auth cookie on login:
+
+  * Prod (Replit): `{ httpOnly:true, secure:true, sameSite:'none', path:'/' }`
+  * Dev (localhost): `{ httpOnly:true, secure:false, sameSite:'lax', path:'/' }`
+* Client: `credentials: 'include'` (fetch) or `axios.defaults.withCredentials = true`.
+
+# Instructions
+
+1. Patch `/api/auth/me` to **always** return JSON as shown (200 with user, or 401 with `{ ok:false, user:null }`).
+2. Update your client queryFn to **always return** a defined value (`null` on 401, object on 200), never `undefined`.
+3. Remove any global “401 → logout” side effect. Instead, gate protected routes with `me ? <App/> : <Login/>`.
+4. Reload the app. In DevTools → Network, confirm `/api/auth/me` returns JSON. In Application → Cookies, verify `vs_session` exists after login.
+
+# Warnings
+
+* Returning `undefined` from a queryFn causes the exact error you’re seeing. Always `return null` or a valid object.
+* If you keep `Secure:true` locally over HTTP, the cookie won’t set; use the dev cookie settings on localhost only.
+* Replit iframe is cross-site: you **must** keep `SameSite=None; Secure` in production there.
+
+Apply these changes and that “Unauthorized → instant logout” loop will stop, and the React Query error will disappear.

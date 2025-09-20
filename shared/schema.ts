@@ -101,6 +101,33 @@ export const packagesRelations = relations(packages, ({ many }) => ({
   orderItems: many(orderItems),
 }));
 
+// Organizations table
+export const organizations = pgTable("organizations", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  planId: varchar("plan_id").default("scale"),
+  timezone: varchar("timezone").default("America/New_York"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Features table
+export const features = pgTable("features", {
+  id: varchar("id").primaryKey(),
+  code: varchar("code").unique().notNull(),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  enabled: boolean("enabled").default(true),
+});
+
+// Entitlements table
+export const entitlements = pgTable("entitlements", {
+  id: serial("id").primaryKey(),
+  orgId: integer("org_id").notNull(),
+  featureId: varchar("feature_id").notNull(),
+  enabled: boolean("enabled").default(true),
+  value: text("value"),
+});
+
 export const integrations = pgTable('integrations', {
   id: serial('id').primaryKey(),
   customer_id: text('customer_id').notNull(),
@@ -127,6 +154,15 @@ export type OrderItem = typeof orderItems.$inferSelect;
 
 export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+
+export type InsertOrganization = typeof organizations.$inferInsert;
+export type Organization = typeof organizations.$inferSelect;
+
+export type InsertEntitlement = typeof entitlements.$inferInsert;
+export type Entitlement = typeof entitlements.$inferSelect;
+
+export type InsertFeature = typeof features.$inferInsert;
+export type Feature = typeof features.$inferSelect;
 
 // Schemas
 export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
