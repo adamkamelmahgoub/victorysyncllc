@@ -1,0 +1,96 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are a senior Node/TypeScript engineer working in **Replit** on a repo named “VictorySync”. The app is Express + TypeScript with a Neon Postgres backend using `@neondatabase/serverless` (we already use a single shared client at `server/db/client.ts`). After logging in, the UI briefly shows “unauthorized” and immediately logs the user out.
+
+### Goal
+
+Diagnose and permanently fix the **login → unauthorized → auto-logout** loop by correcting cookie/session, CORS, and client credential handling. Deliver production-ready code changes that work in Replit’s iframe preview (third-party context) and in local dev.
+
+### Hard requirements
+
+* **Do NOT change** `.replit` or `replit.nix`.
+* Keep the existing DB user lookup + password hashing; only adjust auth transport (cookies/JWT), Express middleware, and client request settings.
+* We issue a JWT and store it in an **HTTP-only cookie** (name: `vs_session`).
+* Our shared Neon client lives at `server/db/client.ts` and must remain the single source of `sql`.
+
+### Environment
+
+* Server: Node 20+, Express, TypeScript.
+* Replit preview runs inside an **iframe** on a `*.replit.dev` / `*.repl.co` domain (cross-site to our app origin).
+* Secrets already set: `DATABASE_URL`, `JWT_SECRET`.
+
+### What to build/modify
+
+1. **Express bootstrap (e.g., `server/index.ts`)**
+
+   * `app.set('trust proxy', 1)` so Secure cookies work behind Replit’s proxy.
+   * Add `cookie-parser` and `cors`.
+   * Configure **CORS** with `credentials: true` and an explicit origin allowlist:
+
+     * Allowed: `https://replit.com`, regex for `*.replit.dev`, `*.repl.co`, `http://localhost:5173`, `http://127.0.0.1:5173`.
+     * Reject others; no wildcard `*` with credentials.
+   * Ensure JSON body parsing is enabled.
+
+2. **Auth routes (e.g., `server/routes/auth.ts`)**
+
+   * On successful login, sign a JWT with `JWT_SECRET` and set cookie:
+
+     * **Prod (Replit):** `httpOnly: true`, `secure: true`, `sameSite: 'none'`, `path: '/'`, `maxAge: 7d`.
+     * **Local dev:** `httpOnly: true`, `secure: false`, `sameSite: 'lax'`, `path: '/'`, `maxAge: 7d`.
+   * Implement `/logout` that clears the cookie using **the exact same cookie options** (name, path, sameSite, secure).
+   * Implement `/api/me` to verify the JWT from cookie (or `Authorization: Bearer`) and return `{ ok: true, userId, orgId, role }`.
+
+3. **Middleware (`server/middleware/requireAuth.ts`)**
+
+   * Read token from cookie `vs_session` (fallback to `Authorization`), verify with `JWT_SECRET`, attach payload to `req.auth`, else `401`.
+
+4. **Client side**
+
+   * Ensure **every** fetch/axios request that needs auth uses credentials:
+
+     * fetch: `credentials: 'include'`
+     * axios: `axios.defaults.withCredentials = true`
+   * Confirm the client calls `/api/me` after login to hydrate the session.
+
+5. **Types & structure**
+
+   * Keep TypeScript types intact. Add/adjust types for the JWT payload (`sub`, `orgId:number`, `role:string`).
+   * Keep `server/db/client.ts` as the only place configuring `neonConfig.webSocketConstructor = WebSocket`.
+
+### Deliverables
+
+* Exact code edits with file paths and **fully replaced blocks** (not just snippets) for:
+
+  * `server/index.ts` (Express + CORS + cookies)
+  * `server/routes/auth.ts` (login, logout, me)
+  * `server/middleware/requireAuth.ts`
+  * A short client snippet (fetch or axios) showing credentials usage
+* Explanations (brief) on why each change fixes the iframe/third-party cookie issue.
+
+### Acceptance tests (manual)
+
+1. Start the app on Replit.
+2. Open DevTools → Application → Cookies for the app origin. After login, confirm `vs_session` exists with `SameSite=None` and `Secure=true`.
+3. Refresh the page; call `/api/me` automatically—expect **200** and user payload (no logout).
+4. Open another tab to the app; you should still be authenticated.
+5. Click Logout; verify the cookie is removed and `/api/me` returns **401**.
+
+### Edge cases to handle
+
+* Missing/rotated `JWT_SECRET` → return 401, no crash.
+* Clearing cookie must use identical options as setting it.
+* CORS should allow same-origin (no `Origin` header) and block unknown origins with a clear error.
+
+Return the updated code blocks and any new files in a clean, copy-pasteable format. Keep it concise, robust, and production-ready.
+
+**Key Improvements:**
+• Specifies third-party cookie constraints for Replit iframe (SameSite=None; Secure; trust proxy).
+• Enforces credentials flow across server CORS and client requests.
+• Provides exact file paths, full code blocks, and acceptance tests.
+• Protects against common pitfalls (cookie clearing mismatch, wildcard CORS).
+
+**Techniques Applied:** Role assignment, constraint-based spec, environment-aware config, failure-proof cookie strategy, explicit success criteria.
+
+**Pro Tip:** Add a `/health/auth` endpoint that echoes whether the server sees the cookie and why it might be missing—this speeds up future regressions.
