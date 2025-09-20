@@ -1,61 +1,75 @@
 
-// scripts/seedDemoScale.mjs
 import { neon, neonConfig } from "@neondatabase/serverless";
 import WebSocket from "ws";
 import bcrypt from "bcryptjs";
+
 neonConfig.webSocketConstructor = WebSocket;
 const sql = neon(process.env.DATABASE_URL);
 
-const EMAIL="demo@victorysync.com", PASSWORD="VictoryScale123!", NAME="Demo Admin";
-const ORG_NAME="VictorySync Demo (Scale) — numeric", ORG_TZ="America/New_York", PLAN_ID="scale";
+const EMAIL  = "demo@victorysync.com";
+const PASS   = "VictoryScale123!";
+const NAME   = "Demo Admin";
 
-const intLike = v => /^[0-9]+$/.test(String(v ?? ""));
+const ORG    = "VictorySync Demo (Scale)";
+const ORG_TZ = "America/New_York";
+const PLAN   = "scale";
 
-async function getOrgId() {
-  const r0 = await sql`SELECT id::text id FROM organizations WHERE name=${ORG_NAME} LIMIT 1`;
-  if (r0.length && intLike(r0[0].id)) return Number(r0[0].id);
-
-  const r1 = await sql`
-    SELECT COALESCE(MAX(CASE WHEN id::text ~ '^[0-9]+$' THEN (id::text)::int END),0)+1 AS next_id
-    FROM organizations`;
-  const nextId = Number(r1[0].next_id);
-
-  await sql`
-    INSERT INTO organizations (id,name,timezone,plan_id)
-    VALUES (${nextId},${ORG_NAME},${ORG_TZ},${PLAN_ID})
-    ON CONFLICT (name) DO UPDATE SET plan_id=EXCLUDED.plan_id, timezone=EXCLUDED.timezone`;
-  return nextId;
+async function upsertOrgReturnId() {
+  // Use unique org name; id is now INTEGER PK
+  const r = await sql/*sql*/`
+    INSERT INTO organizations (name, timezone, plan_id)
+    VALUES (${ORG}, ${ORG_TZ}, ${PLAN})
+    ON CONFLICT (name) DO UPDATE
+      SET plan_id = EXCLUDED.plan_id, timezone = EXCLUDED.timezone
+    RETURNING id
+  `;
+  return Number(r[0].id);
 }
 
-async function main(){
-  if(!process.env.DATABASE_URL) throw new Error("DATABASE_URL not set");
-  if(!process.env.JWT_SECRET)   throw new Error("JWT_SECRET not set");
+async function main() {
+  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL not set");
+  if (!process.env.JWT_SECRET)   throw new Error("JWT_SECRET not set");
 
-  const orgId = await getOrgId();
-  const hash = await bcrypt.hash(PASSWORD,10);
+  console.log("STEP 1: ensure Scale org (integer id) …");
+  const orgId = await upsertOrgReturnId();
+  console.log("  orgId:", orgId);
 
-  await sql`
-    INSERT INTO public_users (name,email,password_hash,provider,provider_id,social_accounts,privileges)
-    VALUES (${NAME},lower(${EMAIL}),${hash},'local',NULL,'[]'::jsonb,'{"role":"super_admin"}'::jsonb)
+  console.log("STEP 2: upsert demo admin in public_users …");
+  const hash = await bcrypt.hash(PASS, 10);
+  await sql/*sql*/`
+    INSERT INTO public_users (name, email, password_hash, provider, provider_id, social_accounts, privileges)
+    VALUES (${NAME}, lower(${EMAIL}), ${hash}, 'local', NULL, '[]'::jsonb, '{"role":"super_admin"}'::jsonb)
     ON CONFLICT (email) DO UPDATE
-      SET name=EXCLUDED.name, password_hash=EXCLUDED.password_hash,
-          provider='local', provider_id=NULL, social_accounts='[]'::jsonb,
-          privileges='{"role":"super_admin"}'::jsonb, email=lower(${EMAIL})
+      SET name=EXCLUDED.name,
+          password_hash=EXCLUDED.password_hash,
+          provider='local',
+          provider_id=NULL,
+          social_accounts='[]'::jsonb,
+          privileges='{"role":"super_admin"}'::jsonb,
+          email=lower(${EMAIL})
   `;
 
-  try{
-    await sql`
-      INSERT INTO users (org_id,name,email,password_hash,two_factor_enabled,is_super_admin,is_active)
-      VALUES (${orgId},${NAME},lower(${EMAIL}),${hash},false,true,true)
+  console.log("STEP 3: upsert into users (if table exists) …");
+  try {
+    await sql/*sql*/`
+      INSERT INTO users (org_id, name, email, password_hash, two_factor_enabled, is_super_admin, is_active)
+      VALUES (${orgId}, ${NAME}, lower(${EMAIL}), ${hash}, false, true, true)
       ON CONFLICT (email) DO UPDATE
-        SET org_id=${orgId}, name=EXCLUDED.name, password_hash=EXCLUDED.password_hash,
-            two_factor_enabled=false, is_super_admin=true, is_active=true, email=lower(${EMAIL})
+        SET org_id=${orgId},
+            name=EXCLUDED.name,
+            password_hash=EXCLUDED.password_hash,
+            two_factor_enabled=false,
+            is_super_admin=true,
+            is_active=true,
+            email=lower(${EMAIL})
     `;
-  } catch(e){
-    if(!String(e?.message||e).includes('relation "users" does not exist')) throw e;
+  } catch (e) {
+    if (!String(e?.message||e).includes('relation "users" does not exist')) throw e;
+    console.log("  users table not found; skipping.");
   }
 
-  await sql`
+  console.log("STEP 4: grant ALL features to org (covers Scale) …");
+  await sql/*sql*/`
     INSERT INTO entitlements (org_id, feature_id, enabled, value)
     SELECT ${orgId}, f.id, TRUE, NULL::text
     FROM features f
@@ -65,6 +79,7 @@ async function main(){
     )
   `;
 
-  console.log("✅ Demo seeded. Login:", EMAIL, PASSWORD, "Org ID:", orgId);
+  console.log("✅ Demo ready. Login:", EMAIL, PASS, "Org:", ORG, "OrgId:", orgId);
 }
-main().catch(e=>{ console.error("❌ seedDemoScale failed:",e?.message||e); process.exit(1); });
+
+main().catch(e => { console.error("❌ seedDemoScale failed:", e?.message || e); process.exit(1); });
