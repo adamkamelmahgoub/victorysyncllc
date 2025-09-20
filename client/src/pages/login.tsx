@@ -30,12 +30,12 @@ export default function Login() {
   });
 
   const loginMutation = useMutation({
-    mutationFn: async (data: LoginFormData) => {
+    mutationFn: async (formData: LoginFormData) => {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // Important for cookies
-        body: JSON.stringify(data)
+        body: JSON.stringify(formData)
       });
 
       if (!response.ok) {
