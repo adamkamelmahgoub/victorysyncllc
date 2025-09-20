@@ -1,7 +1,7 @@
 
 // scripts/seedDemoBoth.mjs
-// Upserts a demo org (numeric id), adds a demo user to public_users (and users if present),
-// and enables ALL features for that org (covers Scale).
+// Creates/fetches demo org by NAME (numeric id), seeds demo user into public_users
+// (and users if present), and grants ALL features to that org. Idempotent.
 
 import { neon, neonConfig } from "@neondatabase/serverless";
 import WebSocket from "ws";
@@ -11,55 +11,41 @@ neonConfig.webSocketConstructor = WebSocket;
 
 const sql = neon(process.env.DATABASE_URL);
 
-// Demo credentials
+// Demo login
 const EMAIL = "demo@victorysync.com";
 const PASSWORD = "VictoryScale123!";
-const DEMO_NAME = "Demo Admin";
+const NAME = "Demo Admin";
 
-// Org (lookup by name so we never touch integer id types)
+// Org lookup (NEVER use a string id)
 const ORG_NAME = "VictorySync Demo (Scale)";
 const ORG_TZ = "America/New_York";
 
 async function getNumericOrgId() {
-  // Try to find by name
-  const found = await sql/*sql*/`
-    SELECT id FROM organizations WHERE name = ${ORG_NAME} LIMIT 1
-  `;
-  if (found.length) return found[0].id;
-
-  // Insert new org; let DB assign INTEGER id
-  const inserted = await sql/*sql*/`
+  console.log("STEP 1: find org id by name…");
+  const found = await sql`SELECT id FROM organizations WHERE name = ${ORG_NAME} LIMIT 1`;
+  if (found.length) {
+    console.log("  found existing org id:", found[0].id);
+    return found[0].id;
+  }
+  console.log("  inserting new org (DB assigns integer id) …");
+  const ins = await sql`
     INSERT INTO organizations (name, timezone)
     VALUES (${ORG_NAME}, ${ORG_TZ})
     RETURNING id
   `;
-  return inserted[0].id;
+  console.log("  created org id:", ins[0].id);
+  return ins[0].id;
 }
 
 async function main() {
-  if (!process.env.DATABASE_URL) {
-    console.error("DATABASE_URL not set in Replit Secrets"); process.exit(1);
-  }
-
+  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL not set");
   const orgId = await getNumericOrgId();
   const hash = await bcrypt.hash(PASSWORD, 10);
 
-  // Unique index for public_users email (safe to run repeatedly)
-  await sql/*sql*/`
-    DO $$
-    BEGIN
-      IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='public_users_email_idx'
-      ) THEN
-        CREATE UNIQUE INDEX public_users_email_idx ON public_users (email);
-      END IF;
-    END $$;
-  `;
-
-  // Insert/Update public_users (your admin/auth likely reads this table)
-  await sql/*sql*/`
+  console.log("STEP 2: upsert public_users (primary auth table) …");
+  await sql`
     INSERT INTO public_users (name, email, password_hash, provider, provider_id, social_accounts, privileges)
-    VALUES (${DEMO_NAME}, lower(${EMAIL}), ${hash}, 'local', NULL, '[]'::jsonb, '{"role":"super_admin"}'::jsonb)
+    VALUES (${NAME}, lower(${EMAIL}), ${hash}, 'local', NULL, '[]'::jsonb, '{"role":"super_admin"}'::jsonb)
     ON CONFLICT (email) DO UPDATE
       SET name = EXCLUDED.name,
           password_hash = EXCLUDED.password_hash,
@@ -70,11 +56,11 @@ async function main() {
           email = lower(${EMAIL})
   `;
 
-  // Insert/Update users table too (if it exists), ignoring if the table is absent
+  console.log("STEP 3: upsert users (org-scoped) if the table exists …");
   try {
-    await sql/*sql*/`
+    await sql`
       INSERT INTO users (org_id, name, email, password_hash, two_factor_enabled, is_super_admin, is_active)
-      VALUES (${orgId}, ${DEMO_NAME}, lower(${EMAIL}), ${hash}, false, true, true)
+      VALUES (${orgId}, ${NAME}, lower(${EMAIL}), ${hash}, false, true, true)
       ON CONFLICT (email) DO UPDATE
         SET org_id = ${orgId},
             name = EXCLUDED.name,
@@ -86,11 +72,15 @@ async function main() {
     `;
   } catch (e) {
     const msg = String(e?.message || e);
-    if (!msg.includes('relation "users" does not exist')) throw e;
+    if (msg.includes('relation "users" does not exist')) {
+      console.log("  users table not found; skipping (ok).");
+    } else {
+      throw e;
+    }
   }
 
-  // Enable ALL features for the org (idempotent) — guarantees Scale UX
-  await sql/*sql*/`
+  console.log("STEP 4: materialize ALL features as entitlements (covers Scale) …");
+  await sql`
     INSERT INTO entitlements (org_id, feature_id, enabled, value)
     SELECT ${orgId}, f.id, TRUE, NULL::text
     FROM features f
@@ -100,10 +90,13 @@ async function main() {
     )
   `;
 
-  console.log("✅ Demo seeded");
+  console.log("✅ DONE — Demo seeded");
   console.log("   orgId:", orgId);
   console.log("   email:", EMAIL);
   console.log("   pass :", PASSWORD);
 }
 
-main().catch((e) => { console.error("❌ seedDemoBoth failed:", e?.message || e); process.exit(1); });
+main().catch((e) => {
+  console.error("❌ seedDemoBoth failed:", e?.message || e);
+  process.exit(1);
+});

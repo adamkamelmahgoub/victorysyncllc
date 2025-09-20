@@ -26,26 +26,26 @@ authRouter.post("/login", async (req, res) => {
   const ok = await bcrypt.compare(password, user.password_hash);
   if (!ok) return res.status(401).json({ error: "Invalid credentials" });
 
-  // For public_users, get org from the demo org we created
+  // For public_users, get org from the demo org we created (using numeric ID only)
   const orgResult = await sql`SELECT * FROM organizations WHERE name = 'VictorySync Demo (Scale)' LIMIT 1`;
   const org = orgResult[0];
-  // If org is on 'scale', ensure entitlements exist for all plan_features('scale').
-  // This is cheap and idempotent: it only inserts missing rows.
-  if (org?.planId === 'scale') {
-    await db.execute(sql`
-      INSERT INTO entitlements (org_id, feature_id, enabled, value)
-      SELECT ${user.orgId} AS org_id, pf.feature_id, TRUE AS enabled, NULL::text AS value
-      FROM plan_features pf
-      WHERE pf.plan_id = 'scale'
-        AND NOT EXISTS (
-          SELECT 1 FROM entitlements e WHERE e.org_id = ${user.orgId} AND e.feature_id = pf.feature_id
-        )
-    `);
-  }
+  
+  if (!org) return res.status(500).json({ error: "Demo organization not found" });
+
+  // Ensure all features are enabled for this org (covers Scale plan)
+  await sql`
+    INSERT INTO entitlements (org_id, feature_id, enabled, value)
+    SELECT ${org.id}, f.id, TRUE, NULL::text
+    FROM features f
+    WHERE NOT EXISTS (
+      SELECT 1 FROM entitlements e
+      WHERE e.org_id = ${org.id} AND e.feature_id = f.id
+    )
+  `;
 
   // Generate token
   const token = jwt.sign(
-    { sub: user.id, orgId: org?.id, role: user.privileges?.role || 'admin' },
+    { sub: user.id, orgId: org.id, role: user.privileges?.role || 'admin' },
     process.env.JWT_SECRET!,
     { expiresIn: "24h" }
   );
@@ -55,7 +55,7 @@ authRouter.post("/login", async (req, res) => {
     secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24,
   }));
-  res.json({ ok: true, orgId: org?.id, plan: 'scale' });
+  res.json({ ok: true, orgId: org.id, plan: 'scale' });
 });
 
 authRouter.post("/logout", async (_req, res) => {

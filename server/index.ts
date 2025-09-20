@@ -41,6 +41,11 @@ function validateEnvironment() {
     process.exit(1);
   }
 
+  // Hard-require JWT_SECRET so jsonwebtoken doesn't crash with vague error
+  if (!process.env.JWT_SECRET) {
+    throw new Error("Missing JWT_SECRET. Set it in Replit → Secrets (use a long random string).");
+  }
+
   console.log(`✅ All required environment variables are set`);
 }
 
