@@ -1,0 +1,159 @@
+# Explanation
+
+You’re right—let’s guarantee the **demo user logs into an org that is on the Scale plan** and has **all Scale entitlements** materialized. Below I give you:
+
+1. A one-shot **reset script** that:
+
+   * Upserts the `demo-scale` org with `plan_id='scale'`
+   * Upserts the `demo@victorysync.com` user with password `VictoryScale123!`
+   * **Copies all features from `plan_features` for `scale` into `entitlements`** (idempotent)
+
+2. A tiny **server-side guard** in `/api/auth/login` that auto-heals entitlements if they’re missing.
+
+No changes to `.replit` or `replit.nix`.
+
+---
+
+# Code
+
+## 1) Reset script (sets Scale + entitlements)
+
+Create: `scripts/resetDemoUser.mjs`
+
+```js
+// scripts/resetDemoUser.mjs
+// Ensures demo org is on the SCALE plan and has all SCALE entitlements.
+// Also upserts the demo user with a known password.
+
+import { neon, neonConfig } from "@neondatabase/serverless";
+import WebSocket from "ws";
+import bcrypt from "bcryptjs";
+
+neonConfig.webSocketConstructor = WebSocket;
+neonConfig.fetchConnectionCache = true;
+
+const sql = neon(process.env.DATABASE_URL);
+
+// Credentials you will use to sign in
+const EMAIL = "demo@victorysync.com";
+const PASSWORD = "VictoryScale123!";
+const ORG_ID = "demo-scale";
+
+async function main() {
+  const hash = await bcrypt.hash(PASSWORD, 10);
+
+  // 1) Ensure the demo org exists and is explicitly on the SCALE plan
+  await sql/*sql*/ `
+    INSERT INTO organizations (id, name, timezone, plan_id)
+    VALUES (${ORG_ID}, 'VictorySync Demo (Scale)', 'America/New_York', 'scale')
+    ON CONFLICT (id) DO UPDATE SET plan_id='scale'
+  `;
+
+  // 2) Upsert the demo user (normalize email to lowercase)
+  await sql/*sql*/ `
+    INSERT INTO users (id, email, password_hash, org_id, role)
+    VALUES ('user-demo-scale', lower(${EMAIL}), ${hash}, ${ORG_ID}, 'demo')
+    ON CONFLICT (email) DO UPDATE
+      SET email = EXCLUDED.email,
+          password_hash = EXCLUDED.password_hash,
+          org_id = ${ORG_ID},
+          role = 'demo'
+  `;
+
+  // 3) Materialize entitlements for SCALE plan:
+  //    copy every feature linked to plan_id='scale' into entitlements for this org.
+  //    If your tables are named differently, adjust the names below.
+  await sql/*sql*/ `
+    INSERT INTO entitlements (org_id, feature_id, enabled, value)
+    SELECT ${ORG_ID} AS org_id, pf.feature_id, TRUE AS enabled, NULL::text AS value
+    FROM plan_features pf
+    WHERE pf.plan_id = 'scale'
+      AND NOT EXISTS (
+        SELECT 1 FROM entitlements e
+        WHERE e.org_id = ${ORG_ID} AND e.feature_id = pf.feature_id
+      )
+  `;
+
+  // Optional: if your app expects Growth/Starter features to also be present for Scale,
+  // you likely already have them in plan_features for 'scale'. If not, add second insert
+  // selecting from those plan_ids as needed.
+
+  console.log("✅ Demo user & org ready on SCALE with entitlements");
+  console.log(`   email: ${EMAIL}`);
+  console.log(`   pass : ${PASSWORD}`);
+}
+main().catch((e) => {
+  console.error("❌ resetDemoUser failed:", e?.message || e);
+  process.exit(1);
+});
+```
+
+**Run it (one time, safe to re-run):**
+
+```bash
+npm i @neondatabase/serverless ws bcryptjs
+node scripts/resetDemoUser.mjs
+```
+
+---
+
+## 2) Auto-heal entitlements on login (idempotent)
+
+Add this small guard in your login route after you load the user’s org.
+
+```diff
+// server/routes/auth.ts (inside POST /login after you fetched 'user' and 'org')
+
++ // If org is on 'scale', ensure entitlements exist for all plan_features('scale').
++ // This is cheap and idempotent: it only inserts missing rows.
++ if (org?.planId === 'scale') {
++   await db.execute(`
++     INSERT INTO entitlements (org_id, feature_id, enabled, value)
++     SELECT $1::text AS org_id, pf.feature_id, TRUE AS enabled, NULL::text AS value
++     FROM plan_features pf
++     WHERE pf.plan_id = 'scale'
++       AND NOT EXISTS (
++         SELECT 1 FROM entitlements e WHERE e.org_id = $1 AND e.feature_id = pf.feature_id
++       )
++   `, [user.orgId]);
++ }
+```
+
+> If you’re strictly using Drizzle’s query builder, you can keep this as a raw SQL `db.execute(...)` as shown, because it’s a one-liner and runs once per login.
+
+---
+
+# Instructions
+
+1. Add the **reset script** and run it:
+
+   ```
+   npm i @neondatabase/serverless ws bcryptjs
+   node scripts/resetDemoUser.mjs
+   ```
+
+   It will upsert the org with `plan_id='scale'`, the user, and all Scale entitlements.
+
+2. Patch your **login route** with the auto-heal snippet above.
+
+3. Restart your app:
+
+   ```
+   pkill -f node || true
+   npm run dev
+   ```
+
+4. Log in with:
+
+   * Email: `demo@victorysync.com`
+   * Password: `VictoryScale123!`
+
+5. Hit `/api/me/entitlements` (or the UI section that reads them) and verify all Scale-gated features are ON.
+
+---
+
+# Warnings
+
+* If your table names differ (e.g., `plan_features` vs `plans_features`, `planId` vs `plan_id`), adjust the SQL identifiers to match.
+* Keep the demo credentials gated in non-production environments or rotate regularly.
+* This approach assumes `plan_features` already maps Scale → features; if not, seed those links first or extend the script to insert them.
