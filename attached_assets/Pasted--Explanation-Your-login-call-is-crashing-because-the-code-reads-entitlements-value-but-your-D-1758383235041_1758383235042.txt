@@ -1,0 +1,204 @@
+# Explanation
+
+Your login call is crashing because the code reads `entitlements.value`, but your DB table doesn’t have that column yet (`NeonDbError: column "value" of relation "entitlements" does not exist`). We’ll patch the schema safely, then reseed the demo account on the **Scale** plan.
+
+I’m keeping everything Replit-friendly and idempotent.
+
+---
+
+# Code
+
+### 1) One-time schema patch script
+
+Create `scripts/patchSchema.mjs`:
+
+```js
+// scripts/patchSchema.mjs
+import { neon, neonConfig } from "@neondatabase/serverless";
+import WebSocket from "ws";
+neonConfig.webSocketConstructor = WebSocket;
+
+const sql = neon(process.env.DATABASE_URL);
+
+async function main() {
+  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL not set");
+
+  // --- features table (app expects these) ---
+  await sql/*sql*/`
+    CREATE TABLE IF NOT EXISTS features (
+      id   SERIAL PRIMARY KEY,
+      code VARCHAR(64) UNIQUE NOT NULL,
+      name VARCHAR(128)        NOT NULL
+    )
+  `;
+  await sql/*sql*/`
+    INSERT INTO features (code, name) VALUES
+      ('blended_team',        '24/7 Blended Team'),
+      ('ai_suite',            'AI Automation Suite'),
+      ('success_manager',     'Dedicated Success Manager'),
+      ('custom_integrations', 'Custom Integrations'),
+      ('priority_support',    'Priority Support'),
+      ('realtime_analytics',  'Real-time Analytics')
+    ON CONFLICT (code) DO NOTHING
+  `;
+
+  // --- organizations columns used by app ---
+  await sql/*sql*/`
+    ALTER TABLE organizations
+      ADD COLUMN IF NOT EXISTS name       VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS plan_id    VARCHAR(32),
+      ADD COLUMN IF NOT EXISTS timezone   VARCHAR(64) DEFAULT 'America/New_York',
+      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP    DEFAULT NOW()
+  `;
+  await sql/*sql*/`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_indexes
+        WHERE schemaname='public' AND indexname='organizations_name_idx'
+      ) THEN
+        CREATE UNIQUE INDEX organizations_name_idx ON organizations (name);
+      END IF;
+    END $$;
+  `;
+
+  // --- entitlements with 'value' column & uniqueness ---
+  await sql/*sql*/`
+    CREATE TABLE IF NOT EXISTS entitlements (
+      id         SERIAL PRIMARY KEY,
+      org_id     INTEGER NOT NULL,
+      feature_id INTEGER NOT NULL,
+      enabled    BOOLEAN NOT NULL DEFAULT TRUE
+      -- 'value' will be added below if missing
+    )
+  `;
+  await sql/*sql*/`ALTER TABLE entitlements ADD COLUMN IF NOT EXISTS value TEXT`;
+  await sql/*sql*/`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname='entitlements_org_feature_key'
+      ) THEN
+        ALTER TABLE entitlements
+        ADD CONSTRAINT entitlements_org_feature_key UNIQUE (org_id, feature_id);
+      END IF;
+    END $$;
+  `;
+
+  console.log("✅ Schema patched: features, organizations, entitlements (with value).");
+}
+main().catch(e => { console.error("❌ patchSchema failed:", e?.message || e); process.exit(1); });
+```
+
+### 2) Reseed demo (Scale) — if you don’t already have it
+
+Use the **last seeder you have** (the one that sets `plan_id='scale'` and inserts `entitlements`). If you need it again, here’s a compact version that assumes the patch above ran:
+
+```js
+// scripts/seedDemoScale.mjs
+import { neon, neonConfig } from "@neondatabase/serverless";
+import WebSocket from "ws";
+import bcrypt from "bcryptjs";
+neonConfig.webSocketConstructor = WebSocket;
+const sql = neon(process.env.DATABASE_URL);
+
+const EMAIL="demo@victorysync.com", PASSWORD="VictoryScale123!", NAME="Demo Admin";
+const ORG_NAME="VictorySync Demo (Scale) — numeric", ORG_TZ="America/New_York", PLAN_ID="scale";
+
+const intLike = v => /^[0-9]+$/.test(String(v ?? ""));
+
+async function getOrgId() {
+  const r0 = await sql`SELECT id::text id FROM organizations WHERE name=${ORG_NAME} LIMIT 1`;
+  if (r0.length && intLike(r0[0].id)) return Number(r0[0].id);
+
+  const r1 = await sql`
+    SELECT COALESCE(MAX(CASE WHEN id::text ~ '^[0-9]+$' THEN (id::text)::int END),0)+1 AS next_id
+    FROM organizations`;
+  const nextId = Number(r1[0].next_id);
+
+  await sql`
+    INSERT INTO organizations (id,name,timezone,plan_id)
+    VALUES (${nextId},${ORG_NAME},${ORG_TZ},${PLAN_ID})
+    ON CONFLICT (name) DO UPDATE SET plan_id=EXCLUDED.plan_id, timezone=EXCLUDED.timezone`;
+  return nextId;
+}
+
+async function main(){
+  if(!process.env.DATABASE_URL) throw new Error("DATABASE_URL not set");
+  if(!process.env.JWT_SECRET)   throw new Error("JWT_SECRET not set");
+
+  const orgId = await getOrgId();
+  const hash = await bcrypt.hash(PASSWORD,10);
+
+  await sql`
+    INSERT INTO public_users (name,email,password_hash,provider,provider_id,social_accounts,privileges)
+    VALUES (${NAME},lower(${EMAIL}),${hash},'local',NULL,'[]'::jsonb,'{"role":"super_admin"}'::jsonb)
+    ON CONFLICT (email) DO UPDATE
+      SET name=EXCLUDED.name, password_hash=EXCLUDED.password_hash,
+          provider='local', provider_id=NULL, social_accounts='[]'::jsonb,
+          privileges='{"role":"super_admin"}'::jsonb, email=lower(${EMAIL})
+  `;
+
+  try{
+    await sql`
+      INSERT INTO users (org_id,name,email,password_hash,two_factor_enabled,is_super_admin,is_active)
+      VALUES (${orgId},${NAME},lower(${EMAIL}),${hash},false,true,true)
+      ON CONFLICT (email) DO UPDATE
+        SET org_id=${orgId}, name=EXCLUDED.name, password_hash=EXCLUDED.password_hash,
+            two_factor_enabled=false, is_super_admin=true, is_active=true, email=lower(${EMAIL})
+    `;
+  } catch(e){
+    if(!String(e?.message||e).includes('relation "users" does not exist')) throw e;
+  }
+
+  await sql`
+    INSERT INTO entitlements (org_id, feature_id, enabled, value)
+    SELECT ${orgId}, f.id, TRUE, NULL::text
+    FROM features f
+    WHERE NOT EXISTS (
+      SELECT 1 FROM entitlements e
+      WHERE e.org_id=${orgId} AND e.feature_id=f.id
+    )
+  `;
+
+  console.log("✅ Demo seeded. Login:", EMAIL, PASSWORD, "Org ID:", orgId);
+}
+main().catch(e=>{ console.error("❌ seedDemoScale failed:",e?.message||e); process.exit(1); });
+```
+
+---
+
+# Instructions
+
+1. **Patch schema**
+
+   ```bash
+   node scripts/patchSchema.mjs
+   ```
+
+2. **(If needed) Reseed demo**
+
+   ```bash
+   node scripts/seedDemoScale.mjs
+   ```
+
+3. **Restart cleanly**
+
+   ```bash
+   pkill -f node || true
+   npm run dev
+   ```
+
+4. **Login**
+
+   * Email: `demo@victorysync.com`
+   * Password: `VictoryScale123!`
+
+---
+
+# Warnings
+
+* Ensure `JWT_SECRET` and `DATABASE_URL` are set in Replit Secrets before running anything.
+* If you previously created an org with a **string** id (like `demo-scale`), leave it alone — your app will use the **numeric** org created by the seeder.
+* Keep the demo creds for staging; rotate for production.
