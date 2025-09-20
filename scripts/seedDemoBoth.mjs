@@ -1,7 +1,7 @@
 
 // scripts/seedDemoBoth.mjs
-// Upserts demo org (numeric id), inserts demo user into public_users (and users if it exists),
-// and ensures ALL features are enabled (covers Scale).
+// Upserts a demo org (numeric id), adds a demo user to public_users (and users if present),
+// and enables ALL features for that org (covers Scale).
 
 import { neon, neonConfig } from "@neondatabase/serverless";
 import WebSocket from "ws";
@@ -11,29 +11,29 @@ neonConfig.webSocketConstructor = WebSocket;
 
 const sql = neon(process.env.DATABASE_URL);
 
+// Demo credentials
 const EMAIL = "demo@victorysync.com";
 const PASSWORD = "VictoryScale123!";
 const DEMO_NAME = "Demo Admin";
 
+// Org (lookup by name so we never touch integer id types)
 const ORG_NAME = "VictorySync Demo (Scale)";
 const ORG_TZ = "America/New_York";
 
 async function getNumericOrgId() {
-  // CTE: get existing org.id by name, else insert and return new id (no string ids)
-  const rows = await sql/*sql*/`
-    WITH upsert_org AS (
-      SELECT id FROM organizations WHERE name = ${ORG_NAME}
-      UNION ALL
-      SELECT id FROM (
-        INSERT INTO organizations (name, timezone)
-        VALUES (${ORG_NAME}, ${ORG_TZ})
-        RETURNING id
-      ) ins
-      LIMIT 1
-    )
-    SELECT id FROM upsert_org;
+  // Try to find by name
+  const found = await sql/*sql*/`
+    SELECT id FROM organizations WHERE name = ${ORG_NAME} LIMIT 1
   `;
-  return rows[0].id;
+  if (found.length) return found[0].id;
+
+  // Insert new org; let DB assign INTEGER id
+  const inserted = await sql/*sql*/`
+    INSERT INTO organizations (name, timezone)
+    VALUES (${ORG_NAME}, ${ORG_TZ})
+    RETURNING id
+  `;
+  return inserted[0].id;
 }
 
 async function main() {
@@ -44,11 +44,19 @@ async function main() {
   const orgId = await getNumericOrgId();
   const hash = await bcrypt.hash(PASSWORD, 10);
 
-  // Unique indexes so upserts are safe
-  await sql`CREATE UNIQUE INDEX IF NOT EXISTS public_users_email_idx ON public_users (email)`;
-  await sql`CREATE UNIQUE INDEX IF NOT EXISTS users_email_idx ON users (email)`; // if table exists
+  // Unique index for public_users email (safe to run repeatedly)
+  await sql/*sql*/`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='public_users_email_idx'
+      ) THEN
+        CREATE UNIQUE INDEX public_users_email_idx ON public_users (email);
+      END IF;
+    END $$;
+  `;
 
-  // ---- public_users (your admin auth appears to use this table) ----
+  // Insert/Update public_users (your admin/auth likely reads this table)
   await sql/*sql*/`
     INSERT INTO public_users (name, email, password_hash, provider, provider_id, social_accounts, privileges)
     VALUES (${DEMO_NAME}, lower(${EMAIL}), ${hash}, 'local', NULL, '[]'::jsonb, '{"role":"super_admin"}'::jsonb)
@@ -62,7 +70,7 @@ async function main() {
           email = lower(${EMAIL})
   `;
 
-  // ---- users (org-scoped auth; ignore if table isn't present) ----
+  // Insert/Update users table too (if it exists), ignoring if the table is absent
   try {
     await sql/*sql*/`
       INSERT INTO users (org_id, name, email, password_hash, two_factor_enabled, is_super_admin, is_active)
@@ -77,10 +85,11 @@ async function main() {
             email = lower(${EMAIL})
     `;
   } catch (e) {
-    if (!String(e?.message || e).includes('relation "users" does not exist')) throw e;
+    const msg = String(e?.message || e);
+    if (!msg.includes('relation "users" does not exist')) throw e;
   }
 
-  // ---- Enable ALL features for this org (idempotent) ----
+  // Enable ALL features for the org (idempotent) — guarantees Scale UX
   await sql/*sql*/`
     INSERT INTO entitlements (org_id, feature_id, enabled, value)
     SELECT ${orgId}, f.id, TRUE, NULL::text
@@ -91,7 +100,7 @@ async function main() {
     )
   `;
 
-  console.log("✅ Demo seeded:");
+  console.log("✅ Demo seeded");
   console.log("   orgId:", orgId);
   console.log("   email:", EMAIL);
   console.log("   pass :", PASSWORD);

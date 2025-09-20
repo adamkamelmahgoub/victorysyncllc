@@ -32,11 +32,12 @@ import { createServer } from "http";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
-  const requiredEnvVars = ['DATABASE_URL'];
+  const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
   const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
   if (missing.length > 0) {
     console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
+    console.error('Add JWT_SECRET in Replit → Secrets (use a long random string).');
     process.exit(1);
   }
 
