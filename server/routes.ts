@@ -10,9 +10,11 @@ import { sendEmail } from "./utils/sendEmail";
 import { Router } from "express";
 import { createCheckout, applyPlanToOrg, stripe } from "./billing/stripe";
 import { requireFeature } from "./middleware/entitlements";
-import { db } from "./db";
+import { db } from "./db/client";
 import { organizations, entitlements } from "./db/schema";
 import { eq } from "drizzle-orm";
+
+export const router = Router();
 
 let stripeInstance: Stripe | null = null;
 
@@ -171,7 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mount the billing router
-  app.use('/api/billing', billingRouter);
+  router.use('/billing', billingRouter);
 
   // Add 404 handler for API routes that don't exist
   app.use('/api/*', (req, res) => {

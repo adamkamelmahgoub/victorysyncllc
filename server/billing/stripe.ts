@@ -1,6 +1,6 @@
 
-import { db } from "../db";
-import { entitlements } from "../../shared/schema";
+import { db } from "../db/client";
+import { entitlements } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 
 export async function applyPlanToOrg(orgId: string, planId: string) {
