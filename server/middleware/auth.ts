@@ -1,11 +1,24 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { toIntId } from "../db/id";
 
-/**
- * Replace this with your real auth.
- * For now we accept JWT in Authorization OR X-Org-Id for service-to-service.
- */
-export function fakeAuth(req: Request, _res: Response, next: NextFunction) {
-  const orgId = (req.headers["x-org-id"] as string) || null;
-  (req as any).auth = orgId ? { orgId } : null;
+export function auth(req: Request, _res: Response, next: NextFunction) {
+  const bearer = req.headers.authorization?.startsWith("Bearer ")
+    ? req.headers.authorization.split(" ")[1]
+    : undefined;
+  const token = (req as any).cookies?.vs_token || bearer;
+  if (!token) { (req as any).auth = null; return next(); }
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const orgId = payload.orgId ? toIntId(payload.orgId, "orgId") : null;
+    (req as any).auth = {
+          userId: payload.sub,
+          orgId: orgId,
+          role: payload.role
+        };
+  } catch {
+    (req as any).auth = null;
+  }
   next();
 }
