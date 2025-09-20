@@ -4,9 +4,13 @@ import { db } from "../db/client";
 import { organizations, planFeatures, entitlements, plans } from "../db/schema";
 import { eq } from "drizzle-orm";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-06-20" });
+export const stripe = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith('sk_') 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" })
+  : null;
 
 export async function createCheckout(orgId: string, planId: "starter"|"growth"|"scale") {
+  if (!stripe) throw new Error("Stripe not configured");
+  
   const plan = await db.query.plans.findFirst({ where: eq(plans.id, planId) });
   if (!plan) throw new Error("Plan not found");
   if (!plan.stripePriceId) throw new Error("Quote required for Scale");
