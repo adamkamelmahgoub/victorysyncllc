@@ -181,9 +181,78 @@ async function runMigration() {
       END $$
     `;
 
-    // Step 15: Add foreign keys (entitlements table)
-    console.log("Step 15: Adding entitlements foreign key...");
-    await sql`
+    // Step 15A: Migrate entitlements.org_id to integer and clean orphans
+    console.log("Step 15A: Migrating entitlements.org_id to integer...");
+    await sql.unsafe(`
+      DO $$
+      DECLARE t text;
+      BEGIN
+        SELECT data_type INTO t
+        FROM information_schema.columns
+        WHERE table_schema='public' AND table_name='entitlements' AND column_name='org_id';
+
+        IF t NOT IN ('integer','bigint') THEN
+          -- add temp int column
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_schema='public' AND table_name='entitlements' AND column_name='org_id_int'
+          ) THEN
+            EXECUTE 'ALTER TABLE entitlements ADD COLUMN org_id_int BIGINT';
+          END IF;
+
+          -- map text -> int via either numeric text OR legacy id match
+          EXECUTE $Q$
+            UPDATE entitlements e
+            SET org_id_int = CASE
+              WHEN (e.org_id::text) ~ '^[0-9]+$'
+                THEN (e.org_id::text)::bigint
+              ELSE (
+                SELECT o.id
+                FROM organizations o
+                WHERE o.id_legacy IS NOT NULL AND o.id_legacy = e.org_id::text
+                LIMIT 1
+              )
+            END
+            WHERE e.org_id_int IS NULL
+          $Q$;
+
+          -- drop rows we couldn't map (orphaned)
+          EXECUTE $Q$
+            DELETE FROM entitlements e
+            WHERE e.org_id_int IS NULL
+          $Q$;
+
+          -- swap columns
+          EXECUTE 'ALTER TABLE entitlements DROP COLUMN org_id';
+          EXECUTE 'ALTER TABLE entitlements RENAME COLUMN org_id_int TO org_id';
+        END IF;
+      END $$
+    `);
+
+    // Step 15B: Enforce NOT NULL and purge orphans
+    console.log("Step 15B: Cleaning orphaned entitlements...");
+    await sql.unsafe(`ALTER TABLE entitlements ALTER COLUMN org_id SET NOT NULL`);
+    await sql.unsafe(`
+      DELETE FROM entitlements e
+      WHERE NOT EXISTS (SELECT 1 FROM organizations o WHERE o.id = e.org_id)
+    `);
+
+    // Step 15C: Re-create constraints (guarded/idempotent)
+    console.log("Step 15C: Adding entitlements constraints...");
+    await sql.unsafe(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints
+          WHERE table_name='entitlements' AND constraint_name='entitlements_org_feature_key'
+        ) THEN
+          ALTER TABLE entitlements
+            ADD CONSTRAINT entitlements_org_feature_key UNIQUE (org_id, feature_id);
+        END IF;
+      END $$
+    `);
+
+    await sql.unsafe(`
       DO $$
       BEGIN
         IF NOT EXISTS (
@@ -191,11 +260,40 @@ async function runMigration() {
           WHERE table_name='entitlements' AND constraint_name='entitlements_org_fk'
         ) THEN
           ALTER TABLE entitlements
-          ADD CONSTRAINT entitlements_org_fk
-          FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE;
+            ADD CONSTRAINT entitlements_org_fk
+            FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE;
         END IF;
       END $$
-    `;
+    `);
+
+    // Step 16: Verification checks
+    console.log("Step 16: Running verification checks...");
+    
+    const orgIdType = await sql.unsafe(`
+      SELECT data_type FROM information_schema.columns
+      WHERE table_name='organizations' AND column_name='id'
+    `);
+    console.log("  organizations.id type:", orgIdType[0]?.data_type);
+
+    const entIdType = await sql.unsafe(`
+      SELECT data_type FROM information_schema.columns
+      WHERE table_name='entitlements' AND column_name='org_id'
+    `);
+    console.log("  entitlements.org_id type:", entIdType[0]?.data_type);
+
+    const orphans = await sql.unsafe(`
+      SELECT COUNT(*) AS orphan_entitlements
+      FROM entitlements e
+      LEFT JOIN organizations o ON o.id = e.org_id
+      WHERE o.id IS NULL
+    `);
+    console.log("  orphan entitlements:", orphans[0]?.orphan_entitlements);
+
+    const constraints = await sql.unsafe(`
+      SELECT conname FROM pg_constraint
+      WHERE conname IN ('entitlements_org_fk','entitlements_org_feature_key')
+    `);
+    console.log("  constraints present:", constraints.map(c => c.conname));
 
     console.log("✅ Migration completed successfully!");
     

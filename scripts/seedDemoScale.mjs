@@ -1,10 +1,10 @@
 // scripts/seedDemoScale.mjs
-import { neon, neonConfig } from "@neondatabase/serverless";
+import { neon as createNeon, neonConfig } from "@neondatabase/serverless";
 import WebSocket from "ws";
 import bcrypt from "bcryptjs";
 
 neonConfig.webSocketConstructor = WebSocket;
-const sql = neon(process.env.DATABASE_URL);
+const sql = createNeon(process.env.DATABASE_URL);
 
 const EMAIL="demo@victorysync.com", PASS="VictoryScale123!", NAME="Demo Admin";
 const ORG="VictorySync Demo (Scale)", ORG_TZ="America/New_York", PLAN="scale";
@@ -67,13 +67,6 @@ async function main(){
 }
 
 main().catch(e => { console.error("❌ seedDemoScale failed:", e?.message || e); process.exit(1); });
-import { neon } from '@neondatabase/serverless';
-import WebSocket from 'ws';
-import bcrypt from 'bcryptjs';
-
-// Configure WebSocket for Neon
-const neonConfig = { webSocketConstructor: WebSocket };
-const sql = neon(process.env.DATABASE_URL, neonConfig);
 
 const EMAIL = "demo@victorysync.com";
 const PASSWORD = "VictoryScale123!";
