@@ -1,0 +1,133 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are a senior Node/TypeScript engineer working in **Replit** on the VictorySync repo. I need **Option B** implemented: a robust, production-safe fix for the org-id type mismatch and a reliable demo login with full **Scale** plan entitlements.
+
+### Context & Goals
+
+* Error to eliminate permanently: `operator does not exist: character varying = integer`.
+* Root cause: `organizations.id` used as **text** in some rows/code while related tables & queries expect **integer**; prepared statements can’t compare `integer = text`.
+* Environment: Replit + Neon Postgres using `@neondatabase/serverless` with `ws` for WebSocket.
+* **Do not modify** `.replit` or `replit.nix`.
+* Secrets live in Replit: `DATABASE_URL`, `JWT_SECRET`.
+
+### Deliverables (all code-ready)
+
+1. **Sequential migration runner (Option B)**
+
+   * Create `scripts/runMigration.mjs` that runs a **series of single SQL statements** via `sql.unsafe(...)` (no multi-command prepared statements).
+   * Migration must:
+
+     * Create/ensure `entitlements` with columns `(id serial pk, org_id int not null, feature_id int not null, enabled boolean default true, value text)`.
+     * Add unique constraint `entitlements(org_id, feature_id)` if missing.
+     * Convert `organizations.id` to a real **integer primary key** even if duplicates/non-numeric ids exist:
+
+       * Add `id_new BIGINT`.
+       * For each row: if `id` is numeric and first occurrence → keep that number; otherwise assign a new value from a sequence (e.g., `org_fix_seq`).
+       * Set `id_new NOT NULL`, drop old PK if exists, set PK to `id_new`.
+       * Preserve original text id by renaming old `id` → `id_legacy`, and `id_new` → `id`.
+     * Add app-friendly columns if missing: `name`, `plan_id`, `timezone default 'America/New_York'`, `created_at default now()`, and generated `id_text` (stored as `id::text`).
+     * Create unique index `organizations_name_idx` if missing.
+     * Add FKs (skip gracefully if table missing):
+
+       * `users(org_id)` → `organizations(id)` ON DELETE SET NULL
+       * `entitlements(org_id)` → `organizations(id)` ON DELETE CASCADE
+   * The script must be **idempotent** and safe to re-run; catch and log step numbers on failure.
+
+2. **Seeder for demo org & admin with Scale entitlements**
+
+   * Create `scripts/seedDemoScale.mjs` using `@neondatabase/serverless`, `ws`, `bcryptjs`.
+   * Ensure `process.env.DATABASE_URL` and `process.env.JWT_SECRET` are required.
+   * Steps:
+
+     * Upsert organization by **name** `"VictorySync Demo (Scale)"` with `plan_id='scale'`, return **numeric** `orgId` (cast to `Number`).
+     * Upsert admin in `public_users`:
+
+       * Email: `demo@victorysync.com`
+       * Password: `VictoryScale123!` (hash with bcrypt)
+       * `provider='local'`, `privileges={"role":"super_admin"}`.
+     * If a `users` table exists, upsert a matching row with `org_id`, `is_super_admin=true`.
+     * Ensure `features` table exists with codes:
+
+       * `blended_team`, `ai_suite`, `success_manager`, `custom_integrations`, `priority_support`, `realtime_analytics`
+     * Grant **all features** to the org by inserting into `entitlements` if not already present.
+   * Output clear success log: org id, email, password.
+
+3. **Code hardening: always bind integer org ids**
+
+   * Add `server/db/id.ts`:
+
+     ```ts
+     export function toIntId(value: unknown, field = "id"): number {
+       const n = Number(String(value ?? "").trim());
+       if (!Number.isInteger(n) || n <= 0) throw new Error(`Invalid ${field}: "${value}"`);
+       return n;
+     }
+     ```
+   * In the **login route** and **auth middleware**:
+
+     * After verifying credentials, compute `const orgId = toIntId(user.org_id ?? org?.id ?? req.body?.org_id, "org_id");`
+     * When creating JWT: `jwt.sign({ uid: user.id, orgId }, process.env.JWT_SECRET!, { expiresIn: "7d" })` (orgId is a **number**).
+     * For any SQL using org id: `WHERE e.org_id = ${orgId}` etc. (never cast in SQL; parse in JS).
+   * Search & fix any other queries comparing org ids to ensure integers are passed.
+
+4. **Commands & Usage (document in response)**
+
+   * Install deps once:
+
+     ```
+     npm i @neondatabase/serverless ws bcryptjs
+     ```
+   * Run migration:
+
+     ```
+     node scripts/runMigration.mjs
+     ```
+   * Seed demo:
+
+     ```
+     node scripts/seedDemoScale.mjs
+     ```
+   * Restart clean:
+
+     ```
+     pkill -f node || true
+     npm run dev
+     ```
+   * Log in:
+
+     * Email: `demo@victorysync.com`
+     * Password: `VictoryScale123!`
+
+### Constraints
+
+* Don’t modify `.replit` or `replit.nix`.
+* Use **TypeScript** where applicable, otherwise ES modules for the scripts.
+* Migrations/seeder must be **re-runnable** without breaking.
+* Use `sql.unsafe(...)` only for **static** SQL statements (no user input).
+
+### Success Criteria
+
+* No more `character varying = integer` errors.
+* `organizations.id` is an integer PK; legacy text is preserved in `id_legacy`.
+* FKs in place for `users.org_id` and `entitlements.org_id`.
+* Demo login works and `/entitlements` returns all Scale features.
+* Re-running migration or seeder is safe and idempotent.
+
+Please provide:
+
+* Full contents of `scripts/runMigration.mjs`, `scripts/seedDemoScale.mjs`, and `server/db/id.ts`.
+* The exact diff for the login route and auth middleware.
+* A short verification checklist (SQL to show PK type, sample entitlement query).
+* Any caveats specific to Neon serverless in Replit.
+
+**Key Improvements:**
+• Forces single-statement execution to avoid “multiple commands” prepared-statement errors.
+• Normalizes schema and prevents future varchar/int drift with FKs and a numeric PK.
+• Guarantees JWT + queries use **numeric** org ids, eliminating type mismatch at the source.
+• Idempotent scripts allow safe re-runs in Replit.
+
+**Techniques Applied:** Constraint-based prompting, stepwise migration plan, explicit success criteria, environment constraints, and safety rails for serverless Postgres.
+
+**Pro Tip:** If Neon blocks multi-command strings, keep all migrations as **sequenced `sql.unsafe` calls**, never interpolating user input.

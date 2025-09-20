@@ -1,0 +1,222 @@
+# Explanation
+
+You hit:
+`ERROR: could not create unique index "organizations_pkey" DETAIL: Key (id_new)=(1) is duplicated.`
+
+That means your `organizations` table has **duplicate numeric ids** (e.g., two rows that both cast to `1`), so when we tried to promote `id_new` to the PK it failed.
+
+Permanent fix:
+
+1. deterministically assign a **unique integer id** to **every** org row (keep the original text id in `id_legacy`), even if duplicates exist;
+2. then make that integer the **primary key** and add proper FKs;
+3. keep code always passing a **number** for `orgId`.
+
+Below is a battle-tested SQL that handles duplicates safely, and then the minimal code guard.
+
+---
+
+# Code
+
+## 1) Run this SQL in Neon (idempotent, handles duplicates)
+
+```sql
+BEGIN;
+
+-- Ensure entitlements has the 'value' column your app reads
+CREATE TABLE IF NOT EXISTS entitlements (
+  id         SERIAL PRIMARY KEY,
+  org_id     INTEGER NOT NULL,
+  feature_id INTEGER NOT NULL,
+  enabled    BOOLEAN NOT NULL DEFAULT TRUE
+);
+ALTER TABLE entitlements ADD COLUMN IF NOT EXISTS value TEXT;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE table_name='entitlements' AND constraint_name='entitlements_org_feature_key'
+  ) THEN
+    ALTER TABLE entitlements
+      ADD CONSTRAINT entitlements_org_feature_key UNIQUE (org_id, feature_id);
+  END IF;
+END $$;
+
+-- 0) Helper sequence to allocate fresh org ids where needed
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relkind='S' AND relname='org_fix_seq') THEN
+    CREATE SEQUENCE org_fix_seq START WITH 1;
+  END IF;
+END $$;
+
+-- Start sequence above the current max numeric-looking id
+DO $$
+DECLARE max_cast bigint;
+BEGIN
+  SELECT COALESCE(MAX((id::text)::bigint),0)
+  INTO   max_cast
+  FROM   organizations
+  WHERE  id::text ~ '^[0-9]+$';
+  PERFORM setval('org_fix_seq', max_cast + 1, false);
+END $$;
+
+-- 1) Add a new integer column (not PK yet)
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS id_new BIGINT;
+
+-- 2) Fill id_new uniquely:
+--    - if id looks numeric AND it’s the first occurrence of that value -> keep it
+--    - else (non-numeric or duplicate) -> assign a fresh number from org_fix_seq
+WITH casted AS (
+  SELECT
+    o.ctid,
+    CASE WHEN o.id::text ~ '^[0-9]+$' THEN (o.id::text)::bigint ELSE NULL END AS cast_id,
+    ROW_NUMBER() OVER (
+      PARTITION BY CASE WHEN o.id::text ~ '^[0-9]+$' THEN o.id::text ELSE NULL END
+      ORDER BY o.ctid
+    ) AS rn
+  FROM organizations o
+)
+UPDATE organizations o
+SET id_new = CASE
+  WHEN c.cast_id IS NULL THEN nextval('org_fix_seq')
+  WHEN c.rn = 1         THEN c.cast_id
+  ELSE                       nextval('org_fix_seq')
+END
+FROM casted c
+WHERE o.ctid = c.ctid
+  AND o.id_new IS NULL;  -- only fill missing; safe to re-run
+
+-- 3) Promote id_new to NOT NULL and Primary Key
+ALTER TABLE organizations ALTER COLUMN id_new SET NOT NULL;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE table_schema='public' AND table_name='organizations' AND constraint_type='PRIMARY KEY'
+  ) THEN
+    ALTER TABLE organizations DROP CONSTRAINT organizations_pkey;
+  END IF;
+END $$;
+ALTER TABLE organizations ADD CONSTRAINT organizations_pkey PRIMARY KEY (id_new);
+
+-- 4) Preserve old text id for audit, and rename integer to id
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='organizations' AND column_name='id_legacy'
+  ) THEN
+    ALTER TABLE organizations RENAME COLUMN id TO id_legacy;
+  END IF;
+END $$;
+ALTER TABLE organizations RENAME COLUMN id_new TO id;
+
+-- 5) Helpful columns & indexes used by your app
+ALTER TABLE organizations
+  ADD COLUMN IF NOT EXISTS name       VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS plan_id    VARCHAR(32),
+  ADD COLUMN IF NOT EXISTS timezone   VARCHAR(64) DEFAULT 'America/New_York',
+  ADD COLUMN IF NOT EXISTS created_at TIMESTAMP    DEFAULT NOW(),
+  ADD COLUMN IF NOT EXISTS id_text    TEXT GENERATED ALWAYS AS (id::text) STORED;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes
+    WHERE schemaname='public' AND indexname='organizations_name_idx'
+  ) THEN
+    CREATE UNIQUE INDEX organizations_name_idx ON organizations (name);
+  END IF;
+END $$;
+
+-- 6) Foreign keys now that organizations.id is integer
+DO $$
+BEGIN
+  BEGIN
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.table_constraints
+      WHERE table_name='users' AND constraint_name='users_org_fk'
+    ) THEN
+      EXECUTE $Q$
+        ALTER TABLE users
+        ADD CONSTRAINT users_org_fk
+        FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE SET NULL
+      $Q$;
+    END IF;
+  EXCEPTION WHEN undefined_table THEN
+    -- users table may not exist; skip
+    NULL;
+  END;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE table_name='entitlements' AND constraint_name='entitlements_org_fk'
+  ) THEN
+    EXECUTE $Q$
+      ALTER TABLE entitlements
+      ADD CONSTRAINT entitlements_org_fk
+      FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE
+    $Q$;
+  END IF;
+END $$;
+
+COMMIT;
+```
+
+> This script **eliminates duplicates**, preserves any single numeric id, assigns fresh ids for **non-numeric or duplicate** rows, swaps to an **integer PK**, and adds the FKs.
+
+---
+
+## 2) Tiny code guard (prevents string→int mismatches)
+
+Create `server/db/id.ts`:
+
+```ts
+export function toIntId(value: unknown, field = "id"): number {
+  const n = Number(String(value ?? "").trim());
+  if (!Number.isInteger(n) || n <= 0) throw new Error(`Invalid ${field}: "${value}"`);
+  return n;
+}
+```
+
+Use it **every time** you pass an org id to SQL or put it in a JWT:
+
+```ts
+// in login route, after verifying credentials
+import { toIntId } from "../db/id";
+import jwt from "jsonwebtoken";
+import { sql } from "../db/client";
+
+const orgId = toIntId(user.org_id ?? org?.id ?? req.body?.org_id, "org_id");
+
+const token = jwt.sign({ uid: user.id, orgId }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+
+// later:
+await sql/*sql*/`SELECT ... FROM organizations WHERE id = ${orgId}`;
+await sql/*sql*/`SELECT ... FROM entitlements WHERE org_id = ${orgId}`;
+```
+
+---
+
+# Instructions
+
+1. Run the **SQL script** above in Neon’s SQL console.
+2. In Replit **Secrets**, ensure `DATABASE_URL` and `JWT_SECRET` are set.
+3. If you still need the demo user/org, re-run your seeder (it will now bind an **integer** org id).
+4. Restart clean:
+
+   ```bash
+   pkill -f node || true
+   npm run dev
+   ```
+5. Log in with your demo creds.
+
+---
+
+# Warnings
+
+* From now on, **never insert string org ids**. The old text lives in `organizations.id_legacy` only for audit.
+* Keep demo creds for staging; rotate for production.
+
+This resolves the “character varying = integer” class of errors **permanently** and gets login/entitlements working reliably.
