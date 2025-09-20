@@ -1,0 +1,71 @@
+# Explanation
+
+Vite’s error `Identifier 'data' has already been declared (33:23)` means you have **two bindings named `data` in the same scope**. In your `login.tsx` that happens because the mutation parameter is named `data` and (elsewhere in that function/file) you also declare `const data = …` (often from `await res.json()` or from `const { data } = useMe()` at the same level). Rename the parameter (or the local variable) and you’re good.
+
+I’ve also included the production-safe login call (with `credentials: 'include'`) and a response parse that uses `json` instead of `data` so you won’t collide again.
+
+# Code
+
+Replace your mutation with this:
+
+```tsx
+// client/src/pages/login.tsx (inside your component)
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+type LoginFormData = { email: string; password: string };
+
+const queryClient = useQueryClient();
+
+const loginMutation = useMutation({
+  // Rename the parameter so it doesn't collide with any other "data"
+  mutationFn: async (form: LoginFormData) => {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',              // <- required for cookie session
+      body: JSON.stringify(form),
+    });
+
+    if (res.status === 401) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.message || 'Invalid credentials');
+    }
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`Login failed: ${res.status} ${text}`);
+    }
+
+    // Use "json" instead of "data" to avoid shadowing
+    const json = await res.json();
+    return json; // always return a defined value
+  },
+  onSuccess: () => {
+    // Ensure the session is reloaded after login
+    queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    // navigate('/customer-dashboard'); // if you navigate on success
+  },
+});
+```
+
+If you have a top-level query like:
+
+```tsx
+const { data } = useMe();
+```
+
+prefer to alias it so it won’t clash anywhere:
+
+```tsx
+const { data: me } = useMe();
+```
+
+# Instructions
+
+1. In `client/src/pages/login.tsx`, rename the mutation parameter to `form` (or `payload`) and rename any `const data = await res.json()` to `const json = …`.
+2. Ensure you’re **not** also declaring another `const data = …` in the same block as the mutation (e.g., alias `useMe` result to `me`).
+3. Keep `credentials: 'include'` in fetch so your cookie session is sent.
+4. After this change, save and reload. The Vite pre-transform error should disappear and login should complete without throwing.
+
+# Warnings
+
+* This error is purely a **duplicate identifier** problem; it’s not a runtime auth issue. If you still see “unauthorized → logging out”, that’s a separate flow (we addressed earlier): make sure `/api/auth/me` always returns JSON and your queryFn returns **null** on 401, never `undefined`.
