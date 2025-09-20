@@ -30,12 +30,12 @@ export default function Login() {
   });
 
   const loginMutation = useMutation({
-    mutationFn: async (data: LoginFormData) => {
+    mutationFn: async (formData: LoginFormData) => {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // Important for cookies
-        body: JSON.stringify(data)
+        body: JSON.stringify(formData)
       });
 
       if (!response.ok) {
@@ -43,9 +43,9 @@ export default function Login() {
         throw new Error(errorData.error || 'Login failed');
       }
 
-      const data = await response.json();
+      const json = await response.json();
 
-      if (data.ok) {
+      if (json.ok) {
         // Cookie is automatically set by server, just navigate
         setLocation('/customer-dashboard');
       } else {
