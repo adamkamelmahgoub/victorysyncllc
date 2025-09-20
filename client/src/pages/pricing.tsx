@@ -1,262 +1,127 @@
-import { Link } from "wouter";
-import { Check, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { useCart } from '@/hooks/useCart';
-import { useQuery } from '@tanstack/react-query';
-import { Badge } from '@/components/ui/badge';
-export default function Pricing() {
-  const { addItem } = useCart();
+import React from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Check } from "lucide-react";
 
-  const { data: packages, isLoading } = useQuery({
-    queryKey: ['/api/packages'],
-  });
+type PlanId = 'starter' | 'growth' | 'scale';
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
+const plans: { id: PlanId; name: string; price: number; bullets: string[]; popular?: boolean }[] = [
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: 1200,
+    bullets: [
+      '1 Dedicated Agent',
+      'Business Hours Support',
+      'Basic CRM Integration',
+      'Email Support',
+      'Monthly Reports'
+    ]
+  },
+  {
+    id: 'growth',
+    name: 'Growth',
+    price: 2500,
+    popular: true,
+    bullets: [
+      '2 Dedicated Agents',
+      'Extended Hours Support',
+      'Appointment Setting',
+      'Advanced CRM Integration',
+      'Live Chat Support',
+      'Weekly Reports'
+    ]
+  },
+  {
+    id: 'scale',
+    name: 'Scale',
+    price: 4500,
+    bullets: [
+      '24/7 Blended Team',
+      'AI Automation Suite',
+      'Dedicated Success Manager',
+      'Custom Integrations',
+      'Priority Support',
+      'Real-time Analytics'
+    ]
   }
+];
 
-  const handleAddToCart = (pkg: any) => {
-    addItem({
-      packageId: pkg.id,
-      name: pkg.name,
-      price: parseFloat(pkg.price),
-    });
-  };
+async function startCheckout(planId: PlanId) {
+  const res = await fetch('/api/billing/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ planId })
+  });
+  if (!res.ok) {
+    const j = await res.json().catch(() => ({}));
+    throw new Error(j.error || 'Checkout failed');
+  }
+  const { url } = await res.json();
+  window.location.href = url;
+}
 
+export default function Pricing() {
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="gradient-victory py-20 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Transparent Pricing Plans
-          </h1>
-          <p className="text-xl text-purple-100 max-w-3xl mx-auto mb-8">
-            Choose the perfect plan for your business needs. No hidden fees, no long-term contracts. Scale up or down as your business grows.
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 py-16">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>
+          <p className="text-xl text-gray-600">Scale your business with VictorySync</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {plans.map(plan => (
+            <Card key={plan.id} className={`relative ${plan.popular ? 'ring-2 ring-[#6950f0] shadow-lg' : 'shadow-sm'}`}>
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <Badge className="bg-[#6950f0] text-white px-4 py-1">Most Popular</Badge>
+                </div>
+              )}
+
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                <CardDescription className="text-3xl font-bold text-gray-900 mt-4">
+                  ${plan.price.toLocaleString()}
+                  <span className="text-base font-medium text-gray-600">/month</span>
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-6">
+                <ul className="space-y-3">
+                  {plan.bullets.map(bullet => (
+                    <li key={bullet} className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-gray-700">{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button
+                  className={`w-full py-3 text-base font-medium ${
+                    plan.popular 
+                      ? 'bg-[#6950f0] hover:bg-[#5d4cdb] text-white' 
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                  }`}
+                  onClick={() => startCheckout(plan.id)}
+                >
+                  Get Started
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <p className="text-gray-600">
+            All plans include our core features and 24/7 support. 
+            <br />
+            Upgrade or downgrade anytime.
           </p>
-          <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 inline-block">
-            <p className="text-lg font-semibold">💰 Save up to 60% compared to US-based services</p>
-          </div>
         </div>
-      </section>
-
-      {/* Pricing Cards */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {packages && packages.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-8">
-              {packages.map((pkg: any, index: number) => {
-                const isPopular = index === 1; // Make middle plan popular
-                return (
-                  <Card key={pkg.id} className={`relative hover:shadow-lg transition-shadow ${isPopular ? 'border-victory-purple border-2' : 'border-slate-200'}`}>
-                    {isPopular && (
-                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <Badge className="bg-victory-purple text-white px-4 py-1">
-                          Most Popular
-                        </Badge>
-                      </div>
-                    )}
-                    <CardContent className="p-8">
-                      <div className="text-center mb-8">
-                        <h3 className="text-2xl font-bold victory-dark mb-2">{pkg.name}</h3>
-                        <div className="text-4xl font-bold victory-purple mb-2">
-                          ${parseFloat(pkg.price).toLocaleString()}
-                          <span className="text-base font-normal victory-gray">/month</span>
-                        </div>
-                        <p className="victory-gray">{pkg.description}</p>
-                      </div>
-                      
-                      <ul className="space-y-4 mb-8">
-                        {pkg.features.map((feature: string, idx: number) => (
-                          <li key={idx} className="flex items-center">
-                            <Check className="text-green-500 w-5 h-5 mr-3 flex-shrink-0" />
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      
-                      <Button 
-                        onClick={() => handleAddToCart(pkg)}
-                        className={`w-full ${isPopular ? 'bg-victory-purple hover:bg-purple-700' : 'bg-victory-purple hover:bg-purple-700'} text-white`}
-                      >
-                        Add to Cart
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-xl victory-gray">Loading pricing packages...</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Cost Comparison */}
-      <section className="bg-slate-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
-              Cost Comparison: VictorySync vs. Traditional Solutions
-            </h2>
-            <p className="text-xl victory-gray">
-              See how much you can save with our New Jersey-based team
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="border-red-200">
-              <CardContent className="p-8 text-center">
-                <h3 className="text-2xl font-bold text-red-600 mb-4">US-Based Agents</h3>
-                <div className="text-4xl font-bold text-red-600 mb-4">$18.25/hour</div>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <p>• High labor costs</p>
-                  <p>• Limited availability</p>
-                  <p>• Additional overhead</p>
-                  <p>• Expensive benefits</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-green-200">
-              <CardContent className="p-8 text-center">
-                <h3 className="text-2xl font-bold text-green-600 mb-4">VictorySync (Egypt)</h3>
-                <div className="text-4xl font-bold text-green-600 mb-4">$6.25/hour</div>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <p>• 66% cost savings</p>
-                  <p>• 24/7 availability</p>
-                  <p>• English fluency</p>
-                  <p>• Professional quality</p>
-                </div>
-                <div className="mt-4 bg-green-100 text-green-800 px-4 py-2 rounded-lg font-semibold">
-                  Save $12+ per hour!
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Comparison */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
-              What's Included in Every Plan
-            </h2>
-            <p className="text-xl victory-gray">
-              All plans include our core features and dedicated support
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="victory-purple w-8 h-8" />
-              </div>
-              <h3 className="font-semibold victory-dark mb-2">Quality Assurance</h3>
-              <p className="text-sm victory-gray">Continuous monitoring and quality control</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="victory-blue w-8 h-8" />
-              </div>
-              <h3 className="font-semibold victory-dark mb-2">Dedicated Manager</h3>
-              <p className="text-sm victory-gray">Personal account manager for all plans</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="text-green-600 w-8 h-8" />
-              </div>
-              <h3 className="font-semibold victory-dark mb-2">Security & Compliance</h3>
-              <p className="text-sm victory-gray">Enterprise-grade security standards</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="victory-purple w-8 h-8" />
-              </div>
-              <h3 className="font-semibold victory-dark mb-2">Detailed Reporting</h3>
-              <p className="text-sm victory-gray">Comprehensive analytics and insights</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="bg-slate-50 py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
-              Frequently Asked Questions
-            </h2>
-          </div>
-
-          <div className="space-y-8">
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold victory-dark mb-2">Can I change my plan later?</h3>
-                <p className="victory-gray">Yes, you can upgrade or downgrade your plan at any time. Changes take effect on your next billing cycle.</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold victory-dark mb-2">Are there any setup fees?</h3>
-                <p className="victory-gray">No setup fees! We'll have your account up and running within 48 hours of signup.</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold victory-dark mb-2">What if I need custom features?</h3>
-                <p className="victory-gray">We offer custom solutions for enterprise clients. Contact us to discuss your specific requirements.</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold victory-dark mb-2">How do you ensure quality?</h3>
-                <p className="victory-gray">We maintain strict quality standards with regular training, monitoring, and performance reviews for all our agents.</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="gradient-victory py-20 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Start Saving?
-          </h2>
-          <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
-            Join hundreds of businesses that trust VictorySync for their customer engagement needs.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact">
-              <Button size="lg" className="bg-victory-purple hover:bg-purple-700 text-white">
-                Schedule Free Demo
-              </Button>
-            </Link>
-            <Link href="/contact">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]">
-                Contact Sales
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }
-

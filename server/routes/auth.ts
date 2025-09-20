@@ -92,6 +92,18 @@ authRouter.get("/me", async (req, res) => {
 
     // Verify JWT
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const orgId = String(decoded.orgId);
+
+    // Get org and entitlements
+    const [org] = await sql`
+      SELECT id::text AS id, name, plan_id FROM organizations WHERE id = ${orgId}::text
+    `;
+    const ent = await sql`
+      SELECT feature_id, enabled, COALESCE(value, 'enabled') AS value
+      FROM entitlements
+      WHERE org_id = ${orgId}::text
+      ORDER BY feature_id
+    `;
     
     res.status(200).json({ 
       ok: true, 
@@ -99,7 +111,10 @@ authRouter.get("/me", async (req, res) => {
         id: decoded.sub,
         orgId: decoded.orgId, 
         role: decoded.role || 'admin'
-      }
+      },
+      org,
+      plan: org?.plan_id ?? null,
+      entitlements: ent
     });
   } catch (error) {
     console.error("JWT verification failed:", error);

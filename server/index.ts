@@ -30,6 +30,7 @@ import inboundEmailRouter from "./routes/inbound-email";
 import hubspotWebhook from "./webhooks/hubspot";
 import { startReportJobs } from "./jobs/reports";
 import { createServer } from "http";
+import billingRouter from "./routes/billing";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -53,7 +54,7 @@ function validateEnvironment() {
 // Function to initialize the Express app
 async function initializeApp() {
   const app = express();
-  
+
   // Trust proxy for Replit environment (enables secure cookies behind proxy)
   app.set('trust proxy', 1);
 
@@ -62,31 +63,31 @@ async function initializeApp() {
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (same-origin requests)
       if (!origin) return callback(null, true);
-      
+
       // Allowed origins for Replit iframe and local dev
       const allowedOrigins = [
         'https://replit.com',
         'http://localhost:5173',
         'http://127.0.0.1:5173'
       ];
-      
+
       // Check exact matches
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      
+
       // Check regex patterns for Replit domains
       const replitPatterns = [
         /^https:\/\/.*\.replit\.dev$/,
         /^https:\/\/.*\.repl\.co$/
       ];
-      
+
       for (const pattern of replitPatterns) {
         if (pattern.test(origin)) {
           return callback(null, true);
         }
       }
-      
+
       // Reject unknown origins
       callback(new Error(`CORS: Origin ${origin} not allowed`), false);
     },
@@ -106,7 +107,7 @@ async function initializeApp() {
 
   // Auth routes (no global auth middleware here)
   app.use("/api/auth", authRouter);
-  
+
   // Apply auth middleware only to protected routes
   app.use("/api", auth);
 
@@ -226,6 +227,8 @@ async function initializeApp() {
     app.use("/ivr", ivrRouter);
     app.use("/webhooks", hubspotWebhook);
     app.use("/webhooks", inboundEmailRouter);
+    app.use("/api/billing", billingRouter);
+    app.use("/api", routes);
 
     // Start report generation jobs
     startReportJobs();
