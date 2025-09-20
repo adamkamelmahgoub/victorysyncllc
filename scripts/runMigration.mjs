@@ -101,7 +101,7 @@ async function runMigration() {
 
     // Step 8a: Drop any FKs that reference organizations(id)
     console.log("Step 8a: Dropping dependent foreign keys...");
-    await sql.unsafe(`
+    await sql(`
       DO $$
       DECLARE r RECORD;
       BEGIN
@@ -113,12 +113,12 @@ async function runMigration() {
         LOOP
           EXECUTE format('ALTER TABLE %I DROP CONSTRAINT IF EXISTS %I', r.tbl, r.conname);
         END LOOP;
-      END $$
+      END $$;
     `);
 
     // Step 8b: Drop the old PK on organizations
     console.log("Step 8b: Dropping old primary key...");
-    await sql.unsafe(`
+    await sql(`
       DO $$
       DECLARE pk_name text;
       BEGIN
@@ -131,17 +131,17 @@ async function runMigration() {
         IF pk_name IS NOT NULL THEN
           EXECUTE format('ALTER TABLE organizations DROP CONSTRAINT %I', pk_name);
         END IF;
-      END $$
+      END $$;
     `);
 
     // Step 8c: Promote id_new to the PK
     console.log("Step 8c: Setting new primary key...");
-    await sql.unsafe(`ALTER TABLE organizations ALTER COLUMN id_new SET NOT NULL`);
-    await sql.unsafe(`ALTER TABLE organizations ADD CONSTRAINT organizations_pkey PRIMARY KEY (id_new)`);
+    await sql(`ALTER TABLE organizations ALTER COLUMN id_new SET NOT NULL`);
+    await sql(`ALTER TABLE organizations ADD CONSTRAINT organizations_pkey PRIMARY KEY (id_new)`);
 
     // Step 8d: Preserve old text id and rename
     console.log("Step 8d: Preserving old id as id_legacy...");
-    await sql.unsafe(`
+    await sql(`
       DO $$
       BEGIN
         IF NOT EXISTS (
@@ -150,12 +150,12 @@ async function runMigration() {
         ) THEN
           ALTER TABLE organizations RENAME COLUMN id TO id_legacy;
         END IF;
-      END $$
+      END $$;
     `);
 
-    await sql.unsafe(`ALTER TABLE organizations RENAME COLUMN id_new TO id`);
+    await sql(`ALTER TABLE organizations RENAME COLUMN id_new TO id`);
 
-    await sql.unsafe(`
+    await sql(`
       ALTER TABLE organizations
         ADD COLUMN IF NOT EXISTS id_text TEXT GENERATED ALWAYS AS (id::text) STORED
     `);
@@ -188,7 +188,7 @@ async function runMigration() {
     console.log("Step 11: Re-creating foreign keys...");
     
     // users → organizations
-    await sql.unsafe(`
+    await sql(`
       DO $$
       BEGIN
         IF EXISTS (SELECT 1 FROM information_schema.tables
@@ -202,12 +202,12 @@ async function runMigration() {
                      FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE SET NULL';
           END IF;
         END IF;
-      END $$
+      END $$;
     `);
 
     // Step 12A: Migrate entitlements.org_id to integer and clean orphans
     console.log("Step 12A: Migrating entitlements.org_id to integer...");
-    await sql.unsafe(`
+    await sql(`
       DO $$
       DECLARE t text;
       BEGIN
@@ -250,20 +250,20 @@ async function runMigration() {
           EXECUTE 'ALTER TABLE entitlements DROP COLUMN org_id';
           EXECUTE 'ALTER TABLE entitlements RENAME COLUMN org_id_int TO org_id';
         END IF;
-      END $$
+      END $$;
     `);
 
     // Step 12B: Enforce NOT NULL and purge orphans
     console.log("Step 12B: Cleaning orphaned entitlements...");
-    await sql.unsafe(`ALTER TABLE entitlements ALTER COLUMN org_id SET NOT NULL`);
-    await sql.unsafe(`
+    await sql(`ALTER TABLE entitlements ALTER COLUMN org_id SET NOT NULL`);
+    await sql(`
       DELETE FROM entitlements e
       WHERE NOT EXISTS (SELECT 1 FROM organizations o WHERE o.id = e.org_id)
     `);
 
     // Step 12C: Re-create entitlements constraints
     console.log("Step 12C: Adding entitlements unique constraint...");
-    await sql.unsafe(`
+    await sql(`
       DO $$
       BEGIN
         IF NOT EXISTS (
@@ -273,12 +273,12 @@ async function runMigration() {
           ALTER TABLE entitlements
             ADD CONSTRAINT entitlements_org_feature_key UNIQUE (org_id, feature_id);
         END IF;
-      END $$
+      END $$;
     `);
 
     // entitlements → organizations (org_id already normalized to int)
     console.log("Step 12D: Re-creating entitlements foreign key...");
-    await sql.unsafe(`
+    await sql(`
       DO $$
       BEGIN
         IF NOT EXISTS (
@@ -289,25 +289,25 @@ async function runMigration() {
                    ADD CONSTRAINT entitlements_org_fk
                    FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE';
         END IF;
-      END $$
+      END $$;
     `);
 
     // Step 13: Verification checks
     console.log("Step 13: Running verification checks...");
     
-    const orgIdType = await sql.unsafe(`
+    const orgIdType = await sql(`
       SELECT data_type FROM information_schema.columns
       WHERE table_name='organizations' AND column_name='id'
     `);
     console.log("  organizations.id type:", orgIdType[0]?.data_type);
 
-    const entIdType = await sql.unsafe(`
+    const entIdType = await sql(`
       SELECT data_type FROM information_schema.columns
       WHERE table_name='entitlements' AND column_name='org_id'
     `);
     console.log("  entitlements.org_id type:", entIdType[0]?.data_type);
 
-    const orphans = await sql.unsafe(`
+    const orphans = await sql(`
       SELECT COUNT(*) AS orphan_entitlements
       FROM entitlements e
       LEFT JOIN organizations o ON o.id = e.org_id
@@ -315,7 +315,7 @@ async function runMigration() {
     `);
     console.log("  orphan entitlements:", orphans[0]?.orphan_entitlements);
 
-    const constraints = await sql.unsafe(`
+    const constraints = await sql(`
       SELECT conname FROM pg_constraint
       WHERE conname IN ('entitlements_org_fk','entitlements_org_feature_key')
     `);
