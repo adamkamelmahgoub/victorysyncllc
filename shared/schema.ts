@@ -110,10 +110,18 @@ export const organizations = pgTable("organizations", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Features table
+export const features = pgTable("features", {
+  id: varchar("id").primaryKey(),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  enabled: boolean("enabled").default(true),
+});
+
 // Entitlements table
 export const entitlements = pgTable("entitlements", {
   id: serial("id").primaryKey(),
-  orgId: varchar("org_id").notNull(),
+  orgId: integer("org_id").notNull(),
   featureId: varchar("feature_id").notNull(),
   enabled: boolean("enabled").default(true),
   value: text("value"),
@@ -151,6 +159,9 @@ export type Organization = typeof organizations.$inferSelect;
 
 export type InsertEntitlement = typeof entitlements.$inferInsert;
 export type Entitlement = typeof entitlements.$inferSelect;
+
+export type InsertFeature = typeof features.$inferInsert;
+export type Feature = typeof features.$inferSelect;
 
 // Schemas
 export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
