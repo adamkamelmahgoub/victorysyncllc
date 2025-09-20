@@ -6,6 +6,7 @@ import { db } from "../db";
 import { users, organizations } from "../../shared/schema";
 import { eq, sql as drizzleSql } from "drizzle-orm";
 import { neon } from "@neondatabase/serverless";
+import { toIntId } from "../db/id";
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -32,20 +33,23 @@ authRouter.post("/login", async (req, res) => {
   
   if (!org) return res.status(500).json({ error: "Demo organization not found" });
 
+  // get/create the org and ensure it's an integer
+  const orgIdInt = toIntId(org.id, "org_id");
+
   // Ensure all features are enabled for this org (covers Scale plan)
   await sql`
     INSERT INTO entitlements (org_id, feature_id, enabled, value)
-    SELECT ${org.id}, f.id, TRUE, NULL::text
+    SELECT ${orgIdInt}, f.id, TRUE, NULL::text
     FROM features f
     WHERE NOT EXISTS (
       SELECT 1 FROM entitlements e
-      WHERE e.org_id = ${org.id} AND e.feature_id = f.id
+      WHERE e.org_id = ${orgIdInt} AND e.feature_id = f.id
     )
   `;
 
-  // Generate token
+  // Always store number in JWT
   const token = jwt.sign(
-    { sub: user.id, orgId: org.id, role: user.privileges?.role || 'admin' },
+    { sub: user.id, orgId: orgIdInt, role: user.privileges?.role || 'admin' },
     process.env.JWT_SECRET!,
     { expiresIn: "24h" }
   );
@@ -55,7 +59,7 @@ authRouter.post("/login", async (req, res) => {
     secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24,
   }));
-  res.json({ ok: true, orgId: org.id, plan: 'scale' });
+  res.json({ ok: true, orgId: orgIdInt, plan: 'scale' });
 });
 
 authRouter.post("/logout", async (_req, res) => {
