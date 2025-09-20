@@ -5,10 +5,13 @@ try {
   // dotenv not installed (expected on Replit) — environment comes from Replit Secrets
 }
 import express, { type Request, Response, NextFunction } from "express";
+import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
 import passport from "./auth/passport";
+import { auth } from "./middleware/auth";
+import { authRouter } from "./routes/auth";
 import { logMessage, openaiChatCompletion, getEmbeddings } from "./lib";
 import { z } from "zod";
 import { db } from "./db";
@@ -45,9 +48,14 @@ async function initializeApp() {
   const app = express();
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
+  app.use(cookieParser());
 
   // Initialize Passport
   app.use(passport.initialize());
+
+  // Auth middleware and routes
+  app.use(auth);
+  app.use("/api/auth", authRouter);
 
   app.use((req, res, next) => {
     const start = Date.now();

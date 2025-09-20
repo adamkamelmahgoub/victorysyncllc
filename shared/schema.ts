@@ -90,6 +90,16 @@ export const organizations = pgTable("organizations", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Users table for demo authentication
+export const users = pgTable("users", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  email: varchar("email", { length: 190 }).notNull(),
+  passwordHash: varchar("password_hash", { length: 200 }).notNull(),
+  orgId: varchar("org_id", { length: 36 }).notNull(),
+  role: varchar("role", { length: 32 }).default("member"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Entitlements table for feature access
 export const entitlements = pgTable("entitlements", {
   id: serial("id").primaryKey(),
@@ -122,6 +132,9 @@ export const packagesRelations = relations(packages, ({ many }) => ({
 // Types
 export type InsertPublicUser = typeof publicUsers.$inferInsert;
 export type PublicUser = typeof publicUsers.$inferSelect;
+
+export type InsertUser = typeof users.$inferInsert;
+export type User = typeof users.$inferSelect;
 
 export type InsertPackage = typeof packages.$inferInsert;
 export type Package = typeof packages.$inferSelect;
