@@ -1,8 +1,7 @@
 
-
 // scripts/seedDemoBoth.mjs
-// Seed a demo org with a NUMERIC id, a demo admin user, and ALL features.
-// Works whether organizations.id is integer or varchar. Avoids legacy "demo-scale" ids.
+// Seeds a demo org with a NUMERIC id, demo admin user, and ALL features (covers Scale).
+// Handles: legacy string-id orgs, NOT NULL plan_id, int/varchar id column types.
 
 import { neon, neonConfig } from "@neondatabase/serverless";
 import WebSocket from "ws";
@@ -12,86 +11,73 @@ neonConfig.webSocketConstructor = WebSocket;
 
 const sql = neon(process.env.DATABASE_URL);
 
-// Demo login
+// Demo creds
 const EMAIL = "demo@victorysync.com";
 const PASSWORD = "VictoryScale123!";
 const NAME = "Demo Admin";
 
 // Org names
-const ORG_NAME = "VictorySync Demo (Scale)";          // legacy might exist with string id
-const ORG_NAME_NUM = "VictorySync Demo (Scale) — numeric"; // our safe numeric one
+const ORG_NAME = "VictorySync Demo (Scale)";              // may exist with string id (demo-scale)
+const ORG_NAME_NUM = "VictorySync Demo (Scale) — numeric"; // our numeric one
 const ORG_TZ = "America/New_York";
+const PLAN_ID = "scale";
 
-async function getIdColumnType() {
-  const r = await sql`
-    SELECT data_type
-    FROM information_schema.columns
-    WHERE table_name = 'organizations' AND column_name = 'id'
-    LIMIT 1`;
-  return (r[0]?.data_type || "").toLowerCase(); // e.g., "integer", "character varying"
+function isIntLike(v) {
+  const s = String(v ?? "");
+  return /^[0-9]+$/.test(s);
 }
 
-async function getExistingNumericOrgId() {
-  // Prefer a numeric org using the numeric name
-  const rNum = await sql`SELECT id::text AS id_txt FROM organizations WHERE name = ${ORG_NAME_NUM} LIMIT 1`;
-  if (rNum.length) {
-    const n = Number(rNum[0].id_txt);
-    if (Number.isInteger(n)) return n;
-  }
-  // If the normal name exists but has a numeric id, we can reuse it
-  const r = await sql`SELECT id::text AS id_txt FROM organizations WHERE name = ${ORG_NAME} LIMIT 1`;
-  if (r.length && Number.isInteger(Number(r[0].id_txt))) return Number(r[0].id_txt);
+async function findNumericOrgId() {
+  // Prefer a numeric org for the normal name
+  let r = await sql/*sql*/`SELECT id::text AS id_txt FROM organizations WHERE name = ${ORG_NAME} LIMIT 1`;
+  if (r.length && isIntLike(r[0].id_txt)) return Number(r[0].id_txt);
+
+  // Or a numeric org for the numeric name
+  r = await sql/*sql*/`SELECT id::text AS id_txt FROM organizations WHERE name = ${ORG_NAME_NUM} LIMIT 1`;
+  if (r.length && isIntLike(r[0].id_txt)) return Number(r[0].id_txt);
+
   return null;
 }
 
-async function computeNextNumericId(idType) {
-  if (idType.includes("char")) {
-    // varchar id → find max numeric-looking id, then +1
-    const r = await sql`
-      SELECT COALESCE(MAX((CASE WHEN id ~ '^[0-9]+$' THEN id::int END)), 0) + 1 AS next_id
-      FROM organizations`;
-    return r[0].next_id;
-  }
-  // integer/bigint
-  const r = await sql`SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM organizations`;
-  return r[0].next_id;
+async function computeNextNumericId() {
+  // Works for both int and varchar id columns
+  const r = await sql/*sql*/`
+    SELECT COALESCE(MAX(CASE WHEN (id::text ~ '^[0-9]+$') THEN (id::text)::int END), 0) + 1 AS next_id
+    FROM organizations
+  `;
+  return Number(r[0].next_id);
 }
 
-async function ensureNumericOrgId() {
-  console.log("STEP 1: locate or create a NUMERIC org id…");
-  const idType = await getIdColumnType();
+async function ensureNumericOrg() {
+  console.log("STEP 1: locate/create NUMERIC org id…");
 
-  // If a numeric org already exists, use it
-  const existing = await getExistingNumericOrgId();
+  // If a numeric org already exists, use it (and ensure plan_id)
+  const existing = await findNumericOrgId();
   if (existing !== null) {
     console.log("  found numeric org id:", existing);
+    await sql/*sql*/`UPDATE organizations SET plan_id = ${PLAN_ID} WHERE id::text = ${String(existing)}`;
     return existing;
   }
 
-  // Otherwise, insert an org with an explicit numeric id
-  const nextId = await computeNextNumericId(idType);
-  console.log("  inserting new org with explicit numeric id =", nextId);
-  try {
-    await sql`
-      INSERT INTO organizations (id, name, timezone)
-      VALUES (${nextId}, ${ORG_NAME_NUM}, ${ORG_TZ})
-    `;
-  } catch (e) {
-    // If insert fails because id column is varchar but NOT NULL without default and we passed an int,
-    // the driver still binds as text fine. Any other error should surface.
-    throw e;
-  }
+  // Otherwise, insert a new org with an explicit numeric id **and plan_id**
+  const nextId = await computeNextNumericId();
+  console.log("  inserting new org with id =", nextId);
+  await sql/*sql*/`
+    INSERT INTO organizations (id, name, timezone, plan_id)
+    VALUES (${nextId}, ${ORG_NAME_NUM}, ${ORG_TZ}, ${PLAN_ID})
+  `;
   return nextId;
 }
 
 async function main() {
   if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL not set");
 
-  const orgId = await ensureNumericOrgId();
+  const orgId = await ensureNumericOrg();
+
   const hash = await bcrypt.hash(PASSWORD, 10);
 
   console.log("STEP 2: upsert demo admin in public_users…");
-  await sql`
+  await sql/*sql*/`
     INSERT INTO public_users (name, email, password_hash, provider, provider_id, social_accounts, privileges)
     VALUES (${NAME}, lower(${EMAIL}), ${hash}, 'local', NULL, '[]'::jsonb, '{"role":"super_admin"}'::jsonb)
     ON CONFLICT (email) DO UPDATE
@@ -106,7 +92,7 @@ async function main() {
 
   console.log("STEP 3: upsert into users (if table exists) with org_id =", orgId);
   try {
-    await sql`
+    await sql/*sql*/`
       INSERT INTO users (org_id, name, email, password_hash, two_factor_enabled, is_super_admin, is_active)
       VALUES (${orgId}, ${NAME}, lower(${EMAIL}), ${hash}, false, true, true)
       ON CONFLICT (email) DO UPDATE
@@ -128,7 +114,7 @@ async function main() {
   }
 
   console.log("STEP 4: grant ALL features (covers Scale)…");
-  await sql`
+  await sql/*sql*/`
     INSERT INTO entitlements (org_id, feature_id, enabled, value)
     SELECT ${orgId}, f.id, TRUE, NULL::text
     FROM features f
@@ -148,4 +134,3 @@ main().catch((e) => {
   console.error("❌ seedDemoBoth failed:", e?.message || e);
   process.exit(1);
 });
-
