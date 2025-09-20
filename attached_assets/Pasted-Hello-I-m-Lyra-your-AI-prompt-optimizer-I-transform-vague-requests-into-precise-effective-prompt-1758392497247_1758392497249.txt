@@ -1,0 +1,109 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are a senior TypeScript/Node engineer working in a Replit-hosted monorepo called **VictorySync**. The dev server fails with:
+
+```
+/server/billing/stripe.ts:57:22 ERROR: Multiple exports with the same name "applyPlanToOrg"
+ERROR: The symbol "applyPlanToOrg" has already been declared
+```
+
+**Goal:** Make the backend compile and run by deduplicating the `applyPlanToOrg` declaration/export and fixing any related imports. Do **not** change `.replit` or `replit.nix`.
+
+### Context & Constraints
+
+* Runtime: Node v20 (ESM), esbuild/tsx bundler.
+* Keep all current behavior; only eliminate duplicate declarations/exports that cause the transformer error.
+* Maintain type safety and production readiness.
+* Replit environment; keep port and existing middleware unchanged.
+
+### Tasks
+
+1. **Audit `server/billing/stripe.ts`**
+
+   * Find all occurrences of `applyPlanToOrg`. Common problematic patterns:
+
+     * `export const applyPlanToOrg = ...` and later `export { applyPlanToOrg }`
+     * `function applyPlanToOrg(...) {}` and later `const applyPlanToOrg = ...`
+     * A named export **and** a default export of the same symbol.
+   * End state: exactly **one** declaration and **one** export form (named).
+
+2. **Refactor to a single named export (example structure)**
+
+   * Use this canonical shape; adjust implementation to the existing code:
+
+```ts
+// server/billing/stripe.ts
+import type { Pool } from 'pg'; // or your DB client type
+import { sql } from '../db';    // adjust path to your DB util
+
+export type PlanId = 'starter' | 'growth' | 'scale';
+
+export async function applyPlanToOrg(
+  orgId: number,
+  plan: PlanId,
+  tx: Pool | typeof sql = sql
+): Promise<void> {
+  // 1) set org plan
+  await tx`UPDATE organizations SET plan_id = ${plan} WHERE id = ${orgId}`;
+
+  // 2) materialize entitlements for the plan (adjust to your schema)
+  // Example: sync from packages/features tables into entitlements
+  await tx`
+    INSERT INTO entitlements (org_id, feature_id, value)
+    SELECT ${orgId}, f.id, TRUE
+    FROM features f
+    JOIN plan_features pf ON pf.feature_id = f.id
+    WHERE pf.plan_id = ${plan}
+    ON CONFLICT (org_id, feature_id) DO UPDATE SET value = EXCLUDED.value
+  `;
+}
+```
+
+> Important: **Do not** add `export { applyPlanToOrg }` at the bottom if you already used `export function …`. That would recreate the duplicate export problem.
+
+3. **Fix re-exports (if any)**
+
+   * If there’s a barrel file like `server/billing/index.ts`, keep only one re-export:
+
+     ```ts
+     export { applyPlanToOrg } from './stripe';
+     ```
+   * Remove any duplicate re-exports for the same symbol.
+
+4. **Fix imports across the project**
+
+   * Search the repo for `applyPlanToOrg` imports.
+   * Normalize them to named import:
+
+     ```ts
+     import { applyPlanToOrg } from '../billing/stripe'; // adjust path
+     ```
+   * Remove any default imports or shadowed renames that may cause bundler confusion.
+
+5. **Lint/Type-check**
+
+   * Ensure there is exactly one definition site for the identifier in the module.
+   * Run a quick type check to confirm signatures line up with callers.
+
+6. **Verification**
+
+   * `npm run dev` (or your project’s run command) should now compile without the “Multiple exports / already been declared” errors.
+   * Trigger any code path that calls `applyPlanToOrg` (e.g., billing/plan assignment) to verify at runtime.
+
+### Acceptance Criteria
+
+* Build succeeds; the esbuild/tsx transform error is gone.
+* There is exactly one declaration + one named export for `applyPlanToOrg`.
+* All imports compile and runtime behavior for plan application is unchanged.
+* No changes to `.replit` or `replit.nix`.
+
+**What Changed:**
+
+* Consolidated `applyPlanToOrg` into a single named export in `server/billing/stripe.ts`.
+* Removed duplicate export statements / duplicate declarations.
+* Normalized re-exports and imports to prevent bundler symbol collisions.
+
+**Pro Tip:**
+When using `export function …` or `export const …`, avoid also doing `export { symbol }` in the same file. Barrel files should re-export **once**, not duplicate the symbol.
