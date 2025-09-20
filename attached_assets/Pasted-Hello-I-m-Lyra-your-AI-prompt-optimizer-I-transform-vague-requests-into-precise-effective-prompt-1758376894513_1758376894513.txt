@@ -1,0 +1,52 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are a senior backend engineer working in a Replit TypeScript monorepo (Express API, Drizzle ORM).
+Fix the boot crash caused by an undefined identifier **`packages`** in `server/index.ts` by switching to the correct table **`plans`** from `server/db/schema.ts`. Do not touch `.replit` or `replit.nix`.
+
+### Context
+
+* Error: `ReferenceError: packages is not defined` in `server/index.ts` during “Initializing default packages…”.
+* The schema exports `plans` (not `packages`).
+
+### Tasks
+
+1. Edit **`server/index.ts`**:
+
+   * Import `plans` from the schema.
+   * Replace every reference to `packages` with `plans` (including any selects/inserts used for seeding).
+2. Ensure idempotent seeding remains intact (e.g., `onConflictDoNothing()` if present).
+3. Do not change any ports, scripts, or other files.
+
+### Output format
+
+* Show a **unified diff** for `server/index.ts` only.
+* Then write a **brief summary** (2–3 sentences) of what changed and why.
+* Provide a **quick test plan** (3–5 steps) to verify the server boots cleanly on Replit.
+
+### Acceptance criteria
+
+* `npm run dev` boots without `ReferenceError`.
+* Console advances past the seeding step and shows “(express) serving on port 5000”.
+* No references to `packages` remain in `server/index.ts`.
+
+### Patch (specify these exact changes)
+
+```diff
+--- a/server/index.ts
++++ b/server/index.ts
+@@
+- import { organizations /* ...others */ } from "./db/schema";
++ import { organizations, plans /* ...others */ } from "./db/schema";
+@@
+- const existing = await db.select().from(packages);
++ const existing = await db.select().from(plans);
+@@
+- await db.insert(packages).values(defaultPlans);
++ await db.insert(plans).values(defaultPlans);
+```
+
+**What Changed:**
+
+* Focused Claude on replacing a non-existent `packages` table with the real `plans` table, with an explicit diff, success checks, and no unrelated edits.
