@@ -29,7 +29,7 @@ export function auth(req: AuthRequest, res: Response, next: NextFunction) {
     }
 
     if (!token) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return res.status(401).json({ ok: false, error: 'Authentication required' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
@@ -42,6 +42,6 @@ export function auth(req: AuthRequest, res: Response, next: NextFunction) {
     next();
   } catch (error) {
     console.error("Auth middleware JWT verification failed:", error);
-    res.status(401).json({ error: 'Invalid or expired token' });
+    res.status(401).json({ ok: false, error: 'Invalid or expired token' });
   }
 }

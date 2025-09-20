@@ -34,27 +34,29 @@ export default function Login() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        credentials: 'include', // Important for cookies
+        body: JSON.stringify(data)
       });
-      
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Login failed');
+        const errorData = await response.json().catch(() => ({ error: 'Login failed' }));
+        throw new Error(errorData.error || 'Login failed');
       }
-      
-      return response.json();
+
+      const data = await response.json();
+
+      if (data.ok) {
+        // Cookie is automatically set by server, just navigate
+        setLocation('/customer-dashboard');
+      } else {
+        throw new Error('Login failed');
+      }
     },
-    onSuccess: (data) => {
-      // Store the JWT token
-      localStorage.setItem('auth_token', data.token);
-      
+    onSuccess: () => {
       toast({
         title: "Welcome back!",
         description: "You have successfully signed in to VictorySync.",
       });
-      
-      // Redirect to dashboard or home
-      setLocation('/customer-dashboard');
     },
     onError: (error: any) => {
       console.error('Login error:', error);
@@ -81,7 +83,7 @@ export default function Login() {
             Sign in to your VictorySync account
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
@@ -141,7 +143,7 @@ export default function Login() {
 
 
 
-           
+
 
           <div className="mt-4 text-center">
             <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">

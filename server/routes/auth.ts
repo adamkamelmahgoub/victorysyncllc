@@ -87,21 +87,23 @@ authRouter.get("/me", async (req, res) => {
     }
 
     if (!token) {
-      return res.status(401).json({ error: "No token provided" });
+      return res.status(401).json({ ok: false, user: null });
     }
 
     // Verify JWT
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
     
-    res.json({ 
+    res.status(200).json({ 
       ok: true, 
-      userId: decoded.sub, 
-      orgId: decoded.orgId, 
-      role: decoded.role || 'admin' 
+      user: {
+        id: decoded.sub,
+        orgId: decoded.orgId, 
+        role: decoded.role || 'admin'
+      }
     });
   } catch (error) {
     console.error("JWT verification failed:", error);
-    res.status(401).json({ error: "Invalid or expired token" });
+    res.status(401).json({ ok: false, user: null });
   }
 });
 
