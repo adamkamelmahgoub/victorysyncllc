@@ -1,6 +1,6 @@
 
 // scripts/resetDemoUser.mjs
-// Upserts a demo Scale org + user and ensures all Scale entitlements exist.
+// Create/repair a demo org on the SCALE plan and a demo user, using proper org id handling.
 
 import { neon, neonConfig } from "@neondatabase/serverless";
 import WebSocket from "ws";
@@ -13,21 +13,26 @@ const sql = neon(process.env.DATABASE_URL);
 const EMAIL = "demo@victorysync.com";
 const PASSWORD = "VictoryScale123!";
 const ORG_ID = "demo-scale";
+const ORG_NAME = "VictorySync Demo (Scale)";
+const ORG_TZ = "America/New_York";
+const PLAN = "scale";
 
 async function main() {
-  const hash = await bcrypt.hash(PASSWORD, 10);
+  // Ensure unique index so email upsert works regardless of prior data
+  await sql/*sql*/`CREATE UNIQUE INDEX IF NOT EXISTS users_email_idx ON users (email)`;
 
-  // 0) Safety: unique index on users.email so ON CONFLICT works
-  await sql`CREATE UNIQUE INDEX IF NOT EXISTS users_email_idx ON users (email)`;
-
-  // 1) Ensure demo org exists and is on SCALE
+  // 1) Ensure demo org exists with proper varchar ID
   await sql/*sql*/`
     INSERT INTO organizations (id, name, timezone, plan_id)
-    VALUES (${ORG_ID}, 'VictorySync Demo (Scale)', 'America/New_York', 'scale')
-    ON CONFLICT (id) DO UPDATE SET plan_id = 'scale'
+    VALUES (${ORG_ID}, ${ORG_NAME}, ${ORG_TZ}, ${PLAN})
+    ON CONFLICT (id) DO UPDATE SET 
+      plan_id = ${PLAN},
+      name = ${ORG_NAME},
+      timezone = ${ORG_TZ}
   `;
 
-  // 2) Upsert demo user (LET THE DB ASSIGN id — do NOT insert "id")
+  // 2) Upsert demo user (normalize email, let DB assign integer ID)
+  const hash = await bcrypt.hash(PASSWORD, 10);
   await sql/*sql*/`
     INSERT INTO users (email, password_hash, org_id, role)
     VALUES (lower(${EMAIL}), ${hash}, ${ORG_ID}, 'demo')
@@ -38,19 +43,21 @@ async function main() {
           email = lower(${EMAIL})
   `;
 
-  // 3) Ensure Scale entitlements exist for this org (idempotent)
+  // 3) Ensure all SCALE entitlements exist for this org (idempotent)
   await sql/*sql*/`
     INSERT INTO entitlements (org_id, feature_id, enabled, value)
     SELECT ${ORG_ID} AS org_id, pf.feature_id, TRUE AS enabled, NULL::text AS value
     FROM plan_features pf
-    WHERE pf.plan_id = 'scale'
+    WHERE pf.plan_id = ${PLAN}
       AND NOT EXISTS (
         SELECT 1 FROM entitlements e
         WHERE e.org_id = ${ORG_ID} AND e.feature_id = pf.feature_id
       )
+    ON CONFLICT DO NOTHING
   `;
 
-  console.log("✅ Demo user/org ready on SCALE:");
+  console.log("✅ Demo org & user ready on SCALE");
+  console.log("   orgId:", ORG_ID);
   console.log("   email:", EMAIL);
   console.log("   pass :", PASSWORD);
 }
