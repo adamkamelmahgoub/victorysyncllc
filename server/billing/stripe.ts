@@ -4,7 +4,7 @@ import { db } from "../db/client";
 import { organizations, planFeatures, entitlements, plans } from "../db/schema";
 import { eq } from "drizzle-orm";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET!, { apiVersion: "2024-06-20" });
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-06-20" });
 
 export async function createCheckout(orgId: string, planId: "starter"|"growth"|"scale") {
   const plan = await db.query.plans.findFirst({ where: eq(plans.id, planId) });
