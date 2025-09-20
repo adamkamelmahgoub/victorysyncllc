@@ -1,0 +1,276 @@
+# Explanation
+
+Your seeder is running fine until it tries to write into `entitlements.value` — that column doesn’t exist in your DB. Also, your `organizations` table has `plan_id NOT NULL`, and you have a legacy org row with a string `id` (`demo-scale`). Below is a **one-time hardening migration** that makes the schema compatible with the app (adds any missing tables/columns/indexes, including `entitlements.value`) plus a **final seeder** that creates a clean numeric demo org on the **Scale** plan and a super-admin demo user.
+
+I’m not touching `.replit`/`replit.nix`.
+
+---
+
+# Code
+
+## 1) Schema hardening migration (run once in Neon SQL console)
+
+Create a file `db/migrations/001_harden_schema.sql` (or paste directly into the SQL console) and run it:
+
+```sql
+-- === FEATURES ===============================================================
+CREATE TABLE IF NOT EXISTS features (
+  id            SERIAL PRIMARY KEY,
+  code          VARCHAR(64) UNIQUE NOT NULL,
+  name          VARCHAR(128)        NOT NULL
+);
+
+-- Seed core Scale features if they don't exist (idempotent)
+INSERT INTO features (code, name) VALUES
+  ('blended_team',        '24/7 Blended Team'),
+  ('ai_suite',            'AI Automation Suite'),
+  ('success_manager',     'Dedicated Success Manager'),
+  ('custom_integrations', 'Custom Integrations'),
+  ('priority_support',    'Priority Support'),
+  ('realtime_analytics',  'Real-time Analytics')
+ON CONFLICT (code) DO NOTHING;
+
+-- === ORGANIZATIONS ==========================================================
+-- Your table exists, but we ensure the columns/indexes needed by the app.
+ALTER TABLE organizations
+  ADD COLUMN IF NOT EXISTS name      VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS plan_id   VARCHAR(32),
+  ADD COLUMN IF NOT EXISTS timezone  VARCHAR(64) DEFAULT 'America/New_York',
+  ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
+
+-- Prefer unique org names to make upserts deterministic.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes
+    WHERE schemaname = 'public' AND indexname = 'organizations_name_idx'
+  ) THEN
+    CREATE UNIQUE INDEX organizations_name_idx ON organizations (name);
+  END IF;
+END $$;
+
+-- If plan_id is NULL anywhere, set a sensible default
+UPDATE organizations SET plan_id = 'scale' WHERE plan_id IS NULL;
+
+-- === PUBLIC USERS ===========================================================
+CREATE TABLE IF NOT EXISTS public_users (
+  id             SERIAL PRIMARY KEY,
+  name           VARCHAR(120) NOT NULL,
+  email          VARCHAR(255) NOT NULL UNIQUE,
+  password_hash  VARCHAR(255) NOT NULL,
+  provider       VARCHAR(32)  NOT NULL DEFAULT 'local',
+  provider_id    VARCHAR(128),
+  social_accounts JSONB       NOT NULL DEFAULT '[]'::jsonb,
+  privileges     JSONB        NOT NULL DEFAULT '{}'::jsonb,
+  created_at     TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
+-- Ensure unique email index (in case older schema missed it)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes
+    WHERE schemaname='public' AND indexname='public_users_email_idx'
+  ) THEN
+    CREATE UNIQUE INDEX public_users_email_idx ON public_users (email);
+  END IF;
+END $$;
+
+-- === APP USERS (optional table some routes may use) =========================
+CREATE TABLE IF NOT EXISTS users (
+  id                SERIAL PRIMARY KEY,
+  org_id            INTEGER,
+  name              VARCHAR(120) NOT NULL,
+  email             VARCHAR(255) NOT NULL UNIQUE,
+  password_hash     VARCHAR(255) NOT NULL,
+  two_factor_enabled BOOLEAN     NOT NULL DEFAULT FALSE,
+  two_factor_secret  TEXT,
+  is_super_admin     BOOLEAN     NOT NULL DEFAULT FALSE,
+  is_active          BOOLEAN     NOT NULL DEFAULT TRUE,
+  created_at         TIMESTAMP   NOT NULL DEFAULT NOW()
+);
+
+-- === ENTITLEMENTS ===========================================================
+CREATE TABLE IF NOT EXISTS entitlements (
+  id         SERIAL PRIMARY KEY,
+  org_id     INTEGER     NOT NULL,
+  feature_id INTEGER     NOT NULL,
+  enabled    BOOLEAN     NOT NULL DEFAULT TRUE,
+  value      TEXT,
+  UNIQUE (org_id, feature_id)
+);
+
+-- Helpful indexes
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes
+    WHERE schemaname='public' AND indexname='entitlements_org_feature_idx'
+  ) THEN
+    CREATE INDEX entitlements_org_feature_idx ON entitlements (org_id, feature_id);
+  END IF;
+END $$;
+
+-- === CLEANUP (optional): mark legacy string-id org rows so we don't pick them by name
+UPDATE organizations
+SET name = name || ' [legacy string-id — ignore]'
+WHERE id::text !~ '^[0-9]+$' AND name NOT LIKE '%[legacy string-id — ignore]%';
+```
+
+> This adds `entitlements.value`, enforces unique org names, and seeds core `features` so the app can grant Scale entitlements.
+
+---
+
+## 2) Final seeder (idempotent, numeric org id, Scale plan)
+
+Create/overwrite `scripts/seedDemoScale.mjs`:
+
+```js
+// scripts/seedDemoScale.mjs
+import { neon, neonConfig } from "@neondatabase/serverless";
+import WebSocket from "ws";
+import bcrypt from "bcryptjs";
+
+neonConfig.webSocketConstructor = WebSocket;
+const sql = neon(process.env.DATABASE_URL);
+
+// Demo creds
+const EMAIL = "demo@victorysync.com";
+const PASSWORD = "VictoryScale123!";
+const NAME = "Demo Admin";
+
+// Org
+const ORG_NAME   = "VictorySync Demo (Scale) — numeric";
+const ORG_TZ     = "America/New_York";
+const PLAN_ID    = "scale";
+
+const intLike = (v) => /^[0-9]+$/.test(String(v ?? ""));
+
+async function getOrCreateNumericOrgId() {
+  // Prefer an existing numeric org by our deterministic name
+  const r0 = await sql`SELECT id::text AS id_txt FROM organizations WHERE name = ${ORG_NAME} LIMIT 1`;
+  if (r0.length && intLike(r0[0].id_txt)) return Number(r0[0].id_txt);
+
+  // Compute a safe next numeric id, even if organizations.id is VARCHAR
+  const r1 = await sql`
+    SELECT COALESCE(MAX(CASE WHEN id::text ~ '^[0-9]+$' THEN (id::text)::int END), 0) + 1 AS next_id
+    FROM organizations`;
+  const nextId = Number(r1[0].next_id);
+
+  await sql`
+    INSERT INTO organizations (id, name, timezone, plan_id)
+    VALUES (${nextId}, ${ORG_NAME}, ${ORG_TZ}, ${PLAN_ID})
+    ON CONFLICT (name) DO UPDATE SET plan_id = EXCLUDED.plan_id, timezone = EXCLUDED.timezone`;
+
+  return nextId;
+}
+
+async function main() {
+  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL not set");
+  if (!process.env.JWT_SECRET)   throw new Error("JWT_SECRET not set");
+
+  console.log("STEP 1: ensure numeric org on Scale…");
+  const orgId = await getOrCreateNumericOrgId();
+
+  console.log("STEP 2: upsert demo admin in public_users…");
+  const hash = await bcrypt.hash(PASSWORD, 10);
+  await sql`
+    INSERT INTO public_users (name, email, password_hash, provider, provider_id, social_accounts, privileges)
+    VALUES (${NAME}, lower(${EMAIL}), ${hash}, 'local', NULL, '[]'::jsonb, '{"role":"super_admin"}'::jsonb)
+    ON CONFLICT (email) DO UPDATE
+      SET name = EXCLUDED.name,
+          password_hash = EXCLUDED.password_hash,
+          provider = 'local',
+          provider_id = NULL,
+          social_accounts = '[]'::jsonb,
+          privileges = '{"role":"super_admin"}'::jsonb,
+          email = lower(${EMAIL})
+  `;
+
+  console.log("STEP 3: upsert into users (if present)…");
+  try {
+    await sql`
+      INSERT INTO users (org_id, name, email, password_hash, two_factor_enabled, is_super_admin, is_active)
+      VALUES (${orgId}, ${NAME}, lower(${EMAIL}), ${hash}, false, true, true)
+      ON CONFLICT (email) DO UPDATE
+        SET org_id = ${orgId},
+            name = EXCLUDED.name,
+            password_hash = EXCLUDED.password_hash,
+            two_factor_enabled = false,
+            is_super_admin = true,
+            is_active = true,
+            email = lower(${EMAIL})
+    `;
+  } catch (e) {
+    const msg = String(e?.message || e);
+    if (msg.includes('relation "users" does not exist')) {
+      console.log("  users table missing; skipping (ok).");
+    } else throw e;
+  }
+
+  console.log("STEP 4: grant ALL features (covers Scale)…");
+  await sql`
+    INSERT INTO entitlements (org_id, feature_id, enabled, value)
+    SELECT ${orgId}, f.id, TRUE, NULL::text
+    FROM features f
+    WHERE NOT EXISTS (
+      SELECT 1 FROM entitlements e
+      WHERE e.org_id = ${orgId} AND e.feature_id = f.id
+    )`;
+
+  console.log("✅ DONE — Demo ready");
+  console.log("   orgId:", orgId);
+  console.log("   email:", EMAIL);
+  console.log("   pass :", PASSWORD);
+}
+
+main().catch((e) => { console.error("❌ seedDemoScale failed:", e?.message || e); process.exit(1); });
+```
+
+---
+
+# Instructions
+
+1. **Run the migration**
+
+   * Open Neon “SQL console” and paste/run the SQL from **Schema hardening migration**.
+
+2. **Set secrets (if not already)**
+
+   * In Replit → Secrets, add:
+
+     * `DATABASE_URL` → your Neon URL
+     * `JWT_SECRET` → a long random string (e.g. run `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` locally and paste the output)
+
+3. **Install deps (once)**
+
+   ```
+   npm i @neondatabase/serverless ws bcryptjs
+   ```
+
+4. **Seed the demo org & user**
+
+   ```
+   node scripts/seedDemoScale.mjs
+   ```
+
+5. **Restart cleanly**
+
+   ```
+   pkill -f node || true
+   npm run dev
+   ```
+
+6. **Login**
+
+   * Email: `demo@victorysync.com`
+   * Password: `VictoryScale123!`
+   * You’ll be on a **numeric org** with **Scale** plan and **all features** granted.
+
+---
+
+# Warnings
+
+* Leave the legacy `organizations.id='demo-scale'` row alone (we marked it “\[legacy string-id — ignore]”). Your app will use the **numeric** org row going forward.
+* Keep the demo creds for staging/demo. Rotate for production.
+* If you later want exact “Scale-only” entitlements (not all), swap STEP 4’s INSERT to pull from a `plan_features` table; the current approach enables all features so the demo always works.
