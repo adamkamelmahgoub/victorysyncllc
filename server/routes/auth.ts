@@ -2,6 +2,7 @@ import { Router } from "express";
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import { neon } from "@neondatabase/serverless";
 import { db } from "../db";
 import { publicUsers, entitlements, features, organizations } from "../../shared/schema";
 import { eq, and } from "drizzle-orm";
