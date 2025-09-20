@@ -101,6 +101,15 @@ export const packagesRelations = relations(packages, ({ many }) => ({
   orderItems: many(orderItems),
 }));
 
+// Organizations table
+export const organizations = pgTable("organizations", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  planId: varchar("plan_id").default("scale"),
+  timezone: varchar("timezone").default("America/New_York"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const integrations = pgTable('integrations', {
   id: serial('id').primaryKey(),
   customer_id: text('customer_id').notNull(),
@@ -127,6 +136,9 @@ export type OrderItem = typeof orderItems.$inferSelect;
 
 export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+
+export type InsertOrganization = typeof organizations.$inferInsert;
+export type Organization = typeof organizations.$inferSelect;
 
 // Schemas
 export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
