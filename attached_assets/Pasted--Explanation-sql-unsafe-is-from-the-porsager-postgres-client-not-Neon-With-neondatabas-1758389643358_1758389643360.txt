@@ -1,0 +1,273 @@
+# Explanation
+
+`sql.unsafe` is from the **porsager/postgres** client, not Neon. With `@neondatabase/serverless`, the client you create by calling `neon()` is itself the executor. You run SQL like:
+
+* **String call (simple protocol)** → `await sql("...single statement...")`
+* **Tagged template (prepared/extended)** → `await sql\`SELECT \* FROM x WHERE id = \${id}\`\`
+
+Because you’re on Neon, there is **no `.unsafe()`**. To keep everything reliable, run **one statement per call** using the **string** form (not the template tag) and avoid multi-command strings.
+
+# Code
+
+Update your migration runner like this pattern (only the shape matters—plug your statements in):
+
+```js
+// scripts/runMigration.mjs
+import { neon, neonConfig } from "@neondatabase/serverless";
+import WebSocket from "ws";
+neonConfig.webSocketConstructor = WebSocket;
+
+if (!process.env.DATABASE_URL) {
+  console.error("DATABASE_URL is not set");
+  process.exit(1);
+}
+
+const sql = neon(process.env.DATABASE_URL);
+
+/** Run a single SQL statement (string form, simple protocol) */
+async function run(label, stmt) {
+  console.log(label);
+  await sql(stmt); // ← no .unsafe, no template tag
+}
+
+async function main() {
+  try {
+    // --- your earlier steps, each as ONE statement per call ---
+    await run("Step 2: Adding unique constraint...", `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints
+          WHERE table_name='entitlements'
+            AND constraint_name='entitlements_org_feature_key'
+        ) THEN
+          ALTER TABLE entitlements
+            ADD CONSTRAINT entitlements_org_feature_key UNIQUE (org_id, feature_id);
+        END IF;
+      END $$;
+    `);
+
+    await run("Step 3: Creating org fix sequence...", `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relkind='S' AND relname='org_fix_seq') THEN
+          CREATE SEQUENCE org_fix_seq START WITH 1;
+        END IF;
+      END $$;
+    `);
+
+    await run("Step 4: Setting sequence start value...", `
+      DO $$
+      DECLARE max_cast bigint;
+      BEGIN
+        SELECT COALESCE(MAX((id::text)::bigint),0)
+          INTO max_cast
+          FROM organizations
+         WHERE id::text ~ '^[0-9]+$';
+        PERFORM setval('org_fix_seq', max_cast + 1, false);
+      END $$;
+    `);
+
+    await run("Step 5: Adding id_new column...", `
+      ALTER TABLE organizations ADD COLUMN IF NOT EXISTS id_new BIGINT;
+    `);
+
+    await run("Step 7: Setting id_new NOT NULL... values...", `
+      WITH casted AS (
+        SELECT o.ctid,
+               CASE WHEN o.id::text ~ '^[0-9]+$' THEN (o.id::text)::bigint ELSE NULL END AS cast_id,
+               ROW_NUMBER() OVER (
+                 PARTITION BY CASE WHEN o.id::text ~ '^[0-9]+$' THEN o.id::text ELSE NULL END
+                 ORDER BY o.ctid
+               ) AS rn
+        FROM organizations o
+      )
+      UPDATE organizations o
+         SET id_new = CASE
+           WHEN c.cast_id IS NULL THEN nextval('org_fix_seq')
+           WHEN c.rn = 1         THEN c.cast_id
+           ELSE                       nextval('org_fix_seq')
+         END
+        FROM casted c
+       WHERE o.ctid = c.ctid
+         AND o.id_new IS NULL;
+    `);
+
+    // -------- DROP dependent FKs before dropping old PK --------
+    await run("Step 8a: Dropping dependent foreign keys...", `
+      DO $$
+      DECLARE r RECORD;
+      BEGIN
+        FOR r IN
+          SELECT conrelid::regclass::text AS tbl, conname
+            FROM pg_constraint
+           WHERE confrelid = 'public.organizations'::regclass
+             AND contype   = 'f'
+        LOOP
+          EXECUTE format('ALTER TABLE %I DROP CONSTRAINT IF EXISTS %I', r.tbl, r.conname);
+        END LOOP;
+      END $$;
+    `);
+
+    await run("Step 8b: Dropping old primary key...", `
+      DO $$
+      DECLARE pk_name text;
+      BEGIN
+        SELECT conname INTO pk_name
+          FROM pg_constraint
+         WHERE conrelid = 'public.organizations'::regclass
+           AND contype  = 'p'
+         LIMIT 1;
+        IF pk_name IS NOT NULL THEN
+          EXECUTE format('ALTER TABLE organizations DROP CONSTRAINT %I', pk_name);
+        END IF;
+      END $$;
+    `);
+
+    await run("Step 9: Promoting id_new to PK...", `
+      ALTER TABLE organizations ALTER COLUMN id_new SET NOT NULL;
+      ALTER TABLE organizations ADD CONSTRAINT organizations_pkey PRIMARY KEY (id_new);
+    `);
+
+    await run("Step 10: Preserving old id as id_legacy...", `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+           WHERE table_schema='public' AND table_name='organizations' AND column_name='id_legacy'
+        ) THEN
+          ALTER TABLE organizations RENAME COLUMN id TO id_legacy;
+        END IF;
+      END $$;
+    `);
+
+    await run("Step 11: Renaming id_new to id...", `
+      ALTER TABLE organizations RENAME COLUMN id_new TO id;
+    `);
+
+    await run("Step 12: Adding id_text...", `
+      ALTER TABLE organizations
+        ADD COLUMN IF NOT EXISTS id_text TEXT GENERATED ALWAYS AS (id::text) STORED;
+    `);
+
+    // -------- entitlements org_id normalization (string→int) --------
+    await run("Step E1: Normalize entitlements.org_id...", `
+      DO $$
+      DECLARE t text;
+      BEGIN
+        SELECT data_type INTO t
+          FROM information_schema.columns
+         WHERE table_schema='public' AND table_name='entitlements' AND column_name='org_id';
+        IF t NOT IN ('integer','bigint') THEN
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_schema='public' AND table_name='entitlements' AND column_name='org_id_int'
+          ) THEN
+            EXECUTE 'ALTER TABLE entitlements ADD COLUMN org_id_int BIGINT';
+          END IF;
+
+          EXECUTE $Q$
+            UPDATE entitlements e
+               SET org_id_int = CASE
+                 WHEN (e.org_id::text) ~ '^[0-9]+$' THEN (e.org_id::text)::bigint
+                 ELSE (
+                   SELECT o.id FROM organizations o
+                    WHERE o.id_legacy IS NOT NULL AND o.id_legacy = e.org_id::text
+                    LIMIT 1
+                 )
+               END
+             WHERE e.org_id_int IS NULL
+          $Q$;
+
+          EXECUTE $Q$ DELETE FROM entitlements WHERE org_id_int IS NULL $Q$;
+
+          EXECUTE 'ALTER TABLE entitlements DROP COLUMN org_id';
+          EXECUTE 'ALTER TABLE entitlements RENAME COLUMN org_id_int TO org_id';
+        END IF;
+      END $$;
+    `);
+
+    await run("Step E2: Enforce NOT NULL and purge any orphans...", `
+      ALTER TABLE entitlements ALTER COLUMN org_id SET NOT NULL;
+      DELETE FROM entitlements e
+       WHERE NOT EXISTS (SELECT 1 FROM organizations o WHERE o.id = e.org_id);
+    `);
+
+    await run("Step 13: Creating unique name index...", `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_indexes
+           WHERE schemaname='public' AND indexname='organizations_name_idx'
+        ) THEN
+          CREATE UNIQUE INDEX organizations_name_idx ON organizations (name);
+        END IF;
+      END $$;
+    `);
+
+    await run("Step 14: Adding users foreign key...", `
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.tables
+           WHERE table_schema='public' AND table_name='users'
+        ) THEN
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.table_constraints
+             WHERE table_name='users' AND constraint_name='users_org_fk'
+          ) THEN
+            EXECUTE 'ALTER TABLE users
+                     ADD CONSTRAINT users_org_fk
+                     FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE SET NULL';
+          END IF;
+        END IF;
+      END $$;
+    `);
+
+    await run("Step 15: Adding entitlements foreign key...", `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints
+           WHERE table_name='entitlements' AND constraint_name='entitlements_org_fk'
+        ) THEN
+          EXECUTE 'ALTER TABLE entitlements
+                   ADD CONSTRAINT entitlements_org_fk
+                   FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE';
+        END IF;
+      END $$;
+    `);
+
+    console.log("✅ Migration complete.");
+  } catch (e) {
+    console.error("❌ Migration failed:", e.message || e);
+    process.exit(1);
+  }
+}
+
+main();
+```
+
+# Instructions
+
+1. Replace **every** use of `sql.unsafe(...)` with `sql(<single-statement-string>)`.
+
+   * Do **not** use the template tag form (no `` sql`...` `` here).
+   * Keep **one statement per call**; DO $…$ blocks count as single statements.
+2. Re-run:
+
+   ```bash
+   node scripts/runMigration.mjs
+   ```
+3. Seed and restart if needed:
+
+   ```bash
+   node scripts/seedDemoScale.mjs
+   pkill -f node || true
+   npm run dev
+   ```
+
+# Warnings
+
+* If you accidentally pass **multiple** statements in a single string (e.g., `ALTER ...; ALTER ...;`) some Neon setups may reject it; keep to **one per call** as shown.
+* Ensure there’s **no** user input interpolated into these strings. They must be static migration statements.
