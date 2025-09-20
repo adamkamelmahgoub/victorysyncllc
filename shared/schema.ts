@@ -110,6 +110,15 @@ export const organizations = pgTable("organizations", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Entitlements table
+export const entitlements = pgTable("entitlements", {
+  id: serial("id").primaryKey(),
+  orgId: varchar("org_id").notNull(),
+  featureId: varchar("feature_id").notNull(),
+  enabled: boolean("enabled").default(true),
+  value: text("value"),
+});
+
 export const integrations = pgTable('integrations', {
   id: serial('id').primaryKey(),
   customer_id: text('customer_id').notNull(),
@@ -139,6 +148,9 @@ export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 
 export type InsertOrganization = typeof organizations.$inferInsert;
 export type Organization = typeof organizations.$inferSelect;
+
+export type InsertEntitlement = typeof entitlements.$inferInsert;
+export type Entitlement = typeof entitlements.$inferSelect;
 
 // Schemas
 export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
