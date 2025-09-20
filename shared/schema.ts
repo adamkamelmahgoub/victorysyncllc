@@ -113,6 +113,7 @@ export const organizations = pgTable("organizations", {
 // Features table
 export const features = pgTable("features", {
   id: varchar("id").primaryKey(),
+  code: varchar("code").unique().notNull(),
   name: varchar("name").notNull(),
   description: text("description"),
   enabled: boolean("enabled").default(true),

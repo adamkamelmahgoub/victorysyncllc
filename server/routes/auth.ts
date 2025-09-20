@@ -39,11 +39,11 @@ authRouter.post("/login", async (req, res) => {
   // Ensure all features are enabled for this org (covers Scale plan)
   await sql`
     INSERT INTO entitlements (org_id, feature_id, enabled, value)
-    SELECT ${orgIdInt}, f.id, TRUE, NULL::text
+    SELECT ${orgIdInt}, f.code, TRUE, NULL::text
     FROM features f
     WHERE NOT EXISTS (
       SELECT 1 FROM entitlements e
-      WHERE e.org_id = ${orgIdInt} AND e.feature_id = f.id
+      WHERE e.org_id = ${orgIdInt} AND e.feature_id = f.code
     )
   `;
 
