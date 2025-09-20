@@ -1,0 +1,79 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You are a senior backend engineer working in a **Replit** TypeScript/Node monorepo using **Neon serverless Postgres**.
+Apply **Option A: one-off DB fix** to resolve `error: column "role" does not exist` during login by adding and backfilling `users.role`. **Do not** modify `.replit` or `replit.nix`.
+
+### Tasks
+
+1. **Create a Node script** at `scripts/fix_role_column.mjs` that:
+
+   * Uses `@neondatabase/serverless` with `ws` for WebSocket support in Node.
+   * Reads `process.env.DATABASE_URL` (from Replit Secrets).
+   * Executes these steps idempotently:
+
+     * `ALTER TABLE users ADD COLUMN IF NOT EXISTS role varchar(32);`
+     * `ALTER TABLE users ALTER COLUMN role SET DEFAULT 'member';`
+     * `UPDATE users SET role = 'member' WHERE role IS NULL;`
+     * `ALTER TABLE users ALTER COLUMN role SET NOT NULL;`
+     * `CREATE UNIQUE INDEX IF NOT EXISTS users_email_idx ON users (email);`
+   * (Optional) If a demo user exists: `UPDATE users SET role = 'demo' WHERE email = 'demo@victorysync.com';`
+   * Prints concise success/failure messages **without** logging full `DATABASE_URL`.
+
+2. **Output** the full file contents for `scripts/fix_role_column.mjs` and the exact shell commands to install deps and run it.
+
+3. **Leave all app code unchanged**; this is a one-time schema repair.
+
+### File to produce
+
+```js
+// scripts/fix_role_column.mjs
+import { neon, neonConfig } from "@neondatabase/serverless";
+import WebSocket from "ws";
+
+neonConfig.webSocketConstructor = WebSocket;
+neonConfig.fetchConnectionCache = true;
+
+const url = process.env.DATABASE_URL;
+if (!url) {
+  console.error("DATABASE_URL is not set in Replit Secrets"); process.exit(1);
+}
+
+const sql = neon(url);
+
+async function main() {
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS role varchar(32)`;
+  await sql`ALTER TABLE users ALTER COLUMN role SET DEFAULT 'member'`;
+  await sql`UPDATE users SET role = 'member' WHERE role IS NULL`;
+  await sql`ALTER TABLE users ALTER COLUMN role SET NOT NULL`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS users_email_idx ON users (email)`;
+
+  // Optional: mark the demo user
+  await sql`UPDATE users SET role = 'demo' WHERE email = 'demo@victorysync.com'`;
+
+  console.log("✅ users.role added/backfilled and email unique index ensured");
+}
+main().catch(e => { console.error("❌ fix_role_column failed:", e?.message || e); process.exit(1); });
+```
+
+### Commands to include in your answer
+
+```
+npm i @neondatabase/serverless ws
+node scripts/fix_role_column.mjs
+```
+
+### Acceptance Criteria
+
+* Script runs successfully with `✅ users.role added/backfilled…`.
+* Subsequent runs remain **idempotent** (no errors).
+* App starts; login no longer throws `column "role" does not exist`.
+* No secrets printed to the console.
+
+### Test Plan
+
+1. Ensure `DATABASE_URL` is set in Replit Secrets (Neon connection string with `sslmode=require`).
+2. Run the two commands above.
+3. `npm run dev` → verify server boots; log in with your demo or real user.
+4. (Optional) `node scripts/fix_role_column.mjs` again to confirm idempotency (should succeed with no changes).
