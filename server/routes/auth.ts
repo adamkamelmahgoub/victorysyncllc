@@ -9,7 +9,8 @@ import { eq, sql } from "drizzle-orm";
 export const authRouter = Router();
 
 authRouter.post("/login", async (req, res) => {
-  const { email, password } = req.body as { email: string; password: string };
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const password = String(req.body?.password || "");
   if (!email || !password) return res.status(400).json({ error: "Email and password required" });
 
   const user = await db.query.users.findFirst({ where: eq(users.email, email.toLowerCase().trim()) });
