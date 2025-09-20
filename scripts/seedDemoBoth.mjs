@@ -1,7 +1,7 @@
 
 // scripts/seedDemoBoth.mjs
-// Creates/fetches demo org by NAME (numeric id), seeds demo user into public_users
-// (and users if present), and grants ALL features to that org. Idempotent.
+// Seed a demo org with a NUMERIC id, a demo admin user, and ALL features.
+// Ignores any legacy string-id orgs like "demo-scale".
 
 import { neon, neonConfig } from "@neondatabase/serverless";
 import WebSocket from "ws";
@@ -16,33 +16,87 @@ const EMAIL = "demo@victorysync.com";
 const PASSWORD = "VictoryScale123!";
 const NAME = "Demo Admin";
 
-// Org lookup (NEVER use a string id)
+// Org names (we'll prefer the numeric one)
 const ORG_NAME = "VictorySync Demo (Scale)";
+const ORG_NAME_NUM = "VictorySync Demo (Scale) — numeric";
 const ORG_TZ = "America/New_York";
 
-async function getNumericOrgId() {
-  console.log("STEP 1: find org id by name…");
-  const found = await sql`SELECT id FROM organizations WHERE name = ${ORG_NAME} LIMIT 1`;
-  if (found.length) {
-    console.log("  found existing org id:", found[0].id);
-    return found[0].id;
+function toNumMaybe(v) {
+  const n = Number(String(v));
+  return Number.isInteger(n) ? n : null;
+}
+
+async function findNumericOrgIdByName(name) {
+  // Works whether id column is int or text: cast to text then parse in JS
+  const rows = await sql`SELECT id::text AS id_txt FROM organizations WHERE name = ${name} LIMIT 1`;
+  if (!rows.length) return null;
+  const n = toNumMaybe(rows[0].id_txt);
+  return n; // null if it's a string id like "demo-scale"
+}
+
+async function ensureNumericOrgId() {
+  console.log("STEP 1: locate a NUMERIC org id…");
+
+  // 1) Prefer an existing numeric org with the normal name
+  let orgId = await findNumericOrgIdByName(ORG_NAME);
+  if (orgId !== null) {
+    console.log("  found numeric org id under", ORG_NAME, "→", orgId);
+    return orgId;
   }
-  console.log("  inserting new org (DB assigns integer id) …");
+
+  // 2) If the normal name exists but has a string id (e.g., "demo-scale"), we create a numeric twin
+  const maybeString = await sql`SELECT id::text AS id_txt FROM organizations WHERE name = ${ORG_NAME} LIMIT 1`;
+  if (maybeString.length && toNumMaybe(maybeString[0].id_txt) === null) {
+    console.log(`  found LEGACY string-id org "${ORG_NAME}" (id=${maybeString[0].id_txt}) → creating numeric one…`);
+    // Try to find/create the numeric-named org
+    let num = await findNumericOrgIdByName(ORG_NAME_NUM);
+    if (num !== null) {
+      console.log("  numeric org already exists:", num);
+      return num;
+    }
+    const ins2 = await sql`
+      INSERT INTO organizations (name, timezone)
+      VALUES (${ORG_NAME_NUM}, ${ORG_TZ})
+      RETURNING id::text AS id_txt
+    `;
+    const n2 = toNumMaybe(ins2[0].id_txt);
+    if (n2 === null) throw new Error("Inserted org but id is not numeric; check organizations.id type.");
+    console.log("  created numeric org:", n2);
+    return n2;
+  }
+
+  // 3) No org at all → create the normal one (should yield numeric id in a sane schema)
+  console.log(`  no existing org named "${ORG_NAME}" → creating…`);
   const ins = await sql`
     INSERT INTO organizations (name, timezone)
     VALUES (${ORG_NAME}, ${ORG_TZ})
-    RETURNING id
+    RETURNING id::text AS id_txt
   `;
-  console.log("  created org id:", ins[0].id);
-  return ins[0].id;
+  const n = toNumMaybe(ins[0].id_txt);
+  if (n === null) {
+    // last resort: create the explicit numeric-named one
+    console.log("  created org has non-numeric id; creating numeric twin…");
+    const ins2 = await sql`
+      INSERT INTO organizations (name, timezone)
+      VALUES (${ORG_NAME_NUM}, ${ORG_TZ})
+      RETURNING id::text AS id_txt
+    `;
+    const n2 = toNumMaybe(ins2[0].id_txt);
+    if (n2 === null) throw new Error("Could not obtain a numeric org id; your organizations.id column may be text.");
+    console.log("  created numeric org:", n2);
+    return n2;
+  }
+  console.log("  created numeric org:", n);
+  return n;
 }
 
 async function main() {
   if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL not set");
-  const orgId = await getNumericOrgId();
+
+  const orgId = await ensureNumericOrgId();
   const hash = await bcrypt.hash(PASSWORD, 10);
 
-  console.log("STEP 2: upsert public_users (primary auth table) …");
+  console.log("STEP 2: upsert demo admin in public_users…");
   await sql`
     INSERT INTO public_users (name, email, password_hash, provider, provider_id, social_accounts, privileges)
     VALUES (${NAME}, lower(${EMAIL}), ${hash}, 'local', NULL, '[]'::jsonb, '{"role":"super_admin"}'::jsonb)
@@ -56,7 +110,7 @@ async function main() {
           email = lower(${EMAIL})
   `;
 
-  console.log("STEP 3: upsert users (org-scoped) if the table exists …");
+  console.log("STEP 3: upsert into users (if table exists) with NUMERIC org_id =", orgId);
   try {
     await sql`
       INSERT INTO users (org_id, name, email, password_hash, two_factor_enabled, is_super_admin, is_active)
@@ -79,7 +133,7 @@ async function main() {
     }
   }
 
-  console.log("STEP 4: materialize ALL features as entitlements (covers Scale) …");
+  console.log("STEP 4: grant ALL features to that org (covers Scale)…");
   await sql`
     INSERT INTO entitlements (org_id, feature_id, enabled, value)
     SELECT ${orgId}, f.id, TRUE, NULL::text
@@ -90,7 +144,7 @@ async function main() {
     )
   `;
 
-  console.log("✅ DONE — Demo seeded");
+  console.log("✅ DONE — Demo ready");
   console.log("   orgId:", orgId);
   console.log("   email:", EMAIL);
   console.log("   pass :", PASSWORD);
