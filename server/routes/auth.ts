@@ -54,19 +54,55 @@ authRouter.post("/login", async (req, res) => {
     { expiresIn: "24h" }
   );
 
-  res.setHeader("Set-Cookie", cookie.serialize("vs_token", token, {
-    httpOnly: true, sameSite: "lax", path: "/",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24,
+  // Set cookie with proper configuration for Replit iframe environment
+  const isProduction = process.env.NODE_ENV === "production";
+  res.setHeader("Set-Cookie", cookie.serialize("vs_session", token, {
+    httpOnly: true,
+    secure: isProduction, // true in production for HTTPS
+    sameSite: isProduction ? "none" : "lax", // 'none' for iframe, 'lax' for local dev
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7, // 7 days
   }));
   res.json({ ok: true, orgId: orgIdInt, plan: 'scale' });
 });
 
 authRouter.post("/logout", async (_req, res) => {
-  res.setHeader("Set-Cookie", cookie.serialize("vs_token", "", {
-    httpOnly: true, sameSite: "lax", path: "/", secure: process.env.NODE_ENV === "production", maxAge: 0,
+  const isProduction = process.env.NODE_ENV === "production";
+  res.setHeader("Set-Cookie", cookie.serialize("vs_session", "", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+    maxAge: 0, // Expire immediately
   }));
   res.json({ ok: true });
+});
+
+authRouter.get("/me", async (req, res) => {
+  try {
+    // Get token from cookie or Authorization header
+    let token = req.cookies?.vs_session;
+    if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+      token = req.headers.authorization.substring(7);
+    }
+
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    // Verify JWT
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    
+    res.json({ 
+      ok: true, 
+      userId: decoded.sub, 
+      orgId: decoded.orgId, 
+      role: decoded.role || 'admin' 
+    });
+  } catch (error) {
+    console.error("JWT verification failed:", error);
+    res.status(401).json({ error: "Invalid or expired token" });
+  }
 });
 
 authRouter.get("/session", async (req, res) => {

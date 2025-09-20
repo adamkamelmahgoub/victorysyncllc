@@ -6,6 +6,7 @@ try {
 }
 import express, { type Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
@@ -52,6 +53,50 @@ function validateEnvironment() {
 // Function to initialize the Express app
 async function initializeApp() {
   const app = express();
+  
+  // Trust proxy for Replit environment (enables secure cookies behind proxy)
+  app.set('trust proxy', 1);
+
+  // CORS configuration for Replit iframe and local dev
+  const corsOptions = {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Allow requests with no origin (same-origin requests)
+      if (!origin) return callback(null, true);
+      
+      // Allowed origins for Replit iframe and local dev
+      const allowedOrigins = [
+        'https://replit.com',
+        'http://localhost:5173',
+        'http://127.0.0.1:5173'
+      ];
+      
+      // Check exact matches
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // Check regex patterns for Replit domains
+      const replitPatterns = [
+        /^https:\/\/.*\.replit\.dev$/,
+        /^https:\/\/.*\.repl\.co$/
+      ];
+      
+      for (const pattern of replitPatterns) {
+        if (pattern.test(origin)) {
+          return callback(null, true);
+        }
+      }
+      
+      // Reject unknown origins
+      callback(new Error(`CORS: Origin ${origin} not allowed`), false);
+    },
+    credentials: true, // Enable cookies/credentials in CORS requests
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie']
+  };
+
+  app.use(cors(corsOptions));
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
@@ -59,9 +104,11 @@ async function initializeApp() {
   // Initialize Passport
   app.use(passport.initialize());
 
-  // Auth middleware and routes
-  app.use(auth);
+  // Auth routes (no global auth middleware here)
   app.use("/api/auth", authRouter);
+  
+  // Apply auth middleware only to protected routes
+  app.use("/api", auth);
 
   app.use((req, res, next) => {
     const start = Date.now();
