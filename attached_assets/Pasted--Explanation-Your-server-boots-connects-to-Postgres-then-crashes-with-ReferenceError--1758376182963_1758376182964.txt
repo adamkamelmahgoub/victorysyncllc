@@ -1,0 +1,70 @@
+# Explanation
+
+Your server boots, connects to Postgres, then crashes with:
+
+```
+ReferenceError: packages is not defined
+ at initializeApp (server/index.ts:153:25)
+```
+
+That means `server/index.ts` is referencing a variable named `packages` (almost certainly your **Drizzle table**), but it isn’t imported. Fix by importing the table from your DB schema (or, if you don’t actually have a `packages` table, use the correct table name — e.g., `plans`).
+
+# Code (pick the one that matches your schema)
+
+## A) You DO have `export const packages = pgTable(...)` in schema.ts
+
+Add the import and (optionally) alias to avoid name confusion.
+
+```diff
+--- a/server/index.ts
++++ b/server/index.ts
+@@
+-import { organizations /* ...others */ } from "./db/schema";
++import { organizations, packages as packagesTable /* ...others */ } from "./db/schema";
+@@
+-// inside initializeApp or wherever the crash points to
+-const count = await db.select({}).from(packages).limit(1);
++const count = await db.select().from(packagesTable).limit(1);
+@@
+-// any other usage:
+- await db.insert(packages).values(defaultPackages);
++ await db.insert(packagesTable).values(defaultPackages);
+```
+
+## B) You DO NOT have a `packages` table (you probably meant `plans`)
+
+Replace the bad identifier with the real table you seed (likely `plans`):
+
+```diff
+--- a/server/index.ts
++++ b/server/index.ts
+@@
+-import { organizations /* ...others */ } from "./db/schema";
++import { organizations, plans /* ...others */ } from "./db/schema";
+@@
+-const existing = await db.select().from(packages);
++const existing = await db.select().from(plans);
+@@
+- await db.insert(packages).values(defaultPlans);
++ await db.insert(plans).values(defaultPlans);
+```
+
+# Instructions
+
+1. Open `server/db/schema.ts` and confirm whether you export `packages` or not.
+
+   * If yes, apply **Option A**.
+   * If no, apply **Option B** and swap to the correct table (`plans`, `features`, etc.).
+2. Update **every** reference to the undefined `packages` identifier in `server/index.ts` (your errors show two lines).
+3. Restart cleanly:
+
+   ```
+   pkill -f node || true
+   npm run dev
+   ```
+4. Verify the console: it should pass “Initializing default packages…” without crashing and keep serving on port 5000.
+
+# Warnings
+
+* Don’t leave bare identifiers that shadow table names; prefer explicit aliases like `packages as packagesTable` to avoid collisions with variables/constants.
+* If you seed multiple tables at boot, make each seeder **idempotent** (use `onConflictDoNothing()` or `where not exists`).
