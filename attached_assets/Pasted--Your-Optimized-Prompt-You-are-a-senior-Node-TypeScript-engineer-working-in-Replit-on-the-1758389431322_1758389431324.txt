@@ -1,0 +1,148 @@
+**Your Optimized Prompt:**
+
+You are a senior Node/TypeScript engineer working in **Replit** on the VictorySync repo. Please update my **Option B** migration runner to fix this error:
+
+```
+Migration failed: cannot drop constraint organizations_pkey on table organizations
+because other objects depend on it
+```
+
+### Context
+
+* Neon Postgres via `@neondatabase/serverless` + `ws`.
+* We already added steps that:
+
+  * normalize `entitlements.org_id` to an **integer** and remove orphans,
+  * create `organizations.id_new BIGINT` and populate it.
+* Problem: dropping the old PK fails because existing **foreign keys** (e.g., `users_org_fk`, `entitlements_org_fk`, or any other FK) still reference `organizations(id)`.
+
+### What to build (edit `scripts/runMigration.mjs`)
+
+Use **sequential** `await sql.unsafe(<stmt>)` calls (no multi-command statements). Insert these steps **before** renaming columns and after `id_new` is populated:
+
+1. **Drop any FKs that reference `organizations(id)` (generic)**
+
+```sql
+DO $$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT conrelid::regclass::text AS tbl, conname
+    FROM pg_constraint
+    WHERE confrelid = 'public.organizations'::regclass
+      AND contype   = 'f'
+  LOOP
+    EXECUTE format('ALTER TABLE %I DROP CONSTRAINT IF EXISTS %I', r.tbl, r.conname);
+  END LOOP;
+END $$;
+```
+
+2. **Drop the old PK on `organizations` (generic)**
+
+```sql
+DO $$
+DECLARE pk_name text;
+BEGIN
+  SELECT conname INTO pk_name
+  FROM pg_constraint
+  WHERE conrelid = 'public.organizations'::regclass
+    AND contype  = 'p'
+  LIMIT 1;
+
+  IF pk_name IS NOT NULL THEN
+    EXECUTE format('ALTER TABLE organizations DROP CONSTRAINT %I', pk_name);
+  END IF;
+END $$;
+```
+
+3. **Promote `id_new` to the PK**
+
+```sql
+ALTER TABLE organizations ALTER COLUMN id_new SET NOT NULL;
+ALTER TABLE organizations ADD CONSTRAINT organizations_pkey PRIMARY KEY (id_new);
+```
+
+4. **Preserve old text id and rename**
+
+```sql
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='organizations' AND column_name='id_legacy'
+  ) THEN
+    ALTER TABLE organizations RENAME COLUMN id TO id_legacy;
+  END IF;
+END $$;
+
+ALTER TABLE organizations RENAME COLUMN id_new TO id;
+
+ALTER TABLE organizations
+  ADD COLUMN IF NOT EXISTS id_text TEXT GENERATED ALWAYS AS (id::text) STORED;
+```
+
+5. **Re-create FKs to the new `organizations(id)`**
+
+```sql
+-- users → organizations
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables
+             WHERE table_schema='public' AND table_name='users') THEN
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.table_constraints
+      WHERE table_name='users' AND constraint_name='users_org_fk'
+    ) THEN
+      EXECUTE 'ALTER TABLE users
+               ADD CONSTRAINT users_org_fk
+               FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE SET NULL';
+    END IF;
+  END IF;
+END $$;
+
+-- entitlements → organizations (org_id already normalized to int)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE table_name='entitlements' AND constraint_name='entitlements_org_fk'
+  ) THEN
+    EXECUTE 'ALTER TABLE entitlements
+             ADD CONSTRAINT entitlements_org_fk
+             FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE';
+  END IF;
+END $$;
+```
+
+6. **Keep the earlier entitlements cleanup step**
+
+* Ensure `entitlements.org_id` is integer (migrate from text to int with `org_id_int`, map by numeric text or `organizations.id_legacy`), delete unmappable rows, swap columns, set NOT NULL, and (re)create the unique `(org_id, feature_id)` constraint. (Leave your existing E1/E2/E3 code in place.)
+
+### Seeder fix (separate file)
+
+In `scripts/seedDemoScale.mjs`, avoid redeclaring `neon`:
+
+```js
+import { neon as createNeon, neonConfig } from "@neondatabase/serverless";
+import WebSocket from "ws";
+neonConfig.webSocketConstructor = WebSocket;
+const sql = createNeon(process.env.DATABASE_URL);
+```
+
+### Success criteria
+
+* Runner completes without the “cannot drop constraint … depend on it” error.
+* `organizations.id` is **integer PK**, old text id in `id_legacy`.
+* FKs re-created: `users_org_fk`, `entitlements_org_fk` (and any others).
+* Demo login works; `/entitlements` shows Scale features.
+
+### Commands to run
+
+```bash
+node scripts/runMigration.mjs
+node scripts/seedDemoScale.mjs
+pkill -f node || true
+npm run dev
+```
+
+Print step labels (e.g., “Step 8a: dropping dependent FKs…”, “Step 8b: dropping old PK…”, etc.) and halt with a clear message if any step fails.
