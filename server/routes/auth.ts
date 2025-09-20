@@ -12,7 +12,7 @@ authRouter.post("/login", async (req, res) => {
   const { email, password } = req.body as { email: string; password: string };
   if (!email || !password) return res.status(400).json({ error: "Email and password required" });
 
-  const user = await db.query.users.findFirst({ where: eq(users.email, email) });
+  const user = await db.query.users.findFirst({ where: eq(users.email, email.toLowerCase().trim()) });
   if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
   const ok = await bcrypt.compare(password, user.passwordHash);
