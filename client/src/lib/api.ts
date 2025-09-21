@@ -1,13 +1,34 @@
 
-export async function api<T = any>(path: string, init?: RequestInit): Promise<T> {
+export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`/api${path}`, {
-    credentials: 'include', // REQUIRED so cookie is sent/received
-    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    headers: { 
+      'Content-Type': 'application/json', 
+      ...(init.headers || {}) 
+    },
     ...init,
   });
+  
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(text || `Request failed: ${res.status}`);
+    throw new Error(`API Error: ${res.status}`);
   }
-  return res.json();
+  
+  return (await res.json()) as T;
+}
+
+export async function loginUser(email: string, password: string) {
+  return api('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function getCurrentUser() {
+  return api('/auth/me');
+}
+
+export async function logoutUser() {
+  return api('/auth/logout', {
+    method: 'POST',
+  });
 }
