@@ -2,7 +2,7 @@
 import express from 'express'
 import path from 'path'
 import fs from 'fs'
-import routes from './routes'
+import routes from './routes/index.js'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 
