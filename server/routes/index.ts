@@ -1,16 +1,13 @@
 
-import { Router } from 'express';
-import { authRouter } from './auth';
-import { sessionRouter } from './session';
-// If you have more routers, import & mount them here too.
+import { Router } from 'express'
+import authRouter from './auth'
 
-const routes = Router();
+const router = Router()
 
-routes.use('/auth', authRouter);
-routes.use('/session', sessionRouter);
+// Health check
+router.get('/health', (_req, res) => res.json({ ok: true }))
 
-// Example future mounts:
-// routes.use('/billing', billingRouter);
-// routes.use('/plans', plansRouter);
+// Auth routes
+router.use('/auth', authRouter)
 
-export default routes;
+export default router
