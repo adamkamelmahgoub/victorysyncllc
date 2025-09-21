@@ -2,7 +2,7 @@
 import { Router } from 'express';
 
 import { authRouter } from './auth';
-import billingRouter from './billing';
+import { billingRouter } from './billing';
 import { plansRouter } from './plans';
 import { sessionRouter } from './session';
 
