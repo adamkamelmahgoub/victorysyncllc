@@ -1,0 +1,62 @@
+SyntaxError: The requested module './routes' does not provide an export named 'default'
+at /home/runner/workspace/server/index.ts:5
+import routes from './routes'
+```
+
+I want you to fix this cleanly with a proper default export from the routes module and mount it under `/api`. Follow these exact steps and paste the code as shown.
+
+### 1) Create/replace `server/routes/index.ts` with a default `Router` export
+
+* If `server/routes` is a folder, the entry file must be `server/routes/index.ts`.
+* It must export a **default** Express router that gathers any sub-routers.
+* If I already have individual routers (auth, billing, etc.), register them in this file; otherwise just include a health check so the file compiles.
+
+**Replace the entire file contents of `server/routes/index.ts` with:**
+
+```ts
+// server/routes/index.ts
+import { Router } from 'express'
+
+// If I have sub-routers, import and mount them here:
+// import authRouter from './auth'
+// import billingRouter from './billing'
+
+const router = Router()
+
+// Example health route (keep this even if I add others)
+router.get('/health', (_req, res) => {
+  res.json({ ok: true, ts: new Date().toISOString() })
+})
+
+// Mount sub-routers if they exist
+// router.use('/auth', authRouter)
+// router.use('/billing', billingRouter)
+
+export default router
+```
+
+> Important: Do **not** use `export const router = ...` here. I need a **default** export: `export default router`.
+
+### 2) Ensure the server imports the default router and mounts it
+
+Open `server/index.ts`. Make sure the import and mount look exactly like this (adjust only this part — do not remove my other middleware or DB init):
+
+```ts
+// server/index.ts (import section)
+import routes from './routes'
+
+// ... after app initialization & middleware:
+app.use('/api', routes)
+```
+
+If the import path previously needed an extension for ESM, keep it as `./routes` because we’re in TypeScript and using tsx — it will resolve `server/routes/index.ts`.
+
+### 3) Remove any conflicting named exports/imports
+
+Search the repo for other `export const router =` or `export { router }` in `server/routes/*`. If found, convert those files to export **default** routers and then mount them from `server/routes/index.ts` as shown. Likewise, remove any `import { router } from './routes'` usages and replace with the default import where needed.
+
+### 4) Restart
+
+After the changes, restart the server. A GET to `/api/health` should return `{ ok: true, ts: "..." }`. The “does not provide an export named 'default'” error must be gone.
+
+Please make only the edits above and reply when done.
