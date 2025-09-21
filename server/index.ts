@@ -30,8 +30,8 @@ import inboundEmailRouter from "./routes/inbound-email";
 import hubspotWebhook from "./webhooks/hubspot";
 import { startReportJobs } from "./jobs/reports";
 import { createServer } from "http";
-import billingRouter from "./routes/billing";
-import routes from "./routes";
+import { billingRouter } from "./routes/billing";
+import routes from "./routes/index";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
