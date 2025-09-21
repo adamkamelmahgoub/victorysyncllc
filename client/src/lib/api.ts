@@ -1,34 +1,26 @@
 
-export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const res = await fetch(`/api${path}`, {
+export async function api(endpoint: string, options: RequestInit = {}): Promise<any> {
+  const response = await fetch(`/api${endpoint}`, {
     credentials: 'include',
-    headers: { 
-      'Content-Type': 'application/json', 
-      ...(init.headers || {}) 
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
     },
-    ...init,
-  });
-  
-  if (!res.ok) {
-    throw new Error(`API Error: ${res.status}`);
+    ...options,
+  })
+
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(error || `HTTP ${response.status}`)
   }
-  
-  return (await res.json()) as T;
+
+  return response.json()
 }
 
-export async function loginUser(email: string, password: string) {
-  return api('/auth/login', {
+export const apiPost = (endpoint: string, data: any) =>
+  api(endpoint, {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
-  });
-}
+    body: JSON.stringify(data),
+  })
 
-export async function getCurrentUser() {
-  return api('/auth/me');
-}
-
-export async function logoutUser() {
-  return api('/auth/logout', {
-    method: 'POST',
-  });
-}
+export const apiGet = (endpoint: string) => api(endpoint)
