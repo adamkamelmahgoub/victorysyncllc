@@ -1,34 +1,34 @@
 
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, type Request, type Response, type NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 export const sessionRouter = Router();
 
-type JWTPayload = { sub: number | string; orgId?: number | string; role?: string; };
+export type JWTPayload = {
+  sub: string | number;
+  orgId?: string | number;
+  role?: string;
+  email?: string;
+};
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+export const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-please-set-JWT_SECRET';
 
-// Shared cookie options
-const baseCookieOptions = {
+export const baseCookieOptions = {
   httpOnly: true,
-  // Replit preview is cross-site → SameSite=None + Secure=true required
-  sameSite: 'none' as const,
-  secure: true,
-  path: '/',          // send to all paths
-  // domain: undefined // usually omit on Replit so the browser accepts it
+  sameSite: 'none' as const, // cross-site cookies (Replit preview)
+  secure: true,              // HTTPS only; Replit preview is HTTPS
+  path: '/',                 // send to all paths
+  // Do NOT set "domain" in Replit previews
 };
 
 export function authRequired(req: Request, res: Response, next: NextFunction) {
   try {
-    // Read from cookie first
-    const token = req.cookies?.vs_session
-      // or Authorization: Bearer <token>
-      ?? (req.get('authorization')?.split(' ')[1] ?? '');
-
+    const fromCookie = req.cookies?.vs_session as string | undefined;
+    const fromHeader = (req.get('authorization') || '').replace(/^Bearer\s+/i, '') || undefined;
+    const token = fromCookie || fromHeader;
     if (!token) return res.status(401).json({ error: 'Missing token' });
 
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-    // attach to req for downstream handlers
     (req as any).user = decoded;
     return next();
   } catch {
@@ -36,14 +36,18 @@ export function authRequired(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-sessionRouter.get('/me', authRequired, async (req, res) => {
-  // You can hydrate from DB here if you want; keeping it simple:
-  return res.json({ user: (req as any).user });
-});
+export function meHandler(req: Request, res: Response) {
+  return res.json({ user: (req as any).user ?? null });
+}
 
+// /api/session/me — canonical "who am I?" endpoint
+sessionRouter.get('/me', authRequired, meHandler);
+
+// /api/session/logout — clears cookie using the SAME options used to set it
 sessionRouter.post('/logout', (req, res) => {
   res.clearCookie('vs_session', baseCookieOptions);
   return res.json({ ok: true });
 });
 
-export { baseCookieOptions, JWT_SECRET };
+// Dev-only helper (optional): see cookies server-side
+// sessionRouter.get('/debug/cookies', (req, res) => res.json({ cookies: req.cookies, hasAuth: !!req.cookies?.vs_session }));

@@ -1,55 +1,37 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
+import { authRequired, baseCookieOptions, JWT_SECRET, meHandler } from './session';
 
 export const authRouter = Router();
 
-authRouter.post("/login", async (req, res) => {
-  const { email, password } = req.body as { email: string; password: string };
+// POST /api/auth/login — demo login; swap for real DB lookup later
+authRouter.post('/login', async (req, res) => {
+  const { email, password } = (req.body || {}) as { email?: string; password?: string };
 
-  // 1) Look up user and verify password (replace with your real code)
-  // const user = await sql`select * from public_users where email=${email}`;
-  // const ok = await bcrypt.compare(password, user.password_hash)
-  const isDemo =
-    email && password &&
-    ((email === 'demo@victorysync.com' && password === 'VictoryScale123!') ||
-     (email === 'admin@victorysync.com' && password === 'VictoryScale123!'));
+  const valid =
+    (email === 'demo@victorysync.com' && password === 'VictoryScale123!') ||
+    (email === 'admin@victorysync.com' && password === 'VictoryScale123!');
 
-  if (!isDemo) {
-    return res.status(401).json({ error: 'Invalid credentials' });
-  }
+  if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
-  // 2) Build token payload (replace ids/role with real data)
   const payload = {
-    sub: 4,            // user id
+    sub: 1,
+    email,
     orgId: 'demo-scale',
-    role: 'super_admin'
+    role: 'super_admin',
   };
 
-  const token = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '7d' });
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
 
-  // 3) Set secure httpOnly cookie
   res.cookie('vs_session', token, {
-    httpOnly: true,
-    sameSite: 'none' as const,
-    secure: true,
-    path: '/',
-    maxAge: 7 * 24 * 60 * 60 * 1000
+    ...baseCookieOptions,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
-  // 4) Also return JSON so client can react
   return res.json({ ok: true });
 });
 
-authRouter.post("/logout", async (_req, res) => {
-  res.clearCookie('vs_session', {
-    httpOnly: true,
-    sameSite: 'none' as const,
-    secure: true,
-    path: '/',
-  });
-  res.json({ ok: true });
-});
-
+// GET /api/auth/me — alias to /api/session/me so either path works
 authRouter.get("/me", async (req, res) => {
   try {
     // Get token from cookie or Authorization header
