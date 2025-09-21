@@ -31,6 +31,7 @@ import hubspotWebhook from "./webhooks/hubspot";
 import { startReportJobs } from "./jobs/reports";
 import { createServer } from "http";
 import billingRouter from "./routes/billing";
+import routes from "./routes";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -227,7 +228,6 @@ async function initializeApp() {
     app.use("/ivr", ivrRouter);
     app.use("/webhooks", hubspotWebhook);
     app.use("/webhooks", inboundEmailRouter);
-    app.use("/api/billing", billingRouter);
     app.use("/api", routes);
 
     // Start report generation jobs
