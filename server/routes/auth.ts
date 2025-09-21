@@ -1,6 +1,9 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
+import cookieParser from 'cookie-parser';
 import { authRequired, baseCookieOptions, JWT_SECRET, meHandler } from './session';
+import { db } from '../db';
+import { sql } from 'drizzle-orm';
 
 export const authRouter = Router();
 
@@ -58,7 +61,7 @@ authRouter.get("/me", async (req, res) => {
       WHERE org_id = ${orgId}::text
       ORDER BY feature_id
     `;
-    
+
     res.status(200).json({ 
       ok: true, 
       user: {
