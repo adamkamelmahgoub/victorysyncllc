@@ -62,35 +62,25 @@ async function initializeApp() {
   // CORS configuration for Replit iframe and local dev
   const corsOptions = {
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      // Allow requests with no origin (same-origin requests)
+      // In Replit preview, origin can change (e.g. *.repl.co, *.replit.dev)
+      // Allow undefined (curl) and any https origin in dev; tighten in prod.
       if (!origin) return callback(null, true);
-
-      // Allowed origins for Replit iframe and local dev
+      if (/^https:\/\/.*repl(?!$)/.test(origin) || /^https:\/\/.*replit\.dev$/.test(origin)) {
+        return callback(null, true);
+      }
+      
+      // Allowed origins for local dev
       const allowedOrigins = [
         'https://replit.com',
         'http://localhost:5173',
         'http://127.0.0.1:5173'
       ];
 
-      // Check exact matches
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      // Check regex patterns for Replit domains
-      const replitPatterns = [
-        /^https:\/\/.*\.replit\.dev$/,
-        /^https:\/\/.*\.repl\.co$/
-      ];
-
-      for (const pattern of replitPatterns) {
-        if (pattern.test(origin)) {
-          return callback(null, true);
-        }
-      }
-
-      // Reject unknown origins
-      callback(new Error(`CORS: Origin ${origin} not allowed`), false);
+      return callback(null, false);
     },
     credentials: true, // Enable cookies/credentials in CORS requests
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
