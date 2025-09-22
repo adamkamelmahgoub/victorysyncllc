@@ -5,10 +5,13 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "build": "npm --prefix client run build",
     "build:client": "npm --prefix client ci && npm --prefix client run build",
     "start": "tsx server/index.ts",
     "dev": "NODE_ENV=development tsx server/index.ts",
     "dev:server": "tsx server/index.ts",
+    "web:dev": "npm --prefix client run dev",
+    "api:dev": "tsx server/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
