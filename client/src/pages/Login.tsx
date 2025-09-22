@@ -6,7 +6,7 @@ type LoginForm = {
   password: string;
 };
 
-export default function Login(): JSX.Element {
+export default function Login() {
   const [form, setForm] = React.useState<LoginForm>({ email: "", password: "" });
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
