@@ -16,14 +16,17 @@ app.use(cookieParser())
 import apiRoutes from './routes/index.js'
 app.use('/api', apiRoutes)
 
+// Serve static assets from built client
+if (fs.existsSync(CLIENT_DIST)) {
+  app.use(express.static(CLIENT_DIST))
+}
+
 // Serve SPA if built, otherwise helpful message
 app.get('*', (req, res, next) => {
   // Permit /api/* to be handled by API routes
   if (req.path.startsWith('/api/')) return next()
 
   if (fs.existsSync(INDEX_HTML)) {
-    // Serve static assets
-    app.use(express.static(CLIENT_DIST))
     return res.sendFile(INDEX_HTML)
   } else {
     res
