@@ -1,5 +1,5 @@
 
-import * as React from "react";
+import { useState } from "react";
 
 type LoginForm = {
   email: string;
@@ -7,9 +7,9 @@ type LoginForm = {
 };
 
 export default function Login() {
-  const [form, setForm] = React.useState<LoginForm>({ email: "", password: "" });
-  const [busy, setBusy] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function onChange(
     e: React.ChangeEvent<HTMLInputElement>
