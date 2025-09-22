@@ -1,0 +1,148 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VictorySync — Professional Call Center & AI Automation</title>
+  <meta name="description" content="VictorySync helps businesses cut costs up to 60% with professional call center services and AI automation." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121935;
+      --muted: #aab3dd;
+      --text: #eef1fb;
+      --brand: #6d5efc;
+      --brand-2: #a779ff;
+      --border: #263058;
+      --ok: #5fd18a;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0; padding:0}
+    body{
+      color:var(--text);
+      background:
+        radial-gradient(1000px 500px at 20% -10%, #1b2350 0, rgba(27,35,80,0) 60%),
+        radial-gradient(900px 500px at 90% -20%, #2c2e63 0, rgba(44,46,99,0) 60%),
+        var(--bg);
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      line-height:1.6;
+    }
+    a{color:inherit}
+    .wrap{max-width:1140px;margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;margin-left:18px}
+    nav a:hover{color:#fff}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .chip{display:inline-flex;gap:8px;align-items:center;background:#151c3a;border:1px solid var(--border);padding:6px 10px;border-radius:999px;color:#cbd4ff;font-size:12px}
+    .chip svg{color:#ffcf66}
+    .hero{margin-top:16px;display:grid;gap:24px}
+    .hero .card{
+      background:linear-gradient(180deg, #162049 0%, #121935 100%);
+      border:1px solid var(--border);
+      border-radius:18px;padding:26px;box-shadow:0 10px 40px rgba(0,0,0,.35)
+    }
+    h1{font-size:42px;line-height:1.15;margin:10px 0 8px}
+    p.lead{color:#cdd3ff;font-size:18px;margin:0 0 18px}
+    .actions{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{display:inline-block;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:600}
+    .btn.primary{background:linear-gradient(90deg,var(--brand),var(--brand-2));color:white}
+    .btn.ghost{border:1px solid var(--border);color:#dfe5ff}
+    .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:18px;margin-top:20px}
+    .feature{
+      grid-column:span 3; background:rgba(21,28,58,.7);
+      border:1px solid var(--border);border-radius:14px;padding:18px
+    }
+    .feature h3{margin:6px 0 6px;font-size:18px}
+    .ok{color:var(--ok);margin-right:8px}
+    @media(max-width:960px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:640px){.grid{grid-template-columns:1fr}}
+    footer{margin:28px 0 16px;color:#b9c1e4;font-size:13px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    footer a{color:#b9c1e4;text-decoration:none;margin-left:12px}
+    footer a:hover{color:#fff}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style="color:#6d5efc">
+          <path d="M12 2l3 7h7l-5.5 4.1L18 21l-6-4-6 4 1.5-7.9L2 9h7z"/>
+        </svg>
+        <span>VictorySync</span>
+      </div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/services">Services</a>
+        <a href="/pricing">Pricing</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+        <a href="/login" class="btn ghost" style="padding:8px 12px">Sign In</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="card">
+        <span class="chip">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17l-5-5 1.41-1.41L12 14.17l6.59-6.58L20 9z"/></svg>
+          Save up to 60% compared to US-based services
+        </span>
+        <h1>Professional Call Center & AI Automation</h1>
+        <p class="lead">24/7 coverage, intelligent IVR, CRM integrations, and real-time analytics — all tailored to your business.</p>
+        <div class="actions">
+          <a class="btn primary" href="/pricing">See Plans</a>
+          <a class="btn ghost" href="/contact">Talk to Sales</a>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="feature">
+          <h3><span class="ok">●</span>Dedicated / Blended Teams</h3>
+          <p>Dedicated agents for deep brand alignment or blended teams for surge coverage — we flex to your volume.</p>
+        </div>
+        <div class="feature">
+          <h3><span class="ok">●</span>Intelligent IVR</h3>
+          <p>Natural-language IVR with smart routing, self-service flows, and warm transfers to human agents.</p>
+        </div>
+        <div class="feature">
+          <h3><span class="ok">●</span>AI Automation Suite</h3>
+          <p>Ticket triage, after-call summaries, QA insights, and proactive follow-ups powered by AI.</p>
+        </div>
+        <div class="feature">
+          <h3><span class="ok">●</span>CRM & Helpdesk Integrations</h3>
+          <p>Plug into Salesforce, HubSpot, Zendesk, Intercom, Freshdesk, and more via secure APIs.</p>
+        </div>
+        <div class="feature">
+          <h3><span class="ok">●</span>Live Chat & Omnichannel</h3>
+          <p>Voice, email, SMS, chat, and WhatsApp — meet customers where they already are.</p>
+        </div>
+        <div class="feature">
+          <h3><span class="ok">●</span>Analytics & SLAs</h3>
+          <p>Dashboards for AHT, FCR, CSAT, and staffing forecasts with clear enterprise SLAs.</p>
+        </div>
+      </div>
+
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap">
+        <div>
+          <h3 style="margin:6px 0 2px">Transparent Pricing</h3>
+          <div style="color:#cdd3ff">Starter, Growth, and Scale plans — upgrade anytime.</div>
+        </div>
+        <a class="btn primary" href="/pricing">Explore Pricing</a>
+      </div>
+    </section>
+
+    <footer>
+      <div>&copy; <span id="year"></span> VictorySync. All rights reserved.</div>
+      <div>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/status">Status</a>
+      </div>
+    </footer>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

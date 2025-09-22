@@ -16,27 +16,42 @@ app.use(cookieParser())
 import apiRoutes from './routes/index.js'
 app.use('/api', apiRoutes)
 
-// Serve static assets from built client
-if (fs.existsSync(CLIENT_DIST)) {
-  app.use(express.static(CLIENT_DIST))
+// --- Static web hosting (SPA or plain static) ---
+import fs from "fs";
+import path from "path";
+
+// Prefer a built SPA in client/dist, fallback to /public
+const DIST_DIR = path.resolve(process.cwd(), "client/dist");
+const PUBLIC_DIR = path.resolve(process.cwd(), "public");
+
+function hasFile(dir: string, file: string) {
+  try { return fs.existsSync(path.join(dir, file)); } catch { return false; }
 }
 
-// Serve SPA if built, otherwise helpful message
-app.get('*', (req, res, next) => {
-  // Permit /api/* to be handled by API routes
-  if (req.path.startsWith('/api/')) return next()
-
-  if (fs.existsSync(INDEX_HTML)) {
-    return res.sendFile(INDEX_HTML)
-  } else {
+if (hasFile(DIST_DIR, "index.html")) {
+  // Serve built SPA
+  app.use(express.static(DIST_DIR, { maxAge: "1h", index: "index.html" }));
+  app.get("*", (_req, res) => res.sendFile(path.join(DIST_DIR, "index.html")));
+  console.log(`[web] Serving built SPA from ${DIST_DIR}`);
+} else if (hasFile(PUBLIC_DIR, "index.html")) {
+  // Serve plain static site
+  app.use(express.static(PUBLIC_DIR, { maxAge: "1h", index: "index.html" }));
+  app.get("*", (_req, res) => res.sendFile(path.join(PUBLIC_DIR, "index.html")));
+  console.log(`[web] Serving static site from ${PUBLIC_DIR}`);
+} else {
+  // No UI present; keep API only
+  app.get("/", (_req, res) => {
     res
       .status(200)
-      .type('html')
       .send(
-        `VictorySync API is running.<br/>Build the frontend to serve the SPA (see scripts below).<br/>Dev frontend available at <a href="${FRONTEND_URL}">${FRONTEND_URL}</a>.`
-      )
-  }
-})
+        `VictorySync API is running.<br />` +
+          `No web UI found. Add <code>public/index.html</code> or build the SPA into <code>client/dist</code>.`
+      );
+  });
+  console.warn(
+    "[web] No UI found. Create public/index.html (static) OR run `npm --prefix client run build` to produce client/dist."
+  );
+}
 
 app.listen(PORT, '0.0.0.0', () => {
   if (fs.existsSync(INDEX_HTML)) {
