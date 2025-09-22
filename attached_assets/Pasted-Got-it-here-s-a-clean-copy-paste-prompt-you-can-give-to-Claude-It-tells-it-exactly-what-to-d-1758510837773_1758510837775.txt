@@ -1,0 +1,491 @@
+Got it — here’s a clean, copy-paste prompt you can give to Claude. It tells it **exactly** what to do, what files to create/replace, and the commands to run so your app stops serving “API only”, fixes the login loop, and serves a real SPA from `client/dist`.
+(Everything below is written for Claude — you can paste it as-is.)
+
+---
+
+**PROMPT FOR CLAUDE**
+
+You are pair-programming with me inside **Replit** on the “VictorySync” repo. We currently see:
+
+* Backend boots on `:5000` and prints:
+  `No built SPA found at /home/runner/workspace/client/dist/index.html. Serving API only. FRONTEND_URL=http://localhost:5173`
+* Sometimes we get `Cannot GET /` because there’s no built frontend.
+* Earlier auth issues (redirect loop): after login it says “authorized” then bounces back to `/login`. This is almost always cookie/samesite or missing `credentials: "include"` on fetch, or `/api/auth/me` not returning a user.
+
+Your job: **build and wire a minimal but complete SPA in `/client` (Vite + React + TS)**, fix server routing so it serves the built SPA in prod and proxies dev to `5173` in development, and harden auth so the login → dashboard flow works reliably.
+
+Do this **exactly** as instructed:
+
+---
+
+## 0) Pre-flight (do first)
+
+1. Make sure these secrets exist in Replit (Secrets tab):
+
+   * `DATABASE_URL` = Neon/Postgres URL (already set)
+   * `JWT_SECRET` = long random string
+   * `NODE_ENV` = `development`
+   * `PORT` = `5000`
+   * `FRONTEND_URL` = `http://localhost:5173`
+   * (Optional) `SOCKETS_ENABLED` = `0`
+
+2. Confirm repo layout at root (create if missing):
+
+```
+/server
+  index.ts
+  routes/
+    index.ts
+    auth.ts
+/client   (to be created by you — Vite)
+```
+
+3. We will **replace** specific files below exactly as shown.
+
+---
+
+## 1) Create the frontend (Vite + React + TypeScript)
+
+Create the `client` app:
+
+```bash
+rm -rf client
+npm create vite@latest client -- --template react-ts
+cd client
+npm i
+npm i axios @tanstack/react-query zustand
+```
+
+Replace these files with the exact content:
+
+### `client/vite.config.ts`
+
+```ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// Proxy API to server:5000 during dev
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
+  },
+  build: {
+    outDir: 'dist',
+  },
+})
+```
+
+### `client/src/main.tsx`
+
+```tsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import App from './App'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import './index.css'
+
+const queryClient = new QueryClient()
+
+const router = createBrowserRouter([
+  { path: '/', element: <App /> },
+  { path: '/login', element: <Login /> },
+  { path: '/customer-dashboard', element: <Dashboard /> },
+])
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  </React.StrictMode>,
+)
+```
+
+### `client/src/App.tsx`
+
+```tsx
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useMe } from './lib/auth'
+
+export default function App() {
+  const navigate = useNavigate()
+  const { data: me, isLoading } = useMe()
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (me?.id) navigate('/customer-dashboard')
+      else navigate('/login')
+    }
+  }, [isLoading, me, navigate])
+
+  return <div style={{ padding: 24 }}>Loading…</div>
+}
+```
+
+### `client/src/pages/Login.tsx`
+
+```tsx
+import { FormEvent, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { api } from '../lib/http'
+import { useMe } from '../lib/auth'
+
+export default function Login() {
+  const [email, setEmail] = useState('demo@victorysync.com')
+  const [password, setPassword] = useState('VictoryScale123!')
+  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const { refetch } = useMe()
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    const res = await api('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    })
+    if (!res.ok) {
+      setError('Invalid credentials')
+      return
+    }
+    // Revalidate session & go to dashboard
+    await refetch()
+    navigate('/customer-dashboard')
+  }
+
+  return (
+    <div style={{ maxWidth: 400, margin: '10vh auto', fontFamily: 'sans-serif' }}>
+      <h2>Welcome Back</h2>
+      <form onSubmit={onSubmit}>
+        <label>Email</label>
+        <input value={email} onChange={e => setEmail(e.target.value)} />
+        <label>Password</label>
+        <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+        <button type="submit">Sign in</button>
+      </form>
+      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+    </div>
+  )
+}
+```
+
+### `client/src/pages/Dashboard.tsx`
+
+```tsx
+import { useMe } from '../lib/auth'
+import { api } from '../lib/http'
+
+export default function Dashboard() {
+  const { data: me, isLoading } = useMe()
+
+  const logout = async () => {
+    await api('/api/auth/logout', { method: 'POST' })
+    window.location.href = '/login'
+  }
+
+  if (isLoading) return <div style={{ padding: 24 }}>Loading…</div>
+  if (!me?.id) return <div style={{ padding: 24 }}>Not authorized</div>
+
+  return (
+    <div style={{ padding: 24 }}>
+      <h2>Customer Portal</h2>
+      <p>Signed in as {me.email}</p>
+      <button onClick={logout}>Log out</button>
+    </div>
+  )
+}
+```
+
+### `client/src/lib/http.ts`
+
+```ts
+export async function api(path: string, init?: RequestInit) {
+  return fetch(path, {
+    credentials: 'include', // critical for cookies
+    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
+    ...init,
+  })
+}
+```
+
+### `client/src/lib/auth.ts`
+
+```ts
+import { useQuery } from '@tanstack/react-query'
+
+export function useMe() {
+  return useQuery({
+    queryKey: ['me'],
+    queryFn: async () => {
+      const res = await fetch('/api/auth/me', { credentials: 'include' })
+      if (!res.ok) return null
+      return res.json() as Promise<{ id: number; email: string } | null>
+    },
+    retry: false,
+  })
+}
+```
+
+Add a simple style so inputs aren’t awful (optional).
+
+---
+
+## 2) Root scripts to run both dev servers (Replit friendly)
+
+At **repo root**, create/replace `package.json` with these scripts (preserve deps you need):
+
+```json
+{
+  "name": "victorysync",
+  "private": true,
+  "workspaces": [],
+  "scripts": {
+    "dev": "concurrently -k -n server,client -c green,cyan \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "cross-env NODE_ENV=development tsx watch server/index.ts",
+    "dev:client": "cross-env NODE_ENV=development npm --prefix client run dev",
+    "build:client": "npm --prefix client ci && npm --prefix client run build",
+    "start": "node dist/server.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "cross-env": "^7.0.3",
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.0"
+  }
+}
+```
+
+Install dev tooling at root:
+
+```bash
+npm i -D concurrently cross-env tsx typescript
+```
+
+---
+
+## 3) Fix server to serve SPA in prod & proxy message in dev
+
+Replace the server files exactly as below.
+
+### `server/routes/auth.ts` (drop-in)
+
+```ts
+import type { Request, Response } from 'express'
+import { Router } from 'express'
+import jwt from 'jsonwebtoken'
+
+// In-memory demo user for now — you can swap to DB users easily
+const DEMO_USER = { id: 1, email: 'demo@victorysync.com', password: 'VictoryScale123!' }
+
+const router = Router()
+
+router.post('/login', (req: Request, res: Response) => {
+  const { email, password } = req.body || {}
+  if (email !== DEMO_USER.email || password !== DEMO_USER.password) {
+    return res.status(401).json({ error: 'invalid' })
+  }
+  const token = jwt.sign({ sub: DEMO_USER.id }, process.env.JWT_SECRET!, { expiresIn: '1d' })
+  res.cookie('vsid', token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: false, // set true when behind https
+    path: '/',
+    maxAge: 24 * 60 * 60 * 1000,
+  })
+  return res.json({ ok: true })
+})
+
+router.post('/logout', (_req: Request, res: Response) => {
+  res.clearCookie('vsid', { path: '/' })
+  res.json({ ok: true })
+})
+
+router.get('/me', (req: Request, res: Response) => {
+  const raw = req.cookies?.vsid
+  if (!raw) return res.status(401).json({ ok: false })
+  try {
+    const decoded = jwt.verify(raw, process.env.JWT_SECRET!) as { sub: number }
+    if (decoded?.sub !== DEMO_USER.id) return res.status(401).json({ ok: false })
+    return res.json({ id: DEMO_USER.id, email: DEMO_USER.email })
+  } catch {
+    return res.status(401).json({ ok: false })
+  }
+})
+
+export default router
+```
+
+### `server/routes/index.ts` (drop-in)
+
+```ts
+import { Router } from 'express'
+import auth from './auth'
+
+const router = Router()
+router.use('/auth', auth)
+
+router.get('/health', (_req, res) => res.json({ ok: true }))
+
+export default router
+```
+
+### `server/index.ts` (drop-in)
+
+```ts
+import express from 'express'
+import cookieParser from 'cookie-parser'
+import path from 'node:path'
+import fs from 'node:fs'
+
+const app = express()
+const PORT = Number(process.env.PORT || 5000)
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
+const CLIENT_DIST = path.resolve(process.cwd(), 'client', 'dist')
+const INDEX_HTML = path.join(CLIENT_DIST, 'index.html')
+
+app.use(express.json())
+app.use(cookieParser())
+
+// API routes
+import apiRoutes from './routes/index'
+app.use('/api', apiRoutes)
+
+// Serve SPA if built, otherwise helpful message
+app.get('*', (req, res, next) => {
+  // Permit /api/* to be handled by API routes
+  if (req.path.startsWith('/api/')) return next()
+
+  if (fs.existsSync(INDEX_HTML)) {
+    // Serve static assets
+    app.use(express.static(CLIENT_DIST))
+    return res.sendFile(INDEX_HTML)
+  } else {
+    res
+      .status(200)
+      .type('html')
+      .send(
+        `VictorySync API is running.<br/>Build the frontend to serve the SPA (see scripts below).<br/>Dev frontend available at <a href="${FRONTEND_URL}">${FRONTEND_URL}</a>.`
+      )
+  }
+})
+
+app.listen(PORT, () => {
+  console.log(`No built SPA found at ${INDEX_HTML}. Serving API only. FRONTEND_URL=${FRONTEND_URL}`)
+  console.log(`VictorySync API running on :${PORT}`)
+})
+```
+
+> If you previously had `import routes from './routes'` without a default export, that caused `“does not provide an export named 'default'”`. The code above uses `export default` properly and mounts it at `/api`.
+
+---
+
+## 4) Build the SPA for prod (fixes “No built SPA found”)
+
+From **repo root**:
+
+```bash
+npm run build:client
+```
+
+You should now see `client/dist/index.html`. Restart the server (or let Replit reload). Visiting the Replit webview root should load the React app instead of “API only”.
+
+---
+
+## 5) Dev mode (concurrent) when you’re editing
+
+In Replit’s “Run” (or shell) from repo root:
+
+```bash
+npm run dev
+```
+
+* Server on `:5000`
+* Vite dev on `:5173` with proxy to `/api`
+
+Navigate directly to the **Preview** (Vite URL) while developing.
+
+---
+
+## 6) Fix the login loop (what we changed and why)
+
+* All frontend `fetch` calls use `credentials: "include"` so the HTTP-only cookie is sent/received.
+* The server sets cookie `vsid` with `sameSite: 'lax'`, `secure: false` for local (flip to `true` behind HTTPS), and `path: '/'`.
+* `/api/auth/me` decodes JWT and returns `{ id, email }`. Frontend queries it on boot and routes accordingly.
+* After successful `/api/auth/login`, we refetch `/api/auth/me` then `navigate('/customer-dashboard')`.
+
+This removes the “authorized then back to login” behavior.
+
+---
+
+## 7) Quick test script (do this)
+
+1. `npm run dev` (or just run server + client separately if you prefer).
+2. Go to `/login`. Use:
+
+   * Email: `demo@victorysync.com`
+   * Password: `VictoryScale123!`
+3. You should land on `/customer-dashboard` and see your email.
+4. Click **Log out** → you return to `/login`.
+
+---
+
+## 8) If you also want a protected server route example (optional)
+
+Add to `server/routes/index.ts`:
+
+```ts
+import type { Request, Response, NextFunction } from 'express'
+import jwt from 'jsonwebtoken'
+
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const token = req.cookies?.vsid
+  if (!token) return res.status(401).json({ error: 'unauthorized' })
+  try {
+    jwt.verify(token, process.env.JWT_SECRET!)
+    return next()
+  } catch {
+    return res.status(401).json({ error: 'unauthorized' })
+  }
+}
+
+router.get('/account', requireAuth, (_req, res) => {
+  res.json({ ok: true, accountId: 123 })
+})
+```
+
+---
+
+## 9) What to say in the console (helpful status)
+
+On boot in dev, please log:
+
+* If `client/dist/index.html` exists → “Serving built SPA”
+* Else → “No built SPA found … Serving API only. FRONTEND\_URL=…”
+
+---
+
+## 10) Do not change anything else
+
+Please perform only the steps above, replacing the files exactly as shown, and report back:
+
+* Build output exists at `client/dist/index.html`
+* Root webview serves the SPA
+* `/login` → success → `/customer-dashboard`
+* `/api/auth/me` returns `{ id, email }` when logged in, 401 when not
+
+If something blocks you, print the exact file content and line causing the error and fix it in place.
+
+---
+
+**End of prompt**
