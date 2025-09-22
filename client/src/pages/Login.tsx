@@ -1,114 +1,107 @@
 
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { apiPost } from '../lib/api'
+import * as React from "react";
 
-export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+type LoginForm = {
+  email: string;
+  password: string;
+};
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+export default function Login(): JSX.Element {
+  const [form, setForm] = React.useState<LoginForm>({ email: "", password: "" });
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  function onChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ): void {
+    const { name, value } = e.target;
+    setForm((s) => ({ ...s, [name]: value }));
+  }
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
 
     try {
-      await apiPost('/auth/login', { email, password })
-      navigate('/customer-dashboard')
-    } catch (err: any) {
-      setError(err.message || 'Login failed')
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // include so the server can set the auth cookie
+        credentials: "include",
+        body: JSON.stringify({ email: form.email, password: form.password }),
+      });
+
+      if (!res.ok) {
+        const msg = (await res.text()) || `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+
+      // Go to the customer portal (adjust path if your app uses a different route)
+      window.location.assign("/customer-dashboard");
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Login failed. Please try again.";
+      setError(msg);
     } finally {
-      setLoading(false)
+      setBusy(false);
     }
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto' }}>
-      <h1>VictorySync Login</h1>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>
-            Email:
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-              placeholder="demo@victorysync.com"
-            />
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <form
+        onSubmit={onSubmit}
+        className="w-full max-w-sm space-y-4 p-6 rounded-xl border"
+      >
+        <h1 className="text-xl font-semibold">Sign in to VictorySync</h1>
+
+        {error && (
+          <div className="text-sm text-red-500 bg-red-50 border border-red-200 rounded p-2">
+            {error}
+          </div>
+        )}
+
+        <div className="space-y-1">
+          <label htmlFor="email" className="text-sm">
+            Email
           </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            value={form.email}
+            onChange={onChange}
+            required
+            className="w-full rounded-md border px-3 py-2"
+          />
         </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>
-            Password:
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-              placeholder="VictoryScale123!"
-            />
+
+        <div className="space-y-1">
+          <label htmlFor="password" className="text-sm">
+            Password
           </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            value={form.password}
+            onChange={onChange}
+            required
+            className="w-full rounded-md border px-3 py-2"
+          />
         </div>
-        {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
-        <button 
-          type="submit" 
-          disabled={loading}
-          style={{ width: '100%', padding: '0.75rem', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}
+
+        <button
+          type="submit"
+          disabled={busy}
+          className="w-full rounded-md px-3 py-2 bg-indigo-600 text-white disabled:opacity-60"
         >
-          {loading ? 'Signing in...' : 'Sign In'}
+          {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>
-      <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
-        Demo: demo@victorysync.com / VictoryScale123!
-      </p>
     </div>
-  )
-}
-import { FormEvent, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { api } from '../lib/http'
-import { useMe } from '../lib/auth'
-
-export default function Login() {
-  const [email, setEmail] = useState('demo@victorysync.com')
-  const [password, setPassword] = useState('VictoryScale123!')
-  const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate()
-  const { refetch } = useMe()
-
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    const res = await api('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    })
-    if (!res.ok) {
-      setError('Invalid credentials')
-      return
-    }
-    // Revalidate session & go to dashboard
-    await refetch()
-    navigate('/customer-dashboard')
-  }
-
-  return (
-    <div style={{ maxWidth: 400, margin: '10vh auto', fontFamily: 'sans-serif' }}>
-      <h2>Welcome Back</h2>
-      <form onSubmit={onSubmit}>
-        <label>Email</label>
-        <input value={email} onChange={e => setEmail(e.target.value)} />
-        <label>Password</label>
-        <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
-        <button type="submit">Sign in</button>
-      </form>
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
-    </div>
-  )
+  );
 }
