@@ -17,9 +17,6 @@ import apiRoutes from './routes/index.js'
 app.use('/api', apiRoutes)
 
 // --- Static web hosting (SPA or plain static) ---
-import fs from "fs";
-import path from "path";
-
 // Prefer a built SPA in client/dist, fallback to /public
 const DIST_DIR = path.resolve(process.cwd(), "client/dist");
 const PUBLIC_DIR = path.resolve(process.cwd(), "public");
