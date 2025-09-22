@@ -1,18 +1,10 @@
 
-// server/routes/index.ts
 import { Router } from 'express'
-
-// Import sub-routers
-import authRouter from './auth'
+import auth from './auth'
 
 const router = Router()
+router.use('/auth', auth)
 
-// Example health route (keep this even if I add others)
-router.get('/health', (_req, res) => {
-  res.json({ ok: true, ts: new Date().toISOString() })
-})
-
-// Mount sub-routers
-router.use('/auth', authRouter)
+router.get('/health', (_req, res) => res.json({ ok: true }))
 
 export default router

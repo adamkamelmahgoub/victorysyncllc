@@ -1,17 +1,18 @@
-import { Routes, Route } from 'react-router-dom'
-import Login from './pages/Login'
-import CustomerDashboard from './pages/CustomerDashboard'
 
-function App() {
-  return (
-    <div className="app">
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/customer-dashboard" element={<CustomerDashboard />} />
-        <Route path="/" element={<Login />} />
-      </Routes>
-    </div>
-  )
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useMe } from './lib/auth'
+
+export default function App() {
+  const navigate = useNavigate()
+  const { data: me, isLoading } = useMe()
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (me?.id) navigate('/customer-dashboard')
+      else navigate('/login')
+    }
+  }, [isLoading, me, navigate])
+
+  return <div style={{ padding: 24 }}>Loading…</div>
 }
-
-export default App

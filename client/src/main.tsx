@@ -1,19 +1,25 @@
 
 import React from 'react'
-import { createRoot } from 'react-dom/client'
+import ReactDOM from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import App from './App'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import './index.css'
 
-function App() {
-  return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', padding: 16 }}>
-      <h1>VictorySync</h1>
-      <p>Vite React client is working.</p>
-      <p>
-        If this is visible after building, the server is serving the SPA from
-        <code>client/dist</code>.
-      </p>
-    </div>
-  )
-}
+const queryClient = new QueryClient()
 
-const root = createRoot(document.getElementById('root')!)
-root.render(<App />)
+const router = createBrowserRouter([
+  { path: '/', element: <App /> },
+  { path: '/login', element: <Login /> },
+  { path: '/customer-dashboard', element: <Dashboard /> },
+])
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  </React.StrictMode>,
+)

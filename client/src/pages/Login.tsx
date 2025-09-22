@@ -70,3 +70,45 @@ export default function Login() {
     </div>
   )
 }
+import { FormEvent, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { api } from '../lib/http'
+import { useMe } from '../lib/auth'
+
+export default function Login() {
+  const [email, setEmail] = useState('demo@victorysync.com')
+  const [password, setPassword] = useState('VictoryScale123!')
+  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const { refetch } = useMe()
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    const res = await api('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    })
+    if (!res.ok) {
+      setError('Invalid credentials')
+      return
+    }
+    // Revalidate session & go to dashboard
+    await refetch()
+    navigate('/customer-dashboard')
+  }
+
+  return (
+    <div style={{ maxWidth: 400, margin: '10vh auto', fontFamily: 'sans-serif' }}>
+      <h2>Welcome Back</h2>
+      <form onSubmit={onSubmit}>
+        <label>Email</label>
+        <input value={email} onChange={e => setEmail(e.target.value)} />
+        <label>Password</label>
+        <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+        <button type="submit">Sign in</button>
+      </form>
+      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+    </div>
+  )
+}
