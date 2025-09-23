@@ -1,44 +1,128 @@
+import { Router } from "express";
+import cookie from "cookie";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import { neon } from "@neondatabase/serverless";
+import { db } from "../db";
+import { publicUsers, entitlements, features, organizations } from "../../shared/schema";
+import { eq, and } from "drizzle-orm";
+import { toIntId } from "../db/id";
 
-import type { Request, Response } from 'express'
-import { Router } from 'express'
-import jwt from 'jsonwebtoken'
+const sql = neon(process.env.DATABASE_URL!);
 
-// In-memory demo user for now — you can swap to DB users easily
-const DEMO_USER = { id: 1, email: 'demo@victorysync.com', password: 'VictoryScale123!' }
+export const authRouter = Router();
 
-const router = Router()
+authRouter.post("/login", async (req, res) => {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const password = String(req.body?.password || "");
+  if (!email || !password) return res.status(400).json({ error: "Email and password required" });
 
-router.post('/login', (req: Request, res: Response) => {
-  const { email, password } = req.body || {}
-  if (email !== DEMO_USER.email || password !== DEMO_USER.password) {
-    return res.status(401).json({ error: 'invalid' })
-  }
-  const token = jwt.sign({ sub: DEMO_USER.id }, process.env.JWT_SECRET!, { expiresIn: '1d' })
-  res.cookie('vsid', token, {
+  // Check public_users table for authentication
+  const publicUser = await sql`SELECT * FROM public_users WHERE email = ${email} LIMIT 1`;
+  if (!publicUser.length) return res.status(401).json({ error: "Invalid credentials" });
+
+  const user = publicUser[0];
+  if (!user) return res.status(401).json({ error: "Invalid credentials" });
+
+  const ok = await bcrypt.compare(password, user.password_hash);
+  if (!ok) return res.status(401).json({ error: "Invalid credentials" });
+
+  // For public_users, get org from the demo org we created (using numeric ID only)
+  const orgResult = await sql`SELECT * FROM organizations WHERE name = 'VictorySync Demo (Scale)' LIMIT 1`;
+  const org = orgResult[0];
+
+  if (!org) return res.status(500).json({ error: "Demo organization not found" });
+
+  // get/create the org and ensure it's an integer
+  const orgIdInt = toIntId(org.id, "org_id");
+
+  // Ensure all features are enabled for this org (covers Scale plan)
+  await sql`
+    INSERT INTO entitlements (org_id, feature_id, enabled, value)
+    SELECT ${orgIdInt}, f.code, TRUE, NULL::text
+    FROM features f
+    WHERE NOT EXISTS (
+      SELECT 1 FROM entitlements e
+      WHERE e.org_id = ${orgIdInt} AND e.feature_id = f.code
+    )
+  `;
+
+  // Always store number in JWT
+  const token = jwt.sign(
+    { sub: user.id, orgId: orgIdInt, role: user.privileges?.role || 'admin' },
+    process.env.JWT_SECRET!,
+    { expiresIn: "24h" }
+  );
+
+  // Set cookie with proper configuration for Replit iframe environment
+  const isProduction = process.env.NODE_ENV === "production";
+  res.setHeader("Set-Cookie", cookie.serialize("vs_session", token, {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: false, // set true when behind https
-    path: '/',
-    maxAge: 24 * 60 * 60 * 1000,
-  })
-  return res.json({ ok: true })
-})
+    secure: isProduction, // true in production for HTTPS
+    sameSite: isProduction ? "none" : "lax", // 'none' for iframe, 'lax' for local dev
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+  }));
+  res.json({ ok: true, orgId: orgIdInt, plan: 'scale' });
+});
 
-router.post('/logout', (_req: Request, res: Response) => {
-  res.clearCookie('vsid', { path: '/' })
-  res.json({ ok: true })
-})
+authRouter.post("/logout", async (_req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
+  res.setHeader("Set-Cookie", cookie.serialize("vs_session", "", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+    maxAge: 0, // Expire immediately
+  }));
+  res.json({ ok: true });
+});
 
-router.get('/me', (req: Request, res: Response) => {
-  const raw = req.cookies?.vsid
-  if (!raw) return res.status(401).json({ ok: false })
+authRouter.get("/me", async (req, res) => {
   try {
-    const decoded = jwt.verify(raw, process.env.JWT_SECRET!) as { sub: number }
-    if (decoded?.sub !== DEMO_USER.id) return res.status(401).json({ ok: false })
-    return res.json({ id: DEMO_USER.id, email: DEMO_USER.email })
-  } catch {
-    return res.status(401).json({ ok: false })
-  }
-})
+    // Get token from cookie or Authorization header
+    let token = req.cookies?.vs_session;
+    if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+      token = req.headers.authorization.substring(7);
+    }
 
-export default router
+    if (!token) {
+      return res.status(401).json({ ok: false, user: null });
+    }
+
+    // Verify JWT
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const orgId = String(decoded.orgId);
+
+    // Get org and entitlements
+    const [org] = await sql`
+      SELECT id::text AS id, name, plan_id FROM organizations WHERE id = ${orgId}::text
+    `;
+    const ent = await sql`
+      SELECT feature_id, enabled, COALESCE(value, 'enabled') AS value
+      FROM entitlements
+      WHERE org_id = ${orgId}::text
+      ORDER BY feature_id
+    `;
+    
+    res.status(200).json({ 
+      ok: true, 
+      user: {
+        id: decoded.sub,
+        orgId: decoded.orgId, 
+        role: decoded.role || 'admin'
+      },
+      org,
+      plan: org?.plan_id ?? null,
+      entitlements: ent
+    });
+  } catch (error) {
+    console.error("JWT verification failed:", error);
+    res.status(401).json({ ok: false, user: null });
+  }
+});
+
+authRouter.get("/session", async (req, res) => {
+  const a = (req as any).auth;
+  res.json({ authenticated: !!a, orgId: a?.orgId ?? null, userId: a?.userId ?? null });
+});

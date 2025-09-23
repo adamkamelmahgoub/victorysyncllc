@@ -57,4 +57,4 @@ function expressRawBody(req: any, res: any, next: any) {
   });
 }
 
-export const billingRouter = router;
+export default router;
