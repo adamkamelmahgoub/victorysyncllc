@@ -1,157 +1,66 @@
-import { useState } from "react";
-import { Link, useLocation } from "wouter";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { loginSchema } from "../../../shared/schema";
-import { apiRequest } from "@/lib/queryClient";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Eye, EyeOff } from "lucide-react";
-import { z } from "zod";
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import { FormEvent, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../lib/api';
 
 export default function Login() {
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('demo@victorysync.com');
+  const [password, setPassword] = useState('VictoryScale123!');
+  const [err, setErr] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const navigate = useNavigate();
 
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
+  const loginMut = useMutation({
+    mutationFn: async (body: { email: string; password: string }) =>
+      api('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['/api/session/me'] });
+      navigate('/customer-dashboard');
     },
+    onError: (e: any) => setErr(e?.message || 'Login failed'),
   });
 
-  const loginMutation = useMutation({
-    mutationFn: async (formData: LoginFormData) => {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Important for cookies
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Login failed' }));
-        throw new Error(errorData.error || 'Login failed');
-      }
-
-      const data = await response.json();
-
-      if (data.ok) {
-        // Cookie is automatically set by server, just navigate
-        setLocation('/customer-dashboard');
-      } else {
-        throw new Error('Login failed');
-      }
-    },
-    onSuccess: () => {
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully signed in to VictorySync.",
-      });
-    },
-    onError: (error: any) => {
-      console.error('Login error:', error);
-      toast({
-        title: "Sign in failed",
-        description: error.message || "Please check your credentials and try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const onSubmit = (data: LoginFormData) => {
-    loginMutation.mutate(data);
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setErr(null);
+    loginMut.mutate({ email, password });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-victory-purple">
-            Welcome Back
-          </CardTitle>
-          <CardDescription>
-            Sign in to your VictorySync account
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                {...form.register("email")}
-                className={form.formState.errors.email ? "border-red-500" : ""}
-              />
-              {form.formState.errors.email && (
-                <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  {...form.register("password")}
-                  className={form.formState.errors.password ? "border-red-500 pr-10" : "pr-10"}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {form.formState.errors.password && (
-                <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
-              )}
-            </div>
-
-            {loginMutation.error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {(loginMutation.error as any)?.message || "Sign in failed. Please try again."}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <Button 
-              type="submit" 
-              className="w-full bg-[#6950f0] hover:bg-[#5d4cdb] text-white"
-              disabled={loginMutation.isPending}
-            >
-              {loginMutation.isPending ? "Signing In..." : "Sign In"}
-            </Button>
-          </form>
-
-
-
-
-
-          <div className="mt-4 text-center">
-            <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
-              ← Back to home
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 border rounded-xl p-6 shadow-sm">
+        <h1 className="text-xl font-semibold">Sign in</h1>
+        {err && <div className="text-red-600 text-sm">{err}</div>}
+        <div className="space-y-1">
+          <label className="text-sm">Email</label>
+          <input
+            className="w-full border rounded-md px-3 py-2"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
+            required
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-sm">Password</label>
+          <input
+            className="w-full border rounded-md px-3 py-2"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loginMut.isPending}
+          className="w-full bg-indigo-600 text-white rounded-md py-2 font-medium hover:bg-indigo-700 disabled:opacity-70"
+        >
+          {loginMut.isPending ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
     </div>
   );
 }

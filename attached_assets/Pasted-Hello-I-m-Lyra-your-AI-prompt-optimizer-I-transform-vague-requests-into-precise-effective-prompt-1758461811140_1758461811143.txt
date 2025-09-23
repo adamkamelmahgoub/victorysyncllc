@@ -1,0 +1,394 @@
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better
+
+**Your Optimized Prompt:**
+
+You’re a senior staff engineer working inside my **Replit** project (Node 20 + Express + TypeScript backend, Vite + React frontend, React Router + React Query). The current bug: after logging in, the UI says “Authorized” then bounces back to `/login`. Fix the full auth flow so it’s rock-solid in **Replit previews** (cross-site cookies), without changing `.replit` or `replit.nix`.
+
+### Constraints
+
+* Do **not** modify `.replit` or `replit.nix`.
+* Replit previews run under `https://*.replit.dev` / `https://*.repl.co` and behave as **cross-site**.
+* Cookies must be `SameSite=None; Secure` and Express must `trust proxy`.
+* Frontend must call the API with `credentials: 'include'`.
+* Provide full, copy-pasteable file contents (no ellipses). Keep TypeScript types.
+
+### Deliverables
+
+Implement the following files (create or replace) exactly. After this, logging in must persist and protected routes must render (no bounce).
+
+---
+
+## SERVER
+
+### 1) `server/index.ts`
+
+```ts
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import routes from './routes';
+
+const app = express();
+
+// CRITICAL for Secure cookies behind Replit's HTTPS proxy
+app.set('trust proxy', 1);
+
+app.use(express.json());
+app.use(cookieParser());
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // same-origin, curl, etc.
+      // Allow Replit preview hosts in dev
+      if (/^https:\/\/.*\.repl\.co$/.test(origin) || /^https:\/\/.*\.replit\.dev$/.test(origin)) {
+        return cb(null, true);
+      }
+      // Allow an explicit front-end URL if provided
+      if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
+        return cb(null, true);
+      }
+      return cb(new Error(`CORS blocked: ${origin}`));
+    },
+    credentials: true,
+  })
+);
+
+// Mount all API routes under /api
+app.use('/api', routes);
+
+const PORT = Number(process.env.PORT || 5000);
+app.listen(PORT, () => {
+  console.log(`VictorySync API running on :${PORT}`);
+});
+```
+
+### 2) `server/routes/index.ts`
+
+```ts
+import { Router } from 'express';
+import { authRouter } from './auth';
+import { sessionRouter } from './session';
+// If you have more routers, import & mount them here too.
+
+const routes = Router();
+
+routes.use('/auth', authRouter);
+routes.use('/session', sessionRouter);
+
+// Example future mounts:
+// routes.use('/billing', billingRouter);
+// routes.use('/plans', plansRouter);
+
+export default routes;
+```
+
+### 3) `server/routes/session.ts`
+
+```ts
+import { Router, type Request, type Response, type NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+
+export const sessionRouter = Router();
+
+export type JWTPayload = {
+  sub: string | number;
+  orgId?: string | number;
+  role?: string;
+  email?: string;
+};
+
+export const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-please-set-JWT_SECRET';
+
+export const baseCookieOptions = {
+  httpOnly: true,
+  sameSite: 'none' as const, // cross-site cookies (Replit preview)
+  secure: true,              // HTTPS only; Replit preview is HTTPS
+  path: '/',                 // send to all paths
+  // Do NOT set "domain" in Replit previews
+};
+
+export function authRequired(req: Request, res: Response, next: NextFunction) {
+  try {
+    const fromCookie = req.cookies?.vs_session as string | undefined;
+    const fromHeader = (req.get('authorization') || '').replace(/^Bearer\s+/i, '') || undefined;
+    const token = fromCookie || fromHeader;
+    if (!token) return res.status(401).json({ error: 'Missing token' });
+
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    (req as any).user = decoded;
+    return next();
+  } catch {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+export function meHandler(req: Request, res: Response) {
+  return res.json({ user: (req as any).user ?? null });
+}
+
+// /api/session/me — canonical "who am I?" endpoint
+sessionRouter.get('/me', authRequired, meHandler);
+
+// /api/session/logout — clears cookie using the SAME options used to set it
+sessionRouter.post('/logout', (req, res) => {
+  res.clearCookie('vs_session', baseCookieOptions);
+  return res.json({ ok: true });
+});
+
+// Dev-only helper (optional): see cookies server-side
+// sessionRouter.get('/debug/cookies', (req, res) => res.json({ cookies: req.cookies, hasAuth: !!req.cookies?.vs_session }));
+```
+
+### 4) `server/routes/auth.ts`
+
+```ts
+import { Router } from 'express';
+import jwt from 'jsonwebtoken';
+import { authRequired, baseCookieOptions, JWT_SECRET, meHandler } from './session';
+
+export const authRouter = Router();
+
+// POST /api/auth/login — demo login; swap for real DB lookup later
+authRouter.post('/login', async (req, res) => {
+  const { email, password } = (req.body || {}) as { email?: string; password?: string };
+
+  const valid =
+    (email === 'demo@victorysync.com' && password === 'VictoryScale123!') ||
+    (email === 'admin@victorysync.com' && password === 'VictoryScale123!');
+
+  if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
+
+  const payload = {
+    sub: 1,
+    email,
+    orgId: 'demo-scale',
+    role: 'super_admin',
+  };
+
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+
+  res.cookie('vs_session', token, {
+    ...baseCookieOptions,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  return res.json({ ok: true });
+});
+
+// GET /api/auth/me — alias to /api/session/me so either path works
+authRouter.get('/me', authRequired, meHandler);
+```
+
+---
+
+## FRONTEND
+
+### 5) `client/src/lib/api.ts`
+
+```ts
+export async function api<T = any>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`/api${path}`, {
+    credentials: 'include', // REQUIRED so cookie is sent/received
+    headers: { 'Content-Type': 'application/json' },
+    ...init,
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+```
+
+### 6) `client/src/hooks/useMe.ts`
+
+```ts
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../lib/api';
+
+export function useMe() {
+  return useQuery({
+    queryKey: ['/api/session/me'], // keep path+key in sync
+    queryFn: () => api('/session/me'),
+    select: (d) => d?.user ?? null, // never undefined
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+```
+
+### 7) `client/src/routes/PrivateRoute.tsx`
+
+```tsx
+import { Navigate, Outlet } from 'react-router-dom';
+import { useMe } from '../hooks/useMe';
+
+export default function PrivateRoute() {
+  const { data: user, isLoading } = useMe();
+
+  if (isLoading) return null; // or a spinner
+  if (!user) return <Navigate to="/login" replace />;
+
+  return <Outlet />;
+}
+```
+
+### 8) `client/src/pages/Login.tsx`
+
+```tsx
+import { FormEvent, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../lib/api';
+
+export default function Login() {
+  const [email, setEmail] = useState('demo@victorysync.com');
+  const [password, setPassword] = useState('VictoryScale123!');
+  const [err, setErr] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+
+  const loginMut = useMutation({
+    mutationFn: async (body: { email: string; password: string }) =>
+      api('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['/api/session/me'] });
+      navigate('/customer-dashboard');
+    },
+    onError: (e: any) => setErr(e?.message || 'Login failed'),
+  });
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setErr(null);
+    loginMut.mutate({ email, password });
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 border rounded-xl p-6 shadow-sm">
+        <h1 className="text-xl font-semibold">Sign in</h1>
+        {err && <div className="text-red-600 text-sm">{err}</div>}
+        <div className="space-y-1">
+          <label className="text-sm">Email</label>
+          <input
+            className="w-full border rounded-md px-3 py-2"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
+            required
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-sm">Password</label>
+          <input
+            className="w-full border rounded-md px-3 py-2"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loginMut.isPending}
+          className="w-full bg-indigo-600 text-white rounded-md py-2 font-medium hover:bg-indigo-700 disabled:opacity-70"
+        >
+          {loginMut.isPending ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
+    </div>
+  );
+}
+```
+
+### 9) `client/src/main.tsx`
+
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import PrivateRoute from './routes/PrivateRoute';
+import Login from './pages/Login';
+
+const qc = new QueryClient();
+
+function CustomerDashboard() {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-semibold">Customer Dashboard</h1>
+      <p className="text-gray-600 mt-2">You are signed in. This route is protected.</p>
+    </div>
+  );
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      {/* Protected area */}
+      <Route element={<PrivateRoute />}>
+        <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+      </Route>
+      {/* Default redirect */}
+      <Route path="*" element={<Navigate to="/customer-dashboard" replace />} />
+    </Routes>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <QueryClientProvider client={qc}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </QueryClientProvider>
+  </React.StrictMode>
+);
+```
+
+---
+
+### Environment (Replit → Secrets)
+
+* `JWT_SECRET` — long random string (keep stable)
+* (Optional) `FRONTEND_URL` — if you have a single stable frontend origin
+
+---
+
+### Acceptance Tests (Claude should verify quickly)
+
+**cURL (server-only proof):**
+
+```bash
+# Login -> sets cookie file
+curl -i -X POST "$HOST/api/auth/login" \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"demo@victorysync.com","password":"VictoryScale123!"}' \
+  -c cookie.txt
+
+# Confirm session
+curl -i "$HOST/api/session/me" -b cookie.txt
+```
+
+**Browser (Replit preview):**
+
+1. Open DevTools → Network → `POST /api/auth/login` → Response headers must include
+   `Set-Cookie: vs_session=...; HttpOnly; Secure; SameSite=None; Path=/`
+2. Subsequent `GET /api/session/me` returns 200 JSON `{ user: ... }`.
+3. Router shows `/customer-dashboard` and persists across refresh.
+
+---
+
+### Why this works
+
+* `app.set('trust proxy', 1)` ensures Express allows `Secure` cookies through the Replit reverse proxy.
+* CORS is configured for Replit preview origins with `credentials: true`.
+* Cookie is `httpOnly`, `Secure`, `SameSite=None` so the browser stores/sends it in cross-site iframes/previews.
+* Frontend always requests with `credentials: 'include'` and uses a **consistent** `/api/session/me` path and query key, preventing the “undefined query data” + auto-logout loop.
+
+Return only any minimal path adjustments necessary if my folder names differ; otherwise use these exact file contents.
