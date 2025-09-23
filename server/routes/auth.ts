@@ -1,82 +1,105 @@
+
 import { Router } from "express";
 import jwt from "jsonwebtoken";
-import { authRequired, baseCookieOptions, JWT_SECRET, meHandler } from './session';
+import cookieParser from 'cookie-parser';
+import { db } from '../db.js';
 
 export const authRouter = Router();
 
-// POST /api/auth/login — demo login; swap for real DB lookup later
-authRouter.post('/login', async (req, res) => {
-  const { email, password } = (req.body || {}) as { email?: string; password?: string };
+const JWT_SECRET = process.env.JWT_SECRET ?? 'dev-secret-change-me';
+const COOKIE_NAME = 'vs_token';
 
+function signToken(payload: object) {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+}
+
+function readToken(req: any) {
+  const raw = req.cookies?.[COOKIE_NAME];
+  if (!raw) return null;
+  try {
+    return jwt.verify(raw, JWT_SECRET);
+  } catch {
+    return null;
+  }
+}
+
+async function fakeVerifyUser(email: string, password: string) {
+  // Demo login logic
   const valid =
     (email === 'demo@victorysync.com' && password === 'VictoryScale123!') ||
     (email === 'admin@victorysync.com' && password === 'VictoryScale123!');
 
-  if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
+  if (!valid) return null;
 
-  const payload = {
-    sub: 1,
+  return {
+    id: 1,
     email,
-    orgId: 'demo-scale',
     role: 'super_admin',
+    orgId: 'demo-scale',
   };
+}
 
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+async function fakeLoadUserWithEntitlements(userId: number) {
+  return {
+    id: userId,
+    email: 'demo@victorysync.com',
+    role: 'super_admin',
+    orgId: 'demo-scale',
+    org: { id: 'demo-scale', name: 'Demo Organization', plan_id: 'scale' },
+    plan: 'scale',
+    entitlements: [
+      { feature_id: 'ai_automation', enabled: true, value: 'enabled' },
+      { feature_id: 'advanced_reporting', enabled: true, value: 'enabled' },
+      { feature_id: 'priority_support', enabled: true, value: 'enabled' }
+    ]
+  };
+}
 
-  res.cookie('vs_session', token, {
-    ...baseCookieOptions,
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+// POST /api/auth/login
+authRouter.post('/login', async (req, res) => {
+  const { email, password } = req.body ?? {};
+  
+  const user = await fakeVerifyUser(email, password);
+  if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+
+  const token = signToken({
+    sub: user.id,
+    email: user.email,
+    role: user.role,
+    orgId: user.orgId,
   });
 
-  return res.json({ ok: true });
+  res.cookie(COOKIE_NAME, token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: false,
+    path: '/',
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  });
+  
+  res.json({ ok: true });
 });
 
-// GET /api/auth/me — alias to /api/session/me so either path works
-authRouter.get("/me", async (req, res) => {
-  try {
-    // Get token from cookie or Authorization header
-    let token = req.cookies?.vs_session;
-    if (!token && req.headers.authorization?.startsWith('Bearer ')) {
-      token = req.headers.authorization.substring(7);
-    }
+// GET /api/auth/me
+authRouter.get('/me', async (req, res) => {
+  const claims = readToken(req);
+  if (!claims) return res.status(401).json({ message: 'Unauthorized' });
 
-    if (!token) {
-      return res.status(401).json({ ok: false, user: null });
-    }
+  const user = await fakeLoadUserWithEntitlements(claims.sub);
+  res.json({ ok: true, user, org: user.org, plan: user.plan, entitlements: user.entitlements });
+});
 
-    // Verify JWT
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    const orgId = String(decoded.orgId);
-
-    // Get org and entitlements
-    const [org] = await sql`
-      SELECT id::text AS id, name, plan_id FROM organizations WHERE id = ${orgId}::text
-    `;
-    const ent = await sql`
-      SELECT feature_id, enabled, COALESCE(value, 'enabled') AS value
-      FROM entitlements
-      WHERE org_id = ${orgId}::text
-      ORDER BY feature_id
-    `;
-    
-    res.status(200).json({ 
-      ok: true, 
-      user: {
-        id: decoded.sub,
-        orgId: decoded.orgId, 
-        role: decoded.role || 'admin'
-      },
-      org,
-      plan: org?.plan_id ?? null,
-      entitlements: ent
-    });
-  } catch (error) {
-    console.error("JWT verification failed:", error);
-    res.status(401).json({ ok: false, user: null });
-  }
+// POST /api/auth/logout
+authRouter.post('/logout', (_req, res) => {
+  res.clearCookie(COOKIE_NAME, { path: '/' });
+  res.json({ ok: true });
 });
 
 authRouter.get("/session", async (req, res) => {
-  const a = (req as any).auth;
-  res.json({ authenticated: !!a, orgId: a?.orgId ?? null, userId: a?.userId ?? null });
+  const claims = readToken(req);
+  res.json({ 
+    authenticated: !!claims, 
+    orgId: claims?.orgId ?? null, 
+    userId: claims?.sub ?? null 
+  });
 });
