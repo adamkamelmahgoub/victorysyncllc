@@ -1,0 +1,251 @@
+Got it — you’ve built the SPA and the server is now serving `/client/dist`, but the page is blank and the console shows:
+
+> Cannot read properties of null (reading 'useEffect')
+
+That error almost always means the bundle is trying to read `React.useEffect` but `React` resolved to `null` at runtime. This happens when your React import style and your TS/Vite config are out of sync (or multiple React copies / version mismatch). Here’s a straight-through fix that restores your original front-end to render normally.
+
+---
+
+# 1) Lock React to one version and clean install
+
+In `client/package.json` set React to stable and matching versions:
+
+```json
+{
+  "dependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    // … the rest unchanged
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 5173"
+  }
+}
+```
+
+Then in the Replit shell:
+
+```bash
+# from repo root
+rm -rf client/node_modules client/package-lock.json client/pnpm-lock.yaml
+npm --prefix client install
+```
+
+---
+
+# 2) Fix TypeScript/JSX settings (prevents “JSX namespace” & null React)
+
+In **client/tsconfig.json** replace the whole file with:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "types": ["vite/client", "react", "react-dom"],
+    "allowJs": false,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {}
+  },
+  "include": ["src", "vite-env.d.ts"],
+  "references": []
+}
+```
+
+> Key bits: `jsx: "react-jsx"`, add `types` for React and `esModuleInterop`/`allowSyntheticDefaultImports` so `import React from 'react'` works when it exists. That removes the scenario where `React` compiles to `null` and then `React.useEffect` explodes.
+
+---
+
+# 3) Make your entry files canonical
+
+### client/index.html
+
+Ensure it has a mount point and starts your app:
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VictorySync</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+### client/src/main.tsx
+
+Use React 18 render API; don’t grab `React.useEffect` anywhere:
+
+```tsx
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+
+const el = document.getElementById('root');
+if (!el) {
+  throw new Error('Root element #root not found');
+}
+createRoot(el).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
+```
+
+### client/src/App.tsx
+
+Return your existing home layout (or at least something visible) to verify render:
+
+```tsx
+export default function App() {
+  return (
+    <div style={{ padding: 24 }}>
+      <h1>VictorySync</h1>
+      <p>SPA is rendering. Replace this with your original home component/layout.</p>
+    </div>
+  );
+}
+```
+
+> After this is working, swap that `<div>` for your real home page component(s).
+
+---
+
+# 4) Update components that still use `React.useEffect`
+
+Search the client for any usage like:
+
+```tsx
+React.useEffect(...)
+```
+
+Change to named imports:
+
+```tsx
+import { useEffect, useState, useMemo, useRef } from 'react';
+// …
+useEffect(() => { /* … */ }, []);
+```
+
+This avoids depending on a `default` React object entirely.
+
+---
+
+# 5) Ensure Vite base is correct and you’re bundling React inside
+
+**client/vite.config.ts** (or `.js`) should be minimal:
+
+```ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  base: '/',                 // important for Replit static serve
+  build: {
+    sourcemap: false,
+    outDir: 'dist',
+    assetsDir: 'assets'
+  },
+  server: {
+    port: 5173
+  }
+});
+```
+
+> Don’t mark `react` as external or alias it to anything odd; let Vite bundle it.
+
+---
+
+# 6) Rebuild the SPA, then serve from the server
+
+```bash
+npm --prefix client run build
+```
+
+You should get `client/dist/index.html` + assets.
+
+Your server log already shows:
+
+```
+[web] Serving built SPA from /home/runner/workspace/client/dist
+```
+
+If you haven’t already, make sure the server’s SPA handler points to that path only when it exists (sounds like it does now).
+
+---
+
+# 7) One more thing that can blank a page
+
+If you previously edited `src/pages/Login.tsx` and added a second `export default function Login()` or a wrong return type, it will compile but crash. Ensure each page exports a single valid React component, e.g.:
+
+```tsx
+import { useEffect, useState } from 'react';
+
+export default function Login() {
+  const [email, setEmail] = useState('');
+  useEffect(() => { /* optional */ }, []);
+  return (
+    <main>
+      <h2>Sign in</h2>
+      {/* your form here */}
+    </main>
+  );
+}
+```
+
+No duplicate default exports, no `JSX.Element` type without React types configured.
+
+---
+
+# 8) Clean browser cache and test
+
+* Hard refresh (Ctrl/Cmd+Shift+R).
+* Open DevTools → Network → Disable cache → reload.
+* If you still see *any* error, copy the first red error line from Console; it will point to a specific source module (now that sourcemaps are off, the stack should still show the module id). Fix that module.
+
+---
+
+## Why this fixes the black screen
+
+* Matching `react`/`react-dom` and correct TS JSX settings prevent the “React is null” situation.
+* Using named hook imports (`useEffect`) avoids relying on a `default` React object.
+* Vite bundles React into the production build so the static SPA has everything it needs at runtime.
+* The server is now serving the built `client/dist` (your “original front end”), not the dev placeholder.
+
+---
+
+### Quick checklist (copy/paste worklist)
+
+1. Set React/ReactDOM to `18.2.0` in `client/package.json`.
+2. `npm --prefix client install`.
+3. Replace `client/tsconfig.json` with the config above.
+4. Ensure `client/index.html`, `src/main.tsx`, `src/App.tsx` match the snippets.
+5. Replace any `React.useEffect` with named hook imports.
+6. Use the Vite config shown; no externals for react.
+7. `npm --prefix client run build`.
+8. Reload the Replit preview — you should see your front-end again.
+
+If anything still blanks, tell me the very first red error shown in the browser console (exact text), and I’ll pinpoint the next 1–2 line fix.
