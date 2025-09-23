@@ -31,3 +31,8 @@ export function Toaster() {
     </ToastProvider>
   )
 }
+import React from 'react';
+
+export function Toaster() {
+  return <div id="toaster" />;
+}

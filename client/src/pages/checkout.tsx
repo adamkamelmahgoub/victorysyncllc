@@ -361,3 +361,19 @@ export default function Checkout() {
     </div>
   );
 }
+import React from 'react';
+
+export default function Checkout() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-6">Checkout</h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Complete your purchase
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
