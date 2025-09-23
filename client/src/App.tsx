@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Switch, Route } from "wouter";
+import { Router, Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -51,30 +51,32 @@ function Router() {
       <Navigation onCartClick={openCartModal} />
 
       <main className="flex-1">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/services" component={Services} />
-          <Route path="/pricing" component={Pricing} />
-          <Route path="/about" component={About} />
-          <Route path="/contact" component={Contact} />
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/dashboard" component={CustomerDashboard} />
-          <Route path="/customer-dashboard" component={CustomerDashboard} />
-          <Route path="/register" component={Register} />
-          <Route path="/signup" component={Register} />
-          <Route path="/login" component={Login} />
+        <Router>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/services" component={Services} />
+            <Route path="/pricing" component={Pricing} />
+            <Route path="/about" component={About} />
+            <Route path="/contact" component={Contact} />
+            <Route path="/checkout" component={Checkout} />
+            <Route path="/dashboard" component={CustomerDashboard} />
+            <Route path="/customer-dashboard" component={CustomerDashboard} />
+            <Route path="/register" component={Register} />
+            <Route path="/signup" component={Register} />
+            <Route path="/login" component={Login} />
 
-          {/* Footer Pages */}
-          <Route path="/about-us" component={AboutUs} />
-          <Route path="/careers" component={Careers} />
-          <Route path="/blog" component={Blog} />
-          <Route path="/help-center" component={HelpCenter} />
-          <Route path="/docs" component={Documentation} />
-          <Route path="/privacy-policy" component={PrivacyPolicy} />
-          <Route path="/terms" component={TermsOfService} />
+            {/* Footer Pages */}
+            <Route path="/about-us" component={AboutUs} />
+            <Route path="/careers" component={Careers} />
+            <Route path="/blog" component={Blog} />
+            <Route path="/help-center" component={HelpCenter} />
+            <Route path="/docs" component={Documentation} />
+            <Route path="/privacy-policy" component={PrivacyPolicy} />
+            <Route path="/terms" component={TermsOfService} />
 
-          <Route component={NotFound} />
-        </Switch>
+            <Route component={NotFound} />
+          </Switch>
+        </Router>
       </main>
 
       <Footer />
