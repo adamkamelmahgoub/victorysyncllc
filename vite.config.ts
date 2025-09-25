@@ -2,13 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
-resolve: {
-  alias: {
-    "@": resolve(__dirname, "client/src"),
-    "@shared": resolve(__dirname, "shared"),
-    "@assets": resolve(__dirname, "attached_assets"),
-  }
-},
 
 export default defineConfig({
   plugins: [
@@ -23,28 +16,20 @@ export default defineConfig({
         ]
       : []),
   ],
-  export default defineConfig({
-  plugins: [ … ],
-  //  ▼ keep this ONE resolve block
   resolve: {
     alias: {
-      "@":        resolve(__dirname, "client/src"),
-      "@shared":  resolve(__dirname, "shared"),        // ← this is the line you just added
-      "@assets":  resolve(__dirname, "attached_assets")
+      "@": resolve(__dirname, "client/src"),
+      "@shared": resolve(__dirname, "shared"),
+      "@assets": resolve(__dirname, "attached_assets"),
     }
   },
-
-  // rest of config (root, build, server …)
-});
-
-  root: path.resolve(import.meta.dirname, "client"),
+  root: resolve(__dirname, "client"),
   build: {
-  outDir: resolve(__dirname, "client/dist"), // whatever you already use
-  emptyOutDir: true,
-  rollupOptions: {
-    external: [],
-  },
-},
+    outDir: resolve(__dirname, "client/dist"),
+    emptyOutDir: true,
+    rollupOptions: {
+      external: [],
+    },
   },
   server: {
     host: '0.0.0.0',
