@@ -1,0 +1,172 @@
+# Explanation
+
+You’re seeing a basic placeholder in Replit. To instantly show the **exact same site that’s live at `https://victorysync.com`** inside Replit’s Preview, the fastest and most reliable method is to run a tiny **reverse-proxy server** in your Replit that forwards every request to the live site. This avoids any local build issues and renders the deployed site pixel-for-pixel.
+
+Below is a **copy-paste “master prompt” for Claude (inside Replit’s Assistant)**. It tells Claude exactly what to create/modify and includes all code. When it finishes, your Replit Preview should display your original deployed website.
+
+---
+
+# Claude — Paste-In Prompt (for Replit Assistant)
+
+````
+You are a senior Replit full-stack developer. Fix my Replit project so the Preview shows my already deployed website at https://victorysync.com exactly. Do NOT refactor my front-end right now; just add a reverse proxy that forwards all routes to the live site. Make it production-safe for Replit, and don’t delete any existing files unless explicitly stated.
+
+## Tasks
+1) Install deps:
+   - express
+   - http-proxy-middleware
+   - compression
+   - morgan
+
+2) Create a new file at server/index.js with the EXACT code below.
+
+3) Update package.json:
+   - Keep everything else intact.
+   - Add a script:  "proxy": "node server/index.js"
+   - Ensure "start" also points to the proxy for deployment:  "start": "node server/index.js"
+   - Do not remove any of my existing scripts; just add these two (update start only if it already existed and I am using the proxy).
+
+4) Update `.replit` so the Run button executes: `npm run proxy`
+   - If `.replit` doesn’t exist, create it with the minimal config below.
+
+5) Run the project and verify that the Replit Preview renders the site from https://victorysync.com. Make sure redirects keep me on the proxy domain, and strip headers that would block display (CSP/X-Frame-Options).
+
+6) Provide a short verification note: homepage loads, internal links work, assets load (CSS/JS/images), console shows no CSP/X-Frame errors.
+
+---
+
+### server/index.js  (CREATE/REPLACE WITH THIS EXACT CONTENT)
+```js
+// server/index.js
+const express = require('express');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+const compression = require('compression');
+const morgan = require('morgan');
+
+const app = express();
+
+// Config
+const PORT = process.env.PORT || 3000;
+// Change if your live site uses www:
+const TARGET = process.env.TARGET || 'https://victorysync.com';
+
+// Basic hardening + gzip + logs
+app.disable('x-powered-by');
+app.use(compression());
+app.use(morgan('tiny'));
+
+// Healthcheck
+app.get('/__health', (_req, res) => res.status(200).send('ok'));
+
+// Reverse proxy ALL routes -> live site
+app.use(
+  '/',
+  createProxyMiddleware({
+    target: TARGET,
+    changeOrigin: true,
+    secure: true,
+    ws: true,
+    followRedirects: true,
+    // Keep cookies/host sane
+    onProxyReq: (proxyReq) => {
+      proxyReq.setHeader('Host', new URL(TARGET).host);
+      proxyReq.setHeader('Origin', TARGET);
+    },
+    // Strip or adjust headers that can block rendering through a proxy
+    onProxyRes: (proxyRes, req, res) => {
+      const drop = [
+        'content-security-policy',
+        'x-frame-options',
+        'x-content-type-options',
+        'cross-origin-embedder-policy',
+        'cross-origin-opener-policy',
+        'cross-origin-resource-policy',
+        'referrer-policy'
+      ];
+      drop.forEach((h) => {
+        if (proxyRes.headers[h]) delete proxyRes.headers[h];
+        if (proxyRes.headers[h.toUpperCase()]) delete proxyRes.headers[h.toUpperCase()];
+      });
+
+      // Keep user on the proxy when the origin issues absolute redirects
+      const loc = proxyRes.headers['location'] || proxyRes.headers['Location'];
+      if (loc && loc.startsWith(TARGET)) {
+        const newLoc = loc.replace(TARGET, '/');
+        proxyRes.headers['location'] = newLoc;
+        proxyRes.headers['Location'] = newLoc;
+      }
+    },
+    // Preserve original path/query
+    pathRewrite: (path) => path,
+    // Timeouts to avoid hanging
+    proxyTimeout: 30_000,
+    timeout: 30_000,
+  })
+);
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`[proxy] Forwarding http://localhost:${PORT} -> ${TARGET}`);
+});
+````
+
+### package.json (EDIT ONLY THE "scripts" AND ADD DEPS)
+
+* Add or merge the following. Do NOT remove my existing fields.
+
+```json
+{
+  "scripts": {
+    "proxy": "node server/index.js",
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.19.2",
+    "http-proxy-middleware": "^3.0.0",
+    "morgan": "^1.10.0"
+  }
+}
+```
+
+> Keep all my other deps and scripts. If a field already exists, merge without breaking anything.
+
+### .replit  (CREATE OR UPDATE)
+
+If the file doesn’t exist, create it like this. If it exists, just ensure `run` matches.
+
+```
+run = "npm run proxy"
+```
+
+### Commands to run (Assistant: execute in the Replit Shell)
+
+1. `npm i express http-proxy-middleware compression morgan`
+2. Ensure the files are saved.
+3. Click the green Run button (or `npm run proxy`) and open the Preview.
+
+### Validation checklist
+
+* The preview should render the exact live VictorySync site from [https://victorysync.com](https://victorysync.com).
+* Navigating to internal pages stays inside the Replit URL (thanks to redirect rewrite).
+* No “Refused to connect / X-Frame-Options / CSP” errors in the DevTools console.
+* `/__health` returns `ok`.
+
+### Notes
+
+* This does NOT modify my live site. It only mirrors it through a proxy so my Replit shows the deployed website exactly.
+* Leave my existing React/Vite app untouched; we’re just adding a proxy so I can see the live site immediately.
+
+```
+
+---
+
+# Instructions
+1) Open **Replit → Assistant** and paste the prompt above verbatim.  
+2) Let it run installs, create `server/index.js`, update `package.json` and `.replit`, then press **Run**.  
+3) The Preview should now display the **live VictorySync site** exactly.
+
+# Warnings
+- We intentionally strip CSP/X-Frame headers in the proxy response to prevent the browser from blocking content inside Replit’s domain. This is fine for previewing, but don’t ship this header-stripping proxy to production as your public endpoint.  
+- If your live site redirects to `www.victorysync.com`, set `TARGET=https://www.victorysync.com` in Replit Secrets and restart.
+```
