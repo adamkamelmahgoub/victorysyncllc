@@ -4,7 +4,7 @@ import Stripe from "stripe";
 import { storage } from "./storage";
 import { registerUser, loginUser, getCurrentUser, authenticateJWT, generateJWT, requireAdmin, requireSuperAdmin, logAudit, type AuthenticatedRequest } from "./publicAuth";
 import { initializeAdminUser } from "./initAdmin";
-import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
+import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "../shared/schema";
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
