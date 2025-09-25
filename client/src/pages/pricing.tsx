@@ -13,7 +13,7 @@ const scrollToTop = () => {
 export default function Pricing() {
   const { addItem } = useCart();
 
-  const { data: packages, isLoading } = useQuery({
+  const { data: packages, isLoading } = useQuery<any[]>({
     queryKey: ['/api/packages'],
   });
 
