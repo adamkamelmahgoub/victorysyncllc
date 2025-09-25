@@ -20,6 +20,7 @@ import Contact from "@/pages/contact";
 import Checkout from "@/pages/checkout";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
+import CustomerDashboard from "@/pages/customer-dashboard";
 import NotFound from "@/pages/not-found";
 
 // Footer Pages
@@ -60,6 +61,7 @@ function Router() {
           <Route path="/register" component={Register} />
           <Route path="/signup" component={Register} />
           <Route path="/login" component={Login} />
+          <Route path="/dashboard" component={CustomerDashboard} />
 
           {/* Footer Pages */}
           <Route path="/about-us" component={AboutUs} />
