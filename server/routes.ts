@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
-import { registerUser, loginUser, getCurrentUser, authenticateJWT, generateJWT, requireAdmin, requireSuperAdmin, logAudit, type AuthenticatedRequest } from "./publicAuth";
+import { registerUser, loginUser, getCurrentUser, authenticateJWT, generateJWT, requireAdmin, requireSuperAdmin, type AuthenticatedRequest } from "./publicAuth";
 import { initializeAdminUser } from "./initAdmin";
 import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema } from "../shared/schema";
 import { z } from "zod";
