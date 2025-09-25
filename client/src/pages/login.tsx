@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
-import { Eye, EyeOff, Shield, User } from "lucide-react";
+import { Eye, EyeOff, User } from "lucide-react";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -19,7 +19,6 @@ export default function Login() {
   // Get redirect URL from query params
   const urlParams = new URLSearchParams(window.location.search);
   const redirectTo = urlParams.get('redirect') || '/dashboard';
-  const loginType = urlParams.get('type') || 'customer';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,37 +53,8 @@ export default function Login() {
         description: "Logged in successfully",
       });
 
-      // Role-based redirect logic
-      if (redirectTo === '/admin') {
-        if (isAdmin) {
-          window.location.href = '/admin';
-        } else {
-          toast({
-            title: "Access Denied",
-            description: "Admin privileges required",
-            variant: "destructive"
-          });
-          window.location.href = '/dashboard';
-        }
-      } else if (redirectTo === '/dashboard') {
-        if (isCustomer) {
-          window.location.href = '/dashboard';
-        } else if (isAdmin) {
-          // Admin accessing customer area - allow but show notice
-          toast({
-            title: "Admin Access",
-            description: "You're accessing the customer dashboard as an admin",
-          });
-          window.location.href = '/dashboard';
-        }
-      } else {
-        // Default redirect based on role
-        if (isAdmin) {
-          window.location.href = '/admin';
-        } else {
-          window.location.href = '/dashboard';
-        }
-      }
+      // Redirect to customer dashboard
+      window.location.href = '/dashboard';
     } catch (error: any) {
       toast({
         title: "Error",
@@ -103,40 +73,26 @@ export default function Login() {
     });
   };
 
-  // Pre-fill admin credentials for testing
-  const fillAdminCredentials = () => {
-    setFormData({
-      email: "kimo8723@gmail.com",
-      password: "Mshmsh7184365700!"
-    });
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            {loginType === 'admin' ? (
-              <Shield className="h-12 w-12 text-purple-600" />
-            ) : (
-              <User className="h-12 w-12 text-blue-600" />
-            )}
+            <User className="h-12 w-12 text-blue-600" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900">
-            {loginType === 'admin' ? 'Admin Portal Login' : 'Sign in to your account'}
+            Sign in to your account
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {loginType === 'admin' 
-              ? 'Access the Victory Sync administration panel'
-              : 'Access your Victory Sync customer dashboard'
-            }
+            Access your Victory Sync customer dashboard
           </p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className="text-center">
-              {loginType === 'admin' ? 'Admin Login' : 'Customer Login'}
+              Customer Login
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -188,19 +144,6 @@ export default function Login() {
                 </div>
               </div>
 
-              {loginType === 'admin' && (
-                <div className="text-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={fillAdminCredentials}
-                    className="text-xs"
-                  >
-                    Fill Admin Credentials (Demo)
-                  </Button>
-                </div>
-              )}
 
               <Button
                 type="submit"
@@ -211,30 +154,15 @@ export default function Login() {
               </Button>
             </form>
 
-            {loginType !== 'admin' && (
-              <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
-                  Don't have an account?{" "}
-                  <Link href="/register" className="font-medium text-purple-600 hover:text-purple-500">
-                    Sign up here
-                  </Link>
-                </p>
-              </div>
-            )}
-
-            <div className="mt-4 text-center">
-              <p className="text-xs text-gray-500">
-                {loginType === 'admin' ? (
-                  <Link href="/login" className="text-purple-600 hover:text-purple-500">
-                    Customer Login
-                  </Link>
-                ) : (
-                  <Link href="/login?type=admin" className="text-purple-600 hover:text-purple-500">
-                    Admin Login
-                  </Link>
-                )}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                Don't have an account?{" "}
+                <Link href="/register" className="font-medium text-purple-600 hover:text-purple-500">
+                  Sign up here
+                </Link>
               </p>
             </div>
+
           </CardContent>
         </Card>
       </div>
