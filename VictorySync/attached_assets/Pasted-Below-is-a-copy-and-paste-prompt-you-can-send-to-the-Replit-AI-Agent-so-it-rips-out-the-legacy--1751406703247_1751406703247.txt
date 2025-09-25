@@ -1,0 +1,60 @@
+Below is a copy-and-paste prompt you can send to the **Replit AI Agent** so it rips out the legacy “Sign in with Replit” flow and makes **our new email + social-auth system the only login path**.
+
+---
+
+### Prompt for Replit AI Agent
+
+**Context**
+The project now has its own auth stack:
+
+* Local **email + password** (JWT)
+* Social OAuth (**Google, Facebook, Apple**)
+
+The old Replit-Auth integration (users logging in with their Replit account) is no longer wanted.
+
+---
+
+#### Tasks
+
+1. **Remove Replit Auth dependencies**
+
+   * Delete any NPM packages or imports: `@replit/extensions`, `replit-login`, `passport-replit`, etc.
+   * `npm uninstall` them and clean up `package.json`.
+
+2. **Delete Replit auth strategy & routes**
+
+   * Remove `ReplitStrategy` registration from `passport.ts`.
+   * Delete or comment out `/api/auth/replit` routes and callbacks.
+   * Purge any middleware that looks for `X-Replit-User` headers.
+
+3. **Front-end cleanup**
+
+   * In all auth pages/components, remove “Continue with Replit” buttons.
+   * Kill any `.env` vars related to Replit OAuth (e.g. `REPLIT_CLIENT_ID`).
+   * Update navigation so “Log in / Sign up” only points to the new flow.
+
+4. **Default to our JWT auth everywhere**
+
+   * Any protected routes should call `authenticateJWT` only.
+   * If you find code that checks `req.user.replitId`, refactor to use `req.user._id`.
+
+5. **Test pass**
+
+   * Run `npm run dev`, hit `/signup`, `/login`, Google/Facebook/Apple buttons — ensure success.
+   * GET a protected endpoint with the returned JWT to confirm auth works and no Replit header is required.
+
+6. **Update docs & env example**
+
+   * Remove Replit entries from `.env.example`.
+   * Add a changelog note in `README.md` under **“v2 – Replit Auth removed; switched to JWT/OAuth”**.
+
+---
+
+**Deliverables**
+
+* Updated `package.json` (no Replit packages).
+* Modified/removed files in `server/auth/`, `routes/auth.ts`, and front-end auth UI.
+* Clean `.env.example`.
+* Short summary of what was removed and what files changed.
+
+**Begin now — Replit login must be fully gone.**

@@ -31,24 +31,6 @@ task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
 
-[[workflows.workflow]]
-name = "Proxy Live Site"
-author = 44496704
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server/proxy.js"
-
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[rules]
-
-[rules.formatter]
-
-[rules.formatter.fileExtensions]
-
-[rules.formatter.fileExtensions.".tsx"]
-id = "module:nodejs-20/formatter:prettier"

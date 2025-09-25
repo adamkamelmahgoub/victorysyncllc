@@ -1,0 +1,101 @@
+You are a senior full-stack web developer and security-focused system architect. Build a fully functional, secure admin portal for my website: VictorySync.com.
+
+🔧 Technical Requirements:
+
+Replit-compatible (plug-and-play, no setup errors)
+
+Written using Python + FastAPI (or Node.js + Express) for backend and React (with Tailwind CSS) for frontend
+
+Use JWT auth for secure login
+
+All data stored using SQLite (or MongoDB, if preferred)
+
+✅ Core Features (must be implemented end-to-end):
+
+Secure Admin Login System
+
+Initial access restricted to:
+
+Username: kimo8723
+
+Password: Mshmsh7184365700!
+
+Support future multi-admin creation and role-based access control
+
+User & Customer Management
+
+View, edit, suspend, and delete users
+
+Assign roles (admin, agent, analyst, etc.)
+
+Manage permissions (read/write access toggles)
+
+CRM & Dialer Integration
+
+API-ready integration for CRM and call-center dialers
+
+Include dummy data + endpoint stubs for syncing leads, call logs, KPIs
+
+Real-Time KPI Dashboard
+
+Track metrics like:
+
+Calls made
+
+Leads converted
+
+CSAT score
+
+Agent performance
+
+Show visual charts using Recharts or Chart.js
+
+Custom Analytics + Reporting
+
+Filterable table views
+
+Export to CSV / PDF
+
+Charts with drill-downs
+
+Order & Billing History
+
+Customer-level order tracking
+
+Status, invoice, and payment logs
+
+Audit Logs
+
+Record all admin/user activity (e.g., login, edits, deletions)
+
+Show timestamped logs with filtering
+
+Email Notifications
+
+Triggered on critical admin events (e.g., user deleted, role changed)
+
+Use dummy SMTP config (document where to add credentials)
+
+User Impersonation
+
+Allow admin to impersonate user accounts for troubleshooting
+
+Log when impersonation starts/ends
+
+🔒 Security Notes:
+
+Sanitize all inputs
+
+Validate all API routes with proper auth guards
+
+Admin panel must not be accessible without login
+
+🧪 Final Deliverable Must Include:
+
+/admin frontend panel with working login flow and dashboards
+
+Backend API with full CRUD + logging
+
+README instructions for running on Replit
+
+All dependencies declared in requirements.txt or package.json

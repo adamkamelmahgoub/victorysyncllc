@@ -1,0 +1,64 @@
+Here’s a complete prompt you can give to **Replit AI Agent** to generate the entire footer section shown in your image — including styling, layout, routing, and content for each page:
+
+---
+
+### Prompt for Replit AI Agent
+
+**Task:**
+Create a footer section with two columns of links — **Company** and **Support** — styled as shown in the attached image. Each link must be:
+
+* Clickable
+* Redirect to a dedicated route (e.g. `/careers`, `/privacy-policy`)
+* Render a full page with appropriate content and layout
+
+---
+
+### Requirements
+
+#### ✅ 1. Footer layout
+
+Create a React/Next.js component named `Footer.tsx` (if not already present), and add the following:
+
+| Column 1 – Company     | Column 2 – Support                 |
+| ---------------------- | ---------------------------------- |
+| About Us → `/about-us` | Help Center → `/help-center`       |
+| Careers → `/careers`   | Documentation → `/docs`            |
+| Blog → `/blog`         | Privacy Policy → `/privacy-policy` |
+| Contact → `/contact`   | Terms of Service → `/terms`        |
+
+Use a **grid or flexbox layout**. Match the dark theme background with light gray text and slightly bolder column titles.
+
+---
+
+#### ✅ 2. Routing setup
+
+For each link above:
+
+* Create a corresponding page file under `src/pages/` or `src/app/` (depending on whether the project uses Next.js App Router or Pages Router).
+* Example: `src/app/about-us/page.tsx` or `src/pages/about-us.tsx`
+* Each page must include:
+
+  * Page title as a heading (`<h1>`)
+  * Placeholder paragraph content describing the page
+  * Clean padding and consistent layout
+
+---
+
+#### ✅ 3. Navigation integration
+
+* Import and render the `Footer` component globally (below main content) inside `layout.tsx` or your root page wrapper.
+* Make sure all routes are accessible by URL and clicking works without reload.
+
+---
+
+#### ✅ 4. Optional enhancements
+
+* Add hover state styling for links (e.g. text-lighten or underline on hover)
+* Mobile responsive: stack columns vertically on small screens
+
+---
+
+**Goal:**
+Build the footer in the image, with full navigation and content structure for every listed page. It should be fully clickable, styled, and deployable as-is.
+
+Begin now.

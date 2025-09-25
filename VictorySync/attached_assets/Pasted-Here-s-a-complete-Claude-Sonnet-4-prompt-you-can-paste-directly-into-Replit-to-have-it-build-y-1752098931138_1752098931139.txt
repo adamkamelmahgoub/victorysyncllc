@@ -1,0 +1,141 @@
+Here's a **complete Claude Sonnet 4 prompt** you can paste directly into Replit to have it **build your full admin portal and customer dashboard from scratch**, including **every feature you've asked for**, **fully functional**, **Replit-compatible**, and **enterprise-quality**.
+
+---
+
+### 🧠 CLAUDE SONNET 4 – FULL SYSTEM BUILD PROMPT
+
+**Goal:** Build Victory Sync’s **Admin Portal + Customer Dashboard** from scratch
+**Platform:** Replit (frontend + backend full-stack app)
+**Standards:** Production-grade, secure, scalable, bug-free, launch-ready
+
+---
+
+> ⚙️ **ROLE:**
+> You are a **100000000x Senior Web Developer, Full-Stack Engineer, Replit Deployment Architect, and Master of All Programming Languages**.
+
+> 🏁 **OBJECTIVE:**
+> Build a **fully working, secure, scalable full-stack system** for `VictorySync.com`, consisting of:
+
+---
+
+## 🔐 1. Authentication & Routing
+
+### ✅ Auth System
+
+* JWT-based auth (secure, HttpOnly, expiring tokens)
+* Separate login for **admin** and **customers**
+* Admin login initially locked to:
+
+  * Username: `kimo8723`
+  * Password: `Mshmsh7184365700!`
+* Support future **multi-admin** functionality
+
+### ✅ Role-based Routing
+
+* `/admin` → Admin Portal (only visible to admins)
+* `/dashboard` → Customer Dashboard (only for logged-in users)
+* Ensure role-based route guards (no redirect bugs)
+* Access denied pages for unauthorized attempts
+
+---
+
+## 👤 2. Admin Portal Features (`/admin`)
+
+### 🎯 Admin Management System
+
+* Add, edit, delete customer accounts
+* View full customer profiles, history, and usage
+* Toggle permissions and assign roles
+* Full audit logs of admin activity
+
+### 📈 Real-Time KPI Dashboard
+
+* Visual charts for CRM, calls, tickets, satisfaction, etc.
+* Sync with **integrated CRM/dialer APIs**
+* Only show real-time data (no demo/fake data)
+* Realtime fetch when user has connected tools
+
+### 📦 Admin Features Required
+
+* Manage billing and invoices
+* Email notification log for admin actions
+* Impersonate customer for troubleshooting
+* Custom analytics report generator
+* See all customer CRM integrations and sync status
+
+---
+
+## 💼 3. Customer Dashboard Features (`/dashboard`)
+
+### 🎛️ Customer Panel
+
+* Profile & company info
+* CRM/dialer integration (OAuth / API token)
+* View own KPIs, call history, stats
+* Create support tickets
+* Billing/invoice history
+* Secure password + email updates
+
+### 🧠 CRM/Dialer Integration
+
+* User connects their external CRM/dialer (e.g., HubSpot, Aircall, Twilio)
+* Backend pulls real-time stats
+* Show synced dashboards: call volume, ticket status, CSAT, etc.
+* If no integration = show “Connect Account” first
+
+---
+
+## 🧰 4. Tech Stack & Replit Integration
+
+### ⚙️ Backend
+
+* Node.js (Express)
+* MongoDB (Mongoose) or PostgreSQL (Prisma)
+* JWT auth
+* REST API (protected routes)
+
+### 💻 Frontend
+
+* React + Vite
+* Tailwind CSS (modern design)
+* React Query (for data fetching + caching)
+* Role-based layout switching
+* Replit port exposure works for dev preview
+
+### 🛠️ Other Requirements
+
+* Everything saved and synced to database
+* No demo/fake data
+* Handle loading, 404, and error states gracefully
+* Production-grade code (secure, scalable, testable)
+* Works immediately after Replit import
+* Add `.replit` config for `npm run dev`
+
+---
+
+## ✅ 5. Final Delivery Requirements
+
+* All requested features must work 100% with no bugs
+* Code should be clean, commented, and structured
+* Admin and Customer portals **must be completely separated**
+* App must run perfectly on Replit with working preview
+* Fully functional authentication and routing
+* All features tested and working: login, integrations, dashboards, user management
+
+---
+
+### 🧪 BONUS
+
+Add basic Jest or integration tests for:
+
+* Auth system
+* Admin dashboard routes
+* Customer integration sync endpoint
+
+---
+
+🛠 Claude, **build and fully validate this entire system from scratch**, make it **launch-ready**, and give me the **Replit-compatible app structure** (with working port exposure, routes, auth, and integrations).
+
+---
+
+Let me know if you want this exported as `.txt` or bundled into a downloadable ZIP.

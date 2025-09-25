@@ -1,0 +1,113 @@
+Below is a turnkey prompt you can paste into the **Replit AI Agent**.
+It tells the agent exactly what’s broken and walks it through the fixes so **email / password, Google, Facebook, and Apple sign-ins all work in production (no 404s, no “Unknown authentication strategy”).**
+
+---
+
+### Prompt for Replit AI Agent
+
+**Context**
+The Victory Sync project is an Express + TypeScript API with a Next.js (or plain-React) front-end.
+We recently added local JWT auth plus social log-in (Google, Facebook, Apple).
+
+**Current bugs (seen in prod)**
+
+1. Navigating to **`/api/login` or the front-end `/api/login` page returns a 404**.
+2. Hitting **`/api/auth/google|facebook|apple` returns `{ "message": "Unknown authentication strategy \"<provider>\"" }`** — Passport strategies are not wired up in the running build.
+
+---
+
+#### Fix-list
+
+1. **Create the missing Next.js pages/routes**
+
+   * Add `src/app/login/page.tsx` (or equivalent) that renders our sign-in component.
+   * If SSR is disabled, ensure a catch-all `[...auth].ts` isn’t blocking the route.
+   * Add API file `src/pages/api/login.ts` (or Express proxy) that POSTs to `/api/auth/login`.
+
+2. **Wire Passport strategies correctly**
+
+   * In `server/auth/passport.ts` (or similar) **import and `passport.use()` each provider** under the canonical names `"google"`, `"facebook"`, `"apple"`:
+
+     ```ts
+     import GoogleStrategy from 'passport-google-oauth20';
+     import FacebookStrategy from 'passport-facebook';
+     import AppleStrategy from 'passport-apple';
+
+     passport.use('google',  new GoogleStrategy(/* cfg */));
+     passport.use('facebook', new FacebookStrategy(/* cfg */));
+     passport.use('apple',   new AppleStrategy(/* cfg */));
+     ```
+   * Make sure this file is imported **before** route definitions so the strategies exist at bootstrap.
+
+3. **Ensure callback routes hit `passport.authenticate('<provider>')` with the same name**
+
+   * Example:
+
+     ```ts
+     router.get('/google',
+       passport.authenticate('google', { scope: ['email', 'profile'] })
+     );
+
+     router.get('/google/callback',
+       passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+       issueJwtAndRedirect
+     );
+     ```
+   * Repeat for Facebook & Apple; names must match the `passport.use` tag to prevent the “Unknown authentication strategy” error.
+
+4. **Build script issues**
+
+   * If we compile TypeScript, `npm run build` must generate the compiled JS for production (`tsc` or `tsup`) so the strategies file is included.
+   * Confirm that `npm start` runs the compiled server (`node build/index.js`) *not* `tsx`, which is dev-only and may skip files.
+
+5. **Update ENV vars & docs**
+
+   * Verify `.env` (both dev & prod) contains:
+
+     ```
+     GOOGLE_CLIENT_ID=...
+     GOOGLE_CLIENT_SECRET=...
+     FACEBOOK_APP_ID=...
+     FACEBOOK_APP_SECRET=...
+     APPLE_CLIENT_ID=...
+     APPLE_TEAM_ID=...
+     APPLE_KEY_ID=...
+     APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+     JWT_SECRET=...
+     ```
+   * If any are missing, return a JSON error: `{error:"Provider not configured"}`.
+
+6. **Front-end hookup**
+
+   * Buttons should open `/api/auth/<provider>` in a popup or redirect.
+   * After callback, read the `token` query param and store in `localStorage`.
+   * Fix the `Sign In` nav link to point to `/login` (not `/api/login`).
+
+7. **Test matrix (make these pass in dev & prod)**
+
+   | Flow                                         | Expected result                          |
+   | -------------------------------------------- | ---------------------------------------- |
+   | POST `/api/auth/register` with name/email/pw | 201 + JWT                                |
+   | POST `/api/auth/login`                       | 200 + JWT                                |
+   | GET `/api/auth/google`                       | Google consent screen, then JWT redirect |
+   | GET `/api/auth/facebook`                     | Facebook consent → JWT redirect          |
+   | GET `/api/auth/apple`                        | Apple login → JWT redirect               |
+   | Visiting `/login`                            | Renders form + social buttons, no 404    |
+
+8. **Update `.env.example` & README** to document the new required variables and routes.
+
+---
+
+**Deliverables**
+
+* Updated `package.json` (ensure strategies in dependencies, remove dev-only `tsx` from prod script).
+* `server/auth/passport.ts` and provider strategy files patched.
+* New/updated API routes and Next.js pages.
+* `.env.example` refreshed.
+* One-paragraph summary of changes so I can review the diff.
+
+**Begin now — all auth flows must work 100 % in both dev (`npm run dev`) and production build (`npm run build` + `npm start`).**
+
+---
+
+*(Paste everything above into the AI Agent and let it run. After it finishes, rebuild & redeploy.)*
