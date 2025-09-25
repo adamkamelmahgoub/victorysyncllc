@@ -1,0 +1,333 @@
+Got it — here’s a **single, copy-paste manual-cleanup prompt for Claude** that removes **every trace** of the added features (auth, DB, Stripe, Twilio/IVR, CRM, portal/admin, seeds/migrations, sockets, entitlements, etc.) and puts you back to **only the original marketing site**. It uses precise delete commands, package cleanup, and minimal config so Preview shows your site and nothing else.
+
+---
+
+## PROMPT FOR CLAUDE (manual cleanup only — paste everything below)
+
+You are helping me **manually** remove *all* integration work and restore **only my original marketing website**. Absolutely **no trace** of added features: no files, no code paths, no env usage. The final result must serve the plain marketing site (home/services/pricing/about/contact) with **no login, no API, no DB, no Stripe/Twilio, no admin/portal**.
+
+Follow these steps **exactly**:
+
+### 0) Safety checkpoint (create backup)
+
+```bash
+git rev-parse --is-inside-work-tree || git init
+git add -A
+git commit -m "checkpoint before manual cleanup" || true
+git branch -M main || true
+git checkout -b cleanup/restore-original-site
+zip -r ../backup-pre-cleanup-$(date +%Y%m%d-%H%M).zip . >/dev/null
+```
+
+---
+
+### 1) Remove **ALL** added features (folders/files)
+
+Run all of these (ignore errors if paths don’t exist):
+
+```bash
+# ❌ Backends / integrations / DB / webhooks / sockets / workers
+rm -rf server/auth server/billing server/ivr server/db server/lib server/middleware server/webhooks server/workers 2>/dev/null
+rm -f  server/routes.ts server/routes/* server/index.test.* server/worker.* 2>/dev/null
+
+# ❌ Shared schema / ORM / migrations / seeds
+rm -rf shared schema prisma drizzle migrations scripts seeds seed*.mjs 2>/dev/null
+rm -f  *.sql *.db neon*.sql supabase*.sql 2>/dev/null
+
+# ❌ Feature UIs & helpers (portal/admin/entitlements)
+rm -rf client/src/pages/Portal client/src/pages/Admin client/src/pages/Billing client/src/pages/Dashboard 2>/dev/null
+rm -rf client/src/features client/src/entitlements client/src/hooks/useSession* client/src/hooks/useAuth* 2>/dev/null
+rm -rf client/src/lib/api client/src/lib/stripe client/src/lib/twilio client/src/lib/crm 2>/dev/null
+
+# ❌ Any API proxy code in client
+rm -f  client/src/lib/http.ts client/src/lib/axios.ts 2>/dev/null
+
+# ❌ Anything named plans, invoices, pricing-api, entitlements, orgs, webhooks
+rg -n "entitlements|orgs|webhook|invoice|billing|portal|admin|/api/" || true
+
+# ❌ Remove test scaffolding & misc
+rm -rf __tests__ tests test e2e 2>/dev/null
+```
+
+---
+
+### 2) Clean Replit Secrets (no sensitive keys left)
+
+Delete these **from Replit → Secrets** (or `.env` if present):
+
+* `DATABASE_URL`, `NEON_*`, `PG*`
+* `JWT_SECRET`, `SESSION_SECRET`
+* `STRIPE_*`
+* `TWILIO_*`
+* `CRM_*`
+* `SOCKETS_ENABLED`, `REDIS_*`
+  There should be **no secrets** required after cleanup.
+
+---
+
+### 3) Minimal **package.json** (root) — remove all integration deps
+
+Open the **root** `package.json` and replace it with this **minimal** one (assume Vite React marketing site). If your original site was plain HTML, we’ll handle that in step 5.
+
+```json
+{
+  "name": "victorysync-site",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "preview": "npm --prefix client run preview"
+  }
+}
+```
+
+Then install (will just prepare root; real deps live in client):
+
+```bash
+npm install
+```
+
+---
+
+### 4) Minimal **client** (Vite React) setup
+
+If the original site is a Vite React marketing site, ensure the **client** folder looks like this:
+
+```
+client/
+  index.html
+  vite.config.ts
+  tsconfig.json
+  package.json
+  src/
+    main.tsx
+    App.tsx
+    assets/   (images, css)
+    pages/    (Home, Services, Pricing, About, Contact)
+```
+
+#### 4a) `client/package.json` (replace completely)
+
+```json
+{
+  "name": "victorysync-client",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0"
+  }
+}
+```
+
+#### 4b) `client/tsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}
+```
+
+#### 4c) `client/vite.config.ts`
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  server: { port: 5173, strictPort: true }
+});
+```
+
+#### 4d) `client/index.html` (simple marketing shell)
+
+If your original file exists, **keep it**. If not, create this and later paste your original markup into the `<main>`:
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VictorySync</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+#### 4e) `client/src/main.tsx`
+
+```ts
+import React from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+
+createRoot(document.getElementById("root")!).render(<App />);
+```
+
+#### 4f) `client/src/App.tsx`
+
+Replace with **only** your marketing site (no auth/API). If you no longer have the original code, use this skeleton and paste your real sections later:
+
+```tsx
+export default function App() {
+  return (
+    <>
+      <header style={{padding:"1rem 2rem", display:"flex", gap:"1rem", alignItems:"center"}}>
+        <strong>VictorySync</strong>
+        <nav style={{display:"flex", gap:"1rem"}}>
+          <a href="#home">Home</a>
+          <a href="#services">Services</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </header>
+      <main>
+        <section id="home" style={{padding:"4rem 2rem"}}>
+          <h1>Professional Call Center & AI Automation</h1>
+          <p>24/7 coverage, intelligent IVR, CRM integrations, and real-time analytics — tailored to your business.</p>
+        </section>
+        <section id="services" style={{padding:"2rem 2rem"}}><h2>Services</h2></section>
+        <section id="pricing" style={{padding:"2rem 2rem"}}><h2>Pricing</h2></section>
+        <section id="about" style={{padding:"2rem 2rem"}}><h2>About</h2></section>
+        <section id="contact" style={{padding:"2rem 2rem"}}><h2>Contact</h2></section>
+      </main>
+      <footer style={{padding:"2rem", textAlign:"center"}}>© VictorySync</footer>
+    </>
+  );
+}
+```
+
+Install client deps:
+
+```bash
+npm --prefix client install
+```
+
+---
+
+### 5) If my original site was **pure static HTML** (no React)
+
+If that’s the case, **delete `client/src` entirely**, and replace with:
+
+```
+client/
+  index.html      (your real original HTML)
+  assets/
+    styles.css
+    main.js
+    images/...
+```
+
+And set `client/package.json` like:
+
+```json
+{
+  "name": "victorysync-static",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
+```
+
+Your `client/index.html` should load `/assets/styles.css` and `/assets/main.js` and contain **only** the marketing content.
+
+---
+
+### 6) Remove **all** left-over references in code
+
+Run and fix any matches (delete or rewrite so nothing references APIs or integrations):
+
+```bash
+# Nothing like these should remain after clean-up:
+rg -n "/api/|auth|jwt|cookie|Authorization|stripe|twilio|neon|pg|entitlement|portal|admin|webhook|socket|redis|@tanstack/react-query|axios"
+```
+
+* Delete any matches and the imports that bring them in.
+* Ensure no `fetch('/api/...')`, no `react-query` providers, no cookie/JWT checks, no redirects to `/login` or `/portal`.
+
+---
+
+### 7) Ensure Replit runs only the **client**
+
+Open `.replit` and make run command **only** the client dev server:
+
+```
+run = "npm --prefix client run dev"
+```
+
+(If you prefer serving a built version, run `npm --prefix client run build` and then `npm --prefix client run preview`. Do **not** run any server/api process.)
+
+---
+
+### 8) Start and verify
+
+```bash
+npm run dev
+```
+
+**Expected:**
+
+* Preview shows the **original marketing site only**.
+* DevTools Network: **no** calls to `/api/*`.
+* Console: **no** errors like `useEffect of null`, etc.
+* No login prompts/snackbars/redirects.
+* Replit Secrets are **not required**.
+
+---
+
+### 9) Remove dead deps (optional)
+
+After it’s working:
+
+```bash
+# list installed deps; ensure we only have react/vite (or just vite for static)
+cat client/package.json
+```
+
+If you still see anything like `stripe`, `twilio`, `neon`, `pg`, `@tanstack/react-query`, `axios`, etc., remove them and re-run `npm --prefix client install`.
+
+---
+
+### 10) Final commit
+
+```bash
+git add -A
+git commit -m "Manual cleanup: restore original marketing site only"
+```
+
+If anything blocks the marketing site from rendering, show me the exact error and the file path so I can correct it in place.
+
+**End of prompt.**

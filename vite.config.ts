@@ -1,43 +1,61 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Compute Replit hostname for HMR
-const REPL_HOST = (process.env.REPL_SLUG && process.env.REPL_OWNER)
-  ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
-  : "localhost";
+import { resolve } from "path";
+import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+resolve: {
+  alias: {
+    "@": resolve(__dirname, "client/src"),
+    "@shared": resolve(__dirname, "shared"),
+    "@assets": resolve(__dirname, "attached_assets"),
+  }
+},
 
 export default defineConfig({
-  plugins: [react()],
-  root: "client",
-  build: {
-    outDir: "../server/public",
-    emptyOutDir: true,
-  },
+  plugins: [
+    react(),
+    runtimeErrorOverlay(),
+    ...(process.env.NODE_ENV !== "production" &&
+    process.env.REPL_ID !== undefined
+      ? [
+          await import("@replit/vite-plugin-cartographer").then((m) =>
+            m.cartographer(),
+          ),
+        ]
+      : []),
+  ],
+  export default defineConfig({
+  plugins: [ … ],
+  //  ▼ keep this ONE resolve block
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./client/src"),
-      // Map server-only alias to a client-safe module
-      "@shared/schema": path.resolve(__dirname, "./client/src/shared/schema.ts"),
-    },
+      "@":        resolve(__dirname, "client/src"),
+      "@shared":  resolve(__dirname, "shared"),        // ← this is the line you just added
+      "@assets":  resolve(__dirname, "attached_assets")
+    }
+  },
+
+  // rest of config (root, build, server …)
+});
+
+  root: path.resolve(import.meta.dirname, "client"),
+  build: {
+  outDir: resolve(__dirname, "client/dist"), // whatever you already use
+  emptyOutDir: true,
+  rollupOptions: {
+    external: [],
+  },
+},
   },
   server: {
-    host: "0.0.0.0",
+    host: '0.0.0.0',
     port: 5173,
-    strictPort: true,
     hmr: {
-      protocol: "wss",
-      clientPort: 443,
-      host: REPL_HOST
+      port: 5000,
+      host: '0.0.0.0'
     },
-    proxy: {
-      "/api": "http://localhost:5000",
-      "/webhooks": "http://localhost:5000"
-    }
+    fs: {
+      strict: true,
+      deny: ["**/.*"],
+    },
   },
 });

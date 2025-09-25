@@ -1,59 +1,81 @@
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import logo from "@/assets/LOGO VS.png";
 
-import React from 'react';
-
-function App() {
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <div className="container mx-auto px-4 py-20">
-        <div className="text-center text-white">
-          <div className="mb-8">
-            <img 
-              src="/LOGO_VS.png" 
-              alt="VictorySync Logo" 
-              className="mx-auto h-24 w-auto mb-6"
-            />
-          </div>
-          
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-            VictorySync
-          </h1>
-          
-          <p className="text-xl mb-8 max-w-3xl mx-auto text-gray-300">
-            Professional Customer Service Platform
-          </p>
-          
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 max-w-4xl mx-auto">
-            <h2 className="text-3xl font-semibold mb-6">Transform Your Customer Experience</h2>
-            <p className="text-lg mb-6">
-              Reduce customer service costs by up to 60% with our professional call center services, 
-              AI automation, and comprehensive business solutions from Millstone, New Jersey.
-            </p>
-            
-            <div className="grid md:grid-cols-3 gap-6 mt-8">
-              <div className="bg-white/5 rounded-lg p-6">
-                <h3 className="text-xl font-semibold mb-3">24/7 Support</h3>
-                <p className="text-gray-300">Professional agents available around the clock</p>
-              </div>
-              <div className="bg-white/5 rounded-lg p-6">
-                <h3 className="text-xl font-semibold mb-3">AI Automation</h3>
-                <p className="text-gray-300">Intelligent systems to streamline operations</p>
-              </div>
-              <div className="bg-white/5 rounded-lg p-6">
-                <h3 className="text-xl font-semibold mb-3">Cost Savings</h3>
-                <p className="text-gray-300">Reduce expenses while improving quality</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-12">
-            <p className="text-gray-400">
-              Contact us to learn more about our professional services
-            </p>
+    <div className="min-h-screen bg-white text-gray-900">
+      {/* Header */}
+      <header className="w-full border-b shadow-sm sticky top-0 bg-white z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <img src={logo} alt="Victory Sync" className="h-10" />
+          <nav className="space-x-6 hidden md:flex">
+            <a href="#" className="text-sm hover:text-blue-600 font-medium">
+              Solutions
+            </a>
+            <a href="#" className="text-sm hover:text-blue-600 font-medium">
+              Industries
+            </a>
+            <a href="#" className="text-sm hover:text-blue-600 font-medium">
+              Resources
+            </a>
+            <a href="#" className="text-sm hover:text-blue-600 font-medium">
+              Pricing
+            </a>
+          </nav>
+          <div className="space-x-4 hidden md:flex">
+            <Button variant="ghost" className="text-sm">
+              Log In
+            </Button>
+            <Button className="text-sm">Get a Demo</Button>
           </div>
         </div>
-      </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-16 items-center">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
+            Outsourced CX, Done Better
+          </h1>
+          <p className="text-lg text-gray-600 mb-8">
+            Victory Sync helps U.S. businesses extend hours, cut costs, and
+            deliver exceptional support through our Cairo-based CX teams.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button className="text-sm px-6 py-3">
+              Book a Free Strategy Call
+            </Button>
+            <Button variant="outline" className="text-sm px-6 py-3">
+              See Pricing
+            </Button>
+          </div>
+        </div>
+        <div>
+          <img
+            src="/vs_avatar_400.png"
+            alt="Victory Sync Agents"
+            className="w-full rounded-xl shadow-md"
+          />
+        </div>
+      </section>
+
+      {/* CTA Strip */}
+      <section className="bg-blue-600 py-10 text-white text-center">
+        <h2 className="text-2xl font-semibold mb-4">
+          Ready to scale support for less?
+        </h2>
+        <Button variant="secondary" className="text-sm">
+          Get Started with Victory Sync{" "}
+          <ArrowRight className="inline ml-2 w-4 h-4" />
+        </Button>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-10 text-sm text-gray-500 text-center">
+        © 2025 Victory Sync. All rights reserved.
+      </footer>
     </div>
   );
 }
-
-export default App;
