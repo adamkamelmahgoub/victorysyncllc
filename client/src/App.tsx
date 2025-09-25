@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import logo from "@/assets/LOGO VS.png";
+import logo from "/LOGO_VS.png";
 
 export default function HomePage() {
   return (
