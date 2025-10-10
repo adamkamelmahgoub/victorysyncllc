@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,18 +6,8 @@
 :root { color-scheme: light; }
 html, body, #root { height: 100%; }
 body { @apply font-sans text-slate-800 bg-white; }
-.btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold transition;
-}
-.btn-primary {
-  @apply bg-brand-purple text-white shadow hover:bg-brand-purpleDark focus:outline-none focus:ring-4 focus:ring-brand-purple/40;
-}
-.btn-ghost {
-  @apply border border-slate-300 text-slate-800 hover:bg-slate-50;
-}
-.link {
-  @apply text-brand-purple hover:text-brand-purpleDark underline underline-offset-2;
-}
-.card-dark {
-  @apply bg-brand-card border border-white/10 rounded-2xl p-6 text-slate-200 shadow-soft;
-}
+.btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold transition; }
+.btn-primary { @apply bg-brand-purple text-white shadow hover:bg-brand-purpleDark focus:outline-none focus:ring-4 focus:ring-brand-purple/40; }
+.btn-ghost { @apply border border-slate-300 text-slate-800 hover:bg-slate-50; }
+.link { @apply text-brand-purple hover:text-brand-purpleDark underline underline-offset-2; }
+.card-dark { @apply bg-brand-card border border-white/10 rounded-2xl p-6 text-slate-200 shadow-soft; }

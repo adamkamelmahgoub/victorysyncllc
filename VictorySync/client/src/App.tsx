@@ -1,14 +1,15 @@
-import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Pricing from "./pages/Pricing";
-import Products from "./pages/Products";
-import Blog from "./pages/Blog";
-import Company from "./pages/Company";
-import Services from "./pages/Services";
-import Book from "./pages/Book";
-import CollabCRM from "./pages/services/CollabCRM";
-import Omnichannel from "./pages/services/Omnichannel";
-import Automation from "./pages/services/Automation";
+
+import { Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import Pricing from './pages/Pricing'
+import Products from './pages/Products'
+import Blog from './pages/Blog'
+import Company from './pages/Company'
+import Services from './pages/Services'
+import Book from './pages/Book'
+import CollabCRM from './pages/services/CollabCRM'
+import Omnichannel from './pages/services/Omnichannel'
+import Automation from './pages/services/Automation'
 
 export default function App() {
   return (
@@ -24,5 +25,5 @@ export default function App() {
       <Route path="/automation" element={<Automation />} />
       <Route path="/book" element={<Book />} />
     </Routes>
-  );
+  )
 }
