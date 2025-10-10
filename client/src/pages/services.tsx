@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from 'wouter'
 
 const Card = ({ title, body, to, icon }: { title: string; body: string; to: string; icon: React.ReactNode }) => (
   <div className="card-dark">
