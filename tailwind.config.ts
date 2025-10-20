@@ -11,6 +11,12 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
+        ink: {
+          900: "#0B1221",
+          800: "#0F172A",
+          700: "#111827",
+          600: "#1E293B",
+        },
         background: "var(--background)",
         foreground: "var(--foreground)",
         card: {

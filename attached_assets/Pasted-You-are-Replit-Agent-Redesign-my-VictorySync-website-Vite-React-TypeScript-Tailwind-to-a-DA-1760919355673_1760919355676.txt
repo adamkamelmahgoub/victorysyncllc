@@ -1,0 +1,112 @@
+You are Replit Agent. Redesign my VictorySync website (Vite + React + TypeScript + Tailwind) to a DARK, Verint-inspired aesthetic with elegant motion and Calendly-driven “Get a Quote” CTAs. IMPORTANT: emulate layout patterns and UX only — DO NOT copy Verint text, images, or trademarks.
+
+TARGET LOOK & FEEL (Verint-inspired, dark variant)
+- Layout cues to emulate from verint.com (structure only):
+  1) Big hero headline + subcopy + two CTAs + trusted-logo strip
+  2) “Outcomes” metric tiles grid (saves $, time, NPS, etc.)
+  3) “Open Platform / Capabilities” section presented as tabs or carousel
+  4) Customer stories slider
+  5) Industry badges/awards row
+  6) Resources/Insights card grid
+  7) Conversion footer with short form and a “Talk to Us” CTA
+- Apply a cohesive DARK THEME version of that structure:
+  • Backgrounds: #0B1221 (page), #0F172A (sections), #0B1324 (cards)
+  • Text: #E5E7EB primary, #94A3B8 secondary
+  • Accent: cyan/sky (e.g., Tailwind cyan-400/sky-400) for links, CTAs, and focus rings
+  • Gradients: subtle radial mesh + diagonal sheen (no heavy noise)
+
+STACK & CONFIG
+- Tailwind dark mode via class: `darkMode: "class"`
+- Animation: Framer Motion for page and component reveals (`framer-motion`)
+- Optional smooth scrolling: `lenis` (respect reduced-motion)
+- Calendly URL from env: `VITE_CALENDLY_URL=https://calendly.com/YOUR-SLUG`
+- Routing: React Router (adapt if different)
+
+GLOBAL TASKS
+1) Dark Theme Framework
+   - Add `ThemeProvider` + `ThemeToggle` (persist to localStorage, respect `prefers-color-scheme`).
+   - Toggle `document.documentElement.classList` “dark”.
+   - In `src/index.css`: 
+     - `html { scroll-behavior: smooth }`
+     - Base transitions: color/bg/border 200ms ease; wrap in reduced-motion check.
+   - Ensure WCAG AA contrast; visible focus rings: `focus-visible:outline outline-2 outline-offset-2 outline-cyan-400`.
+
+2) Motion System
+   - Wrap router outlet with `AnimatePresence`.
+   - Create `<MotionPage>` wrapper: fade + 8–12px slide on enter/exit (220–260ms, easeInOut).
+   - Stagger reveals for cards/tiles (40ms).
+   - Respect `prefers-reduced-motion` everywhere.
+
+3) Calendly Everywhere
+   - In `index.html`, add:
+     <link rel="stylesheet" href="https://assets.calendly.com/assets/external/widget.css" />
+     <script async src="https://assets.calendly.com/assets/external/widget.js"></script>
+   - Hook: `useCalendly` with `open()` → `window.Calendly.initPopupWidget({ url: import.meta.env.VITE_CALENDLY_URL })`.
+   - Replace all pricing CTAs with **“Get a Quote”** that opens the Calendly popup.
+   - Add an inline Calendly embed below the Contact form:
+     <div class="calendly-inline-widget w-full h-[900px]" data-url={`${import.meta.env.VITE_CALENDLY_URL}?hide_event_type_details=1&background_color=0b1221&text_color=ffffff&primary_color=22d3ee`}></div>
+   - Add a secondary “Schedule a Call” button on Contact that triggers the popup.
+
+PAGE REBUILD (match Verint-like sections; keep our content/brand)
+A) Header (sticky)
+   - Left: VictorySync logo. Center: primary nav. Right: ThemeToggle + CTA button.
+   - Primary CTA = **Get a Quote** (Calendly popup).
+
+B) HOME (/)
+   - HERO (dark gradient):
+     - H1 (max-w-xl): outcome-driven line about “AI outcomes / CX automation / lower cost” (our words).
+     - Subcopy up to ~2 lines.
+     - CTAs: Primary “Get a Quote” (Calendly), Secondary “Explore Platform” (to /platform).
+     - Trusted-by logo strip beneath.
+   - OUTCOMES GRID:
+     - 6 tiles with metrics (e.g., “$X saved”, “-YYs AHT”, “+NPS”, containment %, etc.). Use our proof points and generic placeholders to be edited in CMS.
+   - OPEN PLATFORM / CAPABILITIES:
+     - Tabs or horizontal carousel: “Open Platform”, “AI Bots”, “Engagement Data Hub”, “WEM/WFO”, “Analytics”, “Channels”.
+     - Each tab: short blurb + icon + “Learn More” internal link.
+   - CUSTOMER STORIES SLIDER:
+     - 3–6 slides: logo, 1–2 sentence outcome, “Read case study”.
+   - BADGES/RECOGNITION ROW:
+     - Place our badges or leave placeholders; subtle grayscale on dark.
+   - INSIGHTS/RESOURCES GRID:
+     - 3–6 cards: Blog/Report/Webinar with tag, title, short summary, “Read”.
+   - CONVERSION FOOTER:
+     - Compact form (name, work email, company, message) + “Get a Quote” popup button.
+
+C) PLATFORM (/platform)
+   - Repeat the capabilities tabs with deeper content + icons and diagrams.
+   - CTA blocks every ~2 sections that open Calendly.
+
+D) PRICING (/pricing)
+   - Remove numeric prices. Replace with plan cards (Starter/Growth/Scale/Enterprise).
+   - Each card lists features, has **Get a Quote** Calendly popup. Include “Compare Plans” accordion.
+
+E) CONTACT (/contact)
+   - Left: short copy & details. Right: form. Calendly inline embed under the form.
+   - Add secondary **“Schedule a Call”** popup button near the top.
+
+COMPONENTS & TOKENS
+- `Section` with max-w container and consistent vertical rhythm.
+- `MetricTile`, `LogoRow`, `BadgeRow`, `ResourceCard`, `TabCarousel`.
+- Dark tokens in Tailwind theme extend:
+  colors: { ink: { 900:"#0B1221", 800:"#0F172A", 700:"#111827" }, accent: { DEFAULT:"#22d3ee" } }
+- Card hover: translate-y-[2px], shadow transition.
+
+ACCESSIBILITY & PERFORMANCE
+- Keyboard navigation verified; ARIA labels for carousels/tabs.
+- Skip-to-content link.
+- Lazy-load non-critical images; prefetch hero font.
+- Lighthouse ≥ 90 (Mobile & Desktop) for Performance/Accessibility/Best Practices.
+
+PLUMBING
+- Add `VITE_CALENDLY_URL` in Replit Secrets.
+- Update all CTAs to use `useCalendly().open()`.
+- Ensure routes exist and 404 is themed.
+
+DELIVERABLES
+- Updated dark UI with Verint-like structure and tasteful animations.
+- All pricing CTAs → “Get a Quote” (Calendly popup).
+- Contact page includes inline Calendly + popup trigger.
+- README note summarizing theme, motion, and Calendly usage.
+
+BRANCH
+- Create `feat/dark-verint-style-calendly`, commit, and merge after checks.
