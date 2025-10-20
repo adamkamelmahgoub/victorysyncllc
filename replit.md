@@ -6,17 +6,16 @@ VictorySync is a comprehensive contact center and AI automation platform built w
 
 ## Recent Changes (October 2025)
 
-### Dark Theme Redesign - Verint-Inspired Aesthetic
-Completed comprehensive dark theme redesign across the entire marketing website:
+### Dark-Only Theme - Verint-Inspired Aesthetic
+Completed comprehensive dark-only theme across the entire marketing website:
 
 **Visual Design:**
-- Implemented dark Verint-inspired aesthetic with #0B1221 background, #E5E7EB text, and cyan (#22D3EE) accents
-- Created theme toggle with localStorage persistence and prefers-color-scheme support
+- Implemented permanent dark Verint-inspired aesthetic with #0B1221 background, #E5E7EB text, and cyan (#22D3EE) accents
+- **Dark mode enforced permanently** - no theme toggle, dark class set in index.html and main.tsx
 - Responsive design with smooth transitions and animations
+- Removed all light mode variants (no dark: prefixes needed)
 
 **New Components:**
-- ThemeProvider context for global theme management
-- ThemeToggle component in navigation
 - MotionPage wrapper for Framer Motion page transitions
 - Reusable dark-themed components: Section, MetricTile, ResourceCard, LogoRow
 
