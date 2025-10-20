@@ -1,0 +1,93 @@
+**Your Optimized Prompt (for Replit Agent):**
+
+```
+You are Replit Agent. Make my VictorySync site dark-only and link-complete.
+
+REPO CONTEXT
+- Stack: Vite + React + TypeScript + Tailwind
+- Router: React Router (adapt if different)
+- Design system: current VictorySync “Verint-inspired” dark layout (hero → outcomes → capabilities tabs → stories → badges → insights → conversion footer)
+- Calendly flow (keep if present): all pricing CTAs = “Get a Quote” → popup; Contact page has inline Calendly + popup trigger
+
+PRIMARY GOALS
+1) **Remove theme switching** and enforce **dark-only** everywhere.
+2) **Apply dark theme on every single page/route** including 404, auth, legal, blog/resource detail, dynamic routes.
+3) **Guarantee every button/CTA/link navigates to a real destination.** 
+   - If a target page doesn’t exist, **create it**, **fill it with the correct info**, and **design it to match the site** (tokens, spacing, components, and motion).
+   - Replace all placeholder hrefs (‘#’, ‘#!’, empty) and no-op onClicks.
+
+TASKS — IMPLEMENT EXACTLY
+A) DARK-ONLY THEME
+- tailwind.config.(js|ts): ensure `darkMode: "class"`.
+- Remove and delete any `ThemeToggle`, `ThemeProvider`, or color-scheme toggling code/files, and their imports/usages.
+- In `index.html`, set `<html class="dark">` permanently.
+- In `src/main.tsx` (or entry), add once:
+  `document.documentElement.classList.add("dark");`
+- Normalize base tokens for dark: backgrounds, surfaces, text, borders, focus rings.
+  Suggested tokens (Tailwind extend):
+```
+
+colors: {
+ink: { 900:"#0B1221", 800:"#0F172A", 700:"#111827", 600:"#0B1324" },
+text: { primary:"#E5E7EB", secondary:"#94A3B8" },
+accent: { DEFAULT:"#22d3ee" } // cyan/sky accent
+}
+
+```
+- Replace any `light:` variants. Use dark tokens as defaults and remove redundant `dark:` if it creates conflicts.
+- Global polish in `src/index.css`:
+- `html { scroll-behavior: smooth; }`
+- Respect reduced motion; otherwise apply subtle transitions: `* { transition: color .2s ease, background-color .2s ease, border-color .2s ease; }`
+- Focus style: `focus-visible:outline outline-2 outline-offset-2 outline-cyan-400`.
+
+B) ROUTE & PAGE COVERAGE (DARK APPLIED EVERYWHERE)
+- Enumerate routes from the router config and filesystem. Ensure each page imports the global layout and dark tokens.
+- Pages that must exist (create if missing): `/`, `/platform`, `/solutions`, `/industries`, `/pricing`, `/about`, `/resources`, `/resources/:slug`, `/contact`, `/privacy`, `/terms`, and a styled `/404`.
+- For any section-CTA that implies deeper content (e.g., “AI Bots”, “Analytics”, “WEM/WFO”, “Channels”), create matching subpages under `/platform/*` or `/solutions/*` with on-brand layout and copy pulled from our current site content (reuse existing copy, headings, bullets, and imagery). 
+- If copy isn’t present, synthesize concise, accurate summaries based on existing sections/components to keep information correct and consistent with our offer—do **not** invent features we don’t already show.
+
+C) LINK/CTA INTEGRITY (NO DEAD ENDS)
+- Programmatically scan codebase for:
+- `<Link to="...">`, `<a href="...">`, `navigate("...")`, and custom `<Button>` components that accept `to|href|onClick`.
+- Flag and fix: `"#"`, empty strings, missing paths, `onClick={() => {}}`, buttons that visually look like links but don’t navigate.
+- For each flagged item:
+- Map to an existing correct page; if no page exists, **create it** (see B) and wire it.
+- Ensure external links have `target="_blank" rel="noopener noreferrer"`.
+- Update nav, hero CTAs, card “Learn more” buttons, footer links, and any “Compare plans”, “See how it works”, “Read the story”, etc.
+
+D) CALENDLY (KEEP IF PRESENT)
+- If Calendly is already integrated, **do not remove**. Keep:
+- Pricing cards → “Get a Quote” → `Calendly.initPopupWidget({ url: import.meta.env.VITE_CALENDLY_URL })`.
+- `/contact` keeps inline Calendly widget + a popup trigger button.
+- If not integrated yet, add the standard Calendly widget assets to `index.html` and use `VITE_CALENDLY_URL` secret.
+
+E) MOTION & CONSISTENCY
+- Keep Framer Motion route transitions (fade + 8–12px slide, 220–260ms, easeInOut; respect reduced motion).
+- Keep staggered reveals for cards (≈40ms).
+- Uniform section rhythm: container max-widths, spacing, and card hover (translate-y-[2px], subtle shadow).
+
+F) ACCESSIBILITY & QA
+- Color contrast WCAG AA or better on text, buttons, and focus.
+- Keyboard traversal hits all CTAs; skip link present.
+- Create a quick integrity script/test:
+- Crawl the dev server, click primary CTAs on each top-level page, assert non-404 and non-blank.
+- Lighthouse (Mobile & Desktop) ≥ 90 on Accessibility/Best Practices; fix regressions.
+
+DELIVERABLES
+- Theme switcher fully removed; **dark-only** enforced at root and across all pages.
+- Every visible button/link/CTA navigates to a valid, designed page with correct on-brand info.
+- Any missing pages created and styled to match the site’s dark design system.
+- Short README update: dark-only policy, link coverage checklist, and how to add future pages correctly.
+
+BRANCH
+- Commit to `feat/dark-only-link-complete`, open PR, and merge after QA passes.
+```
+
+**Key Improvements**
+
+* Explicitly removes theme switching and enforces dark at the HTML root + code entry (no accidental light fallbacks).
+* Adds a **link integrity pass** so zero CTAs point to `#` or dead routes; auto-creates missing pages with on-brand content.
+* Guarantees consistent design and motion while keeping Calendly flows intact.
+
+**Pro Tip**
+After the agent finishes, run through the header, hero, pricing, resources cards, and footer links manually—every click should land on a real, styled page. If you spot a stray placeholder, add it to the router and reuse the same dark tokens/components for a perfect match.

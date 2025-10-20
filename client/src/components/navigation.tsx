@@ -3,7 +3,6 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCalendly } from "@/hooks/useCalendly";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useState } from "react";
 
 const scrollToTop = () => {
@@ -59,8 +58,6 @@ export default function Navigation() {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <ThemeToggle />
-            
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
                 <Link href="/dashboard">
@@ -102,8 +99,7 @@ export default function Navigation() {
             </Button>
           </div>
 
-          <div className="md:hidden flex items-center space-x-2">
-            <ThemeToggle />
+          <div className="md:hidden flex items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-gray-300 dark:text-gray-300 hover:text-white dark:hover:text-white"
