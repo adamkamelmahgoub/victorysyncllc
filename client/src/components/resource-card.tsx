@@ -22,11 +22,11 @@ export function ResourceCard({ title, description, tag, href, image }: ResourceC
   return (
     <CardComponent
       {...cardProps}
-      className="group bg-ink-800 bg-ink-800 border border-ink-700 rounded-xl overflow-hidden hover:-translate-y-0.5 transition-all duration-200"
+      className="group bg-ink-800 border border-ink-700 rounded-xl overflow-hidden hover:-translate-y-0.5 transition-all duration-200"
       data-testid={`resource-card-${title.toLowerCase().replace(/\s+/g, '-')}`}
     >
       {image && (
-        <div className="aspect-video bg-ink-700 bg-ink-700 overflow-hidden">
+        <div className="aspect-video bg-ink-700 overflow-hidden">
           <img 
             src={image} 
             alt={title}
@@ -42,19 +42,19 @@ export function ResourceCard({ title, description, tag, href, image }: ResourceC
           </span>
         </div>
         
-        <h3 className="text-xl font-semibold text-white text-white mb-2 group-hover:text-cyan-400 transition-colors">
+        <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-cyan-400 transition-colors">
           {title}
         </h3>
         
-        <p className="text-gray-400 text-gray-400 mb-4 line-clamp-2">
+        <p className="text-gray-400 mb-4 line-clamp-2">
           {description}
         </p>
         
         <Link href={href}>
-          <a className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-medium group/link">
+          <span className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-medium group/link cursor-pointer">
             Read More
             <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
-          </a>
+          </span>
         </Link>
       </div>
     </CardComponent>
