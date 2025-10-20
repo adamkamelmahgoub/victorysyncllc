@@ -1,16 +1,16 @@
-import {
-  Phone,
-  Megaphone,
-  Bot,
-  BarChart3,
-  Check,
-  ArrowRight,
-} from "lucide-react";
+import { Phone, Megaphone, Bot, BarChart3, Check, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
+import { useCalendly } from "@/hooks/useCalendly";
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 export default function Services() {
+  const { open: openCalendly } = useCalendly();
+
   const services = [
     {
       icon: Phone,
@@ -103,31 +103,22 @@ export default function Services() {
   ];
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="gradient-victory py-20 text-white">
+    <div className="min-h-screen bg-ink-900">
+      <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 text-white border-b border-ink-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Complete Business Solutions
           </h1>
-          <p className="text-xl text-purple-100 max-w-3xl mx-auto mb-8">
-            From customer support to sales growth, we provide end-to-end
-            services that help your business thrive while reducing costs by up
-            to 60%.
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+            From customer support to sales growth, we provide end-to-end services that help your business thrive while reducing costs by up to 60%.
           </p>
-          <Link href="/pricing">
-            <Button
-              size="lg"
-              className="text-victory-purple hover:bg-gray-100 bg-[#6750f0]"
-            >
-              View Our Packages
-            </Button>
-          </Link>
+          <Button onClick={openCalendly} size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-white">
+            Get a Quote
+          </Button>
         </div>
       </section>
 
-      {/* Services Grid */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-20">
             {services.map((service, index) => {
@@ -135,76 +126,56 @@ export default function Services() {
               const isEven = index % 2 === 0;
 
               return (
-                <div
-                  key={service.title}
-                  className={`grid md:grid-cols-2 gap-12 items-center ${!isEven ? "md:flex-row-reverse" : ""}`}
-                >
+                <div key={service.title} className={`grid md:grid-cols-2 gap-12 items-center ${!isEven ? "md:flex-row-reverse" : ""}`}>
                   <div className={isEven ? "order-1" : "order-2"}>
-                    <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
-                      <IconComponent className="victory-purple w-8 h-8" />
+                    <div className="w-16 h-16 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6">
+                      <IconComponent className="text-cyan-400 w-8 h-8" />
                     </div>
-                    <h2 className="text-3xl font-bold victory-dark mb-6">
-                      {service.title}
-                    </h2>
+                    <h2 className="text-3xl font-bold text-white mb-6">{service.title}</h2>
 
                     <div className="mb-8">
-                      <h3 className="font-semibold victory-dark mb-4">
-                        Key Features:
-                      </h3>
+                      <h3 className="font-semibold text-white mb-4">Key Features:</h3>
                       <div className="grid grid-cols-1 gap-2">
                         {service.features.map((feature, idx) => (
-                          <div key={idx} className="flex items-center">
-                            <Check className="text-green-500 w-4 h-4 mr-3 flex-shrink-0" />
-                            <span className="text-sm victory-gray">
-                              {feature}
-                            </span>
+                          <div key={idx} className="flex items-start">
+                            <Check className="text-green-500 w-4 h-4 mr-3 flex-shrink-0 mt-1" />
+                            <span className="text-sm text-gray-300">{feature}</span>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     <div className="mb-8">
-                      <h3 className="font-semibold victory-dark mb-4">
-                        Benefits:
-                      </h3>
+                      <h3 className="font-semibold text-white mb-4">Benefits:</h3>
                       <div className="space-y-2">
                         {service.benefits.map((benefit, idx) => (
-                          <div key={idx} className="flex items-center">
-                            <ArrowRight className="victory-purple w-4 h-4 mr-3 flex-shrink-0" />
-                            <span className="text-sm font-medium victory-dark">
-                              {benefit}
-                            </span>
+                          <div key={idx} className="flex items-start">
+                            <ArrowRight className="text-cyan-400 w-4 h-4 mr-3 flex-shrink-0 mt-1" />
+                            <span className="text-sm font-medium text-gray-300">{benefit}</span>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    <Link href="/contact">
-                      <Button className="bg-victory-purple hover:bg-purple-700 text-white">
-                        Learn More
-                      </Button>
+                    <Link href="/contact" onClick={scrollToTop}>
+                      <Button className="bg-cyan-500 hover:bg-cyan-600 text-white">Learn More</Button>
                     </Link>
                   </div>
 
                   <div className={isEven ? "order-2" : "order-1"}>
-                    <Card className="p-8 shadow-lg">
+                    <Card className="p-8 shadow-lg bg-ink-800 border-ink-700">
                       <CardContent className="text-center">
-                        <IconComponent className="victory-purple w-20 h-20 mx-auto mb-6" />
-                        <h3 className="text-2xl font-bold victory-dark mb-4">
-                          Ready to Get Started?
-                        </h3>
-                        <p className="victory-gray mb-6">
-                          Discover how our {service.title.toLowerCase()}{" "}
-                          services can transform your business operations.
+                        <IconComponent className="text-cyan-400 w-20 h-20 mx-auto mb-6" />
+                        <h3 className="text-2xl font-bold text-white mb-4">Ready to Get Started?</h3>
+                        <p className="text-gray-300 mb-6">
+                          Discover how our {service.title.toLowerCase()} services can transform your business operations.
                         </p>
                         <div className="space-y-3">
-                          <Link href="/pricing">
-                            <Button className="w-full bg-victory-purple hover:bg-purple-700 text-white">
-                              View Pricing Plans
-                            </Button>
-                          </Link>
-                          <Link href="/contact">
-                            <Button variant="outline" className="w-full">
+                          <Button onClick={openCalendly} className="w-full bg-cyan-500 hover:bg-cyan-600 text-white">
+                            Get a Quote
+                          </Button>
+                          <Link href="/contact" onClick={scrollToTop}>
+                            <Button variant="outline" className="w-full border-ink-600 text-gray-300 hover:bg-ink-700">
                               Schedule Consultation
                             </Button>
                           </Link>
@@ -219,61 +190,48 @@ export default function Services() {
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="bg-slate-50 py-20">
+      <section className="bg-ink-800 py-20 border-y border-ink-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
-              Why Choose VictorySync?
-            </h2>
-            <p className="text-xl victory-gray max-w-3xl mx-auto">
-              We combine Egyptian talent with cutting-edge technology to deliver
-              exceptional results
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Why Choose VictorySync?</h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              We combine professional expertise with cutting-edge technology to deliver exceptional results
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <Card>
+            <Card className="bg-ink-900 border-ink-700">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Check className="text-green-600 w-8 h-8" />
+                <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Check className="text-green-500 w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold victory-dark mb-4">
-                  Proven Results
-                </h3>
-                <p className="victory-gray">
-                  Our clients see an average of 60% cost reduction and 40%
-                  improvement in customer satisfaction scores.
+                <h3 className="text-xl font-bold text-white mb-4">Proven Results</h3>
+                <p className="text-gray-300">
+                  Our clients see an average of 60% cost reduction and 40% improvement in customer satisfaction scores.
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-ink-900 border-ink-700">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Bot className="victory-blue w-8 h-8" />
+                <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Bot className="text-cyan-400 w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold victory-dark mb-4">
-                  Advanced Technology
-                </h3>
-                <p className="victory-gray">
-                  We leverage the latest AI and automation tools to maximize
-                  efficiency and deliver superior results.
+                <h3 className="text-xl font-bold text-white mb-4">Advanced Technology</h3>
+                <p className="text-gray-300">
+                  We leverage the latest AI and automation tools to maximize efficiency and deliver superior results.
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-ink-900 border-ink-700">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Phone className="victory-purple w-8 h-8" />
+                <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Phone className="text-cyan-400 w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold victory-dark mb-4">
-                  24/7 Support
-                </h3>
-                <p className="victory-gray">
-                  Round-the-clock availability ensures your customers are always
-                  taken care of, no matter the time zone.
+                <h3 className="text-xl font-bold text-white mb-4">24/7 Support</h3>
+                <p className="text-gray-300">
+                  Round-the-clock availability ensures your customers are always taken care of, no matter the time zone.
                 </p>
               </CardContent>
             </Card>
@@ -281,31 +239,18 @@ export default function Services() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="gradient-victory py-20 text-white">
+      <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Transform Your Business?
-          </h2>
-          <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
-            Let's discuss how our services can help you reduce costs, improve
-            efficiency, and drive growth.
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Business?</h2>
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
+            Let's discuss how our services can help you reduce costs, improve efficiency, and drive growth.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact">
-              <Button
-                size="lg"
-                className="text-victory-purple hover:bg-gray-100 bg-[#7046ee]"
-              >
-                Get Free Consultation
-              </Button>
-            </Link>
-            <Link href="/pricing">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#7147ef]"
-              >
+            <Button onClick={openCalendly} size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-white">
+              Get Free Consultation
+            </Button>
+            <Link href="/pricing" onClick={scrollToTop}>
+              <Button size="lg" variant="outline" className="border-cyan-400 text-cyan-400 hover:bg-cyan-500/10">
                 View Pricing
               </Button>
             </Link>
