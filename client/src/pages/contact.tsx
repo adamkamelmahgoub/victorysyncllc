@@ -1,20 +1,20 @@
-import { MotionPage } from '@/components/motion-page';
-import { Section, StaggerContainer, fadeInUp } from '@/components/section';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { useCalendly } from '@/hooks/useCalendly';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { insertContactSubmissionSchema } from '@shared/schema';
-import { useMutation } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-import { z } from 'zod';
-import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Calendar } from 'lucide-react';
-import { useEffect } from 'react';
+import { MotionPage } from "@/components/motion-page";
+import { Section, StaggerContainer, fadeInUp } from "@/components/section";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useCalendly } from "@/hooks/useCalendly";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertContactSubmissionSchema } from "@shared/schema";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+import { motion } from "framer-motion";
+import { Mail, Phone, MapPin, Calendar } from "lucide-react";
+import { useEffect } from "react";
 
 type ContactFormData = z.infer<typeof insertContactSubmissionSchema>;
 
@@ -33,7 +33,7 @@ export default function Contact() {
 
   const contactMutation = useMutation({
     mutationFn: async (data: ContactFormData) => {
-      await apiRequest('POST', '/api/contact', data);
+      await apiRequest("POST", "/api/contact", data);
     },
     onSuccess: () => {
       toast({
@@ -56,15 +56,16 @@ export default function Contact() {
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && (window as any).Calendly) {
-      const elem = document.getElementById('calendly-inline');
-      const calendlyUrl = (import.meta as any).env?.VITE_CALENDLY_URL || 'https://calendly.com';
+    if (typeof window !== "undefined" && (window as any).Calendly) {
+      const elem = document.getElementById("calendly-inline");
+      const calendlyUrl =
+        (import.meta as any).env?.VITE_CALENDLY_URL || "https://calendly.com";
       if (elem && (window as any).Calendly.initInlineWidget) {
         (window as any).Calendly.initInlineWidget({
           url: calendlyUrl,
           parentElement: elem,
           prefill: {},
-          utm: {}
+          utm: {},
         });
       }
     }
@@ -79,7 +80,8 @@ export default function Contact() {
               Let's Start a Conversation
             </h1>
             <p className="text-xl text-gray-300 text-gray-300 max-w-3xl mx-auto mb-8">
-              Ready to transform your customer experience? Get in touch with our team.
+              Ready to transform your customer experience? Get in touch with our
+              team.
             </p>
             <Button
               size="lg"
@@ -102,7 +104,8 @@ export default function Contact() {
                 Get in Touch
               </h2>
               <p className="text-lg text-gray-300 text-gray-300 mb-8">
-                Have questions? We're here to help. Send us a message and we'll respond as soon as possible.
+                Have questions? We're here to help. Send us a message and we'll
+                respond as soon as possible.
               </p>
 
               <div className="space-y-6">
@@ -111,8 +114,12 @@ export default function Contact() {
                     <Mail className="w-6 h-6 text-cyan-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white text-white mb-1">Email</h3>
-                    <p className="text-gray-300 text-gray-300">info@victorysync.com</p>
+                    <h3 className="font-semibold text-white text-white mb-1">
+                      Email
+                    </h3>
+                    <p className="text-gray-300 text-gray-300">
+                      info@victorysync.com
+                    </p>
                   </div>
                 </div>
 
@@ -121,8 +128,12 @@ export default function Contact() {
                     <Phone className="w-6 h-6 text-cyan-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white text-white mb-1">Phone</h3>
-                    <p className="text-gray-300 text-gray-300">Available via scheduled call</p>
+                    <h3 className="font-semibold text-white text-white mb-1">
+                      Phone
+                    </h3>
+                    <p className="text-gray-300 text-gray-300">
+                      Available via scheduled call
+                    </p>
                   </div>
                 </div>
 
@@ -131,57 +142,79 @@ export default function Contact() {
                     <MapPin className="w-6 h-6 text-cyan-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white text-white mb-1">Location</h3>
-                    <p className="text-gray-300 text-gray-300">Millstone, New Jersey, USA</p>
+                    <h3 className="font-semibold text-white text-white mb-1">
+                      Location
+                    </h3>
+                    <p className="text-gray-300 text-gray-300">
+                      Millstone, New Jersey, USA
+                    </p>
                   </div>
                 </div>
               </div>
             </motion.div>
           </StaggerContainer>
 
-          <motion.div variants={fadeInUp} className="bg-ink-900 bg-ink-900 border border-ink-700 rounded-xl p-8">
-            <h3 className="text-2xl font-bold text-white text-white mb-6">Send Us a Message</h3>
+          <motion.div
+            variants={fadeInUp}
+            className="bg-ink-900 bg-ink-900 border border-ink-700 rounded-xl p-8"
+          >
+            <h3 className="text-2xl font-bold text-white text-white mb-6">
+              Send Us a Message
+            </h3>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="firstName" className="text-gray-300 text-gray-300">
+                  <Label
+                    htmlFor="firstName"
+                    className="text-gray-300 text-gray-300"
+                  >
                     First Name
                   </Label>
                   <Input
                     id="firstName"
-                    {...register('firstName')}
+                    {...register("firstName")}
                     placeholder="John"
-                    className={`bg-ink-800 border-ink-600 text-white ${errors.firstName ? 'border-red-500' : ''}`}
+                    className={`bg-ink-800 border-ink-600 text-white ${errors.firstName ? "border-red-500" : ""}`}
                     data-testid="input-first-name"
                   />
                   {errors.firstName && (
-                    <p className="text-red-400 text-sm mt-1">{errors.firstName.message}</p>
+                    <p className="text-red-400 text-sm mt-1">
+                      {errors.firstName.message}
+                    </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="lastName" className="text-gray-300 text-gray-300">
+                  <Label
+                    htmlFor="lastName"
+                    className="text-gray-300 text-gray-300"
+                  >
                     Last Name
                   </Label>
                   <Input
                     id="lastName"
-                    {...register('lastName')}
+                    {...register("lastName")}
                     placeholder="Doe"
-                    className={`bg-ink-800 border-ink-600 text-white ${errors.lastName ? 'border-red-500' : ''}`}
+                    className={`bg-ink-800 border-ink-600 text-white ${errors.lastName ? "border-red-500" : ""}`}
                     data-testid="input-last-name"
                   />
                   {errors.lastName && (
-                    <p className="text-red-400 text-sm mt-1">{errors.lastName.message}</p>
+                    <p className="text-red-400 text-sm mt-1">
+                      {errors.lastName.message}
+                    </p>
                   )}
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="company" className="text-gray-300 text-gray-300">
+                <Label
+                  htmlFor="company"
+                  className="text-gray-300 text-gray-300"
+                >
                   Company (Optional)
                 </Label>
                 <Input
                   id="company"
-                  {...register('company')}
+                  {...register("company")}
                   placeholder="Your Company"
                   className="bg-ink-800 border-ink-600 text-white"
                   data-testid="input-company"
@@ -195,30 +228,37 @@ export default function Contact() {
                 <Input
                   id="email"
                   type="email"
-                  {...register('email')}
+                  {...register("email")}
                   placeholder="john@example.com"
-                  className={`bg-ink-800 border-ink-600 text-white ${errors.email ? 'border-red-500' : ''}`}
+                  className={`bg-ink-800 border-ink-600 text-white ${errors.email ? "border-red-500" : ""}`}
                   data-testid="input-email"
                 />
                 {errors.email && (
-                  <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
+                  <p className="text-red-400 text-sm mt-1">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
 
               <div>
-                <Label htmlFor="message" className="text-gray-300 text-gray-300">
+                <Label
+                  htmlFor="message"
+                  className="text-gray-300 text-gray-300"
+                >
                   Message
                 </Label>
                 <Textarea
                   id="message"
-                  {...register('message')}
+                  {...register("message")}
                   rows={4}
                   placeholder="Tell us about your needs..."
-                  className={`bg-ink-800 border-ink-600 text-white ${errors.message ? 'border-red-500' : ''}`}
+                  className={`bg-ink-800 border-ink-600 text-white ${errors.message ? "border-red-500" : ""}`}
                   data-testid="textarea-message"
                 />
                 {errors.message && (
-                  <p className="text-red-400 text-sm mt-1">{errors.message.message}</p>
+                  <p className="text-red-400 text-sm mt-1">
+                    {errors.message.message}
+                  </p>
                 )}
               </div>
 
@@ -228,7 +268,7 @@ export default function Contact() {
                 disabled={contactMutation.isPending}
                 data-testid="button-submit-contact"
               >
-                {contactMutation.isPending ? 'Sending...' : 'Send Message'}
+                {contactMutation.isPending ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </motion.div>
@@ -245,11 +285,11 @@ export default function Contact() {
           </p>
         </div>
 
-        <div 
+        <div
           id="calendly-inline"
           className="calendly-inline-widget w-full rounded-xl overflow-hidden border border-ink-700"
-          style={{ minHeight: '700px' }}
-          data-url={`${(import.meta as any).env?.VITE_CALENDLY_URL || 'https://calendly.com'}?hide_event_type_details=1&background_color=0b1221&text_color=e5e7eb&primary_color=22d3ee`}
+          style={{ minHeight: "700px" }}
+          data-url={`${(import.meta as any).env?.VITE_CALENDLY_URL || "https://calendly.com"}?hide_event_type_details=1&background_color=0b1221&text_color=e5e7eb&primary_color=22d3ee`}
         />
       </Section>
     </MotionPage>
