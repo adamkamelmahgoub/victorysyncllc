@@ -18,12 +18,6 @@ import { useEffect } from 'react';
 
 type ContactFormData = z.infer<typeof insertContactSubmissionSchema>;
 
-declare global {
-  interface Window {
-    Calendly?: any;
-  }
-}
-
 export default function Contact() {
   const { toast } = useToast();
   const { open: openCalendly } = useCalendly();
@@ -62,11 +56,12 @@ export default function Contact() {
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Calendly) {
+    if (typeof window !== 'undefined' && (window as any).Calendly) {
       const elem = document.getElementById('calendly-inline');
-      if (elem) {
-        window.Calendly.initInlineWidget({
-          url: import.meta.env.VITE_CALENDLY_URL || 'https://calendly.com',
+      const calendlyUrl = (import.meta as any).env?.VITE_CALENDLY_URL || 'https://calendly.com';
+      if (elem && (window as any).Calendly.initInlineWidget) {
+        (window as any).Calendly.initInlineWidget({
+          url: calendlyUrl,
           parentElement: elem,
           prefill: {},
           utm: {}
@@ -211,19 +206,6 @@ export default function Contact() {
               </div>
 
               <div>
-                <Label htmlFor="phone" className="text-gray-300 dark:text-gray-300">
-                  Phone (Optional)
-                </Label>
-                <Input
-                  id="phone"
-                  {...register('phone')}
-                  placeholder="+1 (555) 123-4567"
-                  className="bg-ink-800 border-ink-600 text-white"
-                  data-testid="input-phone"
-                />
-              </div>
-
-              <div>
                 <Label htmlFor="message" className="text-gray-300 dark:text-gray-300">
                   Message
                 </Label>
@@ -267,7 +249,7 @@ export default function Contact() {
           id="calendly-inline"
           className="calendly-inline-widget w-full rounded-xl overflow-hidden border border-ink-700"
           style={{ minHeight: '700px' }}
-          data-url={`${import.meta.env.VITE_CALENDLY_URL || 'https://calendly.com'}?hide_event_type_details=1&background_color=0b1221&text_color=e5e7eb&primary_color=22d3ee`}
+          data-url={`${(import.meta as any).env?.VITE_CALENDLY_URL || 'https://calendly.com'}?hide_event_type_details=1&background_color=0b1221&text_color=e5e7eb&primary_color=22d3ee`}
         />
       </Section>
     </MotionPage>
