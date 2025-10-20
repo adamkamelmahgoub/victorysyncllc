@@ -1,274 +1,327 @@
-import { Link } from 'wouter';
+import { MotionPage } from '@/components/motion-page';
+import { Section, StaggerContainer, fadeInUp } from '@/components/section';
+import { MetricTile } from '@/components/metric-tile';
+import { ResourceCard } from '@/components/resource-card';
+import { LogoRow } from '@/components/logo-row';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Phone, Megaphone, Bot, Check, Star } from 'lucide-react';
+import { useCalendly } from '@/hooks/useCalendly';
+import { Link } from 'wouter';
+import { motion } from 'framer-motion';
+import {
+  DollarSign,
+  Clock,
+  TrendingUp,
+  Users,
+  Bot,
+  BarChart3,
+  Phone,
+  MessageSquare,
+  Zap,
+  Database,
+  ChevronRight
+} from 'lucide-react';
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+const customerStories = [
+  {
+    company: 'TechCorp Solutions',
+    outcome: 'Reduced support costs by 65% while improving customer satisfaction by 40%',
+    industry: 'Technology'
+  },
+  {
+    company: 'HealthPlus Medical',
+    outcome: 'Achieved 24/7 patient support coverage with 95% first-call resolution',
+    industry: 'Healthcare'
+  },
+  {
+    company: 'RetailMax Inc',
+    outcome: 'Increased sales conversions by 55% through AI-powered customer engagement',
+    industry: 'Retail'
+  }
+];
 
 export default function Home() {
+  const { open: openCalendly } = useCalendly();
+  const [activeStory, setActiveStory] = useState(0);
+
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="gradient-victory py-20 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                Reduce Customer Service Costs by <span className="text-yellow-300">60%</span>
+    <MotionPage className="bg-ink-900 dark:bg-ink-900">
+      <section className="relative py-20 md:py-32 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,211,238,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(139,92,246,0.1),transparent_50%)]" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <StaggerContainer className="text-center max-w-4xl mx-auto">
+            <motion.div variants={fadeInUp}>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white dark:text-white mb-6 leading-tight">
+                Transform Customer Experience with{' '}
+                <span className="text-cyan-400">AI-Powered</span> Solutions
               </h1>
-              <p className="text-xl mb-8 text-purple-100">
-                Professional contact center services, AI automation, and marketing solutions from New Jersey. 24/7 support at a fraction of US costs.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/pricing">
-                  <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#5d5df2]" onClick={scrollToTop}>
-                    View Pricing
-                  </Button>
-                </Link>
-                <Link href="/contact">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#506bf4]" onClick={scrollToTop}>
-                    Schedule Demo
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            <div className="relative">
-              <img 
-                src="https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
-                alt="Modern call center workspace with professional agents" 
-                className="rounded-2xl shadow-2xl w-full" 
+            </motion.div>
+            
+            <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-gray-300 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
+              Reduce costs by 60% while delivering exceptional 24/7 customer support through professional contact centers and intelligent automation
+            </motion.p>
+            
+            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+              <Button
+                size="lg"
+                onClick={openCalendly}
+                className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-medium text-lg px-8"
+                data-testid="button-hero-get-quote"
+              >
+                Get a Quote
+              </Button>
+              <Link href="/platform">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10 text-lg px-8"
+                  data-testid="button-hero-explore"
+                >
+                  Explore Platform
+                  <ChevronRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+            </motion.div>
+
+            <motion.div variants={fadeInUp}>
+              <LogoRow
+                title="Trusted by leading organizations"
+                logos={[
+                  { name: 'Enterprise Corp' },
+                  { name: 'TechStart' },
+                  { name: 'Global Services' },
+                  { name: 'Innovation Labs' }
+                ]}
               />
-              <div className="absolute -bottom-6 -left-6 p-4 rounded-xl shadow-lg text-victory-dark bg-[#5d5df2]">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <Check className="text-green-600 w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">93% Cost Savings</p>
-                    <p className="text-sm text-victory-gray">vs US-based agents</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+            </motion.div>
+          </StaggerContainer>
         </div>
       </section>
-      {/* Stats Section */}
-      <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl font-bold victory-purple mb-2">60%</div>
-              <div className="victory-gray">Cost Reduction</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold victory-purple mb-2">24/7</div>
-              <div className="victory-gray">Support Coverage</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold victory-purple mb-2">97%</div>
-              <div className="victory-gray">Client Satisfaction</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold victory-purple mb-2">500+</div>
-              <div className="victory-gray">Projects Completed</div>
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* Services Section */}
-      <section className="bg-slate-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
-              Complete Customer Engagement Solutions
-            </h2>
-            <p className="text-xl victory-gray max-w-3xl mx-auto">
-              From inbound support to outbound sales, AI automation to digital marketing - we've got your customer engagement covered.
-            </p>
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Inbound Services */}
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
-                  <Phone className="victory-purple w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold mb-4">Inbound Contact Center</h3>
-                <p className="victory-gray mb-6">
-                  Professional customer support, technical assistance, and order processing with multilingual capabilities.
-                </p>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> 24/7 Customer Support</li>
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Technical Help Desk</li>
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Order Processing</li>
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Live Chat Support</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Outbound Services */}
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
-                  <Megaphone className="victory-blue w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold mb-4">Outbound Sales</h3>
-                <p className="victory-gray mb-6">
-                  Lead generation, appointment setting, and sales campaigns to grow your business revenue.
-                </p>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Lead Generation</li>
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Appointment Setting</li>
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Cold Calling</li>
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Sales Campaigns</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* AI Automation */}
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
-                  <Bot className="victory-light-purple w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold mb-4">AI Automation</h3>
-                <p className="victory-gray mb-6">
-                  Intelligent chatbots, automated workflows, and AI-powered customer insights to streamline operations.
-                </p>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> AI Chatbots</li>
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Workflow Automation</li>
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Call Summaries</li>
-                  <li className="flex items-center"><Check className="text-green-500 w-4 h-4 mr-2" /> Reporting Dashboard</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-      {/* Testimonials Section */}
-      <section className="bg-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold victory-dark mb-4">
-              What Our Clients Say
-            </h2>
-            <p className="text-xl victory-gray">
-              Join hundreds of satisfied businesses who trust VictorySync
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Testimonial 1 */}
-            <Card>
-              <CardContent className="p-8">
-                <div className="flex items-center mb-4">
-                  <div className="flex text-yellow-400">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
-                    ))}
-                  </div>
-                </div>
-                <p className="victory-gray mb-6">
-                  "VictorySync helped us reduce our customer service costs by 65% while improving response times. Their team is professional and reliable."
-                </p>
-                <div className="flex items-center">
-                  <img 
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
-                    alt="Professional business executive" 
-                    className="w-12 h-12 rounded-full mr-4 object-cover" 
-                  />
-                  <div>
-                    <div className="font-semibold">Michael Rodriguez</div>
-                    <div className="text-sm victory-gray">CEO, TechStart Inc.</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Testimonial 2 */}
-            <Card>
-              <CardContent className="p-8">
-                <div className="flex items-center mb-4">
-                  <div className="flex text-yellow-400">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
-                    ))}
-                  </div>
-                </div>
-                <p className="victory-gray mb-6">
-                  "The AI automation features have streamlined our entire customer support process. Highly recommend their services."
-                </p>
-                <div className="flex items-center">
-                  <img 
-                    src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
-                    alt="Professional business leader" 
-                    className="w-12 h-12 rounded-full mr-4 object-cover" 
-                  />
-                  <div>
-                    <div className="font-semibold">Sarah Chen</div>
-                    <div className="text-sm victory-gray">Operations Director, GrowthCorp</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Testimonial 3 */}
-            <Card>
-              <CardContent className="p-8">
-                <div className="flex items-center mb-4">
-                  <div className="flex text-yellow-400">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
-                    ))}
-                  </div>
-                </div>
-                <p className="victory-gray mb-6">
-                  "Outstanding service quality and cost savings. VictorySync has become an essential part of our business operations."
-                </p>
-                <div className="flex items-center">
-                  <img 
-                    src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
-                    alt="Business executive" 
-                    className="w-12 h-12 rounded-full mr-4 object-cover" 
-                  />
-                  <div>
-                    <div className="font-semibold">David Thompson</div>
-                    <div className="text-sm victory-gray">Founder, Digital Solutions</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-      {/* CTA Section */}
-      <section className="gradient-victory py-20 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Save 60% on Customer Service?
+      <Section className="bg-ink-800">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
+            Measurable Business Outcomes
           </h2>
-          <p className="text-xl mb-8 text-purple-100 max-w-2xl mx-auto">
-            Join our next webinar to learn how other businesses are cutting costs while improving service quality.
+          <p className="text-lg text-gray-300 dark:text-gray-300 max-w-2xl mx-auto">
+            Our clients achieve significant improvements across key metrics
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact">
-              <Button size="lg" className="text-victory-purple hover:bg-gray-100 bg-[#6950f0]" onClick={scrollToTop}>
-                Schedule Demo
-              </Button>
-            </Link>
-            <Link href="/pricing">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-victory-purple bg-[#6454f0]" onClick={scrollToTop}>
-                View Pricing
-              </Button>
-            </Link>
+        </div>
+
+        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <MetricTile
+            icon={DollarSign}
+            value="60%"
+            label="Cost Reduction"
+            description="Average savings vs. US-based services"
+          />
+          <MetricTile
+            icon={Clock}
+            value="-35s"
+            label="Faster Resolution"
+            description="Reduced average handle time"
+          />
+          <MetricTile
+            icon={TrendingUp}
+            value="+28%"
+            label="NPS Increase"
+            description="Improved customer satisfaction"
+          />
+          <MetricTile
+            icon={Users}
+            value="97%"
+            label="First-Call Resolution"
+            description="Issues solved on first contact"
+          />
+          <MetricTile
+            icon={Zap}
+            value="85%"
+            label="Automation Rate"
+            description="Queries handled by AI"
+          />
+          <MetricTile
+            icon={Phone}
+            value="24/7"
+            label="Support Coverage"
+            description="Always-on customer service"
+          />
+        </StaggerContainer>
+      </Section>
+
+      <Section className="bg-ink-900">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
+            Our Capabilities
+          </h2>
+          <p className="text-lg text-gray-300 dark:text-gray-300 max-w-2xl mx-auto">
+            A comprehensive platform for modern customer experience
+          </p>
+        </div>
+
+        <Tabs defaultValue="ai" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 bg-ink-800 p-2 rounded-lg mb-8">
+            <TabsTrigger value="ai" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+              <Bot className="w-4 h-4 mr-2" />
+              AI Bots
+            </TabsTrigger>
+            <TabsTrigger value="engagement" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Engagement
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="platform" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+              <Database className="w-4 h-4 mr-2" />
+              Platform
+            </TabsTrigger>
+            <TabsTrigger value="channels" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+              <Phone className="w-4 h-4 mr-2" />
+              Channels
+            </TabsTrigger>
+            <TabsTrigger value="wfm" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+              <Users className="w-4 h-4 mr-2" />
+              WFM
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="bg-ink-800 rounded-xl p-8">
+            <TabsContent value="ai" className="space-y-4">
+              <h3 className="text-2xl font-bold text-white dark:text-white">AI-Powered Automation</h3>
+              <p className="text-gray-300 dark:text-gray-300">Deploy intelligent bots that understand context, learn from interactions, and handle customer inquiries with human-like understanding.</p>
+              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+            </TabsContent>
+            
+            <TabsContent value="engagement" className="space-y-4">
+              <h3 className="text-2xl font-bold text-white dark:text-white">Customer Engagement Hub</h3>
+              <p className="text-gray-300 dark:text-gray-300">Centralize all customer interactions across channels for a unified view of every customer journey and touchpoint.</p>
+              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+            </TabsContent>
+            
+            <TabsContent value="analytics" className="space-y-4">
+              <h3 className="text-2xl font-bold text-white dark:text-white">Advanced Analytics</h3>
+              <p className="text-gray-300 dark:text-gray-300">Transform data into actionable insights with real-time dashboards, predictive analytics, and comprehensive reporting.</p>
+              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+            </TabsContent>
+            
+            <TabsContent value="platform" className="space-y-4">
+              <h3 className="text-2xl font-bold text-white dark:text-white">Open Integration Platform</h3>
+              <p className="text-gray-300 dark:text-gray-300">Seamlessly integrate with your existing systems through our open API architecture and pre-built connectors.</p>
+              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+            </TabsContent>
+            
+            <TabsContent value="channels" className="space-y-4">
+              <h3 className="text-2xl font-bold text-white dark:text-white">Omnichannel Support</h3>
+              <p className="text-gray-300 dark:text-gray-300">Connect with customers on their preferred channels - voice, chat, email, SMS, WhatsApp, and social media.</p>
+              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+            </TabsContent>
+            
+            <TabsContent value="wfm" className="space-y-4">
+              <h3 className="text-2xl font-bold text-white dark:text-white">Workforce Management</h3>
+              <p className="text-gray-300 dark:text-gray-300">Optimize your team with intelligent scheduling, forecasting, quality management, and performance tracking.</p>
+              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </Section>
+
+      <Section className="bg-ink-800">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
+            Customer Success Stories
+          </h2>
+          <p className="text-lg text-gray-300 dark:text-gray-300">
+            See how we've helped businesses transform their CX
+          </p>
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-ink-900 rounded-xl p-8 md:p-12 mb-8">
+            <div className="mb-6">
+              <span className="inline-block px-3 py-1 text-xs font-medium text-cyan-400 bg-cyan-400/10 rounded-full mb-4">
+                {customerStories[activeStory].industry}
+              </span>
+              <h3 className="text-2xl font-bold text-white dark:text-white mb-2">
+                {customerStories[activeStory].company}
+              </h3>
+            </div>
+            <p className="text-lg text-gray-300 dark:text-gray-300 mb-6">
+              "{customerStories[activeStory].outcome}"
+            </p>
+            <Button variant="link" className="text-cyan-400 hover:text-cyan-300 p-0">
+              Read Case Study <ChevronRight className="ml-1 w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="flex justify-center gap-2">
+            {customerStories.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveStory(idx)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  activeStory === idx ? 'bg-cyan-400 w-8' : 'bg-gray-600'
+                }`}
+                aria-label={`View story ${idx + 1}`}
+              />
+            ))}
           </div>
         </div>
-      </section>
-    </div>
+      </Section>
+
+      <Section className="bg-ink-900">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
+            Latest Insights & Resources
+          </h2>
+          <p className="text-lg text-gray-300 dark:text-gray-300">
+            Stay informed with our latest thinking on CX trends
+          </p>
+        </div>
+
+        <StaggerContainer className="grid md:grid-cols-3 gap-8">
+          <ResourceCard
+            tag="Blog"
+            title="The Future of AI in Customer Service"
+            description="Discover how artificial intelligence is transforming customer support operations and what it means for your business."
+            href="/blog"
+          />
+          <ResourceCard
+            tag="Webinar"
+            title="Reducing Contact Center Costs"
+            description="Learn proven strategies to cut operational costs while maintaining exceptional service quality."
+            href="/blog"
+          />
+          <ResourceCard
+            tag="Report"
+            title="2025 CX Trends Report"
+            description="Our annual analysis of customer experience trends, technologies, and best practices for the year ahead."
+            href="/blog"
+          />
+        </StaggerContainer>
+      </Section>
+
+      <Section className="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-6">
+            Ready to Transform Your Customer Experience?
+          </h2>
+          <p className="text-xl text-gray-300 dark:text-gray-300 mb-8">
+            Schedule a consultation to learn how we can help you achieve your CX goals
+          </p>
+          <Button
+            size="lg"
+            onClick={openCalendly}
+            className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-medium text-lg px-8"
+            data-testid="button-footer-get-quote"
+          >
+            Get a Quote
+          </Button>
+        </div>
+      </Section>
+    </MotionPage>
   );
 }
