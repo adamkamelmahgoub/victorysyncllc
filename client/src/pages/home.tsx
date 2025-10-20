@@ -191,39 +191,39 @@ export default function Home() {
 
           <div className="bg-ink-800 rounded-xl p-8">
             <TabsContent value="ai" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white dark:text-white">AI-Powered Automation</h3>
-              <p className="text-gray-300 dark:text-gray-300">Deploy intelligent bots that understand context, learn from interactions, and handle customer inquiries with human-like understanding.</p>
-              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+              <h3 className="text-2xl font-bold text-white">AI-Powered Automation</h3>
+              <p className="text-gray-300">Deploy intelligent bots that understand context, learn from interactions, and handle customer inquiries with human-like understanding.</p>
+              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
             
             <TabsContent value="engagement" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white dark:text-white">Customer Engagement Hub</h3>
-              <p className="text-gray-300 dark:text-gray-300">Centralize all customer interactions across channels for a unified view of every customer journey and touchpoint.</p>
-              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+              <h3 className="text-2xl font-bold text-white">Customer Engagement Hub</h3>
+              <p className="text-gray-300">Centralize all customer interactions across channels for a unified view of every customer journey and touchpoint.</p>
+              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
             
             <TabsContent value="analytics" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white dark:text-white">Advanced Analytics</h3>
-              <p className="text-gray-300 dark:text-gray-300">Transform data into actionable insights with real-time dashboards, predictive analytics, and comprehensive reporting.</p>
-              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+              <h3 className="text-2xl font-bold text-white">Advanced Analytics</h3>
+              <p className="text-gray-300">Transform data into actionable insights with real-time dashboards, predictive analytics, and comprehensive reporting.</p>
+              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
             
             <TabsContent value="platform" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white dark:text-white">Open Integration Platform</h3>
-              <p className="text-gray-300 dark:text-gray-300">Seamlessly integrate with your existing systems through our open API architecture and pre-built connectors.</p>
-              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+              <h3 className="text-2xl font-bold text-white">Open Integration Platform</h3>
+              <p className="text-gray-300">Seamlessly integrate with your existing systems through our open API architecture and pre-built connectors.</p>
+              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
             
             <TabsContent value="channels" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white dark:text-white">Omnichannel Support</h3>
-              <p className="text-gray-300 dark:text-gray-300">Connect with customers on their preferred channels - voice, chat, email, SMS, WhatsApp, and social media.</p>
-              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+              <h3 className="text-2xl font-bold text-white">Omnichannel Support</h3>
+              <p className="text-gray-300">Connect with customers on their preferred channels - voice, chat, email, SMS, WhatsApp, and social media.</p>
+              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
             
             <TabsContent value="wfm" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white dark:text-white">Workforce Management</h3>
-              <p className="text-gray-300 dark:text-gray-300">Optimize your team with intelligent scheduling, forecasting, quality management, and performance tracking.</p>
-              <Link href="/platform"><a className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></a></Link>
+              <h3 className="text-2xl font-bold text-white">Workforce Management</h3>
+              <p className="text-gray-300">Optimize your team with intelligent scheduling, forecasting, quality management, and performance tracking.</p>
+              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
           </div>
         </Tabs>
@@ -252,9 +252,11 @@ export default function Home() {
             <p className="text-lg text-gray-300 dark:text-gray-300 mb-6">
               "{customerStories[activeStory].outcome}"
             </p>
-            <Button variant="link" className="text-cyan-400 hover:text-cyan-300 p-0">
-              Read Case Study <ChevronRight className="ml-1 w-4 h-4" />
-            </Button>
+            <Link href="/blog">
+              <Button variant="link" className="text-cyan-400 hover:text-cyan-300 p-0">
+                Read Case Study <ChevronRight className="ml-1 w-4 h-4" />
+              </Button>
+            </Link>
           </div>
 
           <div className="flex justify-center gap-2">
