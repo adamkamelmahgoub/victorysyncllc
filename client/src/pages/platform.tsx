@@ -101,14 +101,14 @@ export default function Platform() {
   const { open: openCalendly } = useCalendly();
 
   return (
-    <MotionPage className="bg-ink-900 dark:bg-ink-900">
+    <MotionPage className="bg-ink-900 bg-ink-900">
       <Section className="pt-24 pb-16 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <StaggerContainer className="text-center">
           <motion.div variants={fadeInUp}>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white dark:text-white mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-white mb-6">
               Our Platform
             </h1>
-            <p className="text-xl text-gray-300 dark:text-gray-300 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-gray-300 text-gray-300 max-w-3xl mx-auto mb-8">
               A comprehensive suite of tools designed to transform your customer experience operations
             </p>
             <Button 
@@ -151,15 +151,15 @@ export default function Platform() {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-cyan-500/10 text-cyan-400 mb-6">
                       <Icon className="w-8 h-8" />
                     </div>
-                    <h2 className="text-3xl font-bold text-white dark:text-white mb-4">
+                    <h2 className="text-3xl font-bold text-white text-white mb-4">
                       {cap.title}
                     </h2>
-                    <p className="text-lg text-gray-300 dark:text-gray-300 mb-6">
+                    <p className="text-lg text-gray-300 text-gray-300 mb-6">
                       {cap.description}
                     </p>
                     <ul className="space-y-3 mb-8">
                       {cap.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-3 text-gray-300 dark:text-gray-300">
+                        <li key={idx} className="flex items-center gap-3 text-gray-300 text-gray-300">
                           <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                           {feature}
                         </li>
@@ -184,10 +184,10 @@ export default function Platform() {
 
       <Section className="bg-ink-900">
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-6">
             Ready to Transform Your CX Operations?
           </h2>
-          <p className="text-lg text-gray-300 dark:text-gray-300 mb-8">
+          <p className="text-lg text-gray-300 text-gray-300 mb-8">
             Schedule a consultation to see how our platform can help you achieve your goals
           </p>
           <Button 

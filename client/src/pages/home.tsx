@@ -46,7 +46,7 @@ export default function Home() {
   const [activeStory, setActiveStory] = useState(0);
 
   return (
-    <MotionPage className="bg-ink-900 dark:bg-ink-900">
+    <MotionPage className="bg-ink-900 bg-ink-900">
       <section className="relative py-20 md:py-32 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,211,238,0.1),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(139,92,246,0.1),transparent_50%)]" />
@@ -54,13 +54,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <StaggerContainer className="text-center max-w-4xl mx-auto">
             <motion.div variants={fadeInUp}>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white dark:text-white mb-6 leading-tight">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white text-white mb-6 leading-tight">
                 Transform Customer Experience with{' '}
                 <span className="text-cyan-400">AI-Powered</span> Solutions
               </h1>
             </motion.div>
             
-            <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-gray-300 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
+            <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-gray-300 text-gray-300 mb-12 max-w-3xl mx-auto">
               Reduce costs by 60% while delivering exceptional 24/7 customer support through professional contact centers and intelligent automation
             </motion.p>
             
@@ -103,10 +103,10 @@ export default function Home() {
 
       <Section className="bg-ink-800">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-4">
             Measurable Business Outcomes
           </h2>
-          <p className="text-lg text-gray-300 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-300 text-gray-300 max-w-2xl mx-auto">
             Our clients achieve significant improvements across key metrics
           </p>
         </div>
@@ -153,10 +153,10 @@ export default function Home() {
 
       <Section className="bg-ink-900">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-4">
             Our Capabilities
           </h2>
-          <p className="text-lg text-gray-300 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-300 text-gray-300 max-w-2xl mx-auto">
             A comprehensive platform for modern customer experience
           </p>
         </div>
@@ -231,10 +231,10 @@ export default function Home() {
 
       <Section className="bg-ink-800">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-4">
             Customer Success Stories
           </h2>
-          <p className="text-lg text-gray-300 dark:text-gray-300">
+          <p className="text-lg text-gray-300 text-gray-300">
             See how we've helped businesses transform their CX
           </p>
         </div>
@@ -245,11 +245,11 @@ export default function Home() {
               <span className="inline-block px-3 py-1 text-xs font-medium text-cyan-400 bg-cyan-400/10 rounded-full mb-4">
                 {customerStories[activeStory].industry}
               </span>
-              <h3 className="text-2xl font-bold text-white dark:text-white mb-2">
+              <h3 className="text-2xl font-bold text-white text-white mb-2">
                 {customerStories[activeStory].company}
               </h3>
             </div>
-            <p className="text-lg text-gray-300 dark:text-gray-300 mb-6">
+            <p className="text-lg text-gray-300 text-gray-300 mb-6">
               "{customerStories[activeStory].outcome}"
             </p>
             <Link href="/blog">
@@ -276,10 +276,10 @@ export default function Home() {
 
       <Section className="bg-ink-900">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-4">
             Latest Insights & Resources
           </h2>
-          <p className="text-lg text-gray-300 dark:text-gray-300">
+          <p className="text-lg text-gray-300 text-gray-300">
             Stay informed with our latest thinking on CX trends
           </p>
         </div>
@@ -308,10 +308,10 @@ export default function Home() {
 
       <Section className="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-6">
             Ready to Transform Your Customer Experience?
           </h2>
-          <p className="text-xl text-gray-300 dark:text-gray-300 mb-8">
+          <p className="text-xl text-gray-300 text-gray-300 mb-8">
             Schedule a consultation to learn how we can help you achieve your CX goals
           </p>
           <Button

@@ -71,14 +71,14 @@ export default function Contact() {
   }, []);
 
   return (
-    <MotionPage className="bg-ink-900 dark:bg-ink-900">
+    <MotionPage className="bg-ink-900 bg-ink-900">
       <Section className="pt-24 pb-16 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <StaggerContainer className="text-center">
           <motion.div variants={fadeInUp}>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white dark:text-white mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-white mb-6">
               Let's Start a Conversation
             </h1>
-            <p className="text-xl text-gray-300 dark:text-gray-300 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-gray-300 text-gray-300 max-w-3xl mx-auto mb-8">
               Ready to transform your customer experience? Get in touch with our team.
             </p>
             <Button
@@ -98,10 +98,10 @@ export default function Contact() {
         <div className="grid md:grid-cols-2 gap-12">
           <StaggerContainer>
             <motion.div variants={fadeInUp}>
-              <h2 className="text-3xl font-bold text-white dark:text-white mb-6">
+              <h2 className="text-3xl font-bold text-white text-white mb-6">
                 Get in Touch
               </h2>
-              <p className="text-lg text-gray-300 dark:text-gray-300 mb-8">
+              <p className="text-lg text-gray-300 text-gray-300 mb-8">
                 Have questions? We're here to help. Send us a message and we'll respond as soon as possible.
               </p>
 
@@ -111,8 +111,8 @@ export default function Contact() {
                     <Mail className="w-6 h-6 text-cyan-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white dark:text-white mb-1">Email</h3>
-                    <p className="text-gray-300 dark:text-gray-300">info@victorysync.com</p>
+                    <h3 className="font-semibold text-white text-white mb-1">Email</h3>
+                    <p className="text-gray-300 text-gray-300">info@victorysync.com</p>
                   </div>
                 </div>
 
@@ -121,8 +121,8 @@ export default function Contact() {
                     <Phone className="w-6 h-6 text-cyan-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white dark:text-white mb-1">Phone</h3>
-                    <p className="text-gray-300 dark:text-gray-300">Available via scheduled call</p>
+                    <h3 className="font-semibold text-white text-white mb-1">Phone</h3>
+                    <p className="text-gray-300 text-gray-300">Available via scheduled call</p>
                   </div>
                 </div>
 
@@ -131,20 +131,20 @@ export default function Contact() {
                     <MapPin className="w-6 h-6 text-cyan-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white dark:text-white mb-1">Location</h3>
-                    <p className="text-gray-300 dark:text-gray-300">Millstone, New Jersey, USA</p>
+                    <h3 className="font-semibold text-white text-white mb-1">Location</h3>
+                    <p className="text-gray-300 text-gray-300">Millstone, New Jersey, USA</p>
                   </div>
                 </div>
               </div>
             </motion.div>
           </StaggerContainer>
 
-          <motion.div variants={fadeInUp} className="bg-ink-900 dark:bg-ink-900 border border-ink-700 rounded-xl p-8">
-            <h3 className="text-2xl font-bold text-white dark:text-white mb-6">Send Us a Message</h3>
+          <motion.div variants={fadeInUp} className="bg-ink-900 bg-ink-900 border border-ink-700 rounded-xl p-8">
+            <h3 className="text-2xl font-bold text-white text-white mb-6">Send Us a Message</h3>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="firstName" className="text-gray-300 dark:text-gray-300">
+                  <Label htmlFor="firstName" className="text-gray-300 text-gray-300">
                     First Name
                   </Label>
                   <Input
@@ -159,7 +159,7 @@ export default function Contact() {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="lastName" className="text-gray-300 dark:text-gray-300">
+                  <Label htmlFor="lastName" className="text-gray-300 text-gray-300">
                     Last Name
                   </Label>
                   <Input
@@ -176,7 +176,7 @@ export default function Contact() {
               </div>
 
               <div>
-                <Label htmlFor="company" className="text-gray-300 dark:text-gray-300">
+                <Label htmlFor="company" className="text-gray-300 text-gray-300">
                   Company (Optional)
                 </Label>
                 <Input
@@ -189,7 +189,7 @@ export default function Contact() {
               </div>
 
               <div>
-                <Label htmlFor="email" className="text-gray-300 dark:text-gray-300">
+                <Label htmlFor="email" className="text-gray-300 text-gray-300">
                   Email
                 </Label>
                 <Input
@@ -206,7 +206,7 @@ export default function Contact() {
               </div>
 
               <div>
-                <Label htmlFor="message" className="text-gray-300 dark:text-gray-300">
+                <Label htmlFor="message" className="text-gray-300 text-gray-300">
                   Message
                 </Label>
                 <Textarea
@@ -237,10 +237,10 @@ export default function Contact() {
 
       <Section className="bg-ink-900">
         <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-4">
             Or Schedule a Call Directly
           </h2>
-          <p className="text-lg text-gray-300 dark:text-gray-300">
+          <p className="text-lg text-gray-300 text-gray-300">
             Pick a time that works best for you
           </p>
         </div>

@@ -22,11 +22,11 @@ export function ResourceCard({ title, description, tag, href, image }: ResourceC
   return (
     <CardComponent
       {...cardProps}
-      className="group bg-ink-800 dark:bg-ink-800 border border-ink-700 rounded-xl overflow-hidden hover:-translate-y-0.5 transition-all duration-200"
+      className="group bg-ink-800 bg-ink-800 border border-ink-700 rounded-xl overflow-hidden hover:-translate-y-0.5 transition-all duration-200"
       data-testid={`resource-card-${title.toLowerCase().replace(/\s+/g, '-')}`}
     >
       {image && (
-        <div className="aspect-video bg-ink-700 dark:bg-ink-700 overflow-hidden">
+        <div className="aspect-video bg-ink-700 bg-ink-700 overflow-hidden">
           <img 
             src={image} 
             alt={title}
@@ -42,11 +42,11 @@ export function ResourceCard({ title, description, tag, href, image }: ResourceC
           </span>
         </div>
         
-        <h3 className="text-xl font-semibold text-white dark:text-white mb-2 group-hover:text-cyan-400 transition-colors">
+        <h3 className="text-xl font-semibold text-white text-white mb-2 group-hover:text-cyan-400 transition-colors">
           {title}
         </h3>
         
-        <p className="text-gray-400 dark:text-gray-400 mb-4 line-clamp-2">
+        <p className="text-gray-400 text-gray-400 mb-4 line-clamp-2">
           {description}
         </p>
         

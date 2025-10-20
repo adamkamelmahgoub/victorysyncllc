@@ -24,7 +24,7 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-ink-900/95 dark:bg-ink-900/95 backdrop-blur-sm border-b border-ink-700/50">
+    <nav className="sticky top-0 z-50 bg-ink-900/95 bg-ink-900/95 backdrop-blur-sm border-b border-ink-700/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link href="/" onClick={scrollToTop}>
@@ -34,7 +34,7 @@ export default function Navigation() {
                 alt="VictorySync Logo" 
                 className="w-8 h-8 rounded-lg bg-white p-1 group-hover:scale-105 transition-transform"
               />
-              <span className="text-xl font-bold text-white dark:text-white">
+              <span className="text-xl font-bold text-white text-white">
                 VictorySync
               </span>
             </div>
@@ -46,8 +46,8 @@ export default function Navigation() {
                 <span
                   className={`font-medium transition-colors cursor-pointer ${
                     location === link.href
-                      ? "text-cyan-400 dark:text-cyan-400"
-                      : "text-gray-300 dark:text-gray-300 hover:text-cyan-400 dark:hover:text-cyan-400"
+                      ? "text-cyan-400 text-cyan-400"
+                      : "text-gray-300 text-gray-300 hover:text-cyan-400 hover:text-cyan-400"
                   }`}
                   data-testid={`link-nav-${link.label.toLowerCase()}`}
                 >
@@ -64,7 +64,7 @@ export default function Navigation() {
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="text-gray-300 dark:text-gray-300 hover:text-white dark:hover:text-white"
+                    className="text-gray-300 text-gray-300 hover:text-white hover:text-white"
                   >
                     Dashboard
                   </Button>
@@ -73,7 +73,7 @@ export default function Navigation() {
                   variant="ghost"
                   size="sm"
                   onClick={logout}
-                  className="text-gray-300 dark:text-gray-300 hover:text-white dark:hover:text-white"
+                  className="text-gray-300 text-gray-300 hover:text-white hover:text-white"
                 >
                   Sign Out
                 </Button>
@@ -83,7 +83,7 @@ export default function Navigation() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="text-gray-300 dark:text-gray-300 hover:text-white dark:hover:text-white"
+                  className="text-gray-300 text-gray-300 hover:text-white hover:text-white"
                 >
                   Sign In
                 </Button>
@@ -102,7 +102,7 @@ export default function Navigation() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-gray-300 dark:text-gray-300 hover:text-white dark:hover:text-white"
+              className="p-2 text-gray-300 text-gray-300 hover:text-white hover:text-white"
               data-testid="button-mobile-menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -112,7 +112,7 @@ export default function Navigation() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-ink-700/50 bg-ink-900 dark:bg-ink-900">
+        <div className="md:hidden border-t border-ink-700/50 bg-ink-900 bg-ink-900">
           <div className="px-4 py-4 space-y-3">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href}>
@@ -120,8 +120,8 @@ export default function Navigation() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block py-2 font-medium transition-colors ${
                     location === link.href
-                      ? "text-cyan-400 dark:text-cyan-400"
-                      : "text-gray-300 dark:text-gray-300"
+                      ? "text-cyan-400 text-cyan-400"
+                      : "text-gray-300 text-gray-300"
                   }`}
                 >
                   {link.label}
@@ -135,7 +135,7 @@ export default function Navigation() {
                   <Link href="/dashboard">
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start text-gray-300 dark:text-gray-300"
+                      className="w-full justify-start text-gray-300 text-gray-300"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Dashboard
@@ -143,7 +143,7 @@ export default function Navigation() {
                   </Link>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-gray-300 dark:text-gray-300"
+                    className="w-full justify-start text-gray-300 text-gray-300"
                     onClick={() => {
                       logout();
                       setMobileMenuOpen(false);
@@ -156,7 +156,7 @@ export default function Navigation() {
                 <Link href="/login">
                   <Button 
                     variant="ghost" 
-                    className="w-full justify-start text-gray-300 dark:text-gray-300"
+                    className="w-full justify-start text-gray-300 text-gray-300"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign In
