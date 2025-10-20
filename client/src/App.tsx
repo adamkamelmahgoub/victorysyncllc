@@ -50,14 +50,8 @@ function Router() {
   const openCartModal = () => setCartModalOpen(true);
   const closeCartModal = () => setCartModalOpen(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
-
   return (
-    <div className="min-h-screen flex flex-col bg-ink-900 dark:bg-ink-900">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-ink-900">
       <Navigation />
 
       <main className="flex-1">
