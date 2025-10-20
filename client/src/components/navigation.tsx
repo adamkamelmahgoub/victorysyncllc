@@ -1,26 +1,20 @@
 import { Link, useLocation } from "wouter";
-import { ShoppingCart, User, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
+import { useCalendly } from "@/hooks/useCalendly";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-interface NavigationProps {
-  onCartClick: () => void;
-}
-
-export default function Navigation({ onCartClick }: NavigationProps) {
+export default function Navigation() {
   const [location] = useLocation();
-  const { getItemCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const { open: openCalendly } = useCalendly();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const cartItemCount = getItemCount();
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -31,33 +25,32 @@ export default function Navigation({ onCartClick }: NavigationProps) {
   ];
 
   return (
-    <nav className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+    <nav className="sticky top-0 z-50 bg-ink-900/95 dark:bg-ink-900/95 backdrop-blur-sm border-b border-ink-700/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
           <Link href="/" onClick={scrollToTop}>
-            <div className="flex items-center space-x-3 cursor-pointer">
+            <div className="flex items-center space-x-3 cursor-pointer group">
               <img 
-            src="/LOGO_VS.png" 
-            alt="VictorySync Logo" 
-            className="w-8 h-8 rounded-lg bg-white p-1"
-          />
-              <span className="text-xl brand-font victory-dark">
+                src="/LOGO_VS.png" 
+                alt="VictorySync Logo" 
+                className="w-8 h-8 rounded-lg bg-white p-1 group-hover:scale-105 transition-transform"
+              />
+              <span className="text-xl font-bold text-white dark:text-white">
                 VictorySync
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href}>
                 <span
                   className={`font-medium transition-colors cursor-pointer ${
                     location === link.href
-                      ? "victory-purple"
-                      : "victory-gray hover:victory-purple"
+                      ? "text-cyan-400 dark:text-cyan-400"
+                      : "text-gray-300 dark:text-gray-300 hover:text-cyan-400 dark:hover:text-cyan-400"
                   }`}
+                  data-testid={`link-nav-${link.label.toLowerCase()}`}
                 >
                   {link.label}
                 </span>
@@ -65,151 +58,129 @@ export default function Navigation({ onCartClick }: NavigationProps) {
             ))}
           </div>
 
-          {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <button
-              onClick={onCartClick}
-              className="relative p-2 victory-gray hover:victory-purple transition-colors"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-victory-purple text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-            </button>
-
+            <ThemeToggle />
+            
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
                 <Link href="/dashboard">
-                  <Button variant="ghost" size="sm">
-                    <User className="w-4 h-4 mr-2" />
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="text-gray-300 dark:text-gray-300 hover:text-white dark:hover:text-white"
+                  >
                     Dashboard
                   </Button>
                 </Link>
-                {user && ['admin', 'super_admin', 'billing', 'crm_manager'].includes(user.role) && (
-                  <Link href="/admin">
-                    <Button variant="ghost" size="sm">
-                      Admin Portal
-                    </Button>
-                  </Link>
-                )}
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={logout}
+                  className="text-gray-300 dark:text-gray-300 hover:text-white dark:hover:text-white"
                 >
                   Sign Out
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">
-                    Sign In
-                  </Button>
-                </Link>
-
-              </div>
+              <Link href="/login">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-gray-300 dark:text-gray-300 hover:text-white dark:hover:text-white"
+                >
+                  Sign In
+                </Button>
+              </Link>
             )}
+
+            <Button
+              onClick={openCalendly}
+              className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-medium"
+              data-testid="button-get-quote"
+            >
+              Get a Quote
+            </Button>
           </div>
 
-          {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
-            <button
-              onClick={onCartClick}
-              className="relative p-2 victory-gray hover:victory-purple transition-colors"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-victory-purple text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-            </button>
+            <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 victory-gray hover:victory-purple transition-colors"
+              className="p-2 text-gray-300 dark:text-gray-300 hover:text-white dark:hover:text-white"
+              data-testid="button-mobile-menu"
             >
-              {mobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-slate-200">
-            <div className="flex flex-col space-y-4">
-              {navLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
-                  <span
-                    className={`font-medium transition-colors cursor-pointer block py-2 ${
-                      location === link.href
-                        ? "victory-purple"
-                        : "victory-gray hover:victory-purple"
-                    }`}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-ink-700/50 bg-ink-900 dark:bg-ink-900">
+          <div className="px-4 py-4 space-y-3">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href}>
+                <div
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block py-2 font-medium transition-colors ${
+                    location === link.href
+                      ? "text-cyan-400 dark:text-cyan-400"
+                      : "text-gray-300 dark:text-gray-300"
+                  }`}
+                >
+                  {link.label}
+                </div>
+              </Link>
+            ))}
+            
+            <div className="pt-4 border-t border-ink-700/50 space-y-2">
+              {isAuthenticated ? (
+                <>
+                  <Link href="/dashboard">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-gray-300 dark:text-gray-300"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-gray-300 dark:text-gray-300"
+                    onClick={() => {
+                      logout();
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Link href="/login">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start text-gray-300 dark:text-gray-300"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {link.label}
-                  </span>
+                    Sign In
+                  </Button>
                 </Link>
-              ))}
-
-              <div className="pt-4 border-t border-slate-200">
-                {isAuthenticated ? (
-                  <div className="flex flex-col space-y-2">
-                    <Link href="/dashboard">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Dashboard
-                      </Button>
-                    </Link>
-                    {user && ['admin', 'super_admin', 'billing', 'crm_manager'].includes(user.role) && (
-                      <Link href="/admin">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start"
-                        >
-                          Admin Portal
-                        </Button>
-                      </Link>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={logout}
-                    >
-                      Sign Out
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col space-y-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => (window.location.href = "/login")}
-                    >
-                      Sign In
-                    </Button>
-
-                  </div>
-                )}
-              </div>
+              )}
+              
+              <Button
+                onClick={() => {
+                  openCalendly();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-medium"
+              >
+                Get a Quote
+              </Button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
   );
 }

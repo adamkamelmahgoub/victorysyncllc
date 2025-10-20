@@ -1,10 +1,12 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
-import { useState } from "react";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 
 // Layout Components
 import Navigation from "@/components/navigation";
@@ -42,38 +44,47 @@ import "@fontsource/inter/800.css";
 
 function Router() {
   const [cartModalOpen, setCartModalOpen] = useState(false);
+  const [location] = useLocation();
 
   const openCartModal = () => setCartModalOpen(true);
   const closeCartModal = () => setCartModalOpen(false);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation onCartClick={openCartModal} />
+    <div className="min-h-screen flex flex-col bg-ink-900 dark:bg-ink-900">
+      <Navigation />
 
       <main className="flex-1">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/services" component={Services} />
-          <Route path="/pricing" component={Pricing} />
-          <Route path="/about" component={About} />
-          <Route path="/contact" component={Contact} />
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/register" component={Register} />
-          <Route path="/signup" component={Register} />
-          <Route path="/login" component={Login} />
-          <Route path="/dashboard" component={CustomerDashboard} />
+        <AnimatePresence mode="wait">
+          <Switch key={location}>
+            <Route path="/" component={Home} />
+            <Route path="/services" component={Services} />
+            <Route path="/pricing" component={Pricing} />
+            <Route path="/about" component={About} />
+            <Route path="/contact" component={Contact} />
+            <Route path="/checkout" component={Checkout} />
+            <Route path="/register" component={Register} />
+            <Route path="/signup" component={Register} />
+            <Route path="/login" component={Login} />
+            <Route path="/dashboard" component={CustomerDashboard} />
 
-          {/* Footer Pages */}
-          <Route path="/about-us" component={AboutUs} />
-          <Route path="/careers" component={Careers} />
-          <Route path="/blog" component={Blog} />
-          <Route path="/help-center" component={HelpCenter} />
-          <Route path="/docs" component={Documentation} />
-          <Route path="/privacy-policy" component={PrivacyPolicy} />
-          <Route path="/terms" component={TermsOfService} />
-          
-          <Route component={NotFound} />
-        </Switch>
+            {/* Footer Pages */}
+            <Route path="/about-us" component={AboutUs} />
+            <Route path="/careers" component={Careers} />
+            <Route path="/blog" component={Blog} />
+            <Route path="/help-center" component={HelpCenter} />
+            <Route path="/docs" component={Documentation} />
+            <Route path="/privacy-policy" component={PrivacyPolicy} />
+            <Route path="/terms" component={TermsOfService} />
+            
+            <Route component={NotFound} />
+          </Switch>
+        </AnimatePresence>
       </main>
 
       <Footer />
@@ -89,12 +100,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </CartProvider>
+      <ThemeProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </CartProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
