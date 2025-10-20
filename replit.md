@@ -4,6 +4,40 @@
 
 VictorySync is a comprehensive contact center and AI automation platform built with React and Express/TypeScript. The platform helps US businesses reduce customer service costs by up to 60% by providing professional contact center services, AI automation tools, customer dashboards, and e-commerce functionality for service packages. The system includes both a public-facing marketing website and a full-featured application with authentication, payment processing, and business management capabilities.
 
+## Recent Changes (October 2025)
+
+### Dark Theme Redesign - Verint-Inspired Aesthetic
+Completed comprehensive dark theme redesign across the entire marketing website:
+
+**Visual Design:**
+- Implemented dark Verint-inspired aesthetic with #0B1221 background, #E5E7EB text, and cyan (#22D3EE) accents
+- Created theme toggle with localStorage persistence and prefers-color-scheme support
+- Responsive design with smooth transitions and animations
+
+**New Components:**
+- ThemeProvider context for global theme management
+- ThemeToggle component in navigation
+- MotionPage wrapper for Framer Motion page transitions
+- Reusable dark-themed components: Section, MetricTile, ResourceCard, LogoRow
+
+**Page Redesigns:**
+- Home: Hero with gradient backgrounds, outcomes metrics grid, capabilities tabs, customer stories carousel, resources section
+- Pricing: Replaced cart functionality with "Get a Quote" CTAs, added comparison accordion
+- Contact: Inline Calendly embed with dark-themed contact form
+- Platform: New capabilities page with tabbed content
+
+**Calendly Integration:**
+- useCalendly hook for popup scheduling
+- Inline Calendly widget on Contact page
+- "Get a Quote" CTAs throughout the site
+- Custom styling to match dark theme
+
+**Animations & UX:**
+- Framer Motion for smooth page transitions
+- Stagger animations on component entry
+- Prefers-reduced-motion support for accessibility
+- Smooth scrolling with accessibility considerations
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -58,7 +92,9 @@ The project uses a modern development setup optimized for Replit:
 ### UI and Styling Dependencies
 - **@radix-ui/\***: Complete set of headless UI primitives for accessible components
 - **@fontsource/inter**: Typography with Inter font family
-- **tailwindcss**: Utility-first CSS framework with custom configuration
+- **tailwindcss**: Utility-first CSS framework with custom configuration and dark mode support
+- **framer-motion**: Animation library for page transitions and component animations
+- **@studio-freight/lenis**: Smooth scrolling library for enhanced UX
 
 ### Authentication and Security
 - **jsonwebtoken**: JWT token generation and verification
@@ -78,6 +114,7 @@ The project uses a modern development setup optimized for Replit:
 
 ### Production Integrations
 The system includes integration points for:
+- **Calendly**: Scheduling and appointment booking for quote requests (popup and inline widgets)
 - **Twilio**: IVR and telephony services for contact center operations
 - **HubSpot**: CRM integration for customer relationship management
 - **n8n**: Workflow automation for AI-powered customer service
