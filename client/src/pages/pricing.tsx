@@ -2,41 +2,42 @@ import { MotionPage } from '@/components/motion-page';
 import { Section, StaggerContainer, fadeInUp } from '@/components/section';
 import { Button } from '@/components/ui/button';
 import { useCalendly } from '@/hooks/useCalendly';
-import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Check, Sparkles } from 'lucide-react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Calculator, TrendingUp, Phone, DollarSign } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { useState } from 'react';
 
 export default function Pricing() {
   const { open: openCalendly } = useCalendly();
 
-  const { data: packages, isLoading } = useQuery<any[]>({
-    queryKey: ['/api/packages'],
-  });
+  // Missed Calls Calculator
+  const [missedCalls, setMissedCalls] = useState(50);
+  const [avgOrderValue, setAvgOrderValue] = useState(100);
+  const [conversionRate, setConversionRate] = useState(20);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-ink-900 bg-ink-900">
-        <div className="animate-spin w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
+  const missedRevenue = ((missedCalls * (conversionRate / 100) * avgOrderValue) * 30).toFixed(0);
+  const yearlyMissedRevenue = (parseFloat(missedRevenue) * 12).toFixed(0);
+
+  // ROI Calculator
+  const [currentCost, setCurrentCost] = useState(10000);
+  const [teamSize, setTeamSize] = useState(5);
+  const [hoursPerDay, setHoursPerDay] = useState(8);
+
+  const ourCost = currentCost * 0.4; // 60% savings
+  const monthlySavings = currentCost - ourCost;
+  const yearlySavings = monthlySavings * 12;
+  const roi = ((monthlySavings / ourCost) * 100).toFixed(0);
 
   return (
-    <MotionPage className="bg-ink-900 bg-ink-900">
+    <MotionPage className="bg-ink-900">
       <Section className="pt-24 pb-16 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <StaggerContainer className="text-center">
           <motion.div variants={fadeInUp}>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-white mb-6">
-              Flexible Pricing for Every Business
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
+              Pricing Sized to Your Needs
             </h1>
-            <p className="text-xl text-gray-300 text-gray-300 max-w-3xl mx-auto mb-8">
-              Choose a plan that fits your needs. No hidden fees, no long-term contracts. Scale as you grow.
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+              Every business is unique. Let's create a custom solution that fits your specific requirements and budget.
             </p>
             <div className="inline-block bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-6 py-3">
               <p className="text-lg font-semibold text-cyan-400">
@@ -47,130 +48,296 @@ export default function Pricing() {
         </StaggerContainer>
       </Section>
 
-      <Section className="bg-ink-800">
-        {packages && packages.length > 0 ? (
-          <StaggerContainer className="grid md:grid-cols-3 gap-8">
-            {packages.map((pkg: any, index: number) => {
-              const isPopular = index === 1;
-              return (
-                <motion.div
-                  key={pkg.id}
-                  variants={fadeInUp}
-                  className={`relative bg-ink-900 bg-ink-900 border ${
-                    isPopular ? 'border-cyan-400' : 'border-ink-700'
-                  } rounded-xl p-8 hover:-translate-y-1 transition-all duration-200`}
-                  data-testid={`plan-card-${pkg.name.toLowerCase()}`}
-                >
-                  {isPopular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <span className="inline-flex items-center gap-1 bg-cyan-500 text-ink-900 px-4 py-1 rounded-full text-sm font-medium">
-                        <Sparkles className="w-4 h-4" />
-                        Most Popular
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-white text-white mb-2">
-                      {pkg.name}
-                    </h3>
-                    <div className="text-4xl font-bold text-cyan-400 mb-2">
-                      <span className="text-base font-normal text-gray-400">From</span>{' '}
-                      ${parseFloat(pkg.price).toLocaleString()}
-                      <span className="text-base font-normal text-gray-400">/month</span>
-                    </div>
-                    <p className="text-gray-400 text-gray-400">{pkg.description}</p>
-                  </div>
-
-                  <ul className="space-y-4 mb-8">
-                    {pkg.features.map((feature: string, idx: number) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <Check className="text-cyan-400 w-5 h-5 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-300 text-gray-300 text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button
-                    onClick={openCalendly}
-                    className={`w-full ${
-                      isPopular
-                        ? 'bg-cyan-500 hover:bg-cyan-600 text-ink-900'
-                        : 'bg-ink-800 hover:bg-ink-700 text-white border border-ink-600'
-                    }`}
-                    data-testid={`button-get-quote-${pkg.name.toLowerCase()}`}
-                  >
-                    Get a Quote
-                  </Button>
-                </motion.div>
-              );
-            })}
-          </StaggerContainer>
-        ) : (
-          <div className="text-center py-16">
-            <p className="text-xl text-gray-400">Loading pricing packages...</p>
+      {/* Get a Quote Section */}
+      <Section className="bg-ink-800 border-y border-ink-700">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+            Get a Custom Quote
+          </h2>
+          <p className="text-xl text-gray-300 mb-8">
+            Our pricing is tailored to your business needs. Schedule a free consultation to discuss your requirements and receive a personalized quote.
+          </p>
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <Card className="bg-ink-900 border-ink-700">
+              <CardContent className="p-6 text-center">
+                <Phone className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">No Hidden Fees</h3>
+                <p className="text-gray-300 text-sm">Transparent pricing with no surprises</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-ink-900 border-ink-700">
+              <CardContent className="p-6 text-center">
+                <TrendingUp className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">Scale as You Grow</h3>
+                <p className="text-gray-300 text-sm">Flexible plans that adapt to your needs</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-ink-900 border-ink-700">
+              <CardContent className="p-6 text-center">
+                <DollarSign className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">No Long-Term Contracts</h3>
+                <p className="text-gray-300 text-sm">Month-to-month flexibility</p>
+              </CardContent>
+            </Card>
           </div>
-        )}
-      </Section>
-
-      <Section className="bg-ink-900">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-4">
-              Compare Plans
-            </h2>
-            <p className="text-lg text-gray-300 text-gray-300">
-              Find the perfect fit for your business needs
-            </p>
-          </div>
-
-          <Accordion type="single" collapsible className="space-y-4">
-            <AccordionItem value="features" className="bg-ink-800 border border-ink-700 rounded-lg px-6">
-              <AccordionTrigger className="text-white text-white hover:text-cyan-400">
-                What features are included in each plan?
-              </AccordionTrigger>
-              <AccordionContent className="text-gray-300 text-gray-300">
-                All plans include 24/7 support, multi-channel capabilities, and advanced analytics. Higher-tier plans add features like AI automation, dedicated account management, and custom integrations.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="scaling" className="bg-ink-800 border border-ink-700 rounded-lg px-6">
-              <AccordionTrigger className="text-white text-white hover:text-cyan-400">
-                Can I change plans later?
-              </AccordionTrigger>
-              <AccordionContent className="text-gray-300 text-gray-300">
-                Yes! You can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing cycle.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="contract" className="bg-ink-800 border border-ink-700 rounded-lg px-6">
-              <AccordionTrigger className="text-white text-white hover:text-cyan-400">
-                Are there any long-term contracts?
-              </AccordionTrigger>
-              <AccordionContent className="text-gray-300 text-gray-300">
-                No long-term contracts required. We offer flexible month-to-month billing. Annual commitments are available for additional savings.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="custom" className="bg-ink-800 border border-ink-700 rounded-lg px-6">
-              <AccordionTrigger className="text-white text-white hover:text-cyan-400">
-                Do you offer custom enterprise plans?
-              </AccordionTrigger>
-              <AccordionContent className="text-gray-300 text-gray-300">
-                Absolutely! For large-scale deployments or unique requirements, we can create a custom plan tailored to your needs. Schedule a consultation to discuss your requirements.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <Button
+            size="lg"
+            onClick={openCalendly}
+            className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-medium text-lg px-8"
+            data-testid="button-get-quote"
+          >
+            Get a Quote
+          </Button>
         </div>
       </Section>
 
+      {/* Missed Calls Calculator */}
+      <Section className="bg-ink-900">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <Phone className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Missed Calls Calculator
+            </h2>
+            <p className="text-lg text-gray-300">
+              See how much revenue you might be losing from unanswered calls
+            </p>
+          </div>
+
+          <Card className="bg-ink-800 border-ink-700">
+            <CardContent className="p-8">
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Missed Calls Per Day
+                    </label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="200"
+                      value={missedCalls}
+                      onChange={(e) => setMissedCalls(Number(e.target.value))}
+                      className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                      data-testid="input-missed-calls"
+                    />
+                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                      <span>1</span>
+                      <span className="text-cyan-400 font-bold text-xl">{missedCalls}</span>
+                      <span>200</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Average Order Value ($)
+                    </label>
+                    <input
+                      type="range"
+                      min="10"
+                      max="1000"
+                      step="10"
+                      value={avgOrderValue}
+                      onChange={(e) => setAvgOrderValue(Number(e.target.value))}
+                      className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                      data-testid="input-avg-order-value"
+                    />
+                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                      <span>$10</span>
+                      <span className="text-cyan-400 font-bold text-xl">${avgOrderValue}</span>
+                      <span>$1,000</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Conversion Rate (%)
+                    </label>
+                    <input
+                      type="range"
+                      min="5"
+                      max="50"
+                      value={conversionRate}
+                      onChange={(e) => setConversionRate(Number(e.target.value))}
+                      className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                      data-testid="input-conversion-rate"
+                    />
+                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                      <span>5%</span>
+                      <span className="text-cyan-400 font-bold text-xl">{conversionRate}%</span>
+                      <span>50%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border border-cyan-500/20 rounded-xl p-8 flex flex-col justify-center">
+                  <div className="text-center">
+                    <p className="text-gray-300 mb-2">Monthly Lost Revenue</p>
+                    <p className="text-5xl font-bold text-cyan-400 mb-6" data-testid="text-monthly-lost-revenue">
+                      ${parseFloat(missedRevenue).toLocaleString()}
+                    </p>
+                    <div className="h-px bg-cyan-500/30 mb-6"></div>
+                    <p className="text-gray-300 mb-2">Yearly Lost Revenue</p>
+                    <p className="text-4xl font-bold text-white" data-testid="text-yearly-lost-revenue">
+                      ${parseFloat(yearlyMissedRevenue).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-ink-900 rounded-lg p-6 text-center border border-ink-700">
+                <p className="text-gray-300 mb-4">
+                  Don't let missed calls cost you revenue. Our 24/7 contact center ensures you never miss an opportunity.
+                </p>
+                <Button
+                  onClick={openCalendly}
+                  className="bg-cyan-500 hover:bg-cyan-600 text-ink-900"
+                  data-testid="button-missed-calls-cta"
+                >
+                  Start Capturing Every Call
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </Section>
+
+      {/* ROI Calculator */}
+      <Section className="bg-ink-800 border-y border-ink-700">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <Calculator className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              ROI Calculator
+            </h2>
+            <p className="text-lg text-gray-300">
+              Calculate your potential savings with VictorySync
+            </p>
+          </div>
+
+          <Card className="bg-ink-900 border-ink-700">
+            <CardContent className="p-8">
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Current Monthly Support Cost ($)
+                    </label>
+                    <input
+                      type="range"
+                      min="1000"
+                      max="50000"
+                      step="500"
+                      value={currentCost}
+                      onChange={(e) => setCurrentCost(Number(e.target.value))}
+                      className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                      data-testid="input-current-cost"
+                    />
+                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                      <span>$1K</span>
+                      <span className="text-cyan-400 font-bold text-xl">${(currentCost / 1000).toFixed(1)}K</span>
+                      <span>$50K</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Team Size (Agents)
+                    </label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="50"
+                      value={teamSize}
+                      onChange={(e) => setTeamSize(Number(e.target.value))}
+                      className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                      data-testid="input-team-size"
+                    />
+                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                      <span>1</span>
+                      <span className="text-cyan-400 font-bold text-xl">{teamSize}</span>
+                      <span>50</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Hours of Coverage Per Day
+                    </label>
+                    <input
+                      type="range"
+                      min="4"
+                      max="24"
+                      value={hoursPerDay}
+                      onChange={(e) => setHoursPerDay(Number(e.target.value))}
+                      className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                      data-testid="input-hours-per-day"
+                    />
+                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                      <span>4h</span>
+                      <span className="text-cyan-400 font-bold text-xl">{hoursPerDay}h</span>
+                      <span>24h</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/20 rounded-xl p-6">
+                    <p className="text-gray-300 text-sm mb-1">Your Current Cost</p>
+                    <p className="text-3xl font-bold text-white" data-testid="text-current-cost">
+                      ${currentCost.toLocaleString()}/mo
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border border-cyan-500/20 rounded-xl p-6">
+                    <p className="text-gray-300 text-sm mb-1">VictorySync Cost (60% savings)</p>
+                    <p className="text-3xl font-bold text-cyan-400" data-testid="text-our-cost">
+                      ${ourCost.toLocaleString()}/mo
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/20 rounded-xl p-6">
+                    <p className="text-gray-300 text-sm mb-1">Monthly Savings</p>
+                    <p className="text-3xl font-bold text-green-400" data-testid="text-monthly-savings">
+                      ${monthlySavings.toLocaleString()}
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border border-cyan-500/20 rounded-xl p-6">
+                    <p className="text-gray-300 text-sm mb-1">Yearly Savings</p>
+                    <p className="text-4xl font-bold text-cyan-400" data-testid="text-yearly-savings">
+                      ${yearlySavings.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-ink-800 to-ink-900 rounded-lg p-6 text-center border border-ink-700">
+                <p className="text-gray-300 mb-4">
+                  <span className="text-2xl font-bold text-green-400">{roi}% ROI</span> • 
+                  Save <span className="font-bold text-cyan-400">${monthlySavings.toLocaleString()}/month</span> while improving service quality
+                </p>
+                <Button
+                  onClick={openCalendly}
+                  className="bg-cyan-500 hover:bg-cyan-600 text-ink-900"
+                  data-testid="button-roi-cta"
+                >
+                  See How Much You Can Save
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </Section>
+
+      {/* Final CTA */}
       <Section className="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-6">
-            Not Sure Which Plan is Right?
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+            Ready to Transform Your Customer Service?
           </h2>
-          <p className="text-xl text-gray-300 text-gray-300 mb-8">
-            Schedule a consultation and we'll help you choose the perfect plan for your business
+          <p className="text-xl text-gray-300 mb-8">
+            Schedule a consultation and we'll create a custom solution for your business
           </p>
           <Button
             size="lg"
@@ -178,7 +345,7 @@ export default function Pricing() {
             className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-medium text-lg px-8"
             data-testid="button-footer-get-quote"
           >
-            Get a Quote
+            Get Your Custom Quote
           </Button>
         </div>
       </Section>
