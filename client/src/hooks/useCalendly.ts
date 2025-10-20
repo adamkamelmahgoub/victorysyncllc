@@ -21,14 +21,16 @@ export function useCalendly() {
     const calendlyUrl = import.meta.env.VITE_CALENDLY_URL;
     
     if (!calendlyUrl) {
-      console.warn('VITE_CALENDLY_URL is not configured');
+      console.warn('VITE_CALENDLY_URL is not configured - redirecting to contact page');
+      window.location.href = '/contact';
       return;
     }
 
     if (typeof window !== 'undefined' && window.Calendly) {
       window.Calendly.initPopupWidget({ url: calendlyUrl });
     } else {
-      console.warn('Calendly widget not loaded yet');
+      console.warn('Calendly widget not loaded yet - redirecting to contact page');
+      window.location.href = '/contact';
     }
   }, []);
 

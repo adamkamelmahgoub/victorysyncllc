@@ -71,6 +71,7 @@ function Router() {
             {/* Footer Pages */}
             <Route path="/about-us" component={AboutUs} />
             <Route path="/careers" component={Careers} />
+            <Route path="/blog/:slug" component={Blog} />
             <Route path="/blog" component={Blog} />
             <Route path="/help-center" component={HelpCenter} />
             <Route path="/docs" component={Documentation} />
