@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useCalendly } from '@/hooks/useCalendly';
 import { Link } from 'wouter';
 import { motion } from 'framer-motion';
+import { Hero } from "../components/Hero";
 import {
   DollarSign,
   Clock,
@@ -50,7 +51,7 @@ export default function Home() {
       <section className="relative py-20 md:py-32 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,211,238,0.1),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(139,92,246,0.1),transparent_50%)]" />
-        
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <StaggerContainer className="text-center max-w-4xl mx-auto">
             <motion.div variants={fadeInUp}>
@@ -59,11 +60,11 @@ export default function Home() {
                 <span className="text-cyan-400">AI-Powered</span> Solutions
               </h1>
             </motion.div>
-            
+
             <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-gray-300 text-gray-300 mb-12 max-w-3xl mx-auto">
               Reduce costs by 60% while delivering exceptional 24/7 customer support through professional contact centers and intelligent automation
             </motion.p>
-            
+
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
               <Button
                 size="lg"
@@ -195,31 +196,31 @@ export default function Home() {
               <p className="text-gray-300">Deploy intelligent bots that understand context, learn from interactions, and handle customer inquiries with human-like understanding.</p>
               <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
-            
+
             <TabsContent value="engagement" className="space-y-4">
               <h3 className="text-2xl font-bold text-white">Customer Engagement Hub</h3>
               <p className="text-gray-300">Centralize all customer interactions across channels for a unified view of every customer journey and touchpoint.</p>
               <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
-            
+
             <TabsContent value="analytics" className="space-y-4">
               <h3 className="text-2xl font-bold text-white">Advanced Analytics</h3>
               <p className="text-gray-300">Transform data into actionable insights with real-time dashboards, predictive analytics, and comprehensive reporting.</p>
               <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
-            
+
             <TabsContent value="platform" className="space-y-4">
               <h3 className="text-2xl font-bold text-white">Open Integration Platform</h3>
               <p className="text-gray-300">Seamlessly integrate with your existing systems through our open API architecture and pre-built connectors.</p>
               <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
-            
+
             <TabsContent value="channels" className="space-y-4">
               <h3 className="text-2xl font-bold text-white">Omnichannel Support</h3>
               <p className="text-gray-300">Connect with customers on their preferred channels - voice, chat, email, SMS, WhatsApp, and social media.</p>
               <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
-            
+
             <TabsContent value="wfm" className="space-y-4">
               <h3 className="text-2xl font-bold text-white">Workforce Management</h3>
               <p className="text-gray-300">Optimize your team with intelligent scheduling, forecasting, quality management, and performance tracking.</p>
