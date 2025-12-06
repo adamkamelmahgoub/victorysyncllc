@@ -255,18 +255,18 @@ export default function Home() {
         </StaggerContainer>
       </Section>
 
-      <Section className="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
+      <Section className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-50 mb-6">
             Ready to Transform Your Customer Experience?
           </h2>
-          <p className="text-xl text-gray-300 text-gray-300 mb-8">
+          <p className="text-xl text-slate-300 mb-8">
             Schedule a consultation to learn how we can help you achieve your CX goals
           </p>
           <Button
             size="lg"
             onClick={openCalendly}
-            className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-medium text-lg px-8"
+            className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold text-lg px-8"
             data-testid="button-footer-get-quote"
           >
             Get a Quote

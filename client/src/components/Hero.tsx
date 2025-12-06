@@ -15,7 +15,9 @@ export const Hero: FC = () => {
           </h1>
 
           <p className="text-base text-slate-300 sm:text-lg">
-            VictorySync is a U.S. based contact center with a trained agent team in Cairo. We answer your inbound calls, follow up every lead, and extend your hours so you stop losing deals after 5 PM.
+            VictorySync is a U.S. based contact center with a trained agent team
+            in Cairo. We answer your inbound calls, follow up every lead, and
+            extend your hours so you stop losing deals after 5 PM.
           </p>
 
           <ul className="space-y-2 text-sm text-slate-300">
@@ -28,12 +30,14 @@ export const Hero: FC = () => {
             <a
               href="/book-call"
               className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition"
+              data-testid="button-book-call"
             >
               Book a 20 minute strategy call
             </a>
             <a
               href="/pricing"
               className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold border border-slate-600 text-slate-50 hover:bg-slate-900/60 transition"
+              data-testid="button-view-pricing"
             >
               View pricing options
             </a>
@@ -83,25 +87,27 @@ export const Hero: FC = () => {
                   <span>Current queues</span>
                   <span className="text-emerald-400">Healthy</span>
                 </div>
-                <div className="space-y-1 text-[11px] text-slate-400">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span>Sales line</span>
-                    <span>3 callers waiting • 9 agents live</span>
+                    <span className="text-slate-400">Inbound support</span>
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-800">
+                        <div className="h-full w-[15%] bg-emerald-400" />
+                      </div>
+                      <span className="text-slate-500">3 waiting</span>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>Support line</span>
-                    <span>1 caller waiting • 6 agents live</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>After hours line</span>
-                    <span>0 callers • 2 agents live</span>
+                    <span className="text-slate-400">Outbound sales</span>
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-800">
+                        <div className="h-full w-0 bg-emerald-400" />
+                      </div>
+                      <span className="text-slate-500">0 waiting</span>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              <p className="mt-3 text-[11px] text-slate-500">
-                Give your business and your clients a simple real time view of how our team is protecting revenue every day.
-              </p>
             </div>
           </div>
         </div>
@@ -109,3 +115,5 @@ export const Hero: FC = () => {
     </section>
   );
 };
+
+export default Hero;

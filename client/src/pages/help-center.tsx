@@ -135,13 +135,13 @@ export default function HelpCenter() {
     : (faqData as any)[activeCategory] || [];
 
   return (
-    <div className="min-h-screen bg-ink-900">
+    <div className="min-h-screen bg-slate-950">
       {/* Header */}
-      <div className="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 border-b border-ink-700 text-white py-20">
+      <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border-b border-slate-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Help Center</h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
               Find answers to common questions and get the support you need to
               maximize your VictorySync experience.
             </p>
@@ -153,10 +153,10 @@ export default function HelpCenter() {
                   placeholder="Search for help articles..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-6 py-4 pr-12 text-white bg-ink-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-6 py-4 pr-12 text-white bg-slate-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <svg
-                  className="absolute right-4 top-4 w-6 h-6 text-gray-400"
+                  className="absolute right-4 top-4 w-6 h-6 text-slate-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -181,11 +181,11 @@ export default function HelpCenter() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {quickLinks.map((link, index) => (
               <Link key={index} href={link.link}>
-                <div className="bg-ink-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+                <div className="bg-slate-900 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
                   <h3 className="font-semibold text-white mb-2">
                     {link.title}
                   </h3>
-                  <p className="text-gray-300 text-sm">{link.description}</p>
+                  <p className="text-slate-300 text-sm">{link.description}</p>
                 </div>
               </Link>
             ))}
@@ -208,8 +208,8 @@ export default function HelpCenter() {
                   }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
                     activeCategory === category.id
-                      ? "bg-cyan-500 text-white"
-                      : "bg-ink-800 text-gray-300 hover:bg-ink-900"
+                      ? "bg-emerald-500 text-white"
+                      : "bg-slate-900 text-slate-300 hover:bg-slate-950"
                   }`}
                 >
                   <span className="text-lg">{category.icon}</span>
@@ -221,7 +221,7 @@ export default function HelpCenter() {
 
           {/* FAQ Content */}
           <div className="lg:col-span-3">
-            <div className="bg-ink-800 rounded-lg shadow-lg p-8">
+            <div className="bg-slate-900 rounded-lg shadow-lg p-8">
               <h2 className="text-2xl font-bold text-white mb-6">
                 {searchQuery
                   ? `Search Results for "${searchQuery}"`
@@ -231,7 +231,7 @@ export default function HelpCenter() {
               {filteredFAQs.length === 0 ? (
                 <div className="text-center py-12">
                   <svg
-                    className="w-16 h-16 text-gray-400 mx-auto mb-4"
+                    className="w-16 h-16 text-slate-400 mx-auto mb-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -246,7 +246,7 @@ export default function HelpCenter() {
                   <h3 className="text-lg font-medium text-white mb-2">
                     No results found
                   </h3>
-                  <p className="text-gray-300">
+                  <p className="text-slate-300">
                     Try adjusting your search terms or browse our categories.
                   </p>
                 </div>
@@ -255,12 +255,12 @@ export default function HelpCenter() {
                   {filteredFAQs.map((faq: any, index: number) => (
                     <div
                       key={index}
-                      className="border-b border-ink-200 pb-6 last:border-b-0"
+                      className="border-b border-slate-800 pb-6 last:border-b-0"
                     >
                       <h3 className="text-lg font-semibold text-white mb-3">
                         {faq.question}
                       </h3>
-                      <p className="text-gray-300 leading-relaxed">
+                      <p className="text-slate-300 leading-relaxed">
                         {faq.answer}
                       </p>
                     </div>
@@ -272,21 +272,21 @@ export default function HelpCenter() {
         </div>
 
         {/* Contact Support */}
-        <div className="mt-16 bg-ink-800 rounded-lg shadow-lg p-8 text-center">
+        <div className="mt-16 bg-slate-900 rounded-lg shadow-lg p-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
             Still Need Help?
           </h2>
-          <p className="text-lg text-gray-300 mb-8">
+          <p className="text-lg text-slate-300 mb-8">
             Can't find what you're looking for? Our support team is here to help
             you 24/7.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <button className="bg-cyan-500 hover:bg-cyan-500/90 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+              <button className="bg-emerald-500 hover:bg-emerald-500 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
                 Contact Support
               </button>
             </Link>
-            <button className="border border-ink-300 hover:border-ink-400 text-gray-300 px-8 py-3 rounded-lg font-semibold transition-colors">
+            <button className="border border-slate-700 hover:border-slate-600 text-slate-300 px-8 py-3 rounded-lg font-semibold transition-colors">
               Schedule a Call
             </button>
           </div>
@@ -295,20 +295,20 @@ export default function HelpCenter() {
               <h4 className="font-semibold text-white mb-2">
                 Email Support
               </h4>
-              <p className="text-gray-300">info@victorysync.com</p>
-              <p className="text-sm text-gray-500">Response within 2 hours</p>
+              <p className="text-slate-300">info@victorysync.com</p>
+              <p className="text-sm text-slate-500">Response within 2 hours</p>
             </div>
             <div>
               <h4 className="font-semibold text-white mb-2">
                 Phone Support
               </h4>
-              <p className="text-gray-300">+1 (718) 813-2106</p>
-              <p className="text-sm text-gray-500">Available 24/7</p>
+              <p className="text-slate-300">+1 (718) 813-2106</p>
+              <p className="text-sm text-slate-500">Available 24/7</p>
             </div>
             <div>
               <h4 className="font-semibold text-white mb-2">Live Chat</h4>
-              <p className="text-gray-300">Available in your dashboard</p>
-              <p className="text-sm text-gray-500">Instant response</p>
+              <p className="text-slate-300">Available in your dashboard</p>
+              <p className="text-sm text-slate-500">Instant response</p>
             </div>
           </div>
         </div>
