@@ -15,9 +15,7 @@ export const Hero: FC = () => {
           </h1>
 
           <p className="text-base text-slate-300 sm:text-lg">
-            VictorySync is a U.S. based contact center with a trained agent team
-            in Cairo. We answer your inbound calls, follow up every lead, and
-            extend your hours so you stop losing deals after 5 PM.
+            VictorySync is a U.S. based contact center with a trained agent team in Cairo. We answer your inbound calls, follow up every lead, and extend your hours so you stop losing deals after 5 PM.
           </p>
 
           <ul className="space-y-2 text-sm text-slate-300">
@@ -63,32 +61,20 @@ export const Hero: FC = () => {
               <div className="grid grid-cols-3 gap-3 text-center text-xs">
                 <div className="rounded-xl bg-slate-950/70 p-3">
                   <div className="text-slate-400">Calls answered</div>
-                  <div className="mt-1 text-2xl font-semibold text-emerald-400">
-                    98%
-                  </div>
-                  <div className="mt-1 text-[10px] text-slate-500">
-                    During business hours
-                  </div>
+                  <div className="mt-1 text-2xl font-semibold text-emerald-400">98%</div>
+                  <div className="mt-1 text-[10px] text-slate-500">During business hours</div>
                 </div>
 
                 <div className="rounded-xl bg-slate-950/70 p-3">
                   <div className="text-slate-400">Avg wait time</div>
-                  <div className="mt-1 text-2xl font-semibold text-emerald-400">
-                    12s
-                  </div>
-                  <div className="mt-1 text-[10px] text-slate-500">
-                    From ring to answer
-                  </div>
+                  <div className="mt-1 text-2xl font-semibold text-emerald-400">12s</div>
+                  <div className="mt-1 text-[10px] text-slate-500">From ring to answer</div>
                 </div>
 
                 <div className="rounded-xl bg-slate-950/70 p-3">
                   <div className="text-slate-400">Leads followed up</div>
-                  <div className="mt-1 text-2xl font-semibold text-emerald-400">
-                    100%
-                  </div>
-                  <div className="mt-1 text-[10px] text-slate-500">
-                    Within 5 minutes
-                  </div>
+                  <div className="mt-1 text-2xl font-semibold text-emerald-400">100%</div>
+                  <div className="mt-1 text-[10px] text-slate-500">Within 5 minutes</div>
                 </div>
               </div>
 
@@ -114,8 +100,7 @@ export const Hero: FC = () => {
               </div>
 
               <p className="mt-3 text-[11px] text-slate-500">
-                Give your business and your clients a simple real time view of
-                how our team is protecting revenue every day.
+                Give your business and your clients a simple real time view of how our team is protecting revenue every day.
               </p>
             </div>
           </div>

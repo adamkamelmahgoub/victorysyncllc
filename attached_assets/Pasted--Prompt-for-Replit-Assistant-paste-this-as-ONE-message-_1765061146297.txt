@@ -1,0 +1,159 @@
+**Prompt for Replit Assistant (paste this as ONE message):**
+
+> You are a senior front-end engineer working **inside this Replit project**.
+> Stack: **Vite + React + TypeScript + TailwindCSS**.
+> This repo is the VictorySync marketing website (contact center & CX partner).
+>
+> **Goal (very important)**
+> The homepage **hero is already redesigned** in a modern dark SaaS style.
+> Now I want the **rest of the marketing website** (navigation, all sections under the hero, other pages, footer, cards, etc.) visually redesigned to match that same style:
+>
+> * Dark slate/navy background with soft gradients (like the hero).
+> * Centered content with `max-w-6xl` or `max-w-7xl` containers and good whitespace.
+> * Rounded cards with subtle borders (`border-slate-800`) and soft shadows.
+> * Emerald accent color for CTAs and key metrics.
+> * Clean typography (light body text, high-contrast headings).
+>
+> I do **not** want logic changes or bug fixes. Only **visual/markup + Tailwind** changes.
+>
+> ---
+>
+> ### 1. Use the existing hero as the style reference
+>
+> 1. Locate the current hero component (already updated) – for example `src/components/ui/hero.tsx` or similar.
+> 2. Use its colors, spacing, and general aesthetic as the **design reference** for the rest of the site:
+>
+>    * Dark background (`bg-slate-950`, `bg-slate-900/80`)
+>    * Emerald highlight (`bg-emerald-500`, `text-emerald-400`, etc.)
+>    * Rounded-2xl cards with border and ring.
+>
+> Do **not** significantly change the hero; you are designing everything else around it.
+>
+> ---
+>
+> ### 2. Navigation/header redesign
+>
+> 1. Find the main navigation/header component (likely `src/components/ui/navigation.tsx`).
+> 2. Keep all links and logic (Home, Services, Pricing, About, Contact, Sign In, Get a Quote).
+> 3. Restyle it to match the hero:
+>
+>    * Sticky top bar: `sticky top-0 z-50 bg-slate-950/80 backdrop-blur border-b border-slate-800`.
+>    * Container: `mx-auto flex max-w-6xl items-center justify-between px-4 py-3`.
+>    * Links: low-contrast default (`text-slate-300`) with hover underline/brightness, active link slightly brighter.
+>    * Right-side CTA button “Get a Quote” using filled emerald style (`bg-emerald-500 text-slate-950 rounded-xl px-4 py-2`).
+>    * Mobile: simple hamburger menu that opens a dark dropdown; keep existing mobile logic if there is any and only restyle.
+>
+> No routing / auth logic should change, only Tailwind classes and layout.
+>
+> ---
+>
+> ### 3. Home page sections under the hero
+>
+> Inspect the homepage file (likely `src/pages/home.tsx` or similar) and all UI components it uses such as:
+>
+> * `logo-row.tsx`
+> * `metric-tile.tsx`
+> * `section.tsx`
+> * `resource-card.tsx`
+> * any “features”, “trusted by”, “pricing snapshot”, “CTA” sections
+>
+> For each of these components:
+>
+> 1. Wrap content in a centered container:
+>    `section` elements with `bg-slate-950` or `bg-slate-950/95`, and inside:
+>    `div className="mx-auto max-w-6xl px-4 py-16"` (or similar).
+> 2. Use consistent headings:
+>
+>    * `text-2xl sm:text-3xl font-semibold tracking-tight text-slate-50`
+>    * Body text: `text-sm sm:text-base text-slate-300`.
+> 3. Cards (metrics, features, resources) should follow this pattern:
+>
+>    * `rounded-2xl border border-slate-800 bg-slate-900/70 shadow-xl p-5`
+>    * Headline or statistic in larger text, description below in softer text.
+> 4. Logo row:
+>
+>    * Place logos in a single card with subtle border and
+>      `bg-slate-900/60 rounded-2xl px-6 py-4 flex flex-wrap items-center justify-center gap-6 text-slate-400`.
+> 5. Metric tiles:
+>
+>    * Big number (`text-3xl font-semibold text-emerald-400`) and label underneath (`text-xs text-slate-400`) in a 3- or 4-column responsive grid.
+> 6. Any “trusted by”, “how it works”, or “benefits” sections:
+>
+>    * Use 2-column layouts where appropriate (`grid grid-cols-1 md:grid-cols-2 gap-8`) with text on one side and bullet list or simple card on the other.
+>
+> The goal is that scrolling down the homepage feels like one cohesive dark SaaS design that matches the hero.
+>
+> ---
+>
+> ### 4. Other primary pages (Services, Pricing, About, Contact)
+>
+> Find the React components for these pages under `src/pages` (or similar) and visually update them using the same system:
+>
+> 1. Wrap each page in the same background + container approach:
+>    `div className="bg-slate-950 text-slate-50 min-h-screen">` with `main` content in `mx-auto max-w-6xl px-4 py-16`.
+> 2. Update headings and sections to use the same typography and card styles as the homepage.
+> 3. For **Pricing**:
+>
+>    * Use a card layout with 2–3 pricing tiers in a responsive grid.
+>    * Each card: dark background, emerald accent for main price/plan, bullet list of features, and a CTA button that matches the hero’s button style.
+> 4. For **Services** and **About**:
+>
+>    * Use 2-column sections and feature cards, consistent spacing and colors.
+> 5. For **Contact**:
+>
+>    * Make the form live inside a single prominent card (`rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl p-6`) with clear labels and full-width inputs.
+>
+> Keep all forms, handlers, and routing exactly as they are; only update JSX structure and Tailwind classes.
+>
+> ---
+>
+> ### 5. Footer redesign
+>
+> 1. Locate `footer.tsx` (likely `src/components/ui/footer.tsx`).
+> 2. Restyle it to match the dark theme:
+>
+>    * `bg-slate-950 border-t border-slate-800`.
+>    * Content in `mx-auto max-w-6xl px-4 py-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between`.
+>    * Left: logo + short description.
+>    * Right: small link list (Privacy, Terms, etc.) with `text-xs text-slate-400`.
+>    * Very subtle text color, no bright blocks.
+>
+> Do not change links or URLs, only styling.
+>
+> ---
+>
+> ### 6. Global wrapper & consistency
+>
+> 1. In `App.tsx` and/or the main layout, ensure the app uses a dark background everywhere (e.g. `bg-slate-950 text-slate-50 min-h-screen`) so pages don’t flash white.
+> 2. If necessary, tweak `index.css` only for small global details (like a subtle body background gradient) but do not remove Tailwind’s base/components/utilities.
+>
+> ---
+>
+> ### 7. Preserve all functionality
+>
+> While making these visual changes, **do not**:
+>
+> * Change routing or paths
+> * Change any hooks, contexts, or auth logic
+> * Modify API calls, forms’ submit handlers, or business logic
+> * Touch server files, database code, or configuration
+>
+> Only modify JSX structure and Tailwind class names for design.
+>
+> ---
+>
+> ### 8. Verify and report
+>
+> 1. Ensure the app compiles with **no TypeScript errors**.
+> 2. Confirm in the browser that:
+>
+>    * Navigation, all homepage sections, and footer now visually match the hero’s dark SaaS style.
+>    * Services, Pricing, About, and Contact pages also follow the same design system and look cohesive.
+> 3. Provide a short summary listing all files you modified, and paste the final contents of the key UI files you changed, especially:
+>
+>    * `src/components/ui/navigation.tsx`
+>    * `src/components/ui/footer.tsx`
+>    * Any main section components (`logo-row.tsx`, `metric-tile.tsx`, `resource-card.tsx`, `section.tsx`, etc.)
+>    * The homepage page component (`src/pages/home.tsx` or equivalent).
+>
+> Keep everything clean, production-ready, and visually aligned with the existing hero design.
