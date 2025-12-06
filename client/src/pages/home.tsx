@@ -48,59 +48,7 @@ export default function Home() {
 
   return (
     <MotionPage className="bg-slate-950">
-      <section className="relative py-20 md:py-32 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(34,197,94,0.1),transparent_50%)]" />
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <StaggerContainer className="text-center max-w-4xl mx-auto">
-            <motion.div variants={fadeInUp}>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-50 mb-6 leading-tight">
-                Transform Customer Experience with{' '}
-                <span className="text-emerald-400">AI-Powered</span> Solutions
-              </h1>
-            </motion.div>
-
-            <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto">
-              Reduce costs by 60% while delivering exceptional 24/7 customer support through professional contact centers and intelligent automation
-            </motion.p>
-
-            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <Button
-                size="lg"
-                onClick={openCalendly}
-                className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold text-lg px-8"
-                data-testid="button-hero-get-quote"
-              >
-                Get a Quote
-              </Button>
-              <Link href="/platform">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-emerald-400/50 text-emerald-400 hover:bg-emerald-400/10 text-lg px-8"
-                  data-testid="button-hero-explore"
-                >
-                  Explore Platform
-                  <ChevronRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-            </motion.div>
-
-            <motion.div variants={fadeInUp}>
-              <LogoRow
-                title="Trusted by leading organizations"
-                logos={[
-                  { name: 'Enterprise Corp' },
-                  { name: 'TechStart' },
-                  { name: 'Global Services' },
-                  { name: 'Innovation Labs' }
-                ]}
-              />
-            </motion.div>
-          </StaggerContainer>
-        </div>
-      </section>
+      <Hero />
 
       <Section className="bg-slate-900">
         <div className="text-center mb-16">
