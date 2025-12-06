@@ -103,16 +103,16 @@ export default function Services() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <section className="py-20 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white border-b border-slate-800">
+    <div className="min-h-screen bg-ink-900">
+      <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 text-white border-b border-ink-700">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Complete Business Solutions
           </h1>
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
             From customer support to sales growth, we provide end-to-end services that help your business thrive while reducing costs by up to 60%.
           </p>
-          <Button onClick={openCalendly} size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold">
+          <Button onClick={openCalendly} size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">
             Get a Quote
           </Button>
         </div>
@@ -128,54 +128,54 @@ export default function Services() {
               return (
                 <div key={service.title} className={`grid md:grid-cols-2 gap-12 items-center ${!isEven ? "md:flex-row-reverse" : ""}`}>
                   <div className={isEven ? "order-1" : "order-2"}>
-                    <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6">
-                      <IconComponent className="text-emerald-400 w-8 h-8" />
+                    <div className="w-16 h-16 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6">
+                      <IconComponent className="text-cyan-400 w-8 h-8" />
                     </div>
-                    <h2 className="text-3xl font-bold text-slate-50 mb-6">{service.title}</h2>
+                    <h2 className="text-3xl font-bold text-white mb-6">{service.title}</h2>
 
                     <div className="mb-8">
-                      <h3 className="font-semibold text-slate-50 mb-4">Key Features:</h3>
+                      <h3 className="font-semibold text-white mb-4">Key Features:</h3>
                       <div className="grid grid-cols-1 gap-2">
                         {service.features.map((feature, idx) => (
                           <div key={idx} className="flex items-start">
-                            <Check className="text-emerald-500 w-4 h-4 mr-3 flex-shrink-0 mt-1" />
-                            <span className="text-sm text-slate-300">{feature}</span>
+                            <Check className="text-cyan-500 w-4 h-4 mr-3 flex-shrink-0 mt-1" />
+                            <span className="text-sm text-gray-300">{feature}</span>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     <div className="mb-8">
-                      <h3 className="font-semibold text-slate-50 mb-4">Benefits:</h3>
+                      <h3 className="font-semibold text-white mb-4">Benefits:</h3>
                       <div className="space-y-2">
                         {service.benefits.map((benefit, idx) => (
                           <div key={idx} className="flex items-start">
-                            <ArrowRight className="text-emerald-400 w-4 h-4 mr-3 flex-shrink-0 mt-1" />
-                            <span className="text-sm font-medium text-slate-300">{benefit}</span>
+                            <ArrowRight className="text-cyan-400 w-4 h-4 mr-3 flex-shrink-0 mt-1" />
+                            <span className="text-sm font-medium text-gray-300">{benefit}</span>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     <Link href="/contact" onClick={scrollToTop}>
-                      <Button className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold">Learn More</Button>
+                      <Button className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">Learn More</Button>
                     </Link>
                   </div>
 
                   <div className={isEven ? "order-2" : "order-1"}>
-                    <Card className="p-8 shadow-lg bg-slate-900 border-slate-800">
+                    <Card className="p-8 shadow-lg bg-ink-800 border-ink-700">
                       <CardContent className="text-center">
-                        <IconComponent className="text-emerald-400 w-20 h-20 mx-auto mb-6" />
-                        <h3 className="text-2xl font-bold text-slate-50 mb-4">Ready to Get Started?</h3>
-                        <p className="text-slate-300 mb-6">
+                        <IconComponent className="text-cyan-400 w-20 h-20 mx-auto mb-6" />
+                        <h3 className="text-2xl font-bold text-white mb-4">Ready to Get Started?</h3>
+                        <p className="text-gray-300 mb-6">
                           Discover how our {service.title.toLowerCase()} services can transform your business operations.
                         </p>
                         <div className="space-y-3">
-                          <Button onClick={openCalendly} className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold">
+                          <Button onClick={openCalendly} className="w-full bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">
                             Get a Quote
                           </Button>
                           <Link href="/contact" onClick={scrollToTop}>
-                            <Button variant="outline" className="w-full border-slate-700 text-slate-300 hover:bg-slate-800">
+                            <Button variant="outline" className="w-full border-ink-600 text-gray-300 hover:bg-ink-700">
                               Schedule Consultation
                             </Button>
                           </Link>
@@ -190,47 +190,47 @@ export default function Services() {
         </div>
       </section>
 
-      <section className="bg-slate-900 py-20 border-y border-slate-800">
+      <section className="bg-ink-800 py-20 border-y border-ink-700">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-50 mb-4">Why Choose VictorySync?</h2>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Why Choose VictorySync?</h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               We combine professional expertise with cutting-edge technology to deliver exceptional results
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="bg-slate-950 border-slate-800">
+            <Card className="bg-ink-900 border-ink-700">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Check className="text-emerald-500 w-8 h-8" />
+                <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Check className="text-cyan-500 w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-50 mb-4">Proven Results</h3>
-                <p className="text-slate-300">
+                <h3 className="text-xl font-bold text-white mb-4">Proven Results</h3>
+                <p className="text-gray-300">
                   Our clients see an average of 60% cost reduction and 40% improvement in customer satisfaction scores.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-slate-950 border-slate-800">
+            <Card className="bg-ink-900 border-ink-700">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Bot className="text-emerald-400 w-8 h-8" />
+                <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Bot className="text-cyan-400 w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-50 mb-4">Advanced Technology</h3>
-                <p className="text-slate-300">
+                <h3 className="text-xl font-bold text-white mb-4">Advanced Technology</h3>
+                <p className="text-gray-300">
                   We leverage the latest AI and automation tools to maximize efficiency and deliver superior results.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-slate-950 border-slate-800">
+            <Card className="bg-ink-900 border-ink-700">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Phone className="text-emerald-400 w-8 h-8" />
+                <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Phone className="text-cyan-400 w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-50 mb-4">24/7 Support</h3>
-                <p className="text-slate-300">
+                <h3 className="text-xl font-bold text-white mb-4">24/7 Support</h3>
+                <p className="text-gray-300">
                   Round-the-clock availability ensures your customers are always taken care of, no matter the time zone.
                 </p>
               </CardContent>
@@ -239,18 +239,18 @@ export default function Services() {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Business?</h2>
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-8">
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
             Let's discuss how our services can help you reduce costs, improve efficiency, and drive growth.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button onClick={openCalendly} size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold">
+            <Button onClick={openCalendly} size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">
               Get Free Consultation
             </Button>
             <Link href="/pricing" onClick={scrollToTop}>
-              <Button size="lg" variant="outline" className="border-emerald-400 text-emerald-400 hover:bg-emerald-500/10">
+              <Button size="lg" variant="outline" className="border-cyan-400 text-cyan-400 hover:bg-cyan-500/10">
                 View Pricing
               </Button>
             </Link>

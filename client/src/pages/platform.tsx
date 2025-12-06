@@ -98,20 +98,20 @@ export default function Platform() {
   const { open: openCalendly } = useCalendly();
 
   return (
-    <MotionPage className="bg-slate-950">
-      <Section className="pt-24 pb-16 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <MotionPage className="bg-ink-900">
+      <Section className="pt-24 pb-16 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <StaggerContainer className="text-center">
           <motion.div variants={fadeInUp}>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-50 mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Our Platform
             </h1>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
               A comprehensive suite of tools designed to transform your customer experience operations
             </p>
             <Button 
               size="lg"
               onClick={openCalendly}
-              className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
+              className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold"
               data-testid="button-hero-get-quote"
             >
               Get a Quote
@@ -120,16 +120,16 @@ export default function Platform() {
         </StaggerContainer>
       </Section>
 
-      <Section className="bg-slate-900">
+      <Section className="bg-ink-800">
         <Tabs defaultValue="ai-bots" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 bg-slate-950 p-2 rounded-lg mb-12">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 bg-ink-900 p-2 rounded-lg mb-12">
             {capabilities.map((cap) => {
               const Icon = cap.icon;
               return (
                 <TabsTrigger 
                   key={cap.id} 
                   value={cap.id}
-                  className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400 text-slate-400 hover:text-slate-200"
+                  className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400 text-gray-400 hover:text-slate-200"
                   data-testid={`tab-${cap.id}`}
                 >
                   <Icon className="w-4 h-4 mr-2" />
@@ -145,32 +145,32 @@ export default function Platform() {
               <TabsContent key={cap.id} value={cap.id} className="space-y-8">
                 <div className="grid md:grid-cols-2 gap-12 items-center">
                   <div>
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-emerald-500/10 text-emerald-400 mb-6">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-cyan-500/10 text-cyan-400 mb-6">
                       <Icon className="w-8 h-8" />
                     </div>
-                    <h2 className="text-3xl font-bold text-slate-50 mb-4">
+                    <h2 className="text-3xl font-bold text-white mb-4">
                       {cap.title}
                     </h2>
-                    <p className="text-lg text-slate-300 mb-6">
+                    <p className="text-lg text-gray-300 mb-6">
                       {cap.description}
                     </p>
                     <ul className="space-y-3 mb-8">
                       {cap.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-3 text-slate-300">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <li key={idx} className="flex items-center gap-3 text-gray-300">
+                          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                           {feature}
                         </li>
                       ))}
                     </ul>
                     <Button 
                       onClick={openCalendly}
-                      className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
+                      className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold"
                     >
                       Learn More
                     </Button>
                   </div>
-                  <div className="bg-slate-800 rounded-xl p-12 flex items-center justify-center min-h-[400px]">
-                    <Icon className="w-48 h-48 text-emerald-400/20" />
+                  <div className="bg-ink-700 rounded-xl p-12 flex items-center justify-center min-h-[400px]">
+                    <Icon className="w-48 h-48 text-cyan-400/20" />
                   </div>
                 </div>
               </TabsContent>
@@ -179,18 +179,18 @@ export default function Platform() {
         </Tabs>
       </Section>
 
-      <Section className="bg-slate-950">
+      <Section className="bg-ink-900">
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-50 mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Ready to Transform Your CX Operations?
           </h2>
-          <p className="text-lg text-slate-300 mb-8">
+          <p className="text-lg text-gray-300 mb-8">
             Schedule a consultation to see how our platform can help you achieve your goals
           </p>
           <Button 
             size="lg"
             onClick={openCalendly}
-            className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
+            className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold"
           >
             Get a Quote
           </Button>

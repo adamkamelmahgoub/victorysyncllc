@@ -22,11 +22,11 @@ export function ResourceCard({ title, description, tag, href, image }: ResourceC
   return (
     <CardComponent
       {...cardProps}
-      className="group bg-slate-900/70 border border-slate-800 rounded-xl overflow-hidden hover:-translate-y-0.5 transition-all duration-200"
+      className="group bg-ink-800/70 border border-ink-700 rounded-xl overflow-hidden hover:-translate-y-0.5 transition-all duration-200"
       data-testid={`resource-card-${title.toLowerCase().replace(/\s+/g, '-')}`}
     >
       {image && (
-        <div className="aspect-video bg-slate-800 overflow-hidden">
+        <div className="aspect-video bg-ink-700 overflow-hidden">
           <img 
             src={image} 
             alt={title}
@@ -37,21 +37,21 @@ export function ResourceCard({ title, description, tag, href, image }: ResourceC
       
       <div className="p-6">
         <div className="mb-3">
-          <span className="inline-block px-3 py-1 text-xs font-medium text-emerald-400 bg-emerald-400/10 rounded-full">
+          <span className="inline-block px-3 py-1 text-xs font-medium text-cyan-400 bg-cyan-400/10 rounded-full">
             {tag}
           </span>
         </div>
         
-        <h3 className="text-xl font-semibold text-slate-50 mb-2 group-hover:text-emerald-400 transition-colors">
+        <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-cyan-400 transition-colors">
           {title}
         </h3>
         
-        <p className="text-slate-400 mb-4 line-clamp-2">
+        <p className="text-gray-400 mb-4 line-clamp-2">
           {description}
         </p>
         
         <Link href={href}>
-          <span className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-medium group/link cursor-pointer">
+          <span className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-medium group/link cursor-pointer">
             Read More
             <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
           </span>
