@@ -24,8 +24,8 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-ink-900/95 backdrop-blur-sm border-b border-ink-700/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link href="/" onClick={scrollToTop}>
             <div className="flex items-center space-x-3 cursor-pointer group">
@@ -44,10 +44,10 @@ export default function Navigation() {
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} onClick={scrollToTop}>
                 <span
-                  className={`font-medium transition-colors cursor-pointer ${
+                  className={`font-medium transition-colors cursor-pointer text-sm ${
                     location === link.href
-                      ? "text-cyan-400"
-                      : "text-gray-300 hover:text-cyan-400"
+                      ? "text-emerald-400"
+                      : "text-slate-300 hover:text-emerald-400"
                   }`}
                   data-testid={`link-nav-${link.label.toLowerCase()}`}
                 >
@@ -64,7 +64,7 @@ export default function Navigation() {
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="text-gray-300 hover:text-white"
+                    className="text-slate-300 hover:text-slate-50"
                   >
                     Dashboard
                   </Button>
@@ -73,7 +73,7 @@ export default function Navigation() {
                   variant="ghost"
                   size="sm"
                   onClick={logout}
-                  className="text-gray-300 hover:text-white"
+                  className="text-slate-300 hover:text-slate-50"
                 >
                   Sign Out
                 </Button>
@@ -83,7 +83,7 @@ export default function Navigation() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="text-gray-300 hover:text-white"
+                  className="text-slate-300 hover:text-slate-50"
                 >
                   Sign In
                 </Button>
@@ -92,7 +92,7 @@ export default function Navigation() {
 
             <Button
               onClick={openCalendly}
-              className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-medium"
+              className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
               data-testid="button-get-quote"
             >
               Get a Quote
@@ -112,7 +112,7 @@ export default function Navigation() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-ink-700/50 bg-ink-900">
+        <div className="md:hidden border-t border-slate-800/50 bg-slate-900/50">
           <div className="px-4 py-4 space-y-3">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href}>
@@ -123,8 +123,8 @@ export default function Navigation() {
                   }}
                   className={`block py-2 font-medium transition-colors ${
                     location === link.href
-                      ? "text-cyan-400"
-                      : "text-gray-300"
+                      ? "text-emerald-400"
+                      : "text-slate-300"
                   }`}
                 >
                   {link.label}
@@ -132,13 +132,13 @@ export default function Navigation() {
               </Link>
             ))}
             
-            <div className="pt-4 border-t border-ink-700/50 space-y-2">
+            <div className="pt-4 border-t border-slate-800/50 space-y-2">
               {isAuthenticated ? (
                 <>
                   <Link href="/dashboard">
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start text-gray-300"
+                      className="w-full justify-start text-slate-300"
                       onClick={() => {
                         scrollToTop();
                         setMobileMenuOpen(false);
@@ -149,7 +149,7 @@ export default function Navigation() {
                   </Link>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-gray-300"
+                    className="w-full justify-start text-slate-300"
                     onClick={() => {
                       logout();
                       setMobileMenuOpen(false);
@@ -162,7 +162,7 @@ export default function Navigation() {
                 <Link href="/login">
                   <Button 
                     variant="ghost" 
-                    className="w-full justify-start text-gray-300"
+                    className="w-full justify-start text-slate-300"
                     onClick={() => {
                       scrollToTop();
                       setMobileMenuOpen(false);
@@ -178,7 +178,7 @@ export default function Navigation() {
                   openCalendly();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-medium"
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold mt-2"
               >
                 Get a Quote
               </Button>

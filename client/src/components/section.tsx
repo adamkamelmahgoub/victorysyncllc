@@ -12,9 +12,9 @@ export function Section({ children, className = '', id, dark = false }: SectionP
   return (
     <section
       id={id}
-      className={`py-16 md:py-24 ${dark ? 'bg-ink-800' : 'bg-ink-900 bg-ink-900'} ${className}`}
+      className={`py-16 md:py-24 ${dark ? 'bg-slate-900' : 'bg-slate-950'} ${className}`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {children}
       </div>
     </section>

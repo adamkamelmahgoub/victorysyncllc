@@ -47,21 +47,21 @@ export default function Home() {
   const [activeStory, setActiveStory] = useState(0);
 
   return (
-    <MotionPage className="bg-ink-900 bg-ink-900">
-      <section className="relative py-20 md:py-32 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,211,238,0.1),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(139,92,246,0.1),transparent_50%)]" />
+    <MotionPage className="bg-slate-950">
+      <section className="relative py-20 md:py-32 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(34,197,94,0.1),transparent_50%)]" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <StaggerContainer className="text-center max-w-4xl mx-auto">
             <motion.div variants={fadeInUp}>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white text-white mb-6 leading-tight">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-50 mb-6 leading-tight">
                 Transform Customer Experience with{' '}
-                <span className="text-cyan-400">AI-Powered</span> Solutions
+                <span className="text-emerald-400">AI-Powered</span> Solutions
               </h1>
             </motion.div>
 
-            <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-gray-300 text-gray-300 mb-12 max-w-3xl mx-auto">
+            <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto">
               Reduce costs by 60% while delivering exceptional 24/7 customer support through professional contact centers and intelligent automation
             </motion.p>
 
@@ -69,7 +69,7 @@ export default function Home() {
               <Button
                 size="lg"
                 onClick={openCalendly}
-                className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-medium text-lg px-8"
+                className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold text-lg px-8"
                 data-testid="button-hero-get-quote"
               >
                 Get a Quote
@@ -78,7 +78,7 @@ export default function Home() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10 text-lg px-8"
+                  className="border-emerald-400/50 text-emerald-400 hover:bg-emerald-400/10 text-lg px-8"
                   data-testid="button-hero-explore"
                 >
                   Explore Platform
@@ -102,12 +102,12 @@ export default function Home() {
         </div>
       </section>
 
-      <Section className="bg-ink-800">
+      <Section className="bg-slate-900">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-50 mb-4">
             Measurable Business Outcomes
           </h2>
-          <p className="text-lg text-gray-300 text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             Our clients achieve significant improvements across key metrics
           </p>
         </div>
@@ -152,109 +152,109 @@ export default function Home() {
         </StaggerContainer>
       </Section>
 
-      <Section className="bg-ink-900">
+      <Section className="bg-slate-950">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-50 mb-4">
             Our Capabilities
           </h2>
-          <p className="text-lg text-gray-300 text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             A comprehensive platform for modern customer experience
           </p>
         </div>
 
         <Tabs defaultValue="ai" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 bg-ink-800 p-2 rounded-lg mb-8">
-            <TabsTrigger value="ai" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 bg-slate-900 p-2 rounded-lg mb-8">
+            <TabsTrigger value="ai" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
               <Bot className="w-4 h-4 mr-2" />
               AI Bots
             </TabsTrigger>
-            <TabsTrigger value="engagement" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+            <TabsTrigger value="engagement" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
               <MessageSquare className="w-4 h-4 mr-2" />
               Engagement
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
               <BarChart3 className="w-4 h-4 mr-2" />
               Analytics
             </TabsTrigger>
-            <TabsTrigger value="platform" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+            <TabsTrigger value="platform" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
               <Database className="w-4 h-4 mr-2" />
               Platform
             </TabsTrigger>
-            <TabsTrigger value="channels" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+            <TabsTrigger value="channels" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
               <Phone className="w-4 h-4 mr-2" />
               Channels
             </TabsTrigger>
-            <TabsTrigger value="wfm" className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400">
+            <TabsTrigger value="wfm" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
               <Users className="w-4 h-4 mr-2" />
               WFM
             </TabsTrigger>
           </TabsList>
 
-          <div className="bg-ink-800 rounded-xl p-8">
+          <div className="bg-slate-900 rounded-xl p-8">
             <TabsContent value="ai" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white">AI-Powered Automation</h3>
-              <p className="text-gray-300">Deploy intelligent bots that understand context, learn from interactions, and handle customer inquiries with human-like understanding.</p>
-              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
+              <h3 className="text-2xl font-bold text-slate-50">AI-Powered Automation</h3>
+              <p className="text-slate-300">Deploy intelligent bots that understand context, learn from interactions, and handle customer inquiries with human-like understanding.</p>
+              <Link href="/platform" className="text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
 
             <TabsContent value="engagement" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white">Customer Engagement Hub</h3>
-              <p className="text-gray-300">Centralize all customer interactions across channels for a unified view of every customer journey and touchpoint.</p>
-              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
+              <h3 className="text-2xl font-bold text-slate-50">Customer Engagement Hub</h3>
+              <p className="text-slate-300">Centralize all customer interactions across channels for a unified view of every customer journey and touchpoint.</p>
+              <Link href="/platform" className="text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
 
             <TabsContent value="analytics" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white">Advanced Analytics</h3>
-              <p className="text-gray-300">Transform data into actionable insights with real-time dashboards, predictive analytics, and comprehensive reporting.</p>
-              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
+              <h3 className="text-2xl font-bold text-slate-50">Advanced Analytics</h3>
+              <p className="text-slate-300">Transform data into actionable insights with real-time dashboards, predictive analytics, and comprehensive reporting.</p>
+              <Link href="/platform" className="text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
 
             <TabsContent value="platform" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white">Open Integration Platform</h3>
-              <p className="text-gray-300">Seamlessly integrate with your existing systems through our open API architecture and pre-built connectors.</p>
-              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
+              <h3 className="text-2xl font-bold text-slate-50">Open Integration Platform</h3>
+              <p className="text-slate-300">Seamlessly integrate with your existing systems through our open API architecture and pre-built connectors.</p>
+              <Link href="/platform" className="text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
 
             <TabsContent value="channels" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white">Omnichannel Support</h3>
-              <p className="text-gray-300">Connect with customers on their preferred channels - voice, chat, email, SMS, WhatsApp, and social media.</p>
-              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
+              <h3 className="text-2xl font-bold text-slate-50">Omnichannel Support</h3>
+              <p className="text-slate-300">Connect with customers on their preferred channels - voice, chat, email, SMS, WhatsApp, and social media.</p>
+              <Link href="/platform" className="text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
 
             <TabsContent value="wfm" className="space-y-4">
-              <h3 className="text-2xl font-bold text-white">Workforce Management</h3>
-              <p className="text-gray-300">Optimize your team with intelligent scheduling, forecasting, quality management, and performance tracking.</p>
-              <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
+              <h3 className="text-2xl font-bold text-slate-50">Workforce Management</h3>
+              <p className="text-slate-300">Optimize your team with intelligent scheduling, forecasting, quality management, and performance tracking.</p>
+              <Link href="/platform" className="text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
           </div>
         </Tabs>
       </Section>
 
-      <Section className="bg-ink-800">
+      <Section className="bg-slate-900">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-50 mb-4">
             Customer Success Stories
           </h2>
-          <p className="text-lg text-gray-300 text-gray-300">
+          <p className="text-lg text-slate-300">
             See how we've helped businesses transform their CX
           </p>
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="bg-ink-900 rounded-xl p-8 md:p-12 mb-8">
+          <div className="bg-slate-900 rounded-xl p-8 md:p-12 mb-8 border border-slate-800">
             <div className="mb-6">
-              <span className="inline-block px-3 py-1 text-xs font-medium text-cyan-400 bg-cyan-400/10 rounded-full mb-4">
+              <span className="inline-block px-3 py-1 text-xs font-medium text-emerald-400 bg-emerald-400/10 rounded-full mb-4">
                 {customerStories[activeStory].industry}
               </span>
-              <h3 className="text-2xl font-bold text-white text-white mb-2">
+              <h3 className="text-2xl font-bold text-slate-50 mb-2">
                 {customerStories[activeStory].company}
               </h3>
             </div>
-            <p className="text-lg text-gray-300 text-gray-300 mb-6">
+            <p className="text-lg text-slate-300 mb-6">
               "{customerStories[activeStory].outcome}"
             </p>
             <Link href="/blog">
-              <Button variant="link" className="text-cyan-400 hover:text-cyan-300 p-0">
+              <Button variant="link" className="text-emerald-400 hover:text-emerald-300 p-0">
                 Read Case Study <ChevronRight className="ml-1 w-4 h-4" />
               </Button>
             </Link>
@@ -266,7 +266,7 @@ export default function Home() {
                 key={idx}
                 onClick={() => setActiveStory(idx)}
                 className={`w-2 h-2 rounded-full transition-all ${
-                  activeStory === idx ? 'bg-cyan-400 w-8' : 'bg-gray-600'
+                  activeStory === idx ? 'bg-emerald-400 w-8' : 'bg-slate-600'
                 }`}
                 aria-label={`View story ${idx + 1}`}
               />
