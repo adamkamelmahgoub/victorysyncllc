@@ -1,0 +1,77 @@
+You are working in the VictorySync marketing website project (React + TypeScript + Tailwind, running on victorysync.com).
+
+Goal:
+Fix the “Book a 20 minute strategy call” CTA so that:
+1) On the homepage, clicking the button opens the Calendly popup.
+2) Visiting /book-call directly also triggers Calendly instead of showing the 404 “Did you forget to add the page to the router?”.
+
+There is already a Calendly hook in the project. Use it instead of adding a completely new integration.
+
+Assumptions about project structure:
+- There is a hero component for the homepage, something like: src/components/Hero.tsx (or similar).
+- The “Book a 20 minute strategy call” CTA is currently an <a> tag with href="/book-call".
+- There is a hook like src/hooks/useCalendly.ts which exposes a function that opens the Calendly popup
+  (for example: `const { open } = useCalendly()` or similar).
+- Routing is handled with react-router or a similar client-side router.
+
+Tasks:
+
+1) Wire the Hero CTA to Calendly instead of /book-call:
+   - Find the hero component that renders the text “Book a 20 minute strategy call”.
+   - Right now this is likely something like:
+       <a href="/book-call" className="...">Book a 20 minute strategy call</a>
+   - Import the Calendly hook (check the actual path):
+       import useCalendly from "../hooks/useCalendly";   // adjust relative path as needed
+   - Inside the component, call the hook:
+       const { openCalendly } = useCalendly();   // or const { open } = useCalendly(); adjust to the real API
+   - Replace the <a> tag with a <button type="button"> that calls the Calendly function:
+       <button
+         type="button"
+         onClick={openCalendly}   // or onClick={open}
+         className="same classes as before"
+       >
+         Book a 20 minute strategy call
+       </button>
+   - Keep the styling (classes, layout, spacing) identical to the previous CTA so the UI does not visually change, only the behavior.
+
+2) Make /book-call route work as a fallback:
+   - Create a lightweight page component, e.g. src/pages/BookCall.tsx or similar, that:
+       - Imports useCalendly.
+       - Calls the Calendly open function once in a useEffect so it opens automatically when /book-call is loaded.
+       - Renders a simple “Loading your booking calendar…” text as a fallback.
+     Example (adjust names/paths to this project’s conventions):
+       import { useEffect } from "react";
+       import useCalendly from "../hooks/useCalendly";
+
+       const BookCall = () => {
+         const { openCalendly } = useCalendly();
+
+         useEffect(() => {
+           openCalendly();
+         }, [openCalendly]);
+
+         return (
+           <div className="min-h-screen flex items-center justify-center text-slate-200">
+             <p>Loading your booking calendar…</p>
+           </div>
+         );
+       };
+
+       export default BookCall;
+   - Register the route in the main router configuration so /book-call renders this component:
+       <Route path="/book-call" element={<BookCall />} />
+   - Confirm that routing is correctly imported and that this route appears before any catch-all 404 route.
+
+3) Environment and script check:
+   - Ensure the Calendly URL is still read from the existing env variable (for example VITE_CALENDLY_URL) in useCalendly.ts, and do not hardcode the URL.
+   - Ensure any required Calendly script is still being loaded globally (for example in index.html or the root layout); if not, add it according to the existing project pattern.
+
+4) Testing:
+   - In development:
+       - Load the homepage, click “Book a 20 minute strategy call”.
+       - Confirm that the Calendly popup appears correctly.
+       - Navigate manually to /book-call.
+       - Confirm that the page auto-opens Calendly and does NOT show the 404 component.
+   - Do not change any other copy, layout, colors, or components.
+
+After implementing, list the files you modified (paths) and briefly describe what changed in each.

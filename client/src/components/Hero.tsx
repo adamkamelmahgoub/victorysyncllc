@@ -1,6 +1,9 @@
 import { FC } from "react";
+import { useCalendly } from "@/hooks/useCalendly";
 
 export const Hero: FC = () => {
+  const { open } = useCalendly();
+
   return (
     <section className="bg-ink-900 text-white">
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 lg:flex-row lg:items-center lg:py-24">
@@ -27,13 +30,14 @@ export const Hero: FC = () => {
           </ul>
 
           <div className="flex flex-col gap-3 pt-4 sm:flex-row">
-            <a
-              href="/book-call"
+            <button
+              type="button"
+              onClick={open}
               className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold bg-cyan-500 text-ink-900 hover:bg-cyan-400 transition"
               data-testid="button-book-call"
             >
               Book a 20 minute strategy call
-            </a>
+            </button>
             <a
               href="/pricing"
               className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold border border-ink-600 text-white hover:bg-ink-800/60 transition"
@@ -66,13 +70,13 @@ export const Hero: FC = () => {
                 <div className="rounded-xl bg-ink-900/70 p-3">
                   <div className="text-gray-400">Calls answered</div>
                   <div className="mt-1 text-2xl font-semibold text-cyan-400">98%</div>
-                  <div className="mt-1 text-[10px] text-white0">During business hours</div>
+                  <div className="mt-1 text-[10px] text-gray-500">During business hours</div>
                 </div>
 
                 <div className="rounded-xl bg-ink-900/70 p-3">
                   <div className="text-gray-400">Avg wait time</div>
                   <div className="mt-1 text-2xl font-semibold text-cyan-400">12s</div>
-                  <div className="mt-1 text-[10px] text-white0">From ring to answer</div>
+                  <div className="mt-1 text-[10px] text-gray-500">From ring to answer</div>
                 </div>
 
                 <div className="rounded-xl bg-ink-900/70 p-3">
@@ -94,7 +98,7 @@ export const Hero: FC = () => {
                       <div className="h-1.5 w-24 overflow-hidden rounded-full bg-ink-700">
                         <div className="h-full w-[15%] bg-cyan-400" />
                       </div>
-                      <span className="text-white0">3 waiting</span>
+                      <span className="text-gray-500">3 waiting</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
@@ -103,7 +107,7 @@ export const Hero: FC = () => {
                       <div className="h-1.5 w-24 overflow-hidden rounded-full bg-ink-700">
                         <div className="h-full w-0 bg-cyan-400" />
                       </div>
-                      <span className="text-white0">0 waiting</span>
+                      <span className="text-gray-500">0 waiting</span>
                     </div>
                   </div>
                 </div>
