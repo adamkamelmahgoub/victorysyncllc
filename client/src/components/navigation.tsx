@@ -79,7 +79,7 @@ export default function Navigation() {
                 </Button>
               </div>
             ) : (
-              <Link href="/login" onClick={scrollToTop}>
+              <a href="https://dashboard.victorysync.com">
                 <Button 
                   variant="ghost" 
                   size="sm"
@@ -87,7 +87,7 @@ export default function Navigation() {
                 >
                   Sign In
                 </Button>
-              </Link>
+              </a>
             )}
 
             <Button
@@ -159,18 +159,17 @@ export default function Navigation() {
                   </Button>
                 </>
               ) : (
-                <Link href="/login">
+                <a href="https://dashboard.victorysync.com">
                   <Button 
                     variant="ghost" 
                     className="w-full justify-start text-gray-300"
                     onClick={() => {
-                      scrollToTop();
                       setMobileMenuOpen(false);
                     }}
                   >
                     Sign In
                   </Button>
-                </Link>
+                </a>
               )}
               
               <Button
