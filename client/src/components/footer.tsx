@@ -1,4 +1,5 @@
 import { Link } from 'wouter';
+import { useEffect } from 'react';
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6,6 +7,15 @@ const scrollToTop = () => {
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+
+  useEffect(() => {
+    // Load Clutch widget script
+    const script = document.createElement('script');
+    script.src = 'https://widget.clutch.co/static/js/widget.js';
+    script.type = 'text/javascript';
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
 
   return (
     <footer className="bg-ink-900 text-white py-16 border-t border-ink-700">
@@ -54,8 +64,13 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-ink-700 mt-12 pt-8 text-center text-gray-400">
-          <p>&copy; {currentYear} VictorySync. All rights reserved. | Millstone, New Jersey, USA</p>
+        <div className="border-t border-ink-700 mt-12 pt-8">
+          <div className="flex flex-col items-center gap-8">
+            <div className="clutch-widget" data-url="https://widget.clutch.co" data-widget-type="16" data-height="auto" data-nofollow="false" data-expandifr="true" data-scale="100" data-clutchcompany-id="2592707"></div>
+            <div className="text-center text-gray-400">
+              <p>&copy; {currentYear} VictorySync. All rights reserved. | Millstone, New Jersey, USA</p>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
