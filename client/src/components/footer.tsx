@@ -53,11 +53,11 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div className="flex items-start justify-center min-w-32">
+          <div className="flex items-center justify-center">
             <img 
               src="/Close_PartnerBadge_Since25_1765323409008.png"
               alt="Close Partner Since 2025" 
-              className="h-20 w-32"
+              className="h-24"
             />
           </div>
         </div>
