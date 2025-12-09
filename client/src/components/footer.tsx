@@ -10,7 +10,7 @@ export default function Footer() {
   return (
     <footer className="bg-ink-900 text-white py-16 border-t border-ink-700">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center space-x-3 mb-6">
               <img 
@@ -51,6 +51,14 @@ export default function Footer() {
               <li><Link href="/privacy-policy"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Privacy Policy</span></Link></li>
               <li><Link href="/terms"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Terms of Service</span></Link></li>
             </ul>
+          </div>
+
+          <div className="flex items-start justify-center">
+            <img 
+              src="/Close_PartnerBadge_Since25_1765323409008.png" 
+              alt="Close Partner Since 2025" 
+              className="h-32 w-auto"
+            />
           </div>
         </div>
 
