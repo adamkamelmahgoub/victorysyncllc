@@ -63,9 +63,9 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div className="flex items-start justify-center">
-            <div className="bg-white rounded-lg p-4">
-              <div className="clutch-widget" data-url="https://widget.clutch.co" data-widget-type="16" data-height="auto" data-nofollow="false" data-expandifr="true" data-scale="80" data-clutchcompany-id="2592707"></div>
+          <div className="flex items-start">
+            <div className="bg-white rounded-lg p-3 w-full">
+              <div className="clutch-widget" data-url="https://widget.clutch.co" data-widget-type="16" data-height="auto" data-nofollow="false" data-expandifr="true" data-scale="120" data-clutchcompany-id="2592707"></div>
             </div>
           </div>
         </div>
