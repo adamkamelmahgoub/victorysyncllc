@@ -64,7 +64,9 @@ export default function Footer() {
           </div>
 
           <div className="flex items-start justify-center">
-            <div className="clutch-widget" data-url="https://widget.clutch.co" data-widget-type="16" data-height="auto" data-nofollow="false" data-expandifr="true" data-scale="70" data-clutchcompany-id="2592707"></div>
+            <div className="bg-white rounded-lg p-4">
+              <div className="clutch-widget" data-url="https://widget.clutch.co" data-widget-type="16" data-height="auto" data-nofollow="false" data-expandifr="true" data-scale="80" data-clutchcompany-id="2592707"></div>
+            </div>
           </div>
         </div>
 
