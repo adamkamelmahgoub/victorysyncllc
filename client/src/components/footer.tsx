@@ -20,7 +20,7 @@ export default function Footer() {
   return (
     <footer className="bg-ink-900 text-white py-16 border-t border-ink-700">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center space-x-3 mb-6">
               <img 
@@ -62,15 +62,14 @@ export default function Footer() {
               <li><Link href="/terms"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Terms of Service</span></Link></li>
             </ul>
           </div>
+
+          <div className="flex items-start justify-center">
+            <div className="clutch-widget" data-url="https://widget.clutch.co" data-widget-type="16" data-height="auto" data-nofollow="false" data-expandifr="true" data-scale="70" data-clutchcompany-id="2592707"></div>
+          </div>
         </div>
 
-        <div className="border-t border-ink-700 mt-12 pt-8">
-          <div className="flex flex-col items-center gap-8">
-            <div className="clutch-widget" data-url="https://widget.clutch.co" data-widget-type="16" data-height="auto" data-nofollow="false" data-expandifr="true" data-scale="100" data-clutchcompany-id="2592707"></div>
-            <div className="text-center text-gray-400">
-              <p>&copy; {currentYear} VictorySync. All rights reserved. | Millstone, New Jersey, USA</p>
-            </div>
-          </div>
+        <div className="border-t border-ink-700 mt-12 pt-8 text-center text-gray-400">
+          <p>&copy; {currentYear} VictorySync. All rights reserved. | Millstone, New Jersey, USA</p>
         </div>
       </div>
     </footer>
