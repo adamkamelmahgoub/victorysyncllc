@@ -54,11 +54,13 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center justify-center">
-            <img 
-              src="/Close_PartnerBadge_Since25_1765323409008.png"
-              alt="Close Partner Since 2025" 
-              className="h-24"
-            />
+            <div className="w-32 h-24 bg-gray-600 rounded flex items-center justify-center text-xs text-white text-center">
+              <div>
+                <div className="font-bold">Close</div>
+                <div className="font-bold">Partner</div>
+                <div className="text-[10px]">Since 2025</div>
+              </div>
+            </div>
           </div>
         </div>
 
