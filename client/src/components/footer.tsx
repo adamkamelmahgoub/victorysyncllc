@@ -1,5 +1,4 @@
 import { Link } from 'wouter';
-import { useEffect } from 'react';
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -8,19 +7,10 @@ const scrollToTop = () => {
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    // Load Clutch widget script
-    const script = document.createElement('script');
-    script.src = 'https://widget.clutch.co/static/js/widget.js';
-    script.type = 'text/javascript';
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
-
   return (
     <footer className="bg-ink-900 text-white py-16 border-t border-ink-700">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-5 gap-8">
+        <div className="grid md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center space-x-3 mb-6">
               <img 
@@ -61,12 +51,6 @@ export default function Footer() {
               <li><Link href="/privacy-policy"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Privacy Policy</span></Link></li>
               <li><Link href="/terms"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Terms of Service</span></Link></li>
             </ul>
-          </div>
-
-          <div className="flex items-start">
-            <div className="bg-white rounded-lg p-3 w-full">
-              <div className="clutch-widget" data-url="https://widget.clutch.co" data-widget-type="16" data-height="auto" data-nofollow="false" data-expandifr="true" data-scale="120" data-clutchcompany-id="2592707"></div>
-            </div>
           </div>
         </div>
 
