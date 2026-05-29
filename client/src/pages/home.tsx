@@ -55,7 +55,7 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Measurable Business Outcomes
           </h2>
-          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             Our clients achieve significant improvements across key metrics
           </p>
         </div>
@@ -105,7 +105,7 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Our Capabilities
           </h2>
-          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             A comprehensive platform for modern customer experience
           </p>
         </div>
@@ -141,37 +141,37 @@ export default function Home() {
           <div className="bg-ink-800 rounded-xl p-8">
             <TabsContent value="ai" className="space-y-4">
               <h3 className="text-2xl font-bold text-white">AI-Powered Automation</h3>
-              <p className="text-gray-300">Deploy intelligent bots that understand context, learn from interactions, and handle customer inquiries with human-like understanding.</p>
+              <p className="text-slate-300">Deploy intelligent bots that understand context, learn from interactions, and handle customer inquiries with human-like understanding.</p>
               <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
 
             <TabsContent value="engagement" className="space-y-4">
               <h3 className="text-2xl font-bold text-white">Customer Engagement Hub</h3>
-              <p className="text-gray-300">Centralize all customer interactions across channels for a unified view of every customer journey and touchpoint.</p>
+              <p className="text-slate-300">Centralize all customer interactions across channels for a unified view of every customer journey and touchpoint.</p>
               <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
 
             <TabsContent value="analytics" className="space-y-4">
               <h3 className="text-2xl font-bold text-white">Advanced Analytics</h3>
-              <p className="text-gray-300">Transform data into actionable insights with real-time dashboards, predictive analytics, and comprehensive reporting.</p>
+              <p className="text-slate-300">Transform data into actionable insights with real-time dashboards, predictive analytics, and comprehensive reporting.</p>
               <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
 
             <TabsContent value="platform" className="space-y-4">
               <h3 className="text-2xl font-bold text-white">Open Integration Platform</h3>
-              <p className="text-gray-300">Seamlessly integrate with your existing systems through our open API architecture and pre-built connectors.</p>
+              <p className="text-slate-300">Seamlessly integrate with your existing systems through our open API architecture and pre-built connectors.</p>
               <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
 
             <TabsContent value="channels" className="space-y-4">
               <h3 className="text-2xl font-bold text-white">Omnichannel Support</h3>
-              <p className="text-gray-300">Connect with customers on their preferred channels - voice, chat, email, SMS, WhatsApp, and social media.</p>
+              <p className="text-slate-300">Connect with customers on their preferred channels - voice, chat, email, SMS, WhatsApp, and social media.</p>
               <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
 
             <TabsContent value="wfm" className="space-y-4">
               <h3 className="text-2xl font-bold text-white">Workforce Management</h3>
-              <p className="text-gray-300">Optimize your team with intelligent scheduling, forecasting, quality management, and performance tracking.</p>
+              <p className="text-slate-300">Optimize your team with intelligent scheduling, forecasting, quality management, and performance tracking.</p>
               <Link href="/platform" className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2">Learn More <ChevronRight className="w-4 h-4" /></Link>
             </TabsContent>
           </div>
@@ -183,7 +183,7 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Customer Success Stories
           </h2>
-          <p className="text-lg text-gray-300">
+          <p className="text-lg text-slate-300">
             See how we've helped businesses transform their CX
           </p>
         </div>
@@ -198,7 +198,7 @@ export default function Home() {
                 {customerStories[activeStory].company}
               </h3>
             </div>
-            <p className="text-lg text-gray-300 mb-6">
+            <p className="text-lg text-slate-300 mb-6">
               "{customerStories[activeStory].outcome}"
             </p>
             <Link href="/blog">
@@ -228,7 +228,7 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-bold text-white text-white mb-4">
             Latest Insights & Resources
           </h2>
-          <p className="text-lg text-gray-300 text-gray-300">
+          <p className="text-lg text-slate-300 text-slate-300">
             Stay informed with our latest thinking on CX trends
           </p>
         </div>
@@ -260,7 +260,7 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Ready to Transform Your Customer Experience?
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className="text-xl text-slate-300 mb-8">
             Schedule a consultation to learn how we can help you achieve your CX goals
           </p>
           <Button

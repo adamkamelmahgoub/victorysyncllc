@@ -46,7 +46,7 @@ export function ResourceCard({ title, description, tag, href, image }: ResourceC
           {title}
         </h3>
         
-        <p className="text-gray-400 mb-4 line-clamp-2">
+        <p className="text-slate-400 mb-4 line-clamp-2">
           {description}
         </p>
         

@@ -17,7 +17,7 @@ export function LogoRow({ logos, title = "Trusted by leading organizations" }: L
   return (
     <div className="py-12">
       {title && (
-        <p className="text-center text-sm font-medium text-gray-400 mb-8 uppercase tracking-wider">
+        <p className="text-center text-sm font-medium text-slate-400 mb-8 uppercase tracking-wider">
           {title}
         </p>
       )}
@@ -43,7 +43,7 @@ export function LogoRow({ logos, title = "Trusted by leading organizations" }: L
               ) : logo.src ? (
                 <img src={logo.src} alt={logo.name} className="h-8 w-auto" />
               ) : (
-                <span className="text-gray-400 font-semibold">{logo.name}</span>
+                <span className="text-slate-400 font-semibold">{logo.name}</span>
               )}
             </LogoComponent>
           );

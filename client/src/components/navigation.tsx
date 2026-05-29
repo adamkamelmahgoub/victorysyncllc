@@ -47,7 +47,7 @@ export default function Navigation() {
                   className={`font-medium transition-colors cursor-pointer text-sm ${
                     location === link.href
                       ? "text-cyan-400"
-                      : "text-gray-300 hover:text-cyan-400"
+                      : "text-slate-300 hover:text-cyan-400"
                   }`}
                   data-testid={`link-nav-${link.label.toLowerCase()}`}
                 >
@@ -64,7 +64,7 @@ export default function Navigation() {
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="text-gray-300 hover:text-white"
+                    className="text-slate-300 hover:text-white"
                   >
                     Dashboard
                   </Button>
@@ -73,7 +73,7 @@ export default function Navigation() {
                   variant="ghost"
                   size="sm"
                   onClick={logout}
-                  className="text-gray-300 hover:text-white"
+                  className="text-slate-300 hover:text-white"
                 >
                   Sign Out
                 </Button>
@@ -83,7 +83,7 @@ export default function Navigation() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="text-gray-300 hover:text-white"
+                  className="text-slate-300 hover:text-white"
                 >
                   Sign In
                 </Button>
@@ -102,7 +102,7 @@ export default function Navigation() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-gray-300 hover:text-white"
+              className="p-2 text-slate-300 hover:text-white"
               data-testid="button-mobile-menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -124,7 +124,7 @@ export default function Navigation() {
                   className={`block py-2 font-medium transition-colors ${
                     location === link.href
                       ? "text-cyan-400"
-                      : "text-gray-300"
+                      : "text-slate-300"
                   }`}
                 >
                   {link.label}
@@ -138,7 +138,7 @@ export default function Navigation() {
                   <Link href="/dashboard">
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start text-gray-300"
+                      className="w-full justify-start text-slate-300"
                       onClick={() => {
                         scrollToTop();
                         setMobileMenuOpen(false);
@@ -149,7 +149,7 @@ export default function Navigation() {
                   </Link>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-gray-300"
+                    className="w-full justify-start text-slate-300"
                     onClick={() => {
                       logout();
                       setMobileMenuOpen(false);
@@ -162,7 +162,7 @@ export default function Navigation() {
                 <a href="https://dashboard.victorysync.com">
                   <Button 
                     variant="ghost" 
-                    className="w-full justify-start text-gray-300"
+                    className="w-full justify-start text-slate-300"
                     onClick={() => {
                       setMobileMenuOpen(false);
                     }}

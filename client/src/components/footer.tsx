@@ -21,14 +21,14 @@ export default function Footer() {
               />
               <span className="text-xl font-bold">VictorySync</span>
             </div>
-            <p className="text-gray-400 mb-6">
+            <p className="text-slate-400 mb-6">
               Professional contact center and AI automation services from Millstone, New Jersey. Helping US businesses reduce costs and improve customer satisfaction.
             </p>
           </div>
 
           <div>
             <h4 className="font-semibold mb-6 text-white">Services</h4>
-            <ul className="space-y-3 text-gray-400">
+            <ul className="space-y-3 text-slate-400">
               <li><Link href="/services"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Inbound Support</span></Link></li>
               <li><Link href="/services"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Outbound Sales</span></Link></li>
               <li><Link href="/platform"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">AI Automation</span></Link></li>
@@ -38,7 +38,7 @@ export default function Footer() {
 
           <div>
             <h4 className="font-semibold mb-6 text-white">Company</h4>
-            <ul className="space-y-3 text-gray-400">
+            <ul className="space-y-3 text-slate-400">
               <li><Link href="/about-us"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">About Us</span></Link></li>
               <li><Link href="/careers"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Careers</span></Link></li>
               <li><Link href="/contact"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Contact</span></Link></li>
@@ -47,7 +47,7 @@ export default function Footer() {
 
           <div>
             <h4 className="font-semibold mb-6 text-white">Support</h4>
-            <ul className="space-y-3 text-gray-400">
+            <ul className="space-y-3 text-slate-400">
               <li><Link href="/help-center"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Help Center</span></Link></li>
               <li><Link href="/privacy-policy"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Privacy Policy</span></Link></li>
               <li><Link href="/terms"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Terms of Service</span></Link></li>
@@ -63,7 +63,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-ink-700 mt-12 pt-8 text-center text-gray-400">
+        <div className="border-t border-ink-700 mt-12 pt-8 text-center text-slate-400">
           <p>&copy; {currentYear} VictorySync. All rights reserved. | Millstone, New Jersey, USA</p>
         </div>
       </div>

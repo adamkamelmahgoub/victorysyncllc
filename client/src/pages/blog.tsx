@@ -924,7 +924,7 @@ This isn't theoretical—these are actual results from companies that invested i
               {article.title}
             </h1>
             
-            <div className="flex items-center gap-6 text-gray-300">
+            <div className="flex items-center gap-6 text-slate-300">
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4" />
                 <span>{article.author}</span>
@@ -955,7 +955,7 @@ This isn't theoretical—these are actual results from companies that invested i
         {/* Article Content */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="prose prose-lg prose-invert max-w-none">
-            <div className="text-gray-300 leading-relaxed whitespace-pre-line space-y-6">
+            <div className="text-slate-300 leading-relaxed whitespace-pre-line space-y-6">
               {article.content.split('\n\n').map((paragraph, index) => {
                 if (paragraph.startsWith('## ')) {
                   return <h2 key={index} className="text-3xl font-bold text-white mt-12 mb-6">{paragraph.replace('## ', '')}</h2>;
@@ -968,7 +968,7 @@ This isn't theoretical—these are actual results from companies that invested i
                   return (
                     <ul key={index} className="list-disc list-inside space-y-2 my-4 ml-4">
                       {items.map((item, i) => (
-                        <li key={i} className="text-gray-300">{item.replace(/^- /, '')}</li>
+                        <li key={i} className="text-slate-300">{item.replace(/^- /, '')}</li>
                       ))}
                     </ul>
                   );
@@ -979,7 +979,7 @@ This isn't theoretical—these are actual results from companies that invested i
                     </div>
                   );
                 } else if (paragraph.trim()) {
-                  return <p key={index} className="text-gray-300 my-4 leading-relaxed">{paragraph}</p>;
+                  return <p key={index} className="text-slate-300 my-4 leading-relaxed">{paragraph}</p>;
                 }
                 return null;
               })}
@@ -989,7 +989,7 @@ This isn't theoretical—these are actual results from companies that invested i
           {/* CTA at bottom of article */}
           <div className="mt-16 bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border border-cyan-500/20 rounded-xl p-8 text-center">
             <h3 className="text-2xl font-bold text-white mb-4">Ready to Get Started?</h3>
-            <p className="text-gray-300 mb-6">
+            <p className="text-slate-300 mb-6">
               Let's discuss how VictorySync can help you implement these strategies for your business.
             </p>
             <Link href="/contact" onClick={scrollToTop}>
@@ -1011,7 +1011,7 @@ This isn't theoretical—these are actual results from companies that invested i
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">VictorySync Blog</h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
               Insights, strategies, and industry expertise to help you optimize your customer service operations and grow your business.
             </p>
           </div>
@@ -1031,7 +1031,7 @@ This isn't theoretical—these are actual results from companies that invested i
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === category
                     ? 'bg-cyan-500 text-ink-900' 
-                    : 'bg-ink-800 text-gray-300 border border-ink-700 hover:border-cyan-400 hover:text-cyan-400'
+                    : 'bg-ink-800 text-slate-300 border border-ink-700 hover:border-cyan-400 hover:text-cyan-400'
                 }`}
                 data-testid={`button-category-${category.toLowerCase().replace(/\s+/g, '-')}`}
               >
@@ -1061,8 +1061,8 @@ This isn't theoretical—these are actual results from companies that invested i
                     </span>
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-4">{blogPosts[0].title}</h3>
-                  <p className="text-gray-300 mb-4">{blogPosts[0].excerpt}</p>
-                  <div className="flex items-center text-sm text-gray-400 mb-6">
+                  <p className="text-slate-300 mb-4">{blogPosts[0].excerpt}</p>
+                  <div className="flex items-center text-sm text-slate-400 mb-6">
                     <span>{blogPosts[0].author}</span>
                     <span className="mx-2">•</span>
                     <span>{blogPosts[0].date}</span>
@@ -1100,14 +1100,14 @@ This isn't theoretical—these are actual results from companies that invested i
                     </span>
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-3 line-clamp-2">{post.title}</h3>
-                  <p className="text-gray-300 mb-4 line-clamp-3">{post.excerpt}</p>
-                  <div className="flex items-center text-sm text-gray-400 mb-4">
+                  <p className="text-slate-300 mb-4 line-clamp-3">{post.excerpt}</p>
+                  <div className="flex items-center text-sm text-slate-400 mb-4">
                     <span>{post.author}</span>
                     <span className="mx-2">•</span>
                     <span>{post.date}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-400">{post.readTime}</span>
+                    <span className="text-sm text-slate-400">{post.readTime}</span>
                     <Link href={`/blog/${post.slug}`} onClick={scrollToTop}>
                       <button className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
                         Read More →
@@ -1123,7 +1123,7 @@ This isn't theoretical—these are actual results from companies that invested i
         {/* Newsletter Signup */}
         <div className="bg-ink-800 border border-ink-700 rounded-xl shadow-lg p-8 text-center mb-16">
           <h2 className="text-3xl font-bold text-white mb-4">Stay Updated</h2>
-          <p className="text-lg text-gray-300 mb-8">
+          <p className="text-lg text-slate-300 mb-8">
             Get the latest insights on customer service optimization delivered to your inbox weekly.
           </p>
           <div className="max-w-md mx-auto flex gap-4">
@@ -1137,7 +1137,7 @@ This isn't theoretical—these are actual results from companies that invested i
               Subscribe
             </button>
           </div>
-          <p className="text-sm text-gray-400 mt-4">
+          <p className="text-sm text-slate-400 mt-4">
             No spam, unsubscribe at any time. We respect your privacy.
           </p>
         </div>
@@ -1145,7 +1145,7 @@ This isn't theoretical—these are actual results from companies that invested i
         {/* Call to Action */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-white mb-6">Ready to Transform Your Customer Service?</h2>
-          <p className="text-lg text-gray-300 mb-8">
+          <p className="text-lg text-slate-300 mb-8">
             Learn how VictorySync can help you implement the strategies discussed in our blog.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
@@ -1155,7 +1155,7 @@ This isn't theoretical—these are actual results from companies that invested i
               </button>
             </Link>
             <Link href="/pricing" onClick={scrollToTop}>
-              <button className="border border-ink-700 hover:border-cyan-400 text-gray-300 hover:text-cyan-400 px-8 py-3 rounded-lg font-semibold transition-colors">
+              <button className="border border-ink-700 hover:border-cyan-400 text-slate-300 hover:text-cyan-400 px-8 py-3 rounded-lg font-semibold transition-colors">
                 View Our Services
               </button>
             </Link>

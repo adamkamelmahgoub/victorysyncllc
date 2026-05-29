@@ -34,7 +34,7 @@ export default function Pricing() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Pricing Sized to Your Needs
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
               Every business is unique. Let's create a custom solution that fits your specific requirements and budget.
             </p>
             <div className="inline-block bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-6 py-3">
@@ -51,7 +51,7 @@ export default function Pricing() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Get a Custom Quote
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className="text-xl text-slate-300 mb-8">
             Our pricing is tailored to your business needs. Schedule a free consultation to discuss your requirements and receive a personalized quote.
           </p>
           <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -59,21 +59,21 @@ export default function Pricing() {
               <CardContent className="p-6 text-center">
                 <Phone className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-white mb-2">No Hidden Fees</h3>
-                <p className="text-gray-300 text-sm">Transparent pricing with no surprises</p>
+                <p className="text-slate-300 text-sm">Transparent pricing with no surprises</p>
               </CardContent>
             </Card>
             <Card className="bg-ink-900 border-ink-700">
               <CardContent className="p-6 text-center">
                 <TrendingUp className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-white mb-2">Scale as You Grow</h3>
-                <p className="text-gray-300 text-sm">Flexible plans that adapt to your needs</p>
+                <p className="text-slate-300 text-sm">Flexible plans that adapt to your needs</p>
               </CardContent>
             </Card>
             <Card className="bg-ink-900 border-ink-700">
               <CardContent className="p-6 text-center">
                 <DollarSign className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-white mb-2">No Long-Term Contracts</h3>
-                <p className="text-gray-300 text-sm">Month-to-month flexibility</p>
+                <p className="text-slate-300 text-sm">Month-to-month flexibility</p>
               </CardContent>
             </Card>
           </div>
@@ -95,7 +95,7 @@ export default function Pricing() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Missed Calls Calculator
             </h2>
-            <p className="text-lg text-gray-300">
+            <p className="text-lg text-slate-300">
               See how much revenue you might be losing from unanswered calls
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function Pricing() {
               <div className="grid md:grid-cols-2 gap-8 mb-8">
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       Missed Calls Per Day
                     </label>
                     <input
@@ -117,7 +117,7 @@ export default function Pricing() {
                       className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                       data-testid="input-missed-calls"
                     />
-                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                    <div className="flex justify-between text-sm text-slate-400 mt-1">
                       <span>1</span>
                       <span className="text-cyan-400 font-bold text-xl">{missedCalls}</span>
                       <span>200</span>
@@ -125,7 +125,7 @@ export default function Pricing() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       Average Order Value ($)
                     </label>
                     <input
@@ -138,7 +138,7 @@ export default function Pricing() {
                       className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                       data-testid="input-avg-order-value"
                     />
-                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                    <div className="flex justify-between text-sm text-slate-400 mt-1">
                       <span>$10</span>
                       <span className="text-cyan-400 font-bold text-xl">${avgOrderValue}</span>
                       <span>$1,000</span>
@@ -146,7 +146,7 @@ export default function Pricing() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       Conversion Rate (%)
                     </label>
                     <input
@@ -158,7 +158,7 @@ export default function Pricing() {
                       className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                       data-testid="input-conversion-rate"
                     />
-                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                    <div className="flex justify-between text-sm text-slate-400 mt-1">
                       <span>5%</span>
                       <span className="text-cyan-400 font-bold text-xl">{conversionRate}%</span>
                       <span>50%</span>
@@ -168,12 +168,12 @@ export default function Pricing() {
 
                 <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border border-cyan-500/20 rounded-xl p-8 flex flex-col justify-center">
                   <div className="text-center">
-                    <p className="text-gray-300 mb-2">Monthly Lost Revenue</p>
+                    <p className="text-slate-300 mb-2">Monthly Lost Revenue</p>
                     <p className="text-5xl font-bold text-cyan-400 mb-6" data-testid="text-monthly-lost-revenue">
                       ${parseFloat(missedRevenue).toLocaleString()}
                     </p>
                     <div className="h-px bg-cyan-500/30 mb-6"></div>
-                    <p className="text-gray-300 mb-2">Yearly Lost Revenue</p>
+                    <p className="text-slate-300 mb-2">Yearly Lost Revenue</p>
                     <p className="text-4xl font-bold text-white" data-testid="text-yearly-lost-revenue">
                       ${parseFloat(yearlyMissedRevenue).toLocaleString()}
                     </p>
@@ -182,7 +182,7 @@ export default function Pricing() {
               </div>
 
               <div className="bg-ink-900 rounded-lg p-6 text-center border border-ink-700">
-                <p className="text-gray-300 mb-4">
+                <p className="text-slate-300 mb-4">
                   Don't let missed calls cost you revenue. Our 24/7 contact center ensures you never miss an opportunity.
                 </p>
                 <Button
@@ -205,7 +205,7 @@ export default function Pricing() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               ROI Calculator
             </h2>
-            <p className="text-lg text-gray-300">
+            <p className="text-lg text-slate-300">
               Calculate your potential savings with VictorySync
             </p>
           </div>
@@ -215,7 +215,7 @@ export default function Pricing() {
               <div className="grid md:grid-cols-2 gap-8 mb-8">
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       Current Monthly Support Cost ($)
                     </label>
                     <input
@@ -228,7 +228,7 @@ export default function Pricing() {
                       className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                       data-testid="input-current-cost"
                     />
-                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                    <div className="flex justify-between text-sm text-slate-400 mt-1">
                       <span>$1K</span>
                       <span className="text-cyan-400 font-bold text-xl">${(currentCost / 1000).toFixed(1)}K</span>
                       <span>$50K</span>
@@ -236,7 +236,7 @@ export default function Pricing() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       Team Size (Agents)
                     </label>
                     <input
@@ -248,7 +248,7 @@ export default function Pricing() {
                       className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                       data-testid="input-team-size"
                     />
-                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                    <div className="flex justify-between text-sm text-slate-400 mt-1">
                       <span>1</span>
                       <span className="text-cyan-400 font-bold text-xl">{teamSize}</span>
                       <span>50</span>
@@ -256,7 +256,7 @@ export default function Pricing() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       Hours of Coverage Per Day
                     </label>
                     <input
@@ -268,7 +268,7 @@ export default function Pricing() {
                       className="w-full h-2 bg-ink-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                       data-testid="input-hours-per-day"
                     />
-                    <div className="flex justify-between text-sm text-gray-400 mt-1">
+                    <div className="flex justify-between text-sm text-slate-400 mt-1">
                       <span>4h</span>
                       <span className="text-cyan-400 font-bold text-xl">{hoursPerDay}h</span>
                       <span>24h</span>
@@ -278,28 +278,28 @@ export default function Pricing() {
 
                 <div className="space-y-4">
                   <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border border-cyan-500/20 rounded-xl p-6">
-                    <p className="text-gray-300 text-sm mb-1">Your Current Cost</p>
+                    <p className="text-slate-300 text-sm mb-1">Your Current Cost</p>
                     <p className="text-3xl font-bold text-white" data-testid="text-current-cost">
                       ${currentCost.toLocaleString()}/mo
                     </p>
                   </div>
 
                   <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border border-cyan-500/20 rounded-xl p-6">
-                    <p className="text-gray-300 text-sm mb-1">VictorySync Cost (60% savings)</p>
+                    <p className="text-slate-300 text-sm mb-1">VictorySync Cost (60% savings)</p>
                     <p className="text-3xl font-bold text-cyan-400" data-testid="text-our-cost">
                       ${ourCost.toLocaleString()}/mo
                     </p>
                   </div>
 
                   <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border border-cyan-500/20 rounded-xl p-6">
-                    <p className="text-gray-300 text-sm mb-1">Monthly Savings</p>
+                    <p className="text-slate-300 text-sm mb-1">Monthly Savings</p>
                     <p className="text-3xl font-bold text-cyan-400" data-testid="text-monthly-savings">
                       ${monthlySavings.toLocaleString()}
                     </p>
                   </div>
 
                   <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border border-cyan-500/20 rounded-xl p-6">
-                    <p className="text-gray-300 text-sm mb-1">Yearly Savings</p>
+                    <p className="text-slate-300 text-sm mb-1">Yearly Savings</p>
                     <p className="text-4xl font-bold text-cyan-400" data-testid="text-yearly-savings">
                       ${yearlySavings.toLocaleString()}
                     </p>
@@ -307,8 +307,8 @@ export default function Pricing() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-slate-900 to-ink-900 rounded-lg p-6 text-center border border-ink-700">
-                <p className="text-gray-300 mb-4">
+              <div className="bg-gradient-to-br from-ink-900 to-ink-900 rounded-lg p-6 text-center border border-ink-700">
+                <p className="text-slate-300 mb-4">
                   <span className="text-2xl font-bold text-cyan-400">{roi}% ROI</span> • 
                   Save <span className="font-bold text-cyan-400">${monthlySavings.toLocaleString()}/month</span> while improving service quality
                 </p>
@@ -330,7 +330,7 @@ export default function Pricing() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Ready to Transform Your Customer Service?
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className="text-xl text-slate-300 mb-8">
             Schedule a consultation and we'll create a custom solution for your business
           </p>
           <Button

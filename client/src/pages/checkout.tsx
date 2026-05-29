@@ -16,8 +16,6 @@ import { Separator } from "@/components/ui/separator";
 import { ShieldCheck, CreditCard, Check } from "lucide-react";
 import { Link } from "wouter";
 
-// Make sure to call `loadStripe` outside of a component's render to avoid
-// recreating the `Stripe` object on every render.
 const stripePromise = import.meta.env.VITE_STRIPE_PUBLIC_KEY
   ? loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
   : null;
@@ -53,7 +51,6 @@ const CheckoutForm = () => {
           variant: "destructive",
         });
       } else {
-        // Create order record
         await apiRequest("POST", "/api/orders", {
           items: items.map((item) => ({
             packageId: item.packageId,
@@ -84,10 +81,10 @@ const CheckoutForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-slate-50 p-4 rounded-lg">
+      <div className="bg-ink-900 border border-ink-700 p-4 rounded-lg">
         <div className="flex items-center space-x-2 mb-4">
-          <ShieldCheck className="w-5 h-5 text-green-600" />
-          <span className="text-sm font-medium">Secure Payment</span>
+          <ShieldCheck className="w-5 h-5 text-cyan-400" />
+          <span className="text-sm font-medium text-slate-300">Secure Payment</span>
         </div>
         <PaymentElement />
       </div>
@@ -95,11 +92,11 @@ const CheckoutForm = () => {
       <Button
         type="submit"
         disabled={!stripe || !elements || processing}
-        className="w-full bg-victory-purple hover:bg-purple-700 text-white py-3"
+        className="w-full bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold py-3"
       >
         {processing ? (
           <div className="flex items-center space-x-2">
-            <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+            <div className="animate-spin w-4 h-4 border-2 border-ink-900 border-t-transparent rounded-full" />
             <span>Processing Payment...</span>
           </div>
         ) : (
@@ -120,7 +117,6 @@ export default function Checkout() {
   const [clientSecret, setClientSecret] = useState("");
   const [loadingPayment, setLoadingPayment] = useState(true);
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
@@ -135,7 +131,6 @@ export default function Checkout() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  // Create payment intent
   useEffect(() => {
     if (items.length === 0 || !isAuthenticated) {
       setLoadingPayment(false);
@@ -173,29 +168,29 @@ export default function Checkout() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-ink-900">
+        <div className="animate-spin w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full" />
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return null; // Will redirect to login
+    return null;
   }
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Card className="max-w-md mx-4">
+      <div className="min-h-screen flex items-center justify-center bg-ink-900">
+        <Card className="max-w-md mx-4 bg-ink-800 border-ink-700">
           <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-bold victory-dark mb-4">
+            <h2 className="text-2xl font-bold text-white mb-4">
               Your Cart is Empty
             </h2>
-            <p className="victory-gray mb-6">
+            <p className="text-slate-300 mb-6">
               Add some services to your cart before checking out.
             </p>
             <Link href="/pricing">
-              <Button className="bg-victory-purple hover:bg-purple-700 text-white">
+              <Button className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">
                 View Pricing Plans
               </Button>
             </Link>
@@ -207,10 +202,10 @@ export default function Checkout() {
 
   if (loadingPayment) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-ink-900">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="victory-gray">Setting up secure payment...</p>
+          <div className="animate-spin w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-slate-300">Setting up secure payment...</p>
         </div>
       </div>
     );
@@ -218,24 +213,24 @@ export default function Checkout() {
 
   if (!stripePromise) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Card className="max-w-lg mx-4">
+      <div className="min-h-screen flex items-center justify-center bg-ink-900">
+        <Card className="max-w-lg mx-4 bg-ink-800 border-ink-700">
           <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-bold victory-dark mb-4">
+            <h2 className="text-2xl font-bold text-white mb-4">
               Payment System Setup Required
             </h2>
-            <p className="victory-gray mb-6">
+            <p className="text-slate-300 mb-6">
               Payment processing is being configured. Please contact our sales
               team to complete your order.
             </p>
             <div className="space-y-3">
               <Link href="/contact">
-                <Button className="w-full bg-victory-purple hover:bg-purple-700 text-white">
+                <Button className="w-full bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">
                   Contact Sales Team
                 </Button>
               </Link>
               <Link href="/pricing">
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full border-ink-600 text-slate-300 hover:bg-ink-700">
                   Back to Pricing
                 </Button>
               </Link>
@@ -248,17 +243,17 @@ export default function Checkout() {
 
   if (!clientSecret) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Card className="max-w-md mx-4">
+      <div className="min-h-screen flex items-center justify-center bg-ink-900">
+        <Card className="max-w-md mx-4 bg-ink-800 border-ink-700">
           <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-bold victory-dark mb-4">
+            <h2 className="text-2xl font-bold text-white mb-4">
               Payment Setup Error
             </h2>
-            <p className="victory-gray mb-6">
+            <p className="text-slate-300 mb-6">
               Unable to initialize payment. Please try again.
             </p>
             <Link href="/pricing">
-              <Button variant="outline">Back to Pricing</Button>
+              <Button variant="outline" className="border-ink-600 text-slate-300 hover:bg-ink-700">Back to Pricing</Button>
             </Link>
           </CardContent>
         </Card>
@@ -267,23 +262,22 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12">
+    <div className="min-h-screen bg-ink-900 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold victory-dark mb-2">
+          <h1 className="text-3xl font-bold text-white mb-2">
             Secure Checkout
           </h1>
-          <p className="victory-gray">
+          <p className="text-slate-300">
             Complete your order to get started with VictorySync
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Order Summary */}
-          <Card>
+          <Card className="bg-ink-800 border-ink-700">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Check className="w-5 h-5 text-green-600" />
+              <CardTitle className="flex items-center space-x-2 text-white">
+                <Check className="w-5 h-5 text-cyan-400" />
                 <span>Order Summary</span>
               </CardTitle>
             </CardHeader>
@@ -291,41 +285,41 @@ export default function Checkout() {
               {items.map((item) => (
                 <div
                   key={item.packageId}
-                  className="flex justify-between items-center py-3 border-b border-slate-200 last:border-b-0"
+                  className="flex justify-between items-center py-3 border-b border-ink-700 last:border-b-0"
                 >
                   <div>
-                    <h4 className="font-semibold victory-dark">
+                    <h4 className="font-semibold text-white">
                       {item.name} Plan
                     </h4>
-                    <p className="text-sm victory-gray">
+                    <p className="text-sm text-slate-400">
                       Quantity: {item.quantity}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold victory-dark">
+                    <p className="font-semibold text-white">
                       ${(item.price * item.quantity).toLocaleString()}/month
                     </p>
                   </div>
                 </div>
               ))}
 
-              <Separator />
+              <Separator className="bg-ink-700" />
 
               <div className="flex justify-between items-center text-lg font-bold">
-                <span>Total:</span>
-                <span className="victory-purple">
+                <span className="text-white">Total:</span>
+                <span className="text-cyan-400">
                   ${total.toLocaleString()}/month
                 </span>
               </div>
 
-              <div className="bg-green-50 p-4 rounded-lg">
+              <div className="bg-cyan-500/10 border border-cyan-500/20 p-4 rounded-lg">
                 <div className="flex items-center space-x-2 mb-2">
-                  <Check className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-800">
+                  <Check className="w-4 h-4 text-cyan-400" />
+                  <span className="text-sm font-medium text-cyan-400">
                     What's included:
                   </span>
                 </div>
-                <ul className="text-sm text-green-700 space-y-1">
+                <ul className="text-sm text-slate-300 space-y-1">
                   <li>• 24/7 customer support</li>
                   <li>• Dedicated account manager</li>
                   <li>• No setup fees</li>
@@ -335,11 +329,10 @@ export default function Checkout() {
             </CardContent>
           </Card>
 
-          {/* Payment Form */}
-          <Card>
+          <Card className="bg-ink-800 border-ink-700">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <CreditCard className="w-5 h-5 victory-purple" />
+              <CardTitle className="flex items-center space-x-2 text-white">
+                <CreditCard className="w-5 h-5 text-cyan-400" />
                 <span>Payment Information</span>
               </CardTitle>
             </CardHeader>
@@ -349,7 +342,7 @@ export default function Checkout() {
               </Elements>
 
               <div className="mt-6 text-center">
-                <div className="flex items-center justify-center space-x-2 text-sm victory-gray">
+                <div className="flex items-center justify-center space-x-2 text-sm text-slate-400">
                   <ShieldCheck className="w-4 h-4" />
                   <span>Your payment is secured by 256-bit SSL encryption</span>
                 </div>

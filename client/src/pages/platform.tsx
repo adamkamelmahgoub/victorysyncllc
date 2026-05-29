@@ -105,7 +105,7 @@ export default function Platform() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Our Platform
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
               A comprehensive suite of tools designed to transform your customer experience operations
             </p>
             <Button 
@@ -129,7 +129,7 @@ export default function Platform() {
                 <TabsTrigger 
                   key={cap.id} 
                   value={cap.id}
-                  className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400 text-gray-400 hover:text-slate-200"
+                  className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400 text-slate-400 hover:text-slate-200"
                   data-testid={`tab-${cap.id}`}
                 >
                   <Icon className="w-4 h-4 mr-2" />
@@ -151,12 +151,12 @@ export default function Platform() {
                     <h2 className="text-3xl font-bold text-white mb-4">
                       {cap.title}
                     </h2>
-                    <p className="text-lg text-gray-300 mb-6">
+                    <p className="text-lg text-slate-300 mb-6">
                       {cap.description}
                     </p>
                     <ul className="space-y-3 mb-8">
                       {cap.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-3 text-gray-300">
+                        <li key={idx} className="flex items-center gap-3 text-slate-300">
                           <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                           {feature}
                         </li>
@@ -184,7 +184,7 @@ export default function Platform() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Ready to Transform Your CX Operations?
           </h2>
-          <p className="text-lg text-gray-300 mb-8">
+          <p className="text-lg text-slate-300 mb-8">
             Schedule a consultation to see how our platform can help you achieve your goals
           </p>
           <Button 

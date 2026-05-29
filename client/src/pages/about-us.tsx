@@ -14,7 +14,7 @@ export default function AboutUs() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">About VictorySync</h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
               Transforming customer service operations with professional call center solutions and AI automation from Millstone, New Jersey.
             </p>
           </div>
@@ -25,11 +25,11 @@ export default function AboutUs() {
         <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
           <div>
             <h2 className="text-3xl font-bold text-white mb-6">Our Mission</h2>
-            <p className="text-lg text-gray-300 mb-6">
+            <p className="text-lg text-slate-300 mb-6">
               At VictorySync, we believe every business deserves world-class customer service without the enterprise price tag. 
               We help US businesses reduce customer service costs by up to 60% while maintaining exceptional quality and satisfaction.
             </p>
-            <p className="text-lg text-gray-300">
+            <p className="text-lg text-slate-300">
               Based in Millstone, New Jersey, our team combines local expertise with cutting-edge technology to deliver 
               scalable solutions that grow with your business.
             </p>
@@ -39,23 +39,23 @@ export default function AboutUs() {
             <ul className="space-y-3">
               <li className="flex items-start">
                 <span className="text-cyan-400 font-bold mr-3">✓</span>
-                <span className="text-gray-300">60% cost reduction on customer service operations</span>
+                <span className="text-slate-300">60% cost reduction on customer service operations</span>
               </li>
               <li className="flex items-start">
                 <span className="text-cyan-400 font-bold mr-3">✓</span>
-                <span className="text-gray-300">24/7 professional support coverage</span>
+                <span className="text-slate-300">24/7 professional support coverage</span>
               </li>
               <li className="flex items-start">
                 <span className="text-cyan-400 font-bold mr-3">✓</span>
-                <span className="text-gray-300">Advanced AI automation and workflow optimization</span>
+                <span className="text-slate-300">Advanced AI automation and workflow optimization</span>
               </li>
               <li className="flex items-start">
                 <span className="text-cyan-400 font-bold mr-3">✓</span>
-                <span className="text-gray-300">Scalable solutions for businesses of all sizes</span>
+                <span className="text-slate-300">Scalable solutions for businesses of all sizes</span>
               </li>
               <li className="flex items-start">
                 <span className="text-cyan-400 font-bold mr-3">✓</span>
-                <span className="text-gray-300">US-based management with global expertise</span>
+                <span className="text-slate-300">US-based management with global expertise</span>
               </li>
             </ul>
           </div>
@@ -71,7 +71,7 @@ export default function AboutUs() {
                 </svg>
               </div>
               <h3 className="font-semibold text-white mb-2">Inbound Support</h3>
-              <p className="text-gray-300 text-sm">24/7 customer service and technical support</p>
+              <p className="text-slate-300 text-sm">24/7 customer service and technical support</p>
             </div>
             <div className="text-center">
               <div className="bg-cyan-500/10 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -80,7 +80,7 @@ export default function AboutUs() {
                 </svg>
               </div>
               <h3 className="font-semibold text-white mb-2">Outbound Sales</h3>
-              <p className="text-gray-300 text-sm">Lead generation and appointment setting</p>
+              <p className="text-slate-300 text-sm">Lead generation and appointment setting</p>
             </div>
             <div className="text-center">
               <div className="bg-cyan-500/10 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -89,7 +89,7 @@ export default function AboutUs() {
                 </svg>
               </div>
               <h3 className="font-semibold text-white mb-2">AI Automation</h3>
-              <p className="text-gray-300 text-sm">Intelligent chatbots and workflow automation</p>
+              <p className="text-slate-300 text-sm">Intelligent chatbots and workflow automation</p>
             </div>
             <div className="text-center">
               <div className="bg-cyan-500/10 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -98,14 +98,14 @@ export default function AboutUs() {
                 </svg>
               </div>
               <h3 className="font-semibold text-white mb-2">Digital Marketing</h3>
-              <p className="text-gray-300 text-sm">Social media and content management</p>
+              <p className="text-slate-300 text-sm">Social media and content management</p>
             </div>
           </div>
         </div>
 
         <div className="text-center">
           <h2 className="text-3xl font-bold text-white mb-6">Ready to Transform Your Customer Service?</h2>
-          <p className="text-lg text-gray-300 mb-8">
+          <p className="text-lg text-slate-300 mb-8">
             Join hundreds of businesses that have reduced costs and improved satisfaction with VictorySync.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
@@ -113,7 +113,7 @@ export default function AboutUs() {
               Get Started Today
             </button>
             <Link href="/pricing" onClick={scrollToTop}>
-              <button className="border border-ink-600 hover:border-cyan-400 text-gray-300 hover:text-cyan-400 px-8 py-3 rounded-lg font-semibold transition-colors">
+              <button className="border border-ink-600 hover:border-cyan-400 text-slate-300 hover:text-cyan-400 px-8 py-3 rounded-lg font-semibold transition-colors">
                 View Pricing
               </button>
             </Link>

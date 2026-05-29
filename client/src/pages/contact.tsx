@@ -79,7 +79,7 @@ export default function Contact() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Let's Start a Conversation
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
               Ready to transform your customer experience? Get in touch with our
               team.
             </p>
@@ -103,7 +103,7 @@ export default function Contact() {
               <h2 className="text-3xl font-bold text-white mb-6">
                 Get in Touch
               </h2>
-              <p className="text-lg text-gray-300 mb-8">
+              <p className="text-lg text-slate-300 mb-8">
                 Have questions? We're here to help. Send us a message and we'll
                 respond as soon as possible.
               </p>
@@ -117,7 +117,7 @@ export default function Contact() {
                     <h3 className="font-semibold text-white mb-1">
                       Email
                     </h3>
-                    <p className="text-gray-300">
+                    <p className="text-slate-300">
                       info@victorysync.com
                     </p>
                   </div>
@@ -131,7 +131,7 @@ export default function Contact() {
                     <h3 className="font-semibold text-white mb-1">
                       Phone
                     </h3>
-                    <p className="text-gray-300">
+                    <p className="text-slate-300">
                       Available via scheduled call
                     </p>
                   </div>
@@ -145,7 +145,7 @@ export default function Contact() {
                     <h3 className="font-semibold text-white mb-1">
                       Location
                     </h3>
-                    <p className="text-gray-300">
+                    <p className="text-slate-300">
                       Millstone, New Jersey, USA
                     </p>
                   </div>
@@ -166,7 +166,7 @@ export default function Contact() {
                 <div>
                   <Label
                     htmlFor="firstName"
-                    className="text-gray-300"
+                    className="text-slate-300"
                   >
                     First Name
                   </Label>
@@ -186,7 +186,7 @@ export default function Contact() {
                 <div>
                   <Label
                     htmlFor="lastName"
-                    className="text-gray-300"
+                    className="text-slate-300"
                   >
                     Last Name
                   </Label>
@@ -208,7 +208,7 @@ export default function Contact() {
               <div>
                 <Label
                   htmlFor="company"
-                  className="text-gray-300"
+                  className="text-slate-300"
                 >
                   Company (Optional)
                 </Label>
@@ -222,7 +222,7 @@ export default function Contact() {
               </div>
 
               <div>
-                <Label htmlFor="email" className="text-gray-300">
+                <Label htmlFor="email" className="text-slate-300">
                   Email
                 </Label>
                 <Input
@@ -243,7 +243,7 @@ export default function Contact() {
               <div>
                 <Label
                   htmlFor="message"
-                  className="text-gray-300"
+                  className="text-slate-300"
                 >
                   Message
                 </Label>
@@ -280,7 +280,7 @@ export default function Contact() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Or Schedule a Call Directly
           </h2>
-          <p className="text-lg text-gray-300">
+          <p className="text-lg text-slate-300">
             Pick a time that works best for you
           </p>
         </div>

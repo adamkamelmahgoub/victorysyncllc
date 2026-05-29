@@ -109,7 +109,7 @@ export default function Services() {
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Complete Business Solutions
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
             From customer support to sales growth, we provide end-to-end services that help your business thrive while reducing costs by up to 60%.
           </p>
           <Button onClick={openCalendly} size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">
@@ -139,7 +139,7 @@ export default function Services() {
                         {service.features.map((feature, idx) => (
                           <div key={idx} className="flex items-start">
                             <Check className="text-cyan-500 w-4 h-4 mr-3 flex-shrink-0 mt-1" />
-                            <span className="text-sm text-gray-300">{feature}</span>
+                            <span className="text-sm text-slate-300">{feature}</span>
                           </div>
                         ))}
                       </div>
@@ -151,7 +151,7 @@ export default function Services() {
                         {service.benefits.map((benefit, idx) => (
                           <div key={idx} className="flex items-start">
                             <ArrowRight className="text-cyan-400 w-4 h-4 mr-3 flex-shrink-0 mt-1" />
-                            <span className="text-sm font-medium text-gray-300">{benefit}</span>
+                            <span className="text-sm font-medium text-slate-300">{benefit}</span>
                           </div>
                         ))}
                       </div>
@@ -167,7 +167,7 @@ export default function Services() {
                       <CardContent className="text-center">
                         <IconComponent className="text-cyan-400 w-20 h-20 mx-auto mb-6" />
                         <h3 className="text-2xl font-bold text-white mb-4">Ready to Get Started?</h3>
-                        <p className="text-gray-300 mb-6">
+                        <p className="text-slate-300 mb-6">
                           Discover how our {service.title.toLowerCase()} services can transform your business operations.
                         </p>
                         <div className="space-y-3">
@@ -175,7 +175,7 @@ export default function Services() {
                             Get a Quote
                           </Button>
                           <Link href="/contact" onClick={scrollToTop}>
-                            <Button variant="outline" className="w-full border-ink-600 text-gray-300 hover:bg-ink-700">
+                            <Button variant="outline" className="w-full border-ink-600 text-slate-300 hover:bg-ink-700">
                               Schedule Consultation
                             </Button>
                           </Link>
@@ -194,7 +194,7 @@ export default function Services() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Why Choose VictorySync?</h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
               We combine professional expertise with cutting-edge technology to deliver exceptional results
             </p>
           </div>
@@ -206,7 +206,7 @@ export default function Services() {
                   <Check className="text-cyan-500 w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4">Proven Results</h3>
-                <p className="text-gray-300">
+                <p className="text-slate-300">
                   Our clients see an average of 60% cost reduction and 40% improvement in customer satisfaction scores.
                 </p>
               </CardContent>
@@ -218,7 +218,7 @@ export default function Services() {
                   <Bot className="text-cyan-400 w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4">Advanced Technology</h3>
-                <p className="text-gray-300">
+                <p className="text-slate-300">
                   We leverage the latest AI and automation tools to maximize efficiency and deliver superior results.
                 </p>
               </CardContent>
@@ -230,7 +230,7 @@ export default function Services() {
                   <Phone className="text-cyan-400 w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4">24/7 Support</h3>
-                <p className="text-gray-300">
+                <p className="text-slate-300">
                   Round-the-clock availability ensures your customers are always taken care of, no matter the time zone.
                 </p>
               </CardContent>
@@ -242,7 +242,7 @@ export default function Services() {
       <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Business?</h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-8">
             Let's discuss how our services can help you reduce costs, improve efficiency, and drive growth.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
