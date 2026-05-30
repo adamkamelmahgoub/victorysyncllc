@@ -1,125 +1,187 @@
 import { Link } from 'wouter';
 import { useCalendly } from '@/hooks/useCalendly';
-
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+import { Button } from '@/components/ui/button';
+import { MapPin, Users, Shield, BarChart3, CheckCircle } from 'lucide-react';
 
 export default function AboutUs() {
   const { open: openCalendly } = useCalendly();
 
   return (
     <div className="min-h-screen bg-ink-900">
-      <div className="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 text-white py-20 border-b border-ink-700">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">About VictorySync</h1>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-              Transforming customer service operations with professional call center solutions and AI automation from Millstone, New Jersey.
+
+      {/* Hero */}
+      <section className="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 pt-24 pb-16 border-b border-ink-700">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <span className="inline-flex items-center rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-300 ring-1 ring-cyan-500/30 mb-6">
+              About VictorySync
+            </span>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+              US-Managed Quality. Cairo-Based Efficiency.
+            </h1>
+            <p className="text-xl text-slate-300 leading-relaxed">
+              VictorySync is a US-managed contact center and AI automation company helping US businesses handle inbound support, outbound calling, and appointment setting — with trained agents in Cairo, Egypt and direct management from New Jersey.
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
-          <div>
-            <h2 className="text-3xl font-bold text-white mb-6">Our Mission</h2>
-            <p className="text-lg text-slate-300 mb-6">
-              At VictorySync, we believe every business deserves world-class customer service without the enterprise price tag. 
-              We help US businesses reduce customer service costs by up to 60% while maintaining exceptional quality and satisfaction.
-            </p>
-            <p className="text-lg text-slate-300">
-              Based in Millstone, New Jersey, our team combines local expertise with cutting-edge technology to deliver 
-              scalable solutions that grow with your business.
-            </p>
-          </div>
-          <div className="bg-ink-800 p-8 rounded-lg shadow-lg border border-ink-700">
-            <h3 className="text-2xl font-semibold text-white mb-4">Why Choose VictorySync?</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start">
-                <span className="text-cyan-400 font-bold mr-3">✓</span>
-                <span className="text-slate-300">60% cost reduction on customer service operations</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-cyan-400 font-bold mr-3">✓</span>
-                <span className="text-slate-300">24/7 professional support coverage</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-cyan-400 font-bold mr-3">✓</span>
-                <span className="text-slate-300">Advanced AI automation and workflow optimization</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-cyan-400 font-bold mr-3">✓</span>
-                <span className="text-slate-300">Scalable solutions for businesses of all sizes</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-cyan-400 font-bold mr-3">✓</span>
-                <span className="text-slate-300">US-based management with global expertise</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="bg-ink-800 rounded-lg shadow-lg p-8 mb-16 border border-ink-700">
-          <h2 className="text-3xl font-bold text-white mb-8 text-center">Our Services</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="bg-cyan-500/10 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-white mb-2">Inbound Support</h3>
-              <p className="text-slate-300 text-sm">24/7 customer service and technical support</p>
+      {/* Founder & Company */}
+      <section className="py-16 bg-ink-800 border-b border-ink-700">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-4">Founded by Ahmed Mahgoub</h2>
+              <p className="text-slate-300 mb-4 leading-relaxed">
+                VictorySync was founded by Ahmed Mahgoub, based in Millstone, New Jersey. Ahmed built VictorySync to solve a problem he saw firsthand: US businesses were either overpaying for domestic call center labor or accepting poor quality from overseas providers with no real oversight.
+              </p>
+              <p className="text-slate-300 mb-4 leading-relaxed">
+                The answer was a hybrid model — professional, English-speaking agents trained and managed to US business standards, operating from Cairo, Egypt with US-based account management keeping quality high on every campaign.
+              </p>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                VictorySync LLC is registered and operated from Millstone, New Jersey. Agent operations are based in Cairo, Egypt.
+              </p>
             </div>
-            <div className="text-center">
-              <div className="bg-cyan-500/10 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
+            <div className="space-y-4">
+              <div className="bg-ink-900 rounded-xl p-5 border border-ink-700 flex items-start gap-4">
+                <MapPin className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-semibold text-white text-sm mb-1">Dual-location operating model</div>
+                  <div className="text-slate-400 text-sm">US management in Millstone, NJ. Agent team in Cairo, Egypt.</div>
+                </div>
               </div>
-              <h3 className="font-semibold text-white mb-2">Outbound Sales</h3>
-              <p className="text-slate-300 text-sm">Lead generation and appointment setting</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-cyan-500/10 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+              <div className="bg-ink-900 rounded-xl p-5 border border-ink-700 flex items-start gap-4">
+                <Users className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-semibold text-white text-sm mb-1">Trained, English-speaking agents</div>
+                  <div className="text-slate-400 text-sm">Agents trained on client-specific scripts, workflows, and brand tone before going live.</div>
+                </div>
               </div>
-              <h3 className="font-semibold text-white mb-2">AI Automation</h3>
-              <p className="text-slate-300 text-sm">Intelligent chatbots and workflow automation</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-cyan-500/10 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2M7 4h10M7 4L5.5 6M17 4l1.5 2M12 12v4M8 16h8" />
-                </svg>
+              <div className="bg-ink-900 rounded-xl p-5 border border-ink-700 flex items-start gap-4">
+                <Shield className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-semibold text-white text-sm mb-1">US-managed quality control</div>
+                  <div className="text-slate-400 text-sm">Every campaign overseen by US-based management. Not a black box.</div>
+                </div>
               </div>
-              <h3 className="font-semibold text-white mb-2">Digital Marketing</h3>
-              <p className="text-slate-300 text-sm">Social media and content management</p>
             </div>
           </div>
         </div>
+      </section>
 
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-white mb-6">Ready to Transform Your Customer Service?</h2>
-          <p className="text-lg text-slate-300 mb-8">
-            Join hundreds of businesses that have reduced costs and improved satisfaction with VictorySync.
+      {/* Our Mission */}
+      <section className="py-16 bg-ink-900 border-b border-ink-700">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <h2 className="text-2xl font-bold text-white mb-4">Our Mission</h2>
+            <p className="text-slate-300 mb-4 leading-relaxed">
+              Most US businesses can't afford to scale customer support in-house. Hiring, training, managing, and retaining a customer service team is expensive and time-consuming — especially when the business is still growing.
+            </p>
+            <p className="text-slate-300 mb-4 leading-relaxed">
+              VictorySync exists to change that. We give businesses access to professional contact center capacity at a fraction of the cost of US hiring, without sacrificing the quality, communication, and accountability that US clients expect.
+            </p>
+            <p className="text-slate-300 leading-relaxed">
+              Our model is simple: we take on the hiring, training, and daily management of your agent team — and you get a dedicated, performing operation without the overhead.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Operating Model */}
+      <section className="py-16 bg-ink-800 border-b border-ink-700">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-white mb-10">How We Operate</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {[
+              {
+                title: 'Campaign setup & alignment',
+                desc: 'Every engagement starts with a discovery process. We learn your business, customers, tools, and what success looks like before a single call is made.',
+              },
+              {
+                title: 'Agent training & scripting',
+                desc: 'Agents are trained on your products, services, and tone. Scripts are reviewed and approved before launch. Nothing goes live without your sign-off.',
+              },
+              {
+                title: 'Daily activity & reporting',
+                desc: 'You receive daily summaries of calls made, contacts reached, appointments set, and key outcomes. No surprises.',
+              },
+              {
+                title: 'QA reviews & optimization',
+                desc: 'Regular call reviews, QA scoring, and performance tracking ensure quality stays high. We surface issues and fix them proactively.',
+              },
+            ].map((item) => (
+              <div key={item.title} className="bg-ink-900 rounded-xl p-6 border border-ink-700">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-cyan-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-semibold text-white mb-2">{item.title}</h3>
+                    <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What Clients Can Expect */}
+      <section className="py-16 bg-ink-900 border-b border-ink-700">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-white mb-4">What to Expect as a VictorySync Client</h2>
+          <p className="text-slate-400 mb-10 max-w-2xl leading-relaxed">
+            We're direct about what we do and what we don't. Here's what you can realistically expect when working with us.
           </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <button onClick={openCalendly} className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 px-8 py-3 rounded-lg font-semibold transition-colors">
-              Get Started Today
-            </button>
-            <Link href="/pricing" onClick={scrollToTop}>
-              <button className="border border-ink-600 hover:border-cyan-400 text-slate-300 hover:text-cyan-400 px-8 py-3 rounded-lg font-semibold transition-colors">
-                View Pricing
-              </button>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Users,
+                title: 'A dedicated agent team',
+                desc: 'Agents assigned to your account, trained specifically for your business, not rotated across dozens of clients.',
+              },
+              {
+                icon: BarChart3,
+                title: 'Transparent reporting',
+                desc: 'Daily and weekly reports. You always know what your team is doing, how many contacts were made, and what the outcomes were.',
+              },
+              {
+                icon: Shield,
+                title: 'Responsive management',
+                desc: 'Direct access to your account manager. Issues get addressed quickly, not lost in a ticket queue.',
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.title} className="bg-ink-800 rounded-xl p-6 border border-ink-700">
+                  <Icon className="w-8 h-8 text-cyan-400 mb-4" />
+                  <h3 className="font-semibold text-white mb-2">{item.title}</h3>
+                  <p className="text-sm text-slate-400 leading-relaxed">{item.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">Ready to talk about your business?</h2>
+          <p className="text-slate-300 mb-8 leading-relaxed">
+            Book a free 20-minute call with Ahmed and the team. We'll ask about your current operation and tell you honestly whether and how VictorySync can help.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button onClick={openCalendly} className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold px-8 py-3">
+              Book a Free Call
+            </Button>
+            <Link href="/contact">
+              <Button variant="outline" className="border-ink-600 text-slate-300 hover:bg-ink-800 px-8 py-3">
+                Send Us a Message
+              </Button>
             </Link>
           </div>
         </div>
-      </div>
+      </section>
+
     </div>
   );
 }

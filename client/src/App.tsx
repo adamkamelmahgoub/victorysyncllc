@@ -26,6 +26,12 @@ import Platform from "@/pages/platform";
 import BookCall from "@/pages/book-call";
 import NotFound from "@/pages/not-found";
 
+// Service Pages
+import InboundSupport from "@/pages/inbound-support";
+import AppointmentSetting from "@/pages/appointment-setting";
+import ColdCalling from "@/pages/cold-calling";
+import AiAutomation from "@/pages/ai-automation";
+
 // Footer Pages
 import AboutUs from "@/pages/about-us";
 import Careers from "@/pages/careers";
@@ -69,6 +75,12 @@ function Router() {
             <Route path="/login" component={Login} />
             <Route path="/dashboard" component={CustomerDashboard} />
             <Route path="/platform" component={Platform} />
+
+            {/* Service Pages */}
+            <Route path="/inbound-support" component={InboundSupport} />
+            <Route path="/appointment-setting" component={AppointmentSetting} />
+            <Route path="/cold-calling" component={ColdCalling} />
+            <Route path="/ai-automation" component={AiAutomation} />
 
             {/* Footer Pages */}
             <Route path="/about-us" component={AboutUs} />

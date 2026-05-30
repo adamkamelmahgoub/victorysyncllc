@@ -1,0 +1,1 @@
+- [Vite public folder](vite-public-folder.md) — static files (robots.txt, sitemap.xml) must go in `client/public/`, not root `public/`, because Vite root is set to `client/`.

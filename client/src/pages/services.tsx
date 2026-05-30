@@ -1,262 +1,221 @@
-import { Phone, Megaphone, Bot, BarChart3, Check, ArrowRight } from "lucide-react";
+import { Phone, Calendar, Users, MessageSquare, Bot, BarChart3, ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
 import { useCalendly } from "@/hooks/useCalendly";
 
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+const services = [
+  {
+    icon: Phone,
+    title: "Inbound Customer Support",
+    href: "/inbound-support",
+    who: "Service businesses, e-commerce brands, and any company handling 20+ inbound inquiries per day.",
+    description:
+      "VictorySync agents answer your calls, emails, live chat, and tickets — professionally and consistently, on your behalf.",
+    handles: [
+      "Live call answering within seconds",
+      "Email and ticket handling with SLA compliance",
+      "Live chat and SMS support",
+      "Escalation routing to your internal team",
+      "Call recording and QA monitoring",
+      "Daily activity summaries",
+    ],
+    outcome: "Never miss a customer call or message. Extended coverage without adding headcount.",
+  },
+  {
+    icon: Calendar,
+    title: "Appointment Setting",
+    href: "/appointment-setting",
+    who: "Sales teams, service companies, consultants, and agencies who sell through discovery or strategy calls.",
+    description:
+      "Our agents follow up on leads, qualify prospects, and book appointments directly to your calendar — daily.",
+    handles: [
+      "Lead follow-up calls within minutes of inquiry",
+      "Custom qualification scripts per your criteria",
+      "Direct calendar booking to your system",
+      "CRM updates after every contact",
+      "Confirmation and reminder calls/texts",
+      "No-show re-engagement and rescheduling",
+    ],
+    outcome: "A consistent, predictable appointment pipeline without burning out your sales team.",
+  },
+  {
+    icon: Users,
+    title: "Cold Calling",
+    href: "/cold-calling",
+    who: "B2B companies, lead list owners, and sales operations that need outbound capacity without hiring SDRs.",
+    description:
+      "We run client-approved, DNC-conscious cold calling campaigns using trained English-speaking agents who qualify and transfer.",
+    handles: [
+      "Systematic outreach from your approved lead lists",
+      "Client-approved scripts only",
+      "Qualification and warm transfers to your team",
+      "Appointment booking for qualified prospects",
+      "DNC-conscious calling workflow",
+      "Daily call activity and disposition reports",
+    ],
+    outcome: "Consistent outbound activity every day, without the overhead of hiring and managing in-house SDRs.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Lead Follow-Up",
+    href: "/services",
+    who: "Any business with web leads, ad leads, or inquiry lists that aren't being followed up on quickly enough.",
+    description:
+      "Speed to lead is everything. Our team contacts new leads within minutes and runs multi-touch follow-up sequences until they convert or opt out.",
+    handles: [
+      "Lead contacted within minutes of inquiry",
+      "Multi-attempt phone, SMS, and email sequences",
+      "Qualification and CRM updates",
+      "Warm handoff to your sales team",
+      "Re-engagement for cold or unresponsive leads",
+      "Daily pipeline and activity reporting",
+    ],
+    outcome: "Higher contact rates, more qualified conversations, and fewer leads falling through the cracks.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Email, Chat & SMS Support",
+    href: "/inbound-support",
+    who: "Businesses with multi-channel customer inquiries that need consistent, professional responses across all channels.",
+    description:
+      "VictorySync handles customer communications across email, live chat, and SMS — with the same quality standards as your phone support.",
+    handles: [
+      "Email response within agreed SLA windows",
+      "Live chat handled in real time",
+      "SMS inquiry triage and response",
+      "Ticket creation, routing, and resolution",
+      "Escalation to your team for complex cases",
+      "Reporting on volume, response times, and outcomes",
+    ],
+    outcome: "A consistent brand experience across every channel customers use to reach you.",
+  },
+  {
+    icon: Bot,
+    title: "AI Automation & Reporting",
+    href: "/ai-automation",
+    who: "Businesses where agents spend too much time on data entry, manual reporting, or repetitive follow-up tasks.",
+    description:
+      "VictorySync layers AI automation into your workflows — automating call summaries, CRM updates, lead routing, and reporting dashboards.",
+    handles: [
+      "Automatic post-call summaries pushed to CRM",
+      "Lead status and routing updated after every contact",
+      "Follow-up task creation and reminders",
+      "Real-time reporting dashboards",
+      "Human-in-the-loop oversight on all automations",
+      "Weekly and monthly performance reports",
+    ],
+    outcome: "More throughput from your existing team, cleaner CRM data, and better visibility for management.",
+  },
+];
 
 export default function Services() {
   const { open: openCalendly } = useCalendly();
 
-  const services = [
-    {
-      icon: Phone,
-      title: "Inbound Contact Center",
-      features: [
-        "24/7 Multilingual Customer Support with native English speakers",
-        "Advanced Technical Help Desk with tier-1, tier-2, and tier-3 escalation protocols",
-        "Complete Order Processing & Billing management with payment gateway integrations",
-        "Real-time Live Chat Support with instant response capabilities and chatbot handoffs",
-        "Comprehensive Email Support Management with ticketing systems and automated routing",
-        "Professional Complaint Resolution with empathy training and satisfaction tracking",
-        "Call recording and quality monitoring with performance analytics",
-        "CRM integration with Salesforce, HubSpot, and custom systems",
-      ],
-      benefits: [
-        "Reduce average response times by 80% with intelligent call routing",
-        "Improve customer satisfaction scores by 45% through empathetic support",
-        "Handle peak volumes effortlessly with scalable agent deployment",
-        "Decrease operational costs by 60% compared to in-house teams",
-        "Increase first-call resolution rates by 35% with proper training",
-        "Maintain 99.9% uptime with redundant systems and backup protocols",
-      ],
-    },
-    {
-      icon: Megaphone,
-      title: "Outbound Sales & Marketing",
-      features: [
-        "Advanced Lead Generation & Qualification using AI-powered prospect identification",
-        "Professional Appointment Setting with calendar integration and automated confirmations",
-        "Strategic Cold Calling Campaigns with personalized scripts and objection handling",
-        "Automated Follow-up Sequences with drip campaigns and nurture tracks",
-        "Comprehensive Market Research including competitor analysis and demographic studies",
-        "Detailed Customer Surveys with statistical analysis and reporting",
-        "Multi-channel outreach including phone, email, and LinkedIn campaigns",
-        "Real-time CRM updates with lead scoring and pipeline management",
-      ],
-      benefits: [
-        "Increase qualified leads by 150% through targeted prospecting",
-        "Boost conversion rates by 65% with proven sales methodologies",
-        "Expand market reach by 200% with multi-channel approaches",
-        "Reduce sales cycle length by 40% through effective nurturing",
-        "Improve lead quality scores by 80% with advanced qualification",
-        "Generate 300% ROI on marketing spend with optimized campaigns",
-      ],
-    },
-    {
-      icon: Bot,
-      title: "AI Automation",
-      features: [
-        "Intelligent AI-Powered Chatbots with natural language processing and machine learning",
-        "Custom Automated Workflows with business rule engines and process optimization",
-        "Advanced Call Summary Generation with sentiment analysis and action item extraction",
-        "Real-time Sentiment Analysis for customer mood detection and response adjustment",
-        "Predictive Analytics with forecasting models and trend identification",
-        "Sophisticated Voice Recognition with accent adaptation and language detection",
-        "Seamless integration with existing systems through robust APIs",
-        "24/7 automated operations with human oversight and intervention capabilities",
-      ],
-      benefits: [
-        "Handle 60% more inquiries simultaneously without increasing staff",
-        "Reduce operational costs by 70% through intelligent automation",
-        "Improve data accuracy by 95% with automated data entry and validation",
-        "Decrease response times by 90% with instant AI-powered responses",
-        "Increase customer engagement by 120% with personalized interactions",
-        "Achieve 24/7 availability with no downtime or breaks required",
-      ],
-    },
-    {
-      icon: BarChart3,
-      title: "Digital Marketing",
-      features: [
-        "Full-Service Social Media Management across all major platforms with content calendars",
-        "Professional Content Creation including copywriting, graphic design, and video production",
-        "Advanced SEO Optimization with keyword research, on-page and off-page strategies",
-        "Targeted Email Marketing Campaigns with segmentation and automation workflows",
-        "Strategic Pay-Per-Click Advertising on Google, Facebook, and LinkedIn platforms",
-        "Comprehensive Analytics & Reporting with ROI tracking and performance insights",
-        "Brand strategy development with positioning and messaging frameworks",
-        "Conversion rate optimization with A/B testing and user experience improvements",
-      ],
-      benefits: [
-        "Increase brand visibility by 250% across all digital channels",
-        "Generate 300% more qualified leads through optimized campaigns",
-        "Improve ROI tracking accuracy by 90% with advanced analytics",
-        "Boost website traffic by 180% through SEO and content marketing",
-        "Increase social media engagement by 400% with strategic content",
-        "Achieve 85% email open rates with personalized campaigns",
-      ],
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-ink-900">
-      <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 text-white border-b border-ink-700">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Complete Business Solutions
-          </h1>
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
-            From customer support to sales growth, we provide end-to-end services that help your business thrive while reducing costs by up to 60%.
-          </p>
-          <Button onClick={openCalendly} size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">
-            Get a Quote
-          </Button>
-        </div>
-      </section>
 
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-20">
-            {services.map((service, index) => {
-              const IconComponent = service.icon;
-              const isEven = index % 2 === 0;
-
-              return (
-                <div key={service.title} className={`grid md:grid-cols-2 gap-12 items-center ${!isEven ? "md:flex-row-reverse" : ""}`}>
-                  <div className={isEven ? "order-1" : "order-2"}>
-                    <div className="w-16 h-16 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6">
-                      <IconComponent className="text-cyan-400 w-8 h-8" />
-                    </div>
-                    <h2 className="text-3xl font-bold text-white mb-6">{service.title}</h2>
-
-                    <div className="mb-8">
-                      <h3 className="font-semibold text-white mb-4">Key Features:</h3>
-                      <div className="grid grid-cols-1 gap-2">
-                        {service.features.map((feature, idx) => (
-                          <div key={idx} className="flex items-start">
-                            <Check className="text-cyan-500 w-4 h-4 mr-3 flex-shrink-0 mt-1" />
-                            <span className="text-sm text-slate-300">{feature}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mb-8">
-                      <h3 className="font-semibold text-white mb-4">Benefits:</h3>
-                      <div className="space-y-2">
-                        {service.benefits.map((benefit, idx) => (
-                          <div key={idx} className="flex items-start">
-                            <ArrowRight className="text-cyan-400 w-4 h-4 mr-3 flex-shrink-0 mt-1" />
-                            <span className="text-sm font-medium text-slate-300">{benefit}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Link href="/contact" onClick={scrollToTop}>
-                      <Button className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">Learn More</Button>
-                    </Link>
-                  </div>
-
-                  <div className={isEven ? "order-2" : "order-1"}>
-                    <Card className="p-8 shadow-lg bg-ink-800 border-ink-700">
-                      <CardContent className="text-center">
-                        <IconComponent className="text-cyan-400 w-20 h-20 mx-auto mb-6" />
-                        <h3 className="text-2xl font-bold text-white mb-4">Ready to Get Started?</h3>
-                        <p className="text-slate-300 mb-6">
-                          Discover how our {service.title.toLowerCase()} services can transform your business operations.
-                        </p>
-                        <div className="space-y-3">
-                          <Button onClick={openCalendly} className="w-full bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">
-                            Get a Quote
-                          </Button>
-                          <Link href="/contact" onClick={scrollToTop}>
-                            <Button variant="outline" className="w-full border-ink-600 text-slate-300 hover:bg-ink-700">
-                              Schedule Consultation
-                            </Button>
-                          </Link>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-ink-800 py-20 border-y border-ink-700">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Why Choose VictorySync?</h2>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-              We combine professional expertise with cutting-edge technology to deliver exceptional results
+      {/* Hero */}
+      <section className="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 pt-24 pb-16 border-b border-ink-700">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <span className="inline-flex items-center rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-300 ring-1 ring-cyan-500/30 mb-6">
+              Our Services
+            </span>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+              Everything You Need to Scale Customer Engagement
+            </h1>
+            <p className="text-xl text-slate-300 mb-8 leading-relaxed">
+              VictorySync covers the full customer engagement workflow — from inbound support to outbound sales and AI automation — with US-managed quality control and trained agents in Cairo, Egypt.
             </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="bg-ink-900 border-ink-700">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Check className="text-cyan-500 w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Proven Results</h3>
-                <p className="text-slate-300">
-                  Our clients see an average of 60% cost reduction and 40% improvement in customer satisfaction scores.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-ink-900 border-ink-700">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Bot className="text-cyan-400 w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Advanced Technology</h3>
-                <p className="text-slate-300">
-                  We leverage the latest AI and automation tools to maximize efficiency and deliver superior results.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-ink-900 border-ink-700">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Phone className="text-cyan-400 w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">24/7 Support</h3>
-                <p className="text-slate-300">
-                  Round-the-clock availability ensures your customers are always taken care of, no matter the time zone.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button onClick={openCalendly} className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold px-8">
+                Book a Free Call
+              </Button>
+              <Link href="/pricing">
+                <Button variant="outline" className="border-ink-600 text-slate-300 hover:bg-ink-800 px-8">
+                  View Pricing
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Business?</h2>
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-8">
-            Let's discuss how our services can help you reduce costs, improve efficiency, and drive growth.
+      {/* Services list */}
+      <section className="py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {services.map((service, idx) => {
+            const Icon = service.icon;
+            return (
+              <div
+                key={service.title}
+                className={`rounded-2xl border border-ink-700 overflow-hidden ${idx % 2 === 0 ? "bg-ink-800" : "bg-ink-800/50"}`}
+              >
+                <div className="p-8 md:p-10">
+                  <div className="flex items-start gap-4 mb-6">
+                    <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Icon className="w-6 h-6 text-cyan-400" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white mb-1">{service.title}</h2>
+                      <p className="text-sm text-slate-500">For: {service.who}</p>
+                    </div>
+                  </div>
+
+                  <p className="text-slate-300 mb-8 leading-relaxed max-w-2xl">{service.description}</p>
+
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">What we handle</h3>
+                      <ul className="space-y-2">
+                        {service.handles.map((item) => (
+                          <li key={item} className="flex items-start gap-2 text-sm text-slate-400">
+                            <CheckCircle className="w-4 h-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="flex flex-col justify-between">
+                      <div className="bg-ink-900 rounded-xl p-5 border border-ink-700 mb-6">
+                        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Business outcome</div>
+                        <p className="text-slate-300 text-sm leading-relaxed">{service.outcome}</p>
+                      </div>
+                      <Link href={service.href}>
+                        <Button variant="outline" className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/5 hover:border-cyan-400 w-full sm:w-auto">
+                          Learn More <ArrowRight className="ml-2 w-4 h-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 bg-ink-800 border-t border-ink-700">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">Not sure which service fits?</h2>
+          <p className="text-slate-400 mb-8 leading-relaxed">
+            Book a free 20-minute call and we'll walk through your current operation and tell you exactly which services would make the most impact.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button onClick={openCalendly} size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">
-              Get Free Consultation
+            <Button onClick={openCalendly} className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold px-8">
+              Book a Free Call
             </Button>
-            <Link href="/pricing" onClick={scrollToTop}>
-              <Button size="lg" variant="outline" className="border-cyan-400 text-cyan-400 hover:bg-cyan-500/10">
-                View Pricing
+            <Link href="/contact">
+              <Button variant="outline" className="border-ink-600 text-slate-300 hover:bg-ink-800 px-8">
+                Send Us a Message
               </Button>
             </Link>
           </div>
         </div>
       </section>
+
     </div>
   );
 }
