@@ -89,8 +89,8 @@ export default function Home() {
 
             <div className="lg:col-span-2 space-y-4 pt-1">
               {[
-                { num: '1–2 wks', label: 'Typical time from call to live operation' },
-                { num: '< $5/hr', label: 'Effective agent rate vs. $20–30/hr US equivalent' },
+                { num: '24–48 hrs', label: 'Typical time from discovery call to going live' },
+                { num: '$10/hr min', label: 'Per agent — a fraction of US equivalent rates' },
                 { num: '1 mgr', label: 'Dedicated US account manager per client' },
               ].map((item) => (
                 <div key={item.label} className="border border-ink-700 rounded-xl p-5 bg-ink-900">

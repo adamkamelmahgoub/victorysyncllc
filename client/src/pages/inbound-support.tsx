@@ -138,7 +138,7 @@ export default function InboundSupport() {
       <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Ready to stop missing calls?</h2>
-          <p className="text-slate-300 mb-8">Book a free 20-minute call and we'll show you how VictorySync can cover your inbound volume starting within a few weeks.</p>
+          <p className="text-slate-300 mb-8">Book a free 20-minute call and we'll show you how VictorySync can cover your inbound volume starting within 24–48 hours.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button onClick={openCalendly} className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold px-8 py-3">
               Book a Free Call

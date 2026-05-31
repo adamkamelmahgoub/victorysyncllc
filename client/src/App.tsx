@@ -5,7 +5,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
 import { AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [location]);
+  return null;
+}
 
 // Layout Components
 import Navigation from "@/components/navigation";
@@ -58,6 +66,7 @@ function Router() {
 
   return (
     <div className="min-h-screen flex flex-col bg-ink-900">
+      <ScrollToTop />
       <Navigation />
 
       <main className="flex-1">
