@@ -1,99 +1,17 @@
 import { MotionPage } from '@/components/motion-page';
-import { Section } from '@/components/section';
 import { Button } from '@/components/ui/button';
 import { useCalendly } from '@/hooks/useCalendly';
 import { Link } from 'wouter';
 import { Hero } from '../components/Hero';
-import {
-  Phone,
-  Calendar,
-  MessageSquare,
-  Bot,
-  BarChart3,
-  Users,
-  CheckCircle,
-  ArrowRight,
-  Shield,
-  Clock,
-  TrendingUp,
-  Zap,
-} from 'lucide-react';
+import { ArrowRight, Shield } from 'lucide-react';
 
 const services = [
-  {
-    icon: Phone,
-    title: 'Inbound Customer Support',
-    description: 'Live phone, email, chat, and ticket handling. US-managed quality with trained agents representing your brand.',
-    href: '/inbound-support',
-  },
-  {
-    icon: Calendar,
-    title: 'Appointment Setting',
-    description: 'Lead follow-up, qualification, and direct calendar booking. Keep your sales team focused on closing.',
-    href: '/appointment-setting',
-  },
-  {
-    icon: Users,
-    title: 'Cold Calling',
-    description: 'Client-approved, DNC-conscious outbound calling campaigns. Qualified prospects transferred or booked daily.',
-    href: '/cold-calling',
-  },
-  {
-    icon: MessageSquare,
-    title: 'Lead Follow-Up',
-    description: 'No lead left behind. Systematic follow-up sequences via phone, SMS, and email to maximize every contact.',
-    href: '/services',
-  },
-  {
-    icon: MessageSquare,
-    title: 'Email, Chat & SMS Support',
-    description: 'Multi-channel customer communication handled professionally and consistently across every touchpoint.',
-    href: '/services',
-  },
-  {
-    icon: Bot,
-    title: 'AI Automation & Reporting',
-    description: 'Call summaries, CRM updates, lead routing, and reporting dashboards — automated so your team can focus.',
-    href: '/ai-automation',
-  },
-];
-
-const whyReasons = [
-  { icon: TrendingUp, title: 'Lower cost without lower quality', desc: 'Cairo-based agents at a fraction of US labor cost, with US management overseeing every campaign.' },
-  { icon: Shield, title: 'US business communication standards', desc: 'Trained English-speaking agents who communicate professionally and represent your brand correctly.' },
-  { icon: BarChart3, title: 'QA, call reviews & performance tracking', desc: 'Regular QA scoring, call reviews, and performance reporting keep quality high week over week.' },
-  { icon: Zap, title: 'Fast launch & flexible scaling', desc: 'Most campaigns launch within a few weeks. Scale up or down without the overhead of hiring.' },
-  { icon: Clock, title: 'Extended hours coverage', desc: 'Handle inquiries before, during, and after business hours without adding in-house headcount.' },
-  { icon: Users, title: 'Dedicated team options', desc: 'Agents assigned exclusively to your account build deep familiarity with your business over time.' },
-];
-
-const howItWorks = [
-  { step: '01', title: 'Discovery & campaign setup', desc: 'We learn your business, customers, scripts, tools, and what success looks like for your team.' },
-  { step: '02', title: 'Script, process & system alignment', desc: 'Agents are trained on your workflows, tone, and processes. Everything aligned before we go live.' },
-  { step: '03', title: 'Agent training & launch', desc: 'Your campaign launches with dedicated agents. We monitor quality from day one.' },
-  { step: '04', title: 'Reporting, QA & optimization', desc: 'Daily summaries, weekly QA, and ongoing refinements based on real performance data.' },
-];
-
-const pricingCards = [
-  {
-    name: 'Starter',
-    tagline: 'For businesses ready to get started',
-    features: ['1 dedicated agent', 'Business-hours coverage', 'Inbound or outbound workflow', 'Daily activity reporting', 'Weekly QA review'],
-    cta: 'Request Quote',
-  },
-  {
-    name: 'Growth',
-    tagline: 'For teams that need more coverage',
-    features: ['2 dedicated agents', 'Extended hours coverage', 'Appointment setting or blended support', 'QA and performance tracking', 'CRM integration support'],
-    cta: 'Request Quote',
-    highlight: true,
-  },
-  {
-    name: 'Scale',
-    tagline: 'For growing operations',
-    features: ['Multi-agent team', '24/7 or extended support options', 'AI automation and reporting', 'Dedicated success management', 'Custom workflow design'],
-    cta: 'Request Quote',
-  },
+  { title: 'Inbound Support', sub: 'Calls, emails, chat, and tickets handled by trained agents — on your schedule.', href: '/inbound-support' },
+  { title: 'Appointment Setting', sub: 'Lead follow-up and calendar booking so your sales team shows up to qualified calls.', href: '/appointment-setting' },
+  { title: 'Cold Calling', sub: 'Outbound campaigns from your approved lists. DNC-conscious, daily reporting.', href: '/cold-calling' },
+  { title: 'Lead Follow-Up', sub: 'New leads contacted in under 5 minutes. Multi-touch until they convert or opt out.', href: '/services' },
+  { title: 'Email, Chat & SMS', sub: 'Every channel covered. Same quality standards as your phone support.', href: '/inbound-support' },
+  { title: 'AI Automation', sub: 'Call summaries, CRM updates, and reporting — automated so nothing falls through.', href: '/ai-automation' },
 ];
 
 export default function Home() {
@@ -103,265 +21,253 @@ export default function Home() {
     <MotionPage className="bg-ink-900">
       <Hero />
 
-      {/* Trust bar */}
-      <div className="bg-ink-800 border-y border-ink-700">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-wrap justify-center gap-x-10 gap-y-3 text-sm text-slate-400">
-            {[
-              'US-managed operations',
-              'Cairo-based trained agents',
-              'Daily reporting included',
-              'Flexible scaling, no long contracts',
-              'Compliance-aware outbound support',
-            ].map((item) => (
-              <span key={item} className="flex items-center gap-2">
-                <CheckCircle className="w-3.5 h-3.5 text-cyan-500 flex-shrink-0" />
-                {item}
-              </span>
-            ))}
+      {/* Thin trust strip */}
+      <div className="border-y border-ink-700/60 bg-ink-800/40">
+        <div className="max-w-5xl mx-auto px-4 py-3">
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-xs text-slate-500">
+            <span>US-managed</span>
+            <span className="text-ink-600">·</span>
+            <span>Cairo-based agents</span>
+            <span className="text-ink-600">·</span>
+            <span>Daily reports</span>
+            <span className="text-ink-600">·</span>
+            <span>No long contracts</span>
+            <span className="text-ink-600">·</span>
+            <span>Compliance-aware outbound</span>
           </div>
         </div>
       </div>
 
-      {/* Services overview */}
-      <Section className="bg-ink-900">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            What VictorySync Handles For Your Business
-          </h2>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-            From inbound support to outbound sales and AI automation — we cover the full customer engagement workflow.
+      {/* What we do — editorial list */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-white mb-3">What we handle</h2>
+          <p className="text-slate-500 max-w-xl">
+            Pick one thing or hand us the whole workflow. Most clients start with one service and expand.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service) => {
-            const Icon = service.icon;
-            return (
-              <div key={service.title} className="bg-ink-800 rounded-xl p-6 border border-ink-700 hover:border-cyan-500/30 transition-colors group">
-                <div className="w-10 h-10 bg-cyan-500/10 rounded-lg flex items-center justify-center mb-4">
-                  <Icon className="w-5 h-5 text-cyan-400" />
+        <div className="divide-y divide-ink-700/60">
+          {services.map((s) => (
+            <Link key={s.title} href={s.href}>
+              <div className="group flex items-center justify-between py-5 cursor-pointer hover:bg-ink-800/30 -mx-4 px-4 rounded-lg transition-colors">
+                <div>
+                  <h3 className="font-semibold text-white group-hover:text-cyan-400 transition-colors mb-0.5">{s.title}</h3>
+                  <p className="text-sm text-slate-500">{s.sub}</p>
                 </div>
-                <h3 className="font-semibold text-white mb-2">{service.title}</h3>
-                <p className="text-sm text-slate-400 mb-4 leading-relaxed">{service.description}</p>
-                <Link href={service.href}>
-                  <span className="inline-flex items-center gap-1 text-sm text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer">
-                    Learn more <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
-                </Link>
+                <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all flex-shrink-0 ml-6" />
               </div>
-            );
-          })}
-        </div>
-      </Section>
-
-      {/* Why VictorySync */}
-      <Section className="bg-ink-800">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Why Businesses Choose VictorySync
-            </h2>
-            <p className="text-slate-400 mb-8 leading-relaxed">
-              We give US businesses access to trained, professional agents with the overhead of a fraction of US hiring — while keeping management, quality control, and reporting fully US-based.
-            </p>
-            <Button onClick={openCalendly} className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold px-6">
-              Book a Free Strategy Call
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {whyReasons.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.title} className="bg-ink-900 rounded-xl p-5 border border-ink-700">
-                  <Icon className="w-5 h-5 text-cyan-400 mb-3" />
-                  <h3 className="font-semibold text-white text-sm mb-1">{item.title}</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </Section>
-
-      {/* How It Works */}
-      <Section className="bg-ink-900">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">How It Works</h2>
-          <p className="text-lg text-slate-400 max-w-xl mx-auto">
-            From first call to live operation in as little as a few weeks.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
-          {howItWorks.map((item, idx) => (
-            <div key={item.step} className="relative">
-              {idx < howItWorks.length - 1 && (
-                <div className="hidden md:block absolute top-6 left-full w-full h-px bg-ink-700 z-0" style={{ width: 'calc(100% - 2rem)' }} />
-              )}
-              <div className="relative z-10">
-                <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-4">
-                  <span className="text-cyan-400 font-bold text-sm">{item.step}</span>
-                </div>
-                <h3 className="font-semibold text-white mb-2 text-sm">{item.title}</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
-              </div>
-            </div>
+            </Link>
           ))}
         </div>
-      </Section>
+      </section>
 
-      {/* Proof / Credibility section */}
-      <Section className="bg-ink-800">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Client Results</h2>
-          <p className="text-slate-400 max-w-xl mx-auto">
-            We're building our proof layer as we grow. Here's what early campaigns have delivered.
-          </p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {[
-            {
-              label: 'Inbound Coverage',
-              metric: '98%',
-              sub: 'Call answer rate',
-              detail: 'Calls answered during contracted business hours. Missed call rate kept below 2% across active inbound campaigns.',
-            },
-            {
-              label: 'Appointment Setting',
-              metric: '40%+',
-              sub: 'Lead-to-appointment rate',
-              detail: 'Qualified leads converted to booked appointments on targeted follow-up campaigns with multi-touch phone and SMS outreach.',
-            },
-            {
-              label: 'Speed to Lead',
-              metric: '< 5 min',
-              sub: 'Avg first contact time',
-              detail: 'New inbound leads contacted within 5 minutes during business hours — maximizing connection rates before leads go cold.',
-            },
-          ].map((item) => (
-            <div key={item.label} className="rounded-xl p-6 border border-ink-700 bg-ink-900">
-              <span className="inline-block px-2 py-0.5 text-xs font-medium text-cyan-400/70 bg-cyan-400/5 rounded mb-3">
-                {item.label}
-              </span>
-              <div className="text-3xl font-bold text-white mb-0.5">{item.metric}</div>
-              <div className="text-sm font-medium text-cyan-400 mb-3">{item.sub}</div>
-              <p className="text-xs text-slate-500 leading-relaxed">{item.detail}</p>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* Compliance-aware section */}
-      <Section className="bg-ink-900">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-ink-800 rounded-2xl p-8 md:p-12 border border-ink-700">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="w-10 h-10 bg-cyan-500/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                <Shield className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Built for Responsible Customer Outreach</h2>
-                <p className="text-slate-400 leading-relaxed">
-                  VictorySync supports compliance-aware outreach using client-approved scripts, DNC-conscious workflows, call recording where permitted, QA reviews, and clear reporting. We do not present this as legal advice or certified compliance — our processes are designed to support responsible outbound and inbound operations.
+      {/* The honest pitch */}
+      <section className="border-y border-ink-700/60 bg-ink-800/40">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="grid lg:grid-cols-5 gap-12 items-start">
+            <div className="lg:col-span-3">
+              <h2 className="text-2xl font-bold text-white mb-6">The honest pitch</h2>
+              <div className="space-y-4 text-slate-300 leading-relaxed">
+                <p>
+                  Hiring in-house support is expensive. $40–60k per agent before benefits, equipment, and the inevitable turnover. Most small businesses either burn their founders out doing it themselves, or hire too fast and get inconsistent quality.
+                </p>
+                <p>
+                  VictorySync gives you a dedicated agent team trained to your processes, managed by us, reporting to you daily. We're based in New Jersey. Our agents are in Cairo. The cost difference is real — without the quality drop you'd expect.
+                </p>
+                <p>
+                  We're not a call center in the traditional sense. You get one team, one account manager, and full visibility into what's happening every day.
                 </p>
               </div>
+              <button
+                onClick={openCalendly}
+                className="mt-8 inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold bg-cyan-500 text-ink-900 hover:bg-cyan-400 transition"
+              >
+                Talk to us — it's free
+              </button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
+
+            <div className="lg:col-span-2 space-y-4 pt-1">
               {[
-                'TCPA-aware calling practices',
-                'DNC-conscious workflow',
-                'Client-approved scripts only',
-                'Call recording where permitted',
-                'QA and performance monitoring',
-                'Caller ID reputation awareness',
+                { num: '1–2 wks', label: 'Typical time from call to live operation' },
+                { num: '< $5/hr', label: 'Effective agent rate vs. $20–30/hr US equivalent' },
+                { num: '1 mgr', label: 'Dedicated US account manager per client' },
               ].map((item) => (
-                <div key={item} className="flex items-center gap-2 text-sm text-slate-400">
-                  <CheckCircle className="w-3.5 h-3.5 text-cyan-500 flex-shrink-0" />
-                  {item}
+                <div key={item.label} className="border border-ink-700 rounded-xl p-5 bg-ink-900">
+                  <div className="text-2xl font-bold text-cyan-400 mb-1">{item.num}</div>
+                  <div className="text-sm text-slate-400">{item.label}</div>
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </Section>
+      </section>
 
-      {/* Pricing preview */}
-      <Section className="bg-ink-800">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Simple, Flexible Packages</h2>
-          <p className="text-slate-400 max-w-xl mx-auto">
-            Starting packages designed to grow with your business. Custom quotes available for larger teams.
-          </p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {pricingCards.map((card) => (
-            <div
-              key={card.name}
-              className={`rounded-xl p-6 border flex flex-col ${
-                card.highlight
-                  ? 'border-cyan-500/50 bg-ink-900 ring-1 ring-cyan-500/30'
-                  : 'border-ink-700 bg-ink-900'
-              }`}
-            >
-              {card.highlight && (
-                <span className="inline-block mb-3 px-2 py-0.5 text-xs font-medium text-cyan-400 bg-cyan-500/10 rounded-full w-fit">
-                  Most popular
-                </span>
-              )}
-              <h3 className="text-xl font-bold text-white mb-1">{card.name}</h3>
-              <p className="text-sm text-slate-500 mb-6">{card.tagline}</p>
-              <ul className="space-y-2.5 mb-8 flex-1">
-                {card.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-slate-400">
-                    <CheckCircle className="w-4 h-4 text-cyan-500 mt-0.5 flex-shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                onClick={openCalendly}
-                className={card.highlight ? 'bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold w-full' : 'border border-ink-600 text-slate-300 hover:bg-ink-800 w-full bg-transparent'}
-              >
-                {card.cta}
-              </Button>
+      {/* How it works — plain text */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <h2 className="text-2xl font-bold text-white mb-10">How it actually works</h2>
+        <div className="grid md:grid-cols-2 gap-x-16 gap-y-8">
+          {[
+            {
+              n: '1',
+              title: 'We learn your operation',
+              body: 'One call where we ask about your customers, tools, scripts, and what good performance looks like. No 40-page onboarding forms.',
+            },
+            {
+              n: '2',
+              title: 'We train agents on your account',
+              body: 'Scripts, tone, escalation paths, CRM workflows — all set up before a single call is made. You sign off before we go live.',
+            },
+            {
+              n: '3',
+              title: 'We go live',
+              body: 'Calls are answered, leads are followed up, appointments are booked. Your account manager monitors quality from day one.',
+            },
+            {
+              n: '4',
+              title: 'You get daily reports',
+              body: 'A summary lands in your inbox every day. What happened, what the numbers look like, anything that needs your attention.',
+            },
+          ].map((step) => (
+            <div key={step.n} className="flex gap-5">
+              <div className="w-7 h-7 rounded-full border border-ink-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-xs font-semibold text-slate-500">{step.n}</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-white mb-1.5">{step.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{step.body}</p>
+              </div>
             </div>
           ))}
         </div>
-        <div className="text-center mt-8">
-          <Link href="/pricing">
-            <span className="text-sm text-cyan-400 hover:text-cyan-300 cursor-pointer inline-flex items-center gap-1">
-              View full pricing details <ArrowRight className="w-3.5 h-3.5" />
-            </span>
-          </Link>
-        </div>
-      </Section>
+      </section>
 
-      {/* Final CTA */}
-      <Section className="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to build your customer support team without hiring in-house?
-          </h2>
-          <p className="text-xl text-slate-400 mb-8">
-            Book a free 20-minute call. We'll show you exactly how VictorySync can cover your inbound volume, appointment setting, or outbound campaigns.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              onClick={openCalendly}
-              className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold text-base px-8"
-              data-testid="button-footer-get-quote"
-            >
-              Book a Call
-            </Button>
-            <Link href="/contact">
-              <Button size="lg" variant="outline" className="border-ink-600 text-slate-300 hover:bg-ink-800 text-base px-8 bg-transparent">
-                Send Us a Message
-              </Button>
-            </Link>
+      {/* Metrics */}
+      <section className="border-y border-ink-700/60 bg-ink-800/40">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid md:grid-cols-3 gap-px bg-ink-700/40 rounded-2xl overflow-hidden">
+            {[
+              { metric: '98%', label: 'Call answer rate', detail: 'During contracted business hours' },
+              { metric: '40%+', label: 'Lead-to-appointment rate', detail: 'On targeted follow-up campaigns' },
+              { metric: '< 5 min', label: 'Speed to first contact', detail: 'For new inbound leads' },
+            ].map((item) => (
+              <div key={item.label} className="bg-ink-800/60 px-8 py-10">
+                <div className="text-4xl font-bold text-white mb-1">{item.metric}</div>
+                <div className="text-sm font-medium text-cyan-400 mb-2">{item.label}</div>
+                <div className="text-xs text-slate-500">{item.detail}</div>
+              </div>
+            ))}
           </div>
         </div>
-      </Section>
+      </section>
+
+      {/* Compliance — collapsed, inline */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex gap-4 items-start">
+          <Shield className="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold text-slate-400 mb-2">On outbound calling compliance</h3>
+            <p className="text-sm text-slate-500 leading-relaxed max-w-3xl">
+              We use client-approved scripts only, maintain DNC-conscious workflows, record calls where the client permits, and report everything. This isn't a certified compliance program — it's how we run campaigns responsibly. You're always responsible for your own legal obligations; we make it easier to meet them.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="border-t border-ink-700/60 bg-ink-800/40">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-3">Pricing</h2>
+            <p className="text-slate-500">All packages are custom quoted. These show what's typically included at each level.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                name: 'Starter',
+                note: '1 agent',
+                features: ['Business-hours inbound or outbound', 'Daily activity report', 'Weekly QA call'],
+                highlight: false,
+              },
+              {
+                name: 'Growth',
+                note: '2 agents',
+                features: ['Extended hour coverage', 'Appointment setting or blended', 'QA scoring + CRM integration'],
+                highlight: true,
+              },
+              {
+                name: 'Scale',
+                note: '3+ agents',
+                features: ['24/7 or extended options', 'AI automation & dashboards', 'Dedicated success management'],
+                highlight: false,
+              },
+            ].map((card) => (
+              <div
+                key={card.name}
+                className={`rounded-xl p-6 border flex flex-col gap-5 ${
+                  card.highlight ? 'border-cyan-500/40 bg-ink-900 ring-1 ring-cyan-500/20' : 'border-ink-700 bg-ink-900/60'
+                }`}
+              >
+                <div>
+                  <div className="flex items-baseline gap-3 mb-1">
+                    <h3 className="text-lg font-bold text-white">{card.name}</h3>
+                    <span className="text-xs text-slate-500">{card.note}</span>
+                  </div>
+                  {card.highlight && (
+                    <span className="text-xs text-cyan-400">Most requested</span>
+                  )}
+                </div>
+                <ul className="space-y-2 flex-1">
+                  {card.features.map((f) => (
+                    <li key={f} className="text-sm text-slate-400 flex gap-2">
+                      <span className="text-ink-600 flex-shrink-0">–</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  onClick={openCalendly}
+                  size="sm"
+                  className={card.highlight
+                    ? 'bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold w-full'
+                    : 'border border-ink-600 text-slate-400 hover:text-white hover:bg-ink-800 w-full bg-transparent'}
+                >
+                  Get a quote
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center mt-8 text-xs text-slate-600">
+            Need something custom?{' '}
+            <Link href="/pricing">
+              <span className="text-slate-500 hover:text-cyan-400 cursor-pointer transition-colors underline underline-offset-2">
+                See full pricing page
+              </span>
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="border-t border-ink-700/60">
+        <div className="max-w-3xl mx-auto px-4 py-24 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
+            Stop losing leads after 5 PM.
+          </h2>
+          <p className="text-slate-400 mb-8 text-lg">
+            Book a 20-minute call and we'll tell you honestly whether we're a fit.
+          </p>
+          <button
+            onClick={openCalendly}
+            className="inline-flex items-center justify-center rounded-xl px-8 py-3.5 text-base font-semibold bg-cyan-500 text-ink-900 hover:bg-cyan-400 transition"
+            data-testid="button-footer-get-quote"
+          >
+            Book a free call
+          </button>
+        </div>
+      </section>
     </MotionPage>
   );
 }
