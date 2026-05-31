@@ -1,10 +1,16 @@
 import { useCalendly } from "@/hooks/useCalendly";
+import { useSeo } from "@/hooks/useSeo";
 import { Link } from "wouter";
 import { Phone, MessageSquare, Mail, CheckCircle, ArrowRight, Clock, Shield, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function InboundSupport() {
   const { open: openCalendly } = useCalendly();
+  useSeo({
+    title: 'Inbound Customer Support Services | VictorySync',
+    description: 'Outsourced inbound call center support for US businesses. Live phone, email, chat, and ticket handling — US-managed, Cairo-staffed, starting within 24–48 hours.',
+    canonical: 'https://victorysync.com/inbound-support',
+  });
 
   return (
     <div className="min-h-screen bg-ink-900">

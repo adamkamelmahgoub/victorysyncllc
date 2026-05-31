@@ -1,10 +1,16 @@
 import { useCalendly } from "@/hooks/useCalendly";
+import { useSeo } from "@/hooks/useSeo";
 import { Link } from "wouter";
 import { Calendar, CheckCircle, Users, BarChart3, Clock, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function AppointmentSetting() {
   const { open: openCalendly } = useCalendly();
+  useSeo({
+    title: 'Appointment Setting Services | VictorySync',
+    description: 'Outsourced appointment setting for US sales teams. Lead follow-up, qualification, and direct calendar booking — 40%+ lead-to-appointment rate.',
+    canonical: 'https://victorysync.com/appointment-setting',
+  });
 
   return (
     <div className="min-h-screen bg-ink-900">

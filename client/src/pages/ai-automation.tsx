@@ -1,10 +1,16 @@
 import { useCalendly } from "@/hooks/useCalendly";
+import { useSeo } from "@/hooks/useSeo";
 import { Link } from "wouter";
 import { Bot, CheckCircle, BarChart3, Zap, FileText, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function AiAutomation() {
   const { open: openCalendly } = useCalendly();
+  useSeo({
+    title: 'AI Automation & Reporting for Contact Centers | VictorySync',
+    description: 'AI-powered call summaries, CRM updates, lead routing, and daily reporting dashboards. Automate the admin work from your contact center operations.',
+    canonical: 'https://victorysync.com/ai-automation',
+  });
 
   return (
     <div className="min-h-screen bg-ink-900">

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useCalendly } from "@/hooks/useCalendly";
+import { useSeo } from "@/hooks/useSeo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertContactSubmissionSchema } from "@shared/schema";
@@ -21,6 +22,11 @@ type ContactFormData = z.infer<typeof insertContactSubmissionSchema>;
 export default function Contact() {
   const { toast } = useToast();
   const { open: openCalendly } = useCalendly();
+  useSeo({
+    title: 'Contact VictorySync | Book a Free Strategy Call',
+    description: 'Talk to VictorySync about inbound support, appointment setting, or outbound calling for your business. Book a free 20-minute call or send us a message.',
+    canonical: 'https://victorysync.com/contact',
+  });
 
   const {
     register,

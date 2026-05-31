@@ -1,10 +1,16 @@
 import { Link } from 'wouter';
 import { useCalendly } from '@/hooks/useCalendly';
+import { useSeo } from '@/hooks/useSeo';
 import { Button } from '@/components/ui/button';
 import { MapPin, Users, Shield, BarChart3, CheckCircle } from 'lucide-react';
 
 export default function AboutUs() {
   const { open: openCalendly } = useCalendly();
+  useSeo({
+    title: 'About VictorySync | US-Managed Contact Center Based in New Jersey',
+    description: 'VictorySync is a US-managed contact center with trained agents in Cairo, Egypt. Founded by Ahmed M. to help US businesses scale support and sales without the cost of in-house hiring.',
+    canonical: 'https://victorysync.com/about-us',
+  });
 
   return (
     <div className="min-h-screen bg-ink-900">

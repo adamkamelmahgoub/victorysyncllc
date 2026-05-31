@@ -1,10 +1,16 @@
 import { useCalendly } from "@/hooks/useCalendly";
+import { useSeo } from "@/hooks/useSeo";
 import { Link } from "wouter";
 import { Phone, CheckCircle, BarChart3, Shield, Users, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ColdCalling() {
   const { open: openCalendly } = useCalendly();
+  useSeo({
+    title: 'Cold Calling & Outbound Calling Services | VictorySync',
+    description: 'Managed cold calling campaigns for US businesses. Client-approved scripts, DNC-conscious workflows, qualified prospects transferred or booked daily.',
+    canonical: 'https://victorysync.com/cold-calling',
+  });
 
   return (
     <div className="min-h-screen bg-ink-900">

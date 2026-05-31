@@ -2,6 +2,7 @@ import { Phone, Calendar, Users, MessageSquare, Bot, BarChart3, ArrowRight, Chec
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useCalendly } from "@/hooks/useCalendly";
+import { useSeo } from "@/hooks/useSeo";
 
 const services = [
   {
@@ -110,6 +111,11 @@ const services = [
 
 export default function Services() {
   const { open: openCalendly } = useCalendly();
+  useSeo({
+    title: 'Our Services | Inbound Support, Appointment Setting & More | VictorySync',
+    description: 'VictorySync offers inbound customer support, appointment setting, cold calling, lead follow-up, and AI automation — all US-managed with Cairo-based agents.',
+    canonical: 'https://victorysync.com/services',
+  });
 
   return (
     <div className="min-h-screen bg-ink-900">

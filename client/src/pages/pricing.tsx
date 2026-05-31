@@ -2,6 +2,7 @@ import { MotionPage } from '@/components/motion-page';
 import { Section, StaggerContainer, fadeInUp } from '@/components/section';
 import { Button } from '@/components/ui/button';
 import { useCalendly } from '@/hooks/useCalendly';
+import { useSeo } from '@/hooks/useSeo';
 import { motion } from 'framer-motion';
 import { Calculator, TrendingUp, Phone, DollarSign } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +10,11 @@ import { useState } from 'react';
 
 export default function Pricing() {
   const { open: openCalendly } = useCalendly();
+  useSeo({
+    title: 'Pricing | Contact Center Services Starting at $10/hr | VictorySync',
+    description: 'Custom-quoted packages starting at $10/hr per agent. Inbound support, appointment setting, and cold calling — flexible pricing with no long-term contracts required.',
+    canonical: 'https://victorysync.com/pricing',
+  });
 
   const [missedCalls, setMissedCalls] = useState(50);
   const [avgOrderValue, setAvgOrderValue] = useState(100);

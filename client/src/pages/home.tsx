@@ -1,6 +1,7 @@
 import { MotionPage } from '@/components/motion-page';
 import { Button } from '@/components/ui/button';
 import { useCalendly } from '@/hooks/useCalendly';
+import { useSeo } from '@/hooks/useSeo';
 import { Link } from 'wouter';
 import { Hero } from '../components/Hero';
 import { ArrowRight, Shield } from 'lucide-react';
@@ -16,6 +17,11 @@ const services = [
 
 export default function Home() {
   const { open: openCalendly } = useCalendly();
+  useSeo({
+    title: 'VictorySync | US-Managed Call Center & Appointment Setting',
+    description: 'Scale inbound support, outbound calling, and appointment setting with US-managed quality and Cairo-based efficiency. Starting from $10/hr. Launch in 24–48 hours.',
+    canonical: 'https://victorysync.com/',
+  });
 
   return (
     <MotionPage className="bg-ink-900">
