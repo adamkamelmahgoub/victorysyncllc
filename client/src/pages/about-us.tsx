@@ -31,9 +31,9 @@ export default function AboutUs() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-4">Founded by Ahmed Mahgoub</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">Founded by Ahmed M.</h2>
               <p className="text-slate-300 mb-4 leading-relaxed">
-                VictorySync was founded by Ahmed Mahgoub, based in Millstone, New Jersey. Ahmed built VictorySync to solve a problem he saw firsthand: US businesses were either overpaying for domestic call center labor or accepting poor quality from overseas providers with no real oversight.
+                VictorySync was founded by Ahmed M., based in Millstone, New Jersey. Ahmed built VictorySync to solve a problem he saw firsthand: US businesses were either overpaying for domestic call center labor or accepting poor quality from overseas providers with no real oversight.
               </p>
               <p className="text-slate-300 mb-4 leading-relaxed">
                 The answer was a hybrid model — professional, English-speaking agents trained and managed to US business standards, operating from Cairo, Egypt with US-based account management keeping quality high on every campaign.

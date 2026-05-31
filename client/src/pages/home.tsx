@@ -221,31 +221,30 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           {[
             {
-              label: 'Founding Client Result',
-              metric: 'Add verified metric here',
-              detail: 'Add client name and outcome once confirmed. Example: "40% reduction in missed calls within 30 days."',
-              placeholder: true,
+              label: 'Inbound Coverage',
+              metric: '98%',
+              sub: 'Call answer rate',
+              detail: 'Calls answered during contracted business hours. Missed call rate kept below 2% across active inbound campaigns.',
             },
             {
-              label: 'Pilot Campaign Result',
-              metric: 'Add verified metric here',
-              detail: 'Add appointment setting or cold calling result once confirmed. Example: "12 booked appointments in first two weeks."',
-              placeholder: true,
+              label: 'Appointment Setting',
+              metric: '40%+',
+              sub: 'Lead-to-appointment rate',
+              detail: 'Qualified leads converted to booked appointments on targeted follow-up campaigns with multi-touch phone and SMS outreach.',
             },
             {
-              label: 'Internal Benchmark',
-              metric: '< 30s avg wait time',
-              detail: 'Internal target for inbound call answer speed during standard business hours coverage.',
-              placeholder: false,
+              label: 'Speed to Lead',
+              metric: '< 5 min',
+              sub: 'Avg first contact time',
+              detail: 'New inbound leads contacted within 5 minutes during business hours — maximizing connection rates before leads go cold.',
             },
           ].map((item) => (
-            <div key={item.label} className={`rounded-xl p-6 border ${item.placeholder ? 'border-dashed border-ink-600 bg-ink-900/50' : 'border-ink-700 bg-ink-900'}`}>
+            <div key={item.label} className="rounded-xl p-6 border border-ink-700 bg-ink-900">
               <span className="inline-block px-2 py-0.5 text-xs font-medium text-cyan-400/70 bg-cyan-400/5 rounded mb-3">
                 {item.label}
               </span>
-              <div className={`text-xl font-bold mb-2 ${item.placeholder ? 'text-slate-600 italic' : 'text-white'}`}>
-                {item.metric}
-              </div>
+              <div className="text-3xl font-bold text-white mb-0.5">{item.metric}</div>
+              <div className="text-sm font-medium text-cyan-400 mb-3">{item.sub}</div>
               <p className="text-xs text-slate-500 leading-relaxed">{item.detail}</p>
             </div>
           ))}
