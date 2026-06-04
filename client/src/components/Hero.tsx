@@ -26,14 +26,14 @@ export const Hero: FC = () => {
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row pt-1">
-            <button
-              type="button"
-              onClick={open}
+            <Link
+              href="/book-call"
+              onClick={(e) => { e.preventDefault(); open(); }}
               className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold bg-cyan-500 text-ink-900 hover:bg-cyan-400 transition"
               data-testid="button-book-call"
             >
               Book a 20-min call
-            </button>
+            </Link>
             <Link
               href="/services"
               className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold border border-ink-600 text-slate-300 hover:bg-ink-800/60 transition"

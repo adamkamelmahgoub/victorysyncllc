@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSeo } from "@/hooks/useSeo";
 
 export default function HelpCenter() {
@@ -19,7 +19,7 @@ export default function HelpCenter() {
     { id: "account", name: "Account Management", icon: "👤" },
   ];
 
-  const faqData = {
+  const faqData: Record<string, { question: string; answer: string }[]> = {
     "getting-started": [
       {
         question: "How do I get started with VictorySync?",
@@ -130,19 +130,30 @@ export default function HelpCenter() {
     },
   ];
 
-  const filteredFAQs = searchQuery
-    ? Object.values(faqData)
-        .flat()
-        .filter(
-          (faq) =>
-            faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            faq.answer.toLowerCase().includes(searchQuery.toLowerCase()),
-        )
-    : (faqData as any)[activeCategory] || [];
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && categories.find(c => c.id === hash)) {
+      setActiveCategory(hash);
+    }
+  }, []);
+
+  const handleCategoryClick = (id: string) => {
+    setActiveCategory(id);
+    setSearchQuery("");
+    window.location.hash = id;
+  };
+
+  const allFaqs = Object.values(faqData).flat();
+  const searchResults = searchQuery
+    ? allFaqs.filter(
+        (faq) =>
+          faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          faq.answer.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : [];
 
   return (
     <div className="min-h-screen bg-ink-900">
-      {/* Header */}
       <div className="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 border-b border-ink-700 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -151,7 +162,6 @@ export default function HelpCenter() {
               Find answers to common questions and get the support you need to
               maximize your VictorySync experience.
             </p>
-            {/* Search Bar */}
             <div className="max-w-2xl mx-auto">
               <div className="relative">
                 <input
@@ -198,20 +208,42 @@ export default function HelpCenter() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Categories Sidebar */}
+        {/* Search results — rendered when query active */}
+        {searchQuery && (
+          <div className="mb-12">
+            <div className="bg-ink-800 rounded-lg shadow-lg p-8">
+              <h2 className="text-2xl font-bold text-white mb-6">
+                Search Results for "{searchQuery}"
+              </h2>
+              {searchResults.length === 0 ? (
+                <div className="text-center py-12">
+                  <h3 className="text-lg font-medium text-white mb-2">No results found</h3>
+                  <p className="text-gray-300">Try adjusting your search terms or browse our categories below.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {searchResults.map((faq, index) => (
+                    <div key={index} className="border-b border-ink-700 pb-6 last:border-b-0">
+                      <h3 className="text-lg font-semibold text-white mb-3">{faq.question}</h3>
+                      <p className="text-gray-300 leading-relaxed">{faq.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className={`grid lg:grid-cols-4 gap-8 ${searchQuery ? 'opacity-50 pointer-events-none' : ''}`}>
+          {/* Categories Sidebar — anchor links for crawlability */}
           <div className="lg:col-span-1">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              Categories
-            </h3>
-            <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-white mb-4">Categories</h3>
+            <nav aria-label="Help center categories" className="space-y-2">
               {categories.map((category) => (
-                <button
+                <a
                   key={category.id}
-                  onClick={() => {
-                    setActiveCategory(category.id);
-                    setSearchQuery("");
-                  }}
+                  href={`#${category.id}`}
+                  onClick={(e) => { e.preventDefault(); handleCategoryClick(category.id); }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
                     activeCategory === category.id
                       ? "bg-cyan-500 text-white"
@@ -220,101 +252,68 @@ export default function HelpCenter() {
                 >
                   <span className="text-lg">{category.icon}</span>
                   <span>{category.name}</span>
-                </button>
+                </a>
               ))}
-            </div>
+            </nav>
           </div>
 
-          {/* FAQ Content */}
-          <div className="lg:col-span-3">
-            <div className="bg-ink-800 rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-white mb-6">
-                {searchQuery
-                  ? `Search Results for "${searchQuery}"`
-                  : categories.find((cat) => cat.id === activeCategory)?.name}
-              </h2>
-
-              {filteredFAQs.length === 0 ? (
-                <div className="text-center py-12">
-                  <svg
-                    className="w-16 h-16 text-gray-400 mx-auto mb-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.137 0-4.146-.832-5.657-2.343m0 0A7.953 7.953 0 014 9c0-4.418 3.582-8 8-8s8 3.582 8 8a7.953 7.953 0 01-2.343 5.657m0 0A7.962 7.962 0 0112 17.5c-2.137 0-4.146-.832-5.657-2.343m0 0A7.953 7.953 0 014 13c0-4.418 3.582-8 8-8s8 3.582 8 8a7.953 7.953 0 01-2.343 5.657z"
-                    />
-                  </svg>
-                  <h3 className="text-lg font-medium text-white mb-2">
-                    No results found
-                  </h3>
-                  <p className="text-gray-300">
-                    Try adjusting your search terms or browse our categories.
-                  </p>
+          {/* FAQ Content — all categories rendered in HTML for crawlability */}
+          <div className="lg:col-span-3 space-y-0">
+            {categories.map((category) => (
+              <section
+                key={category.id}
+                id={category.id}
+                className={activeCategory !== category.id ? 'hidden' : ''}
+              >
+                <div className="bg-ink-800 rounded-lg shadow-lg p-8">
+                  <h2 className="text-2xl font-bold text-white mb-6">{category.name}</h2>
+                  <div className="space-y-6">
+                    {faqData[category.id].map((faq, index) => (
+                      <div key={index} className="border-b border-ink-700 pb-6 last:border-b-0">
+                        <h3 className="text-lg font-semibold text-white mb-3">{faq.question}</h3>
+                        <p className="text-gray-300 leading-relaxed">{faq.answer}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-6">
-                  {filteredFAQs.map((faq: any, index: number) => (
-                    <div
-                      key={index}
-                      className="border-b border-ink-700 pb-6 last:border-b-0"
-                    >
-                      <h3 className="text-lg font-semibold text-white mb-3">
-                        {faq.question}
-                      </h3>
-                      <p className="text-gray-300 leading-relaxed">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+              </section>
+            ))}
           </div>
         </div>
 
         {/* Contact Support */}
         <div className="mt-16 bg-ink-800 rounded-lg shadow-lg p-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Still Need Help?
-          </h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Still Need Help?</h2>
           <p className="text-lg text-gray-300 mb-8">
-            Can't find what you're looking for? Our support team is here to help
-            you 24/7.
+            Can't find what you're looking for? Our support team is here to help you 24/7.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <button className="bg-cyan-500 hover:bg-cyan-500 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+              <button className="bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
                 Contact Support
               </button>
             </Link>
-            <button className="border border-ink-600 hover:border-slate-600 text-gray-300 px-8 py-3 rounded-lg font-semibold transition-colors">
-              Schedule a Call
-            </button>
+            <Link href="/book-call">
+              <button className="border border-ink-600 hover:border-cyan-400 text-gray-300 hover:text-cyan-400 px-8 py-3 rounded-lg font-semibold transition-colors">
+                Schedule a Call
+              </button>
+            </Link>
           </div>
           <div className="mt-8 grid md:grid-cols-3 gap-6 text-center">
             <div>
-              <h4 className="font-semibold text-white mb-2">
-                Email Support
-              </h4>
+              <h4 className="font-semibold text-white mb-2">Email Support</h4>
               <p className="text-gray-300">info@victorysync.com</p>
-              <p className="text-sm text-white0">Response within 2 hours</p>
+              <p className="text-sm text-gray-400">Response within 2 hours</p>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-2">
-                Phone Support
-              </h4>
+              <h4 className="font-semibold text-white mb-2">Phone Support</h4>
               <p className="text-gray-300">+1 (718) 813-2106</p>
-              <p className="text-sm text-white0">Available 24/7</p>
+              <p className="text-sm text-gray-400">Available 24/7</p>
             </div>
             <div>
               <h4 className="font-semibold text-white mb-2">Live Chat</h4>
               <p className="text-gray-300">Available in your dashboard</p>
-              <p className="text-sm text-white0">Instant response</p>
+              <p className="text-sm text-gray-400">Instant response</p>
             </div>
           </div>
         </div>

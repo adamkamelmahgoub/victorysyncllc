@@ -104,6 +104,12 @@ export default function Navigation() {
               </span>
             </Link>
 
+            <Link href="/blog" onClick={scrollToTop}>
+              <span className={`font-medium transition-colors cursor-pointer text-sm ${location === "/blog" ? "text-cyan-400" : "text-slate-300 hover:text-cyan-400"}`}>
+                Blog
+              </span>
+            </Link>
+
             <Link href="/contact" onClick={scrollToTop}>
               <span className={`font-medium transition-colors cursor-pointer text-sm ${location === "/contact" ? "text-cyan-400" : "text-slate-300 hover:text-cyan-400"}`}>
                 Contact
@@ -197,6 +203,12 @@ export default function Navigation() {
             <Link href="/about-us">
               <div onClick={() => { scrollToTop(); setMobileMenuOpen(false); }} className={`block py-2.5 px-3 rounded-lg font-medium text-sm transition-colors cursor-pointer ${location === "/about-us" ? "text-cyan-400 bg-cyan-500/5" : "text-slate-300"}`}>
                 About
+              </div>
+            </Link>
+
+            <Link href="/blog">
+              <div onClick={() => { scrollToTop(); setMobileMenuOpen(false); }} className={`block py-2.5 px-3 rounded-lg font-medium text-sm transition-colors cursor-pointer ${location === "/blog" ? "text-cyan-400 bg-cyan-500/5" : "text-slate-300"}`}>
+                Blog
               </div>
             </Link>
 

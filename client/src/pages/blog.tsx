@@ -908,8 +908,65 @@ This isn't theoretical—these are actual results from companies that invested i
       );
     }
 
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": `https://www.victorysync.com/blog/${article.slug}`
+          },
+          "headline": article.title,
+          "description": article.excerpt,
+          "image": article.image,
+          "author": {
+            "@type": "Person",
+            "name": article.author
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "VictorySync",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://www.victorysync.com/LOGO_VS.png"
+            }
+          },
+          "datePublished": article.date,
+          "dateModified": article.date
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://www.victorysync.com/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Blog",
+              "item": "https://www.victorysync.com/blog"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": article.title,
+              "item": `https://www.victorysync.com/blog/${article.slug}`
+            }
+          ]
+        }
+      ]
+    };
+
     return (
       <div className="min-h-screen bg-ink-900">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {/* Article Header */}
         <div className="bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 border-b border-ink-700 py-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

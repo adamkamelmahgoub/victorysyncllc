@@ -48,15 +48,20 @@ export default function Footer() {
             <ul className="space-y-2.5 text-slate-400 text-sm">
               <li><Link href="/about-us"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">About Us</span></Link></li>
               <li><Link href="/pricing"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Pricing</span></Link></li>
+              <li><Link href="/platform"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Platform</span></Link></li>
               <li><Link href="/contact"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Contact</span></Link></li>
               <li><Link href="/careers"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Careers</span></Link></li>
+              <li><Link href="/book-call"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Book a Call</span></Link></li>
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Resources */}
           <div>
-            <h4 className="font-semibold mb-4 text-white text-sm">Legal</h4>
+            <h4 className="font-semibold mb-4 text-white text-sm">Resources</h4>
             <ul className="space-y-2.5 text-slate-400 text-sm">
+              <li><Link href="/blog"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Blog</span></Link></li>
+              <li><Link href="/help-center"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Help Center</span></Link></li>
+              <li><Link href="/docs"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Documentation</span></Link></li>
               <li><Link href="/privacy-policy"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Privacy Policy</span></Link></li>
               <li><Link href="/terms"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Terms of Service</span></Link></li>
               <li>
