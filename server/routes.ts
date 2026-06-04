@@ -8,6 +8,7 @@ import { insertContactSubmissionSchema, insertOrderSchema, insertOrderItemSchema
 import { z } from "zod";
 import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
+import { SITEMAP_ENTRIES } from "../shared/routes";
 
 let stripe: Stripe | null = null;
 
@@ -50,6 +51,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
+
+  // Dynamic sitemap — generated from the shared route manifest
+  const BASE_URL = "https://victorysync.com";
+  app.get("/sitemap.xml", (_req, res) => {
+    const urls = SITEMAP_ENTRIES.map(
+      ({ path, changefreq, priority }) => `  <url>
+    <loc>${BASE_URL}${path}</loc>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+  </url>`
+    ).join("\n");
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`;
+    res.set("Content-Type", "application/xml").send(xml);
+  });
 
   // Initialize default packages
   await initializePackages();
