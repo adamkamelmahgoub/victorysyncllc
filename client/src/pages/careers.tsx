@@ -1,6 +1,12 @@
 import { Link } from 'wouter';
+import { useSeo } from '@/hooks/useSeo';
 
 export default function Careers() {
+  useSeo({
+    title: 'Careers at VictorySync | Join Our Contact Center Team',
+    description: 'VictorySync is hiring customer service representatives, appointment setters, and operations staff. Remote and Millstone NJ positions available.',
+    canonical: 'https://victorysync.com/careers',
+  });
   const positions = [
     {
       title: "Customer Service Representative",

@@ -1,8 +1,14 @@
 import { Link } from 'wouter';
 import { useState } from 'react';
+import { useSeo } from '@/hooks/useSeo';
 
 export default function Documentation() {
   const [activeSection, setActiveSection] = useState('getting-started');
+  useSeo({
+    title: 'Documentation | VictorySync Integration & API Guides',
+    description: 'Technical documentation for VictorySync integrations, webhooks, and reporting APIs. Connect your CRM, calendar, and communication tools.',
+    canonical: 'https://victorysync.com/docs',
+  });
 
   const sections = [
     { id: 'getting-started', title: 'Getting Started', icon: '🚀' },

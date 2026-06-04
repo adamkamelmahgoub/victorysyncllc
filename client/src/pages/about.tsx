@@ -3,9 +3,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
 import { useCalendly } from '@/hooks/useCalendly';
+import { useSeo } from '@/hooks/useSeo';
 
 export default function About() {
   const { open: openCalendly } = useCalendly();
+  useSeo({
+    title: 'About VictorySync | US-Managed Contact Center, Millstone NJ',
+    description: 'VictorySync is a US-managed contact center with trained agents in Cairo, Egypt. We help US businesses scale support and sales without in-house hiring overhead.',
+    canonical: 'https://victorysync.com/about',
+  });
 
   const values = [
     {

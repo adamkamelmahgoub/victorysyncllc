@@ -1,4 +1,12 @@
+import { useSeo } from '@/hooks/useSeo';
+
 export default function PrivacyPolicy() {
+  useSeo({
+    title: 'Privacy Policy | VictorySync',
+    description: 'VictorySync privacy policy — how we collect, use, and protect your personal information when you use our contact center services.',
+    canonical: 'https://victorysync.com/privacy-policy',
+  });
+
   return (
     <div className="min-h-screen bg-ink-900">
       {/* Header */}

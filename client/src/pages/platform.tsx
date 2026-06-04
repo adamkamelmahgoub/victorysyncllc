@@ -3,6 +3,7 @@ import { Section, StaggerContainer, fadeInUp } from '@/components/section';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCalendly } from '@/hooks/useCalendly';
+import { useSeo } from '@/hooks/useSeo';
 import { motion } from 'framer-motion';
 import { 
   Bot, 
@@ -96,6 +97,11 @@ const capabilities = [
 
 export default function Platform() {
   const { open: openCalendly } = useCalendly();
+  useSeo({
+    title: 'Platform | VictorySync Contact Center Technology',
+    description: 'VictorySync platform capabilities: AI call summaries, CRM integrations, real-time dashboards, and workflow automation for US contact center operations.',
+    canonical: 'https://victorysync.com/platform',
+  });
 
   return (
     <MotionPage className="bg-ink-900">

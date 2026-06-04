@@ -1,4 +1,12 @@
+import { useSeo } from '@/hooks/useSeo';
+
 export default function TermsOfService() {
+  useSeo({
+    title: 'Terms of Service | VictorySync',
+    description: 'VictorySync terms of service — the terms and conditions governing use of our contact center and AI automation services.',
+    canonical: 'https://victorysync.com/terms',
+  });
+
   return (
     <div className="min-h-screen bg-ink-900">
       {/* Header */}

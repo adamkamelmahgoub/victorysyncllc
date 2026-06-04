@@ -1,6 +1,7 @@
 import { Link, useRoute } from 'wouter';
 import { useState } from 'react';
 import { ArrowLeft, Calendar, Clock, User } from 'lucide-react';
+import { useSeo } from '@/hooks/useSeo';
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -9,6 +10,11 @@ const scrollToTop = () => {
 export default function Blog() {
   const [, params] = useRoute('/blog/:slug');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  useSeo({
+    title: 'Blog | Contact Center & Customer Service Insights | VictorySync',
+    description: 'Tips, guides, and insights on inbound support, appointment setting, cold calling, and AI automation for US businesses. From the VictorySync team.',
+    canonical: 'https://victorysync.com/blog',
+  });
 
   const blogPosts = [
     {

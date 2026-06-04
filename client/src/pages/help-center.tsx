@@ -1,9 +1,15 @@
 import { Link } from "wouter";
 import { useState } from "react";
+import { useSeo } from "@/hooks/useSeo";
 
 export default function HelpCenter() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("getting-started");
+  useSeo({
+    title: 'Help Center | VictorySync Support & Documentation',
+    description: 'Get help with VictorySync services. Browse guides, FAQs, and support articles on inbound support, appointment setting, and AI automation.',
+    canonical: 'https://victorysync.com/help-center',
+  });
 
   const categories = [
     { id: "getting-started", name: "Getting Started", icon: "🚀" },
