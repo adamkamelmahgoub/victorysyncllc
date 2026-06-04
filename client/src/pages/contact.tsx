@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useCalendly } from "@/hooks/useCalendly";
+import { useCalendly, loadCalendlyAssets } from "@/hooks/useCalendly";
 import { useSeo } from "@/hooks/useSeo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -62,11 +62,11 @@ export default function Contact() {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).Calendly) {
+    const calendlyUrl =
+      (import.meta as any).env?.VITE_CALENDLY_URL || "https://calendly.com";
+    loadCalendlyAssets().then(() => {
       const elem = document.getElementById("calendly-inline");
-      const calendlyUrl =
-        (import.meta as any).env?.VITE_CALENDLY_URL || "https://calendly.com";
-      if (elem && (window as any).Calendly.initInlineWidget) {
+      if (elem && (window as any).Calendly?.initInlineWidget) {
         (window as any).Calendly.initInlineWidget({
           url: calendlyUrl,
           parentElement: elem,
@@ -74,7 +74,7 @@ export default function Contact() {
           utm: {},
         });
       }
-    }
+    }).catch(() => {});
   }, []);
 
   return (
