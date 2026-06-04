@@ -1,10 +1,16 @@
 import { useEffect } from "react";
 import { Link } from "wouter";
 import { useCalendly } from "@/hooks/useCalendly";
+import { useSeo } from "@/hooks/useSeo";
 import { CheckCircle, Clock, Users, ArrowRight, Phone, Mail } from "lucide-react";
 
 const BookCall = () => {
   const { open } = useCalendly();
+  useSeo({
+    title: 'Book a Free Strategy Call | VictorySync Contact Center',
+    description: 'Schedule a free 30-minute strategy call with VictorySync. Discover how US-managed contact center services can reduce your customer service costs by up to 60%.',
+    canonical: 'https://victorysync.com/book-call',
+  });
 
   useEffect(() => {
     open();

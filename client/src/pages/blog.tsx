@@ -10,11 +10,6 @@ const scrollToTop = () => {
 export default function Blog() {
   const [, params] = useRoute('/blog/:slug');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  useSeo({
-    title: 'Blog | Contact Center & Customer Service Insights | VictorySync',
-    description: 'Tips, guides, and insights on inbound support, appointment setting, cold calling, and AI automation for US businesses. From the VictorySync team.',
-    canonical: 'https://victorysync.com/blog',
-  });
 
   const blogPosts = [
     {
@@ -890,6 +885,18 @@ This isn't theoretical—these are actual results from companies that invested i
   const filteredPosts = selectedCategory === 'All' 
     ? blogPosts 
     : blogPosts.filter(post => post.category === selectedCategory);
+
+  const currentArticle = params?.slug ? blogPosts.find(p => p.slug === params.slug) ?? null : null;
+  useSeo(currentArticle ? {
+    title: `${currentArticle.title} | VictorySync Blog`,
+    description: currentArticle.excerpt,
+    canonical: `https://victorysync.com/blog/${currentArticle.slug}`,
+    ogImage: currentArticle.image,
+  } : {
+    title: 'Blog | Contact Center & Customer Service Insights | VictorySync',
+    description: 'Tips, guides, and insights on inbound support, appointment setting, cold calling, and AI automation for US businesses. From the VictorySync team.',
+    canonical: 'https://victorysync.com/blog',
+  });
 
   // Check if viewing a single article
   if (params?.slug) {

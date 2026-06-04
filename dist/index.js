@@ -8,6 +8,7 @@ var __export = (target, all) => {
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import express2 from "express";
+import fs2 from "fs";
 
 // server/routes.ts
 import { createServer } from "http";
@@ -461,6 +462,75 @@ async function initializeAdminUser() {
 
 // server/routes.ts
 import { z as z2 } from "zod";
+
+// shared/routes.ts
+var PUBLIC_ROUTES = /* @__PURE__ */ new Set([
+  "/",
+  "/services",
+  "/pricing",
+  "/about",
+  "/about-us",
+  "/contact",
+  "/book-call",
+  "/platform",
+  "/inbound-support",
+  "/appointment-setting",
+  "/cold-calling",
+  "/ai-automation",
+  "/blog",
+  "/careers",
+  "/help-center",
+  "/docs",
+  "/privacy-policy",
+  "/terms",
+  "/checkout",
+  "/register",
+  "/signup",
+  "/login",
+  "/dashboard"
+]);
+var BLOG_SLUGS = /* @__PURE__ */ new Set([
+  "reduce-customer-service-costs",
+  "ai-automation-vs-human-touch",
+  "when-to-outsource-call-center",
+  "building-customer-loyalty",
+  "scaling-outsourced-support",
+  "roi-of-customer-service"
+]);
+function isKnownRoute(pathname) {
+  const clean = pathname.split("?")[0].replace(/\/$/, "") || "/";
+  if (PUBLIC_ROUTES.has(clean)) return true;
+  const blogMatch = clean.match(/^\/blog\/([^/]+)$/);
+  if (blogMatch) return BLOG_SLUGS.has(blogMatch[1]);
+  return false;
+}
+var SITEMAP_ENTRIES = [
+  { path: "/", changefreq: "weekly", priority: "1.0" },
+  { path: "/services", changefreq: "monthly", priority: "0.9" },
+  { path: "/pricing", changefreq: "monthly", priority: "0.9" },
+  { path: "/contact", changefreq: "monthly", priority: "0.8" },
+  { path: "/book-call", changefreq: "monthly", priority: "0.8" },
+  { path: "/inbound-support", changefreq: "monthly", priority: "0.9" },
+  { path: "/appointment-setting", changefreq: "monthly", priority: "0.9" },
+  { path: "/cold-calling", changefreq: "monthly", priority: "0.9" },
+  { path: "/ai-automation", changefreq: "monthly", priority: "0.8" },
+  { path: "/platform", changefreq: "monthly", priority: "0.7" },
+  { path: "/about", changefreq: "monthly", priority: "0.7" },
+  { path: "/about-us", changefreq: "monthly", priority: "0.7" },
+  { path: "/careers", changefreq: "monthly", priority: "0.5" },
+  { path: "/blog", changefreq: "weekly", priority: "0.7" },
+  ...Array.from(BLOG_SLUGS).map((slug) => ({
+    path: `/blog/${slug}`,
+    changefreq: "monthly",
+    priority: "0.6"
+  })),
+  { path: "/help-center", changefreq: "monthly", priority: "0.5" },
+  { path: "/docs", changefreq: "monthly", priority: "0.5" },
+  { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },
+  { path: "/terms", changefreq: "yearly", priority: "0.3" }
+];
+
+// server/routes.ts
 var stripe = null;
 if (process.env.STRIPE_SECRET_KEY) {
   stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -491,6 +561,21 @@ async function registerRoutes(app2) {
         environment: process.env.NODE_ENV || "development"
       });
     }
+  });
+  const BASE_URL2 = "https://victorysync.com";
+  app2.get("/sitemap.xml", (_req, res) => {
+    const urls = SITEMAP_ENTRIES.map(
+      ({ path: path3, changefreq, priority }) => `  <url>
+    <loc>${BASE_URL2}${path3}</loc>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+  </url>`
+    ).join("\n");
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls}
+</urlset>`;
+    res.set("Content-Type", "application/xml").send(xml);
   });
   await initializePackages();
   await initializeAdminUser();
@@ -867,6 +952,7 @@ async function setupVite(app2, server) {
   app2.use(vite.middlewares);
   app2.use("*", async (req, res, next) => {
     const url = req.originalUrl;
+    const pathname = url.split("?")[0];
     try {
       const clientTemplate = path2.resolve(
         import.meta.dirname,
@@ -880,7 +966,8 @@ async function setupVite(app2, server) {
         `src="/src/main.tsx?v=${nanoid()}"`
       );
       const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+      const status = isKnownRoute(pathname) ? 200 : 404;
+      res.status(status).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e);
       next(e);
@@ -895,14 +982,193 @@ function serveStatic(app2) {
     );
   }
   app2.use(express.static(distPath));
-  app2.use("*", (_req, res) => {
-    res.sendFile(path2.resolve(distPath, "index.html"));
+  app2.use("*", (req, res) => {
+    const status = isKnownRoute(req.path) ? 200 : 404;
+    res.status(status).sendFile(path2.resolve(distPath, "index.html"));
   });
 }
 
 // server/auth/passport.ts
 import passport from "passport";
 var passport_default = passport;
+
+// shared/blogPosts.ts
+var blogPostsMeta = [
+  {
+    slug: "reduce-customer-service-costs",
+    title: "How to Reduce Customer Service Costs by 60% Without Sacrificing Quality",
+    excerpt: "Discover proven strategies that successful businesses use to dramatically cut customer service expenses while improving customer satisfaction scores.",
+    image: "https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+  },
+  {
+    slug: "ai-automation-vs-human-touch",
+    title: "The Future of Customer Service: AI Automation vs Human Touch",
+    excerpt: "Exploring the perfect balance between artificial intelligence and human empathy in modern customer service operations.",
+    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+  },
+  {
+    slug: "when-to-outsource-call-center",
+    title: "5 Signs Your Business Needs Professional Call Center Services",
+    excerpt: "Learn to identify the key indicators that suggest it's time to outsource your customer support operations to professionals.",
+    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&auto=format&fit=crop&w=1974&q=80"
+  },
+  {
+    slug: "building-customer-loyalty",
+    title: "Building Customer Loyalty Through Exceptional Support Experiences",
+    excerpt: "How to turn customer service interactions into relationship-building opportunities that drive long-term business growth.",
+    image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+  },
+  {
+    slug: "scaling-outsourced-support",
+    title: "Scaling Your Business with Outsourced Customer Support",
+    excerpt: "A comprehensive guide to successfully implementing outsourced support solutions that grow with your business needs.",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2015&q=80"
+  },
+  {
+    slug: "roi-of-customer-service",
+    title: "The ROI of Professional Customer Service: A Data-Driven Analysis",
+    excerpt: "Real numbers and case studies showing the measurable impact of professional customer service on business performance.",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+  }
+];
+
+// server/meta.ts
+var BASE_URL = "https://victorysync.com";
+var DEFAULT_IMAGE = `${BASE_URL}/LOGO_VS.png`;
+var STATIC_ROUTES = {
+  "/": {
+    title: "VictorySync | US-Managed Call Center & Appointment Setting",
+    description: "VictorySync helps US businesses scale inbound support, outbound calling, appointment setting, lead follow-up, and customer engagement with US-managed operations.",
+    ogType: "website"
+  },
+  "/about": {
+    title: "About VictorySync | US-Managed Contact Center, Millstone NJ",
+    description: "VictorySync is a US-managed contact center with trained agents in Cairo, Egypt. We help US businesses scale support and sales without in-house hiring overhead."
+  },
+  "/platform": {
+    title: "Platform | VictorySync Contact Center Technology",
+    description: "VictorySync platform capabilities: AI call summaries, CRM integrations, real-time dashboards, and workflow automation for US contact center operations."
+  },
+  "/pricing": {
+    title: "Pricing | VictorySync Contact Center Services",
+    description: "Transparent, flexible pricing for US contact center services. From starter inbound support to full-service AI-powered automation. Starting from $10/hr."
+  },
+  "/contact": {
+    title: "Contact VictorySync | Get a Free Quote",
+    description: "Contact VictorySync to discuss your contact center needs. Schedule a free strategy call or send us a message. Based in Millstone, NJ."
+  },
+  "/book-call": {
+    title: "Book a Free Strategy Call | VictorySync Contact Center",
+    description: "Schedule a free 30-minute strategy call with VictorySync. Discover how US-managed contact center services can reduce your customer service costs by up to 60%."
+  },
+  "/careers": {
+    title: "Careers at VictorySync | Join Our Contact Center Team",
+    description: "VictorySync is hiring customer service representatives, appointment setters, and operations staff. Remote and Millstone NJ positions available."
+  },
+  "/help-center": {
+    title: "Help Center | VictorySync Support & Documentation",
+    description: "Get help with VictorySync services. Browse guides, FAQs, and support articles on inbound support, appointment setting, and AI automation."
+  },
+  "/docs": {
+    title: "Documentation | VictorySync Integration & API Guides",
+    description: "Technical documentation for VictorySync integrations, webhooks, and reporting APIs. Connect your CRM, calendar, and communication tools."
+  },
+  "/privacy-policy": {
+    title: "Privacy Policy | VictorySync",
+    description: "VictorySync privacy policy \u2014 how we collect, use, and protect your personal information when you use our contact center services."
+  },
+  "/terms": {
+    title: "Terms of Service | VictorySync",
+    description: "VictorySync terms of service \u2014 the terms and conditions governing use of our contact center and AI automation services."
+  },
+  "/blog": {
+    title: "Blog | Contact Center & Customer Service Insights | VictorySync",
+    description: "Tips, guides, and insights on inbound support, appointment setting, cold calling, and AI automation for US businesses. From the VictorySync team.",
+    ogType: "website"
+  }
+};
+function getRouteMeta(pathname) {
+  if (STATIC_ROUTES[pathname]) {
+    return STATIC_ROUTES[pathname];
+  }
+  const blogSlugMatch = pathname.match(/^\/blog\/([^/]+)$/);
+  if (blogSlugMatch) {
+    const slug = blogSlugMatch[1];
+    const post = blogPostsMeta.find((p) => p.slug === slug);
+    if (post) {
+      return {
+        title: `${post.title} | VictorySync Blog`,
+        description: post.excerpt,
+        ogType: "article",
+        ogImage: post.image,
+        canonical: `${BASE_URL}/blog/${post.slug}`
+      };
+    }
+    return {
+      title: "Blog | VictorySync",
+      description: "Read insights and guides from the VictorySync contact center team.",
+      ogType: "article"
+    };
+  }
+  return null;
+}
+function escapeAttr(str) {
+  return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function injectRouteMeta(html, pathname) {
+  const meta = getRouteMeta(pathname);
+  if (!meta) return html;
+  const canonical = meta.canonical ?? `${BASE_URL}${pathname}`;
+  const image = meta.ogImage ?? DEFAULT_IMAGE;
+  const ogType = meta.ogType ?? "website";
+  const title = escapeAttr(meta.title);
+  const description = escapeAttr(meta.description);
+  const canonicalEsc = escapeAttr(canonical);
+  const imageEsc = escapeAttr(image);
+  let result = html;
+  result = result.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
+  result = result.replace(
+    /(<meta\s+name="description"\s+content=")[^"]*(")/,
+    `$1${description}$2`
+  );
+  result = result.replace(
+    /(<meta\s+property="og:title"\s+content=")[^"]*(")/,
+    `$1${title}$2`
+  );
+  result = result.replace(
+    /(<meta\s+property="og:description"\s+content=")[^"]*(")/,
+    `$1${description}$2`
+  );
+  result = result.replace(
+    /(<meta\s+property="og:url"\s+content=")[^"]*(")/,
+    `$1${canonicalEsc}$2`
+  );
+  result = result.replace(
+    /(<meta\s+property="og:image"\s+content=")[^"]*(")/,
+    `$1${imageEsc}$2`
+  );
+  result = result.replace(
+    /(<meta\s+property="og:type"\s+content=")[^"]*(")/,
+    `$1${ogType}$2`
+  );
+  result = result.replace(
+    /(<meta\s+name="twitter:title"\s+content=")[^"]*(")/,
+    `$1${title}$2`
+  );
+  result = result.replace(
+    /(<meta\s+name="twitter:description"\s+content=")[^"]*(")/,
+    `$1${description}$2`
+  );
+  result = result.replace(
+    /(<meta\s+name="twitter:image"\s+content=")[^"]*(")/,
+    `$1${imageEsc}$2`
+  );
+  result = result.replace(
+    /(<link\s+rel="canonical"\s+href=")[^"]*(")/,
+    `$1${canonicalEsc}$2`
+  );
+  return result;
+}
 
 // server/index.ts
 var __filename = fileURLToPath(import.meta.url);
@@ -923,6 +1189,39 @@ var app = express2();
 app.use(express2.json());
 app.use(express2.urlencoded({ extended: false }));
 app.use(passport_default.initialize());
+app.use((req, res, next) => {
+  if (req.method !== "GET" || req.path.startsWith("/api")) return next();
+  const pathname = req.path;
+  const originalEnd = res.end.bind(res);
+  res.end = function(chunk, encoding, callback) {
+    if (chunk) {
+      const str = Buffer.isBuffer(chunk) ? chunk.toString("utf-8") : typeof chunk === "string" ? chunk : null;
+      if (str && str.includes("<!DOCTYPE html>")) {
+        const injected = injectRouteMeta(str, pathname);
+        const buf = Buffer.from(injected, "utf-8");
+        res.removeHeader("content-length");
+        res.setHeader("content-length", buf.byteLength);
+        return originalEnd(buf, encoding, callback);
+      }
+    }
+    return originalEnd(chunk, encoding, callback);
+  };
+  const originalSendFile = res.sendFile.bind(res);
+  res.sendFile = function(filePath, options, fn) {
+    if (typeof filePath === "string" && filePath.endsWith("index.html")) {
+      fs2.readFile(filePath, "utf-8", (err, data) => {
+        if (err) return originalSendFile(filePath, options, fn);
+        const injected = injectRouteMeta(data, pathname);
+        res.set("Content-Type", "text/html; charset=utf-8");
+        res.removeHeader("content-length");
+        originalEnd(Buffer.from(injected, "utf-8"));
+      });
+    } else {
+      return originalSendFile(filePath, options, fn);
+    }
+  };
+  next();
+});
 app.use((req, res, next) => {
   const start = Date.now();
   const path3 = req.path;

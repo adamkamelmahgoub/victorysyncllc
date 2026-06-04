@@ -4,9 +4,10 @@ interface SeoProps {
   title: string;
   description: string;
   canonical?: string;
+  ogImage?: string;
 }
 
-export function useSeo({ title, description, canonical }: SeoProps) {
+export function useSeo({ title, description, canonical, ogImage }: SeoProps) {
   useEffect(() => {
     document.title = title;
 
@@ -24,6 +25,12 @@ export function useSeo({ title, description, canonical }: SeoProps) {
     if (canonical) {
       let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
       if (link) link.href = canonical;
+      setMeta('meta[property="og:url"]', 'content', canonical);
     }
-  }, [title, description, canonical]);
+
+    if (ogImage) {
+      setMeta('meta[property="og:image"]', 'content', ogImage);
+      setMeta('meta[name="twitter:image"]', 'content', ogImage);
+    }
+  }, [title, description, canonical, ogImage]);
 }

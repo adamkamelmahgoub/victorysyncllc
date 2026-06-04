@@ -8,10 +8,12 @@ const __dirname = dirname(__filename);
 globalThis.__dirname = dirname(fileURLToPath(import.meta.url));
 
 import express, { type Request, Response, NextFunction } from "express";
+import fs from "fs";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { testDatabaseConnection } from "./db";
 import passport from "./auth/passport";
+import { injectRouteMeta } from "./meta";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
@@ -34,6 +36,64 @@ app.use(express.urlencoded({ extended: false }));
 
 // Initialize Passport
 app.use(passport.initialize());
+
+// Server-side meta tag injection for social crawlers and search engines.
+// This middleware intercepts HTML responses and replaces the default homepage
+// tags with route-specific title, description, og:*, twitter:*, and canonical
+// values so that social unfurlers and crawlers see correct data on the first
+// HTTP response without executing JavaScript.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method !== "GET" || req.path.startsWith("/api")) return next();
+
+  const pathname = req.path;
+
+  // Intercept res.end — used by Vite dev server to flush transformed HTML.
+  const originalEnd = res.end.bind(res);
+  (res as any).end = function (
+    chunk?: any,
+    encoding?: any,
+    callback?: any,
+  ) {
+    if (chunk) {
+      const str =
+        Buffer.isBuffer(chunk)
+          ? chunk.toString("utf-8")
+          : typeof chunk === "string"
+            ? chunk
+            : null;
+      if (str && str.includes("<!DOCTYPE html>")) {
+        const injected = injectRouteMeta(str, pathname);
+        const buf = Buffer.from(injected, "utf-8");
+        res.removeHeader("content-length");
+        res.setHeader("content-length", buf.byteLength);
+        return originalEnd(buf, encoding, callback);
+      }
+    }
+    return originalEnd(chunk, encoding, callback);
+  };
+
+  // Intercept res.sendFile — used by the production static file handler.
+  const originalSendFile = (res as any).sendFile.bind(res);
+  (res as any).sendFile = function (
+    filePath: string,
+    options?: any,
+    fn?: any,
+  ) {
+    if (typeof filePath === "string" && filePath.endsWith("index.html")) {
+      fs.readFile(filePath, "utf-8", (err, data) => {
+        if (err) return originalSendFile(filePath, options, fn);
+        const injected = injectRouteMeta(data, pathname);
+        res.set("Content-Type", "text/html; charset=utf-8");
+        res.removeHeader("content-length");
+        originalEnd(Buffer.from(injected, "utf-8"));
+      });
+    } else {
+      return originalSendFile(filePath, options, fn);
+    }
+  };
+
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
