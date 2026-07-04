@@ -59,27 +59,34 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/vs_favicon_16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
-    <!-- Preconnect -->
+    <!-- Resource hints for late-loaded third-party assets -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://connect.facebook.net" />
+    <link rel="dns-prefetch" href="https://assets.apollo.io" />
     <link rel="preconnect" href="https://assets.calendly.com" />
     <link rel="preconnect" href="https://js.stripe.com" />
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QG0JH52J6D"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-QG0JH52J6D');
-    </script>
+    <!-- Critical CSS for the first viewport. The full stylesheet is loaded non-blocking in production. -->
+    <style>
+      :root{color-scheme:dark;--ink-900:#0b1221;--ink-800:#0f172a;--ink-700:#111827;--ink-600:#1e293b}
+      *{box-sizing:border-box}
+      html{background:var(--ink-900);scroll-behavior:smooth}
+      body{margin:0;background:var(--ink-900);color:#e5e7eb;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+      a{color:inherit;text-decoration:none}
+      button{font:inherit}
+      #root{min-height:100vh;background:var(--ink-900)}
+      .min-h-screen{min-height:100vh}.flex{display:flex}.flex-col{flex-direction:column}.flex-1{flex:1 1 0%}.items-center{align-items:center}.justify-between{justify-content:space-between}.justify-center{justify-content:center}.relative{position:relative}.absolute{position:absolute}.sticky{position:sticky}.top-0{top:0}.z-50{z-index:50}.hidden{display:none}.w-full{width:100%}.mx-auto{margin-left:auto;margin-right:auto}.max-w-6xl{max-width:72rem}.max-w-lg{max-width:32rem}.px-4{padding-left:1rem;padding-right:1rem}.py-16{padding-top:4rem;padding-bottom:4rem}.h-16{height:4rem}.h-8{height:2rem}.w-8{width:2rem}.h-1{height:.25rem}.w-1\.5{width:.375rem}.h-1\.5{height:.375rem}.overflow-hidden{overflow:hidden}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-ink-700{border-color:var(--ink-700)}.border-ink-700\/50{border-color:rgba(17,24,39,.5)}.border-ink-700\/80{border-color:rgba(17,24,39,.8)}.border-ink-600{border-color:var(--ink-600)}.bg-ink-900{background-color:var(--ink-900)}.bg-ink-900\/50{background-color:rgba(11,18,33,.5)}.bg-ink-900\/90{background-color:rgba(11,18,33,.9)}.bg-ink-800{background-color:var(--ink-800)}.bg-ink-700{background-color:var(--ink-700)}.bg-cyan-400{background-color:#22d3ee}.bg-cyan-500{background-color:#06b6d4}.bg-green-400{background-color:#4ade80}.bg-white{background-color:#fff}.p-1{padding:.25rem}.p-2{padding:.5rem}.p-5{padding:1.25rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.pb-4{padding-bottom:1rem}.pt-1{padding-top:.25rem}.pt-4{padding-top:1rem}.mb-1{margin-bottom:.25rem}.mb-5{margin-bottom:1.25rem}.mt-0\.5{margin-top:.125rem}.ml-2{margin-left:.5rem}.gap-1\.5{gap:.375rem}.gap-3{gap:.75rem}.gap-12{gap:3rem}.space-x-3>:not([hidden])~:not([hidden]){margin-left:.75rem}.space-y-2\.5>:not([hidden])~:not([hidden]){margin-top:.625rem}.space-y-7>:not([hidden])~:not([hidden]){margin-top:1.75rem}.grid{display:grid}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.text-white{color:#fff}.text-ink-900{color:var(--ink-900)}.text-slate-300{color:#cbd5e1}.text-slate-400{color:#94a3b8}.text-slate-500{color:#64748b}.text-slate-600{color:#475569}.text-cyan-400{color:#22d3ee}.text-green-400{color:#4ade80}.text-xs{font-size:.75rem;line-height:1rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.font-medium{font-weight:500}.font-semibold{font-weight:600}.font-bold{font-weight:700}.uppercase{text-transform:uppercase}.leading-\[1\.15\]{line-height:1.15}.leading-relaxed{line-height:1.625}.tracking-widest{letter-spacing:.1em}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.shadow-2xl{box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}.ring-1{box-shadow:0 0 0 1px rgba(17,24,39,.8)}.backdrop-blur-md{backdrop-filter:blur(12px)}.transition{transition-property:color,background-color,border-color,transform;transition-duration:.2s}.flex-shrink-0{flex-shrink:0}.min-w-0{min-width:0}.flex-1{flex:1 1 0%}.inline-flex{display:inline-flex}.text-center{text-align:center}.inset-0{inset:0}.blur-3xl{filter:blur(64px)}.opacity-30{opacity:.3}.translate-y-8{transform:translateY(2rem)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right,var(--tw-gradient-from,rgba(34,211,238,.4)),var(--tw-gradient-to,transparent))}.from-cyan-500\/40{--tw-gradient-from:rgba(6,182,212,.4)}.to-transparent{--tw-gradient-to:transparent}
+      nav img{display:block}.group:hover .group-hover\:scale-105{transform:scale(1.05)}.hover\:bg-cyan-400:hover{background-color:#22d3ee}.hover\:bg-ink-800\/60:hover{background-color:rgba(15,23,42,.6)}
+      @media (min-width:640px){.sm\:flex-row{flex-direction:row}.sm\:text-5xl{font-size:3rem;line-height:1}}
+      @media (min-width:768px){.md\:flex{display:flex}.md\:hidden{display:none}}
+      @media (min-width:1024px){.lg\:flex-row{flex-direction:row}.lg\:items-center{align-items:center}.lg\:py-28{padding-top:7rem;padding-bottom:7rem}.lg\:w-\[52\%\]{width:52%}.lg\:w-\[48\%\]{width:48%}.lg\:text-\[3\.25rem\]{font-size:3.25rem;line-height:1.08}.lg\:px-8{padding-left:2rem;padding-right:2rem}}
+    </style>
 
-    <!-- Calendly -->
-    <link rel="stylesheet" href="https://assets.calendly.com/assets/external/widget.css" />
-    <script async src="https://assets.calendly.com/assets/external/widget.js"></script>
-    <script type="module" crossorigin src="/assets/index-DYzqUDiC.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BYpRhzSo.css">
+    <script type="module" crossorigin src="/assets/index-CtboSdvd.js"></script>
+    <link rel="preload" href="/assets/index-D_SP5kQA.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/assets/index-D_SP5kQA.css"></noscript>
   </head>
   <body>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2060370554550917&ev=PageView&noscript=1" /></noscript>
     <div id="root"></div>
-    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>
 </html>
