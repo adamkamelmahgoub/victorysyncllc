@@ -124,7 +124,7 @@ export default function InboundSupport() {
           <div className="grid md:grid-cols-3 gap-6">
             {[
               { icon: Clock, title: "Extended coverage", desc: "Handle inquiries before, during, and after business hours without adding headcount." },
-              { icon: Shield, title: "US-managed quality", desc: "Ahmed and the management team oversee every campaign. Not a black box." },
+              { icon: Shield, title: "US-managed quality", desc: "US-based management oversees every campaign. Not a black box." },
               { icon: BarChart3, title: "Clear reporting", desc: "Know exactly what's happening with your inbound volume, response times, and satisfaction." },
             ].map((item) => {
               const Icon = item.icon;

@@ -207,7 +207,7 @@ export default function About() {
                   alt="CEO Portrait" 
                   className="w-24 h-24 rounded-full mx-auto mb-4 object-cover" 
                 />
-                <h3 className="text-xl font-bold victory-dark mb-2">Ahmed Hassan</h3>
+                <h3 className="text-xl font-bold victory-dark mb-2">Executive Leadership</h3>
                 <p className="victory-purple font-semibold mb-3">Chief Executive Officer</p>
                 <p className="text-sm victory-gray">
                   15+ years in outsourcing and business development, former director at a Fortune 500 BPO company.

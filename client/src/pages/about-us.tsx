@@ -8,7 +8,7 @@ export default function AboutUs() {
   const { open: openCalendly } = useCalendly();
   useSeo({
     title: 'About VictorySync | US-Managed Contact Center Based in New Jersey',
-    description: 'VictorySync is a US-managed contact center with trained agents in Cairo, Egypt. Founded by Ahmed M. to help US businesses scale support and sales without the cost of in-house hiring.',
+    description: 'VictorySync is a US-managed contact center with trained agents in Cairo, Egypt, built to help US businesses scale support and sales without the cost of in-house hiring.',
     canonical: 'https://victorysync.com/about-us',
   });
 
@@ -32,14 +32,14 @@ export default function AboutUs() {
         </div>
       </section>
 
-      {/* Founder & Company */}
+      {/* Company */}
       <section className="py-16 bg-ink-800 border-b border-ink-700">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-4">Founded by Ahmed M.</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">Built for US-managed execution</h2>
               <p className="text-slate-300 mb-4 leading-relaxed">
-                VictorySync was founded by Ahmed M., based in Millstone, New Jersey. Ahmed built VictorySync to solve a problem he saw firsthand: US businesses were either overpaying for domestic call center labor or accepting poor quality from overseas providers with no real oversight.
+                VictorySync is based in Millstone, New Jersey and was built to solve a problem many US businesses face: they are either overpaying for domestic call center labor or accepting poor quality from overseas providers with no real oversight.
               </p>
               <p className="text-slate-300 mb-4 leading-relaxed">
                 The answer was a hybrid model — professional, English-speaking agents trained and managed to US business standards, operating from Cairo, Egypt with US-based account management keeping quality high on every campaign.
@@ -173,7 +173,7 @@ export default function AboutUs() {
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Ready to talk about your business?</h2>
           <p className="text-slate-300 mb-8 leading-relaxed">
-            Book a free 20-minute call with Ahmed and the team. We'll ask about your current operation and tell you honestly whether and how VictorySync can help.
+            Book a free 20-minute call with the VictorySync team. We'll ask about your current operation and tell you honestly whether and how VictorySync can help.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button onClick={openCalendly} className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold px-8 py-3">

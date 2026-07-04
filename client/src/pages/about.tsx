@@ -208,10 +208,10 @@ export default function About() {
                   alt="CEO Portrait"
                   className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-cyan-500/30"
                 />
-                <h3 className="text-xl font-bold text-white mb-2">Ahmed Mahgoub</h3>
-                <p className="text-cyan-400 font-semibold mb-3">Chief Executive Officer</p>
+                <h3 className="text-xl font-bold text-white mb-2">Executive Leadership</h3>
+                <p className="text-cyan-400 font-semibold mb-3">Client Strategy & Operations</p>
                 <p className="text-sm text-slate-300">
-                  Founder of VictorySync with deep expertise in US-managed BPO services, appointment setting, and client success.
+                  VictorySync leadership brings deep expertise in US-managed BPO services, appointment setting, and client success.
                 </p>
               </CardContent>
             </Card>
