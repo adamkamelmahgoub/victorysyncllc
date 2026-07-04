@@ -5,9 +5,10 @@ interface SeoProps {
   description: string;
   canonical?: string;
   ogImage?: string;
+  structuredData?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-export function useSeo({ title, description, canonical, ogImage }: SeoProps) {
+export function useSeo({ title, description, canonical, ogImage, structuredData }: SeoProps) {
   useEffect(() => {
     document.title = title;
 
@@ -32,5 +33,20 @@ export function useSeo({ title, description, canonical, ogImage }: SeoProps) {
       setMeta('meta[property="og:image"]', 'content', ogImage);
       setMeta('meta[name="twitter:image"]', 'content', ogImage);
     }
-  }, [title, description, canonical, ogImage]);
+
+    const existingJsonLd = document.querySelector('script[data-victorysync-schema="page"]');
+    existingJsonLd?.remove();
+
+    if (structuredData) {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.dataset.victorysyncSchema = 'page';
+      script.textContent = JSON.stringify(structuredData);
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      document.querySelector('script[data-victorysync-schema="page"]')?.remove();
+    };
+  }, [title, description, canonical, ogImage, structuredData]);
 }

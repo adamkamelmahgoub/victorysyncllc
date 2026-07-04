@@ -64,9 +64,9 @@ export const Hero: FC = () => {
               {/* Queue rows */}
               <div className="space-y-2.5 mb-5">
                 {[
-                  { channel: "Inbound calls", status: "Answered", pct: 98, note: "98% answer rate" },
-                  { channel: "Lead follow-ups", status: "Live", pct: 100, note: "< 5 min contact time" },
-                  { channel: "Appointments set", status: "On track", pct: 72, note: "12 booked today" },
+                  { channel: "Inbound calls", status: "Answered", widthClass: "w-[98%]", note: "98% answer rate" },
+                  { channel: "Lead follow-ups", status: "Live", widthClass: "w-full", note: "< 5 min contact time" },
+                  { channel: "Appointments set", status: "On track", widthClass: "w-[72%]", note: "12 booked today" },
                 ].map((row) => (
                   <div key={row.channel} className="flex items-center gap-3 bg-ink-900/50 rounded-lg px-4 py-3">
                     <div className="flex-1 min-w-0">
@@ -75,7 +75,7 @@ export const Hero: FC = () => {
                         <span className="text-xs text-slate-500 ml-2 flex-shrink-0">{row.note}</span>
                       </div>
                       <div className="h-1 w-full rounded-full bg-ink-700 overflow-hidden">
-                        <div className="h-full bg-cyan-400 rounded-full" style={{ width: `${row.pct}%` }} />
+                        <div className={`h-full bg-cyan-400 rounded-full ${row.widthClass}`} />
                       </div>
                     </div>
                   </div>
