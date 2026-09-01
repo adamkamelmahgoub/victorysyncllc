@@ -80,7 +80,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="how-it-works" className="relative bg-slate-100 py-24">
+      <section id="how-it-works" className="relative scroll-mt-16 bg-slate-100 py-24">
         <div className="mx-auto max-w-6xl px-5 sm:px-8"><CenteredHeading eyebrow="How it works" title="Three steps to a working campaign" body="From your first brief to qualified appointments, the process stays clear and accountable." /><div className="mt-14 grid gap-6 lg:grid-cols-3">{processSteps.map(step => <article key={step.number}><p className="text-sm font-bold text-blue-600">{step.number}</p><h3 className="mt-4 text-xl font-semibold text-slate-900">{step.title}</h3><p className="mt-3 min-h-[72px] text-sm leading-6 text-slate-600">{step.body}</p><div className="mt-6 min-h-[178px] rounded-lg border border-slate-200 bg-white p-5 shadow-sm">{step.mock}</div></article>)}</div></div>
       </section>
 
@@ -91,7 +91,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="pricing" className="relative bg-white py-24">
+      <section id="pricing" className="relative scroll-mt-16 bg-white py-24">
         <div className="mx-auto max-w-6xl px-5 sm:px-8"><CenteredHeading eyebrow="Services & pricing" title="Choose the team shape that fits" body="Start focused, prove the workflow, and expand coverage as volume grows." /><div className="mt-14 grid gap-5 lg:grid-cols-3">{plans.map(plan => <article key={plan.name} className={`relative flex flex-col rounded-lg border p-6 ${plan.featured ? 'border-blue-500 bg-blue-50/60 shadow-lg shadow-blue-100' : 'border-slate-200 bg-white shadow-sm'}`}>{plan.featured && <span className="absolute -top-3 left-5 rounded-full bg-blue-600 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white">Most popular</span>}<p className="text-sm font-semibold text-slate-900">{plan.name}</p><p className="mt-1 text-xs text-slate-500">{plan.note}</p><p className="mt-6 text-3xl font-bold tracking-tight text-slate-950">{plan.price}</p><p className="mt-3 min-h-[40px] text-sm leading-6 text-slate-600">{plan.description}</p><div className="my-6 h-px bg-slate-200" /><ul className="flex-1 space-y-3">{plan.features.map(feature => <li key={feature} className="flex gap-2.5 text-sm text-slate-700"><Check className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />{feature}</li>)}</ul><button onClick={open} className={`mt-7 rounded-lg px-4 py-3 text-sm font-semibold ${plan.featured ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-slate-300 bg-white text-slate-800 hover:bg-slate-50'}`}>Discuss this plan</button></article>)}</div><p className="mt-5 text-center text-xs text-slate-500">Final pricing depends on coverage, channels, tools, and campaign complexity.</p></div>
       </section>
 
@@ -113,7 +113,7 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-5 sm:px-8"><CenteredHeading eyebrow="Built for trust" title="Your campaign stays visible and accountable" body="Clear access rules, real ownership, and reporting keep your operation from becoming a black box." /><div className="mt-12 grid gap-8 md:grid-cols-3">{[[Lock, 'Data privacy', 'Access is limited to the systems and records required for the approved workflow.'], [Users, 'Dedicated account team', 'A consistent team learns your process, receives coaching, and owns follow-through.'], [BarChart3, 'Real-time reporting', 'Track activity, dispositions, qualification, and appointments without waiting for anecdotes.']].map(([Icon, title, body]) => { const TrustIcon = Icon as typeof Lock; return <div key={title as string} className="text-center"><div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-blue-600"><TrustIcon className="h-5 w-5" /></div><h3 className="mt-4 text-sm font-semibold text-slate-900">{title as string}</h3><p className="mx-auto mt-2 max-w-xs text-xs leading-5 text-slate-600">{body as string}</p></div>; })}</div></div>
       </section>
 
-      <section id="faq" className="relative bg-white py-24">
+      <section id="faq" className="relative scroll-mt-16 bg-white py-24">
         <div className="mx-auto grid max-w-5xl gap-12 px-5 sm:px-8 lg:grid-cols-[.65fr_1.35fr]"><div><p className="section-kicker">FAQ</p><h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">Frequently asked questions</h2><p className="mt-4 text-sm leading-6 text-slate-600">Need a more specific answer? Our team can map it to your workflow.</p></div><div className="divide-y divide-slate-200 border-y border-slate-200">{faqs.map((faq, index) => <details key={faq.question} className="group" open={index === 0}><summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-sm font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">{faq.question}<ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" /></summary><p className="pb-5 pr-8 text-sm leading-6 text-slate-600">{faq.answer}</p></details>)}</div></div>
       </section>
 
