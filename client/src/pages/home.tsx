@@ -2,76 +2,177 @@ import { MotionPage } from '@/components/motion-page';
 import { useCalendly } from '@/hooks/useCalendly';
 import { useSeo } from '@/hooks/useSeo';
 import { Link } from 'wouter';
-import { Activity, ArrowRight, Bot, CalendarCheck, Check, CheckCircle2, ChevronDown, Headphones, MessageCircle, Phone, ShieldCheck, Sparkles, UserCheck, Users } from 'lucide-react';
+import {
+  Activity,
+  ArrowRight,
+  BarChart3,
+  CalendarCheck,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  Headphones,
+  MessageCircle,
+  Phone,
+  Sparkles,
+  UserCheck,
+} from 'lucide-react';
 
 const whatsappUrl = 'https://wa.me/17188132106?text=Hi%20VictorySync%2C%20I%27d%20like%20to%20learn%20more.';
 
 const faqs = [
-  { question: 'What does VictorySync do?', answer: 'We provide US-managed inbound and outbound contact center services using trained Cairo-based agents. Teams use us for cold calling, lead qualification, appointment setting, lead follow-up, and inbound customer support.' },
-  { question: 'Which industries do you work with?', answer: 'VictorySync is built for US small and midsize businesses, especially home services, real estate, agencies, professional services, and SaaS. We adapt scripts, qualification rules, and handoffs to each account.' },
-  { question: 'How are your agents managed?', answer: 'Every account has US-led onboarding and account management, documented scripts and escalation paths, Cairo-based agents trained on the campaign, and ongoing call review and quality coaching.' },
-  { question: 'How do you handle data privacy?', answer: 'Access is limited to the tools and records needed for the approved workflow. We align permissions, retention, escalation, and reporting requirements with you during onboarding and can work inside your existing CRM and phone stack.' },
-  { question: 'How does pricing work?', answer: 'Engagements are scoped around coverage, channels, agent count, and workflow complexity. Dedicated agent plans currently start from $10 per hour; we confirm the exact scope and price after a short discovery call.' },
+  { question: 'What does VictorySync do?', answer: 'VictorySync provides US-managed outbound and inbound contact center services with trained agents based in Cairo. Our people handle cold calling, qualification, appointment setting, lead follow-up, and customer support. AI helps them summarize calls, surface signals, and keep records organized.' },
+  { question: 'Which industries do you work with?', answer: 'We work primarily with US small and midsize businesses in home services, real estate, SaaS, agencies, and professional services. Every campaign is adapted to the client’s offer, customers, systems, and sales process.' },
+  { question: 'How are your agents managed?', answer: 'Every account has US-led onboarding and account management, documented scripts and escalation paths, trained Cairo-based agents, and ongoing call review and coaching.' },
+  { question: 'How does AI support the agents?', answer: 'AI assists with call summaries, qualification prompts, lead routing, QA signals, and reporting. Agents remain responsible for the conversation, judgment, and customer experience.' },
+  { question: 'How do you handle data privacy?', answer: 'We limit access to the tools and records required for the approved workflow. Permissions, retention, escalation, and reporting requirements are agreed during onboarding, and agents can work inside your existing CRM and phone stack.' },
+  { question: 'How does pricing work?', answer: 'Pricing depends on coverage, channels, agent count, and workflow complexity. Dedicated agent plans currently start from $10 per hour, with an exact scope confirmed after a short discovery call.' },
   { question: 'How quickly can we start?', answer: 'Straightforward appointment-setting, lead follow-up, and inbound programs can often launch within 24–48 hours after scripts, lists, access, and escalation rules are approved.' },
 ];
 
-const structuredData = [{ '@context': 'https://schema.org', '@type': 'Organization', name: 'VictorySync', url: 'https://victorysync.com', description: 'US-managed BPO and contact center with Cairo-based agents for inbound support, cold calling, lead qualification, and appointment setting.' }, { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(({ question, answer }) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } })) }];
+const structuredData = [{
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'VictorySync',
+  url: 'https://victorysync.com',
+  description: 'US-managed BPO and contact center with Cairo-based human agents for inbound support, cold calling, lead qualification, and appointment setting.',
+}, {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+}];
 
 function MockRow({ label, value }: { label: string; value: string }) {
-  return <div className="flex items-center justify-between rounded-lg bg-white/[0.035] px-3 py-2 text-xs"><span className="text-slate-500">{label}</span><span className="text-slate-200">{value}</span></div>;
-}
-
-function Tag({ children, checked = false }: { children: React.ReactNode; checked?: boolean }) {
-  return <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] ${checked ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300' : 'border-white/10 bg-white/5 text-slate-400'}`}>{checked && <Check className="h-3 w-3" />}{children}</span>;
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs">
+      <span className="text-slate-500">{label}</span>
+      <span className="font-medium text-slate-700">{value}</span>
+    </div>
+  );
 }
 
 const steps = [
-  { number: '01', title: 'Tell us your ICP and campaign goals', body: 'Share the offer, target customer, qualification rules, voice, and tools. We turn it into a clear operating playbook.', mock: <><div className="mock-label">Campaign brief</div><div className="space-y-2"><MockRow label="Market" value="US home services" /><MockRow label="Decision maker" value="Owner / GM" /><MockRow label="Goal" value="Book estimate" /></div></> },
-  { number: '02', title: 'We qualify and book leads', body: 'AI assists with summaries and scoring while trained agents run the conversation, verify fit, and handle objections.', mock: <><div className="flex items-center justify-between"><div className="mock-label !mb-0">Qualification</div><span className="status-dot"><span />Live call</span></div><div className="mt-4 flex flex-wrap gap-2"><Tag checked>Service area</Tag><Tag checked>Need confirmed</Tag><Tag>Budget asked</Tag></div></> },
-  { number: '03', title: 'You just show up to the call', body: 'Qualified meetings land on your calendar with clean notes, key context, and a transparent activity trail.', mock: <><div className="mock-label">Calendar handoff</div><div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-500/10 p-3"><div className="flex items-center gap-2 text-sm font-semibold text-white"><CalendarCheck className="h-4 w-4 text-violet-300" />Estimate booked</div><p className="mt-1 text-xs text-slate-400">Monday · 9:40 AM · Notes attached</p></div></> },
+  {
+    number: '01',
+    title: 'Tell us your ICP and campaign goals',
+    body: 'Share your offer, audience, qualification rules, voice, and tools. Our account team turns them into a clear operating playbook.',
+    mock: <div className="space-y-2"><MockRow label="Market" value="US home services" /><MockRow label="Decision maker" value="Owner / GM" /><MockRow label="Goal" value="Book estimate" /></div>,
+  },
+  {
+    number: '02',
+    title: 'Our agents call and qualify',
+    body: 'Trained agents run every conversation and handle objections. AI helps them capture details, follow prompts, and work faster.',
+    mock: <div><div className="flex items-center justify-between text-xs"><span className="font-semibold text-slate-700">Agent qualification</span><span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2 py-1 text-sky-700"><span className="h-1.5 w-1.5 rounded-full bg-sky-500" />Live call</span></div><div className="mt-4 flex flex-wrap gap-2">{['Service area ✓', 'Need confirmed ✓', 'Timeline captured'].map(item => <span key={item} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-600">{item}</span>)}</div></div>,
+  },
+  {
+    number: '03',
+    title: 'You just show up to the call',
+    body: 'Qualified meetings land on your calendar with clean notes, key context, and a transparent activity trail.',
+    mock: <div className="rounded-lg border border-blue-200 bg-blue-50 p-3"><div className="flex items-center gap-2 text-sm font-semibold text-blue-900"><CalendarCheck className="h-4 w-4 text-blue-600" />Estimate booked</div><p className="mt-1 text-xs text-blue-700">Monday · 9:40 AM · Agent notes attached</p></div>,
+  },
 ];
 
 const capabilities = [
-  { icon: UserCheck, title: 'Lead Qualification', body: 'Every conversation follows your ICP, fit criteria, and routing rules.', ui: <div className="space-y-2"><MockRow label="Property owner" value="Yes" /><MockRow label="Timeline" value="0–30 days" /><div className="flex items-center gap-2 pt-1 text-xs text-emerald-300"><CheckCircle2 className="h-4 w-4" />Qualified for sales</div></div> },
-  { icon: Activity, title: 'Call Transcription & Scoring', body: 'See concise summaries, outcomes, objections, and QA signals without replaying every call.', ui: <div><div className="flex h-9 items-center gap-1">{[3,6,4,8,5,11,7,4,9,5,7,3,6,4,8,3].map((h,i)=><i key={i} className="w-1 rounded-full bg-violet-400/70" style={{height:`${h*2}px`}} />)}</div><div className="mt-3 flex justify-between text-xs"><span className="text-slate-500">QA score</span><span className="font-semibold text-white">92 / 100</span></div></div> },
-  { icon: CalendarCheck, title: 'Appointment Booking', body: 'Agents book directly into your approved calendar and confirm the handoff.', ui: <div className="grid grid-cols-4 gap-2">{['9:00','9:40','10:20','11:00'].map((time,i)=><span key={time} className={`rounded-lg py-2 text-center text-[11px] ${i===1?'bg-violet-500 text-white':'bg-white/5 text-slate-500'}`}>{time}</span>)}</div> },
-  { icon: Headphones, title: 'Human Escalation', body: 'Complex questions and sensitive moments route to a real person with full context.', ui: <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/15"><Headphones className="h-4 w-4 text-violet-300" /></div><div><p className="text-xs font-medium text-white">Escalated to account lead</p><p className="mt-0.5 text-[11px] text-slate-500">Context and transcript included</p></div></div> },
+  { icon: Headphones, title: 'Live Calling Agents', body: 'Real people handle outbound calls, follow-ups, objections, and inbound conversations in your brand voice.', detail: 'Agent Maria · Connected', color: 'text-blue-600 bg-blue-50' },
+  { icon: UserCheck, title: 'AI-Assisted Qualification', body: 'Agents stay in control while AI surfaces your qualification prompts and helps capture the right details.', detail: '3 of 4 criteria confirmed', color: 'text-sky-600 bg-sky-50' },
+  { icon: CalendarCheck, title: 'Appointment Booking', body: 'Qualified prospects are booked directly into your approved calendar with context for your sales team.', detail: 'Monday · 9:40 AM', color: 'text-blue-600 bg-blue-50' },
+  { icon: BarChart3, title: 'Campaign Reporting', body: 'Human-reviewed reports show calls, outcomes, objections, qualification rates, and booked appointments.', detail: 'Weekly report ready', color: 'text-amber-700 bg-amber-50' },
 ];
-
-function SectionHeading({ eyebrow, title, body }: { eyebrow: string; title: string; body: string }) {
-  return <div className="max-w-2xl"><p className="eyebrow">{eyebrow}</p><h2 className="mt-4 text-3xl font-bold tracking-[-.035em] sm:text-5xl">{title}</h2><p className="mt-5 text-base leading-7 text-slate-400">{body}</p></div>;
-}
 
 export default function Home() {
   const { open } = useCalendly();
-  useSeo({ title: 'VictorySync | US-Managed BPO & Appointment Setting', description: 'US-managed BPO and contact center with Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound support.', canonical: 'https://victorysync.com/', structuredData });
+  useSeo({
+    title: 'VictorySync | Human-Led BPO & Appointment Setting',
+    description: 'US-managed contact center with trained Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound support—supported by AI tools.',
+    canonical: 'https://victorysync.com/',
+    structuredData,
+  });
 
-  return <MotionPage className="overflow-hidden bg-[#0A0F1E] text-white">
-    <section className="relative border-b border-white/[0.07]">
-      <div className="hero-glow" aria-hidden="true" />
-      <div className="mx-auto grid max-w-7xl gap-14 px-5 pb-20 pt-16 sm:px-8 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:pb-28 lg:pt-24">
-        <div className="relative z-10">
-          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-500/10 px-3 py-1.5 text-xs font-medium text-violet-200"><Sparkles className="h-3.5 w-3.5" />Built for SMB teams in home services, real estate, and SaaS</div>
-          <h1 className="max-w-3xl text-4xl font-bold leading-[1.05] tracking-[-0.045em] sm:text-6xl lg:text-[4.25rem]">More qualified calls.<br/><span className="gradient-text">Less chasing leads.</span></h1>
-          <p className="mt-6 max-w-xl text-base leading-7 text-slate-400 sm:text-lg">A US-managed contact center that calls, qualifies, books, and supports your customers—with trained Cairo-based agents and human-reviewed quality.</p>
-          <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center"><button onClick={open} className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#7B5CF6] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(123,92,246,.25)] hover:bg-[#8b70f7] sm:w-auto">Book a 20-minute call<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></button><a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-2 py-2 text-sm text-slate-400 hover:text-white"><MessageCircle className="h-4 w-4 text-emerald-400" />or message us on WhatsApp</a></div>
-          <p className="mt-5 flex items-center gap-2 text-xs text-slate-500"><ShieldCheck className="h-3.5 w-3.5" />US-led account management · Flexible starting scope</p>
+  return (
+    <MotionPage className="overflow-hidden bg-white text-slate-900">
+      <section className="relative border-b border-slate-200">
+        <div className="absolute inset-x-0 top-0 -z-0 h-[520px] bg-[radial-gradient(circle_at_70%_20%,rgba(14,165,233,.11),transparent_40%),radial-gradient(circle_at_20%_20%,rgba(37,99,235,.08),transparent_35%)]" />
+        <div className="relative mx-auto grid max-w-7xl gap-14 px-5 py-16 sm:px-8 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:py-24">
+          <div>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800">
+              <Sparkles className="h-3.5 w-3.5" /> Human-led. AI-assisted.
+            </div>
+            <h1 className="max-w-3xl text-4xl font-bold leading-[1.06] tracking-[-0.045em] text-slate-900 sm:text-6xl lg:text-[4.1rem]">
+              Real agents who turn more conversations into <span className="text-blue-600">booked business.</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+              VictorySync gives US SMBs a managed team for calling, qualification, appointment setting, and support—with AI tools that help our people work faster and more accurately.
+            </p>
+            <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <button onClick={open} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 sm:w-auto">
+                Book a 20-minute call <ArrowRight className="h-4 w-4" />
+              </button>
+              <a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-2 py-2 text-sm text-slate-600 hover:text-blue-600">
+                <MessageCircle className="h-4 w-4 text-sky-500" /> or message us on WhatsApp
+              </a>
+            </div>
+            <p className="mt-5 flex items-center gap-2 text-xs text-slate-500"><CheckCircle2 className="h-4 w-4 text-blue-600" /> US-led management · Cairo-based agents · Flexible scope</p>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-slate-100 p-4 shadow-xl shadow-slate-200/60 sm:p-6">
+            <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+                <div><p className="text-[10px] font-semibold uppercase tracking-[.16em] text-slate-400">Agent workspace</p><p className="mt-1 text-sm font-semibold text-slate-900">Today’s qualification flow</p></div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sky-500" />Team live</span>
+              </div>
+              <div className="space-y-3 py-5">
+                {[
+                  { icon: Phone, title: 'Agent connected', text: 'Reached in 2 attempts', tone: 'bg-sky-50 text-sky-600' },
+                  { icon: Check, title: 'Lead qualified', text: 'Need and timeline confirmed', tone: 'bg-blue-50 text-blue-600' },
+                  { icon: CalendarCheck, title: 'Appointment booked', text: 'Monday · 9:40 AM', tone: 'bg-amber-50 text-amber-700' },
+                ].map(({ icon: Icon, title, text, tone }) => (
+                  <div key={title} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3.5 shadow-sm">
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${tone}`}><Icon className="h-4 w-4" /></div>
+                    <div><p className="text-sm font-semibold text-slate-900">{title}</p><p className="mt-0.5 text-xs text-slate-500">{text}</p></div>
+                    {title === 'Appointment booked' && <span className="ml-auto rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-800">BOOKED</span>}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-3 gap-2 border-t border-slate-200 pt-4">
+                {[['18', 'Calls'], ['7', 'Qualified'], ['4', 'Booked']].map(([value, label]) => <div key={label} className="rounded-lg bg-slate-50 p-3 text-center"><p className="text-lg font-bold text-slate-900">{value}</p><p className="text-[10px] text-slate-500">{label}</p></div>)}
+              </div>
+            </div>
+            <p className="mt-3 text-center text-[10px] text-slate-400">Illustrative agent workspace—not live client data.</p>
+          </div>
         </div>
-        <div className="glass-panel relative p-4 sm:p-6">
-        <div className="relative mx-auto w-full max-w-xl lg:mx-0"><div className="absolute -inset-8 rounded-full bg-violet-600/10 blur-3xl" /><div className="glass-panel relative p-4 sm:p-6"><div className="flex items-center justify-between border-b border-white/[0.07] pb-4"><div><p className="text-xs font-medium text-slate-500">CAMPAIGN ACTIVITY</p><p className="mt-1 text-sm font-semibold">Today’s qualification flow</p></div><span className="status-dot"><span />Team live</span></div><div className="py-5"></div></div><div className="py-5"><div className="relative space-y-3 before:absolute before:bottom-5 before:left-[17px] before:top-5 before:w-px before:bg-white/10">{[['Lead called','Connected in 2 attempts','phone'],['Qualified','Need and timeline confirmed','check'],['Appointment booked','Monday · 9:40 AM','calendar']].map(([title,sub,type],i)=><div key={title} className={`relative flex items-center gap-3 rounded-xl border p-3.5 ${i===2?'border-violet-400/25 bg-violet-500/10':'border-white/[0.07] bg-white/[0.025]'}`}><div className={`z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${i===2?'bg-violet-500 text-white':'bg-[#11182a] text-slate-400'}`}>{type==='phone'?<Phone className="h-4 w-4"/>:type==='check'?<Check className="h-4 w-4"/>:<CalendarCheck className="h-4 w-4"/>}</div><div className="min-w-0"><p className="text-sm font-semibold">{title}{i===1&&<span className="ml-2 text-emerald-300">✓</span>}</p><p className="mt-0.5 text-xs text-slate-500">{sub}</p></div>{i===2&&<span className="ml-auto rounded-full bg-violet-400/15 px-2 py-1 text-[10px] font-medium text-violet-200">BOOKED</span>}</div>)}</div></div><div className="grid grid-cols-3 gap-2 border-t border-white/[0.07] pt-4">{[['18','Calls'],['7','Qualified'],['4','Booked']].map(([n,l])=><div key={l} className="rounded-xl bg-white/[0.035] p-3 text-center"><p className="text-lg font-bold">{n}</p><p className="text-[10px] text-slate-500">{l}</p></div>)}</div><p className="mt-3 text-center text-[10px] text-slate-600">Illustrative campaign activity—not live client data.</p></div></div>
-      </div>
-    </section>
+      </section>
 
-    <section className="border-b border-white/[0.07] bg-white/[0.015]"><div className="mx-auto max-w-7xl px-5 py-8 sm:px-8"><p className="text-center text-xs font-medium uppercase tracking-[.18em] text-slate-600">Built to support growing teams</p><div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">{['Client logo','Client logo','Client logo','Client logo'].map((x,i)=><div key={i} className="flex h-12 items-center justify-center rounded-lg border border-dashed border-white/10 bg-white/[0.02] text-xs text-slate-600">{x}</div>)}</div><p className="mt-3 text-center text-[10px] text-slate-700">Approved customer logos coming soon.</p></div></section>
+      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
+        <SectionHeading eyebrow="How it works" title="A trained team, ready to run your campaign." body="A simple operating model that keeps people accountable and gives your sales team clean, qualified handoffs." />
+        <div className="mt-14 grid gap-6 lg:grid-cols-3">
+          {steps.map(step => <article key={step.number}><div className="mb-5 flex items-center gap-4"><span className="text-sm font-bold text-blue-600">{step.number}</span><div className="h-px flex-1 bg-slate-200" /></div><h3 className="text-xl font-semibold text-slate-900">{step.title}</h3><p className="mt-3 min-h-[72px] text-sm leading-6 text-slate-600">{step.body}</p><div className="mt-6 min-h-[160px] rounded-lg border border-slate-200 bg-slate-100 p-5">{step.mock}</div></article>)}
+        </div>
+      </section>
 
-    <section className="section-shell" id="how-it-works"><SectionHeading eyebrow="How it works" title="From campaign brief to booked call." body="A clear operating rhythm, designed to feel like an extension of your own team."/><div className="mt-14 grid gap-6 lg:grid-cols-3">{steps.map(step=><article key={step.number} className="flex flex-col"><div className="mb-6 flex items-center gap-4"><span className="text-sm font-bold text-violet-400">{step.number}</span><div className="h-px flex-1 bg-white/[0.08]"/></div><h3 className="text-xl font-semibold tracking-tight">{step.title}</h3><p className="mt-3 min-h-[72px] text-sm leading-6 text-slate-400">{step.body}</p><div className="glass-card mt-6 min-h-[170px] p-5">{step.mock}</div></article>)}</div></section>
+      <section className="border-y border-slate-200 bg-slate-100">
+        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
+          <SectionHeading eyebrow="Capabilities" title="Human capability, supported by better tools." body="Your customers and prospects speak with trained people. AI works quietly in the background to improve speed, consistency, and visibility." />
+          <div className="mt-14 grid gap-5 md:grid-cols-2">
+            {capabilities.map(({ icon: Icon, title, body, detail, color }) => <article key={title} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"><div className={`flex h-11 w-11 items-center justify-center rounded-lg ${color}`}><Icon className="h-5 w-5" /></div><h3 className="mt-5 text-xl font-semibold text-slate-900">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{body}</p><div className="mt-6 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-700"><Activity className="h-4 w-4 text-blue-600" />{detail}</div></article>)}
+          </div>
+        </div>
+      </section>
 
-    <section className="border-y border-white/[0.07] bg-white/[0.018]"><div className="section-shell grid gap-12 lg:grid-cols-[.9fr_1.1fr] lg:items-center"><div><div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-300"><Bot className="h-6 w-6" /></div><p className="eyebrow">Human oversight</p><h2 className="mt-4 text-3xl font-bold tracking-[-.035em] sm:text-5xl">Technology moves faster.<br/>People keep it right.</h2><p className="mt-5 max-w-xl text-base leading-7 text-slate-400">AI helps organize calls, notes, and signals. Trained agents own the conversation, and real managers review the work.</p></div><div className="grid gap-4 sm:grid-cols-2">{[[UserCheck,'Human-reviewed at every step','Calls, notes, and outcomes are checked against your approved playbook.'],[ShieldCheck,'Your leads, handled with care','Clear scripts and escalation rules protect the customer experience.'],[Headphones,'Real support when you need it','Reach a person who knows your workflow when priorities change.'],[Users,'One team, dedicated to your account','Account leads coach agents and keep performance aligned to your goals.']].map(([Icon,title,body])=>{const TrustIcon=Icon as typeof UserCheck; return <div key={title as string} className="glass-card p-5"><TrustIcon className="h-5 w-5 text-violet-300"/><h3 className="mt-4 text-sm font-semibold">{title as string}</h3><p className="mt-2 text-xs leading-5 text-slate-500">{body as string}</p></div>})}</div></div></section>
+      <section className="mx-auto grid max-w-7xl gap-12 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-[.7fr_1.3fr]">
+        <div><p className="text-xs font-semibold uppercase tracking-[.18em] text-blue-600">FAQ</p><h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">The practical questions, answered.</h2><p className="mt-4 text-sm leading-6 text-slate-600">Still deciding? Talk through your workflow with our team.</p><button onClick={open} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700">Book a call <ArrowRight className="h-4 w-4" /></button></div>
+        <div className="divide-y divide-slate-200 border-y border-slate-200">{faqs.map((faq, index) => <details key={faq.question} className="group" open={index === 0}><summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-5 text-sm font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">{faq.question}<ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" /></summary><p className="max-w-2xl pb-5 pr-8 text-sm leading-6 text-slate-600">{faq.answer}</p></details>)}</div>
+      </section>
 
-    <section className="section-shell"><SectionHeading eyebrow="Capabilities" title="Every conversation, connected to an outcome." body="The human service your prospects expect, with the operational visibility your team needs."/><div className="mt-14 grid gap-5 md:grid-cols-2">{capabilities.map(({icon:Icon,title,body,ui})=><article key={title} className="glass-card group p-6 sm:p-7"><div className="flex h-11 w-11 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10 text-violet-300"><Icon className="h-5 w-5" /></div><h3 className="mt-5 text-xl font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-400">{body}</p><div className="mt-6 rounded-xl border border-white/[0.07] bg-[#080d19]/70 p-4">{ui}</div></article>)}</div></section>
+      <section className="bg-slate-100 px-5 py-20 sm:px-8">
+        <div className="mx-auto max-w-5xl rounded-lg border border-blue-200 bg-white px-6 py-14 text-center shadow-sm sm:px-12"><p className="text-xs font-semibold uppercase tracking-[.18em] text-amber-700">Ready when you are</p><h2 className="mx-auto mt-4 max-w-2xl text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl">Put a reliable team behind every lead.</h2><p className="mx-auto mt-5 max-w-lg text-sm leading-6 text-slate-600">Tell us what needs handling. We’ll map the agents, workflow, AI support, and launch plan.</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><button onClick={open} className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white hover:bg-blue-700">Book a 20-minute call <ArrowRight className="h-4 w-4" /></button><Link href="/services" className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Explore services</Link></div></div>
+      </section>
+    </MotionPage>
+  );
+}
 
-    <section className="border-y border-white/[0.07] bg-white/[0.018]"><div className="section-shell grid gap-12 lg:grid-cols-[.7fr_1.3fr]"><div><p className="eyebrow">FAQ</p><h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">The practical questions, answered.</h2><p className="mt-4 text-sm leading-6 text-slate-500">Still deciding? Talk through your workflow with our team.</p><button onClick={open} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-300 hover:text-violet-200">Book a call <ArrowRight className="h-4 w-4"/></button></div><div className="divide-y divide-white/[0.08] border-y border-white/[0.08]">{faqs.map((faq,i)=><details key={faq.question} className="group" open={i===0}><summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-5 text-sm font-semibold [&::-webkit-details-marker]:hidden">{faq.question}<ChevronDown className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180"/></summary><p className="max-w-2xl pb-5 pr-8 text-sm leading-6 text-slate-400">{faq.answer}</p></details>)}</div></div></section>
-
-    <section className="section-shell"><div className="relative overflow-hidden rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-500/20 via-[#11172a] to-[#0A0F1E] px-6 py-14 text-center sm:px-12 sm:py-20"><div className="absolute left-1/2 top-0 h-40 w-96 -translate-x-1/2 bg-violet-500/20 blur-3xl"/><div className="relative"><p className="eyebrow">Ready when you are</p><h2 className="mx-auto mt-4 max-w-2xl text-3xl font-bold tracking-[-.035em] sm:text-5xl">Turn more conversations into booked business.</h2><p className="mx-auto mt-5 max-w-lg text-sm leading-6 text-slate-400">Tell us what your team needs handled. We’ll map the people, process, and launch plan.</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><button onClick={open} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#7B5CF6] px-6 py-3.5 text-sm font-semibold hover:bg-[#8b70f7]">Book a 20-minute call<ArrowRight className="h-4 w-4"/></button><Link href="/services" className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-semibold text-slate-300 hover:bg-white/10">Explore services</Link></div></div></div></section>
-  </MotionPage>;
+function SectionHeading({ eyebrow, title, body }: { eyebrow: string; title: string; body: string }) {
+  return <div className="max-w-2xl"><p className="text-xs font-semibold uppercase tracking-[.18em] text-blue-600">{eyebrow}</p><h2 className="mt-4 text-3xl font-bold tracking-[-.035em] text-slate-900 sm:text-5xl">{title}</h2><p className="mt-5 text-base leading-7 text-slate-600">{body}</p></div>;
 }

@@ -61,7 +61,7 @@ function Router() {
   const closeCartModal = () => setCartModalOpen(false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-ink-900">
+    <div className="site-light-theme min-h-screen flex flex-col bg-white text-slate-900">
       <ScrollToTop />
       <Navigation />
 

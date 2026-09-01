@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 export default function AiAutomation() {
   const { open: openCalendly } = useCalendly();
   useSeo({
-    title: 'AI Automation & Reporting for Contact Centers | VictorySync',
-    description: 'AI-powered call summaries, CRM updates, lead routing, and daily reporting dashboards. Automate the admin work from your contact center operations.',
+    title: 'AI-Assisted Agent Operations & Reporting | VictorySync',
+    description: 'Give human contact center agents better call summaries, CRM updates, lead routing, and daily reporting while keeping people in control.',
     canonical: 'https://victorysync.com/ai-automation',
   });
 
@@ -19,13 +19,13 @@ export default function AiAutomation() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <span className="inline-flex items-center rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-300 ring-1 ring-cyan-500/30 mb-6">
-              AI Automation & Reporting
+              AI-Assisted Agent Operations
             </span>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
               Automate the Repetitive. Amplify Your Team.
             </h1>
             <p className="text-xl text-slate-300 mb-8 leading-relaxed">
-              VictorySync layers AI automation into your support and sales workflows — automating call summaries, CRM updates, lead routing, follow-up reminders, and reporting so your team focuses on high-value work.
+              VictorySync gives your human support and sales agents practical AI assistance for call summaries, CRM updates, lead routing, reminders, and reporting—so they spend more time serving customers and speaking with prospects.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button onClick={openCalendly} className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold px-8 py-3">

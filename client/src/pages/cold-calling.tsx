@@ -135,7 +135,7 @@ export default function ColdCalling() {
       {/* CTA */}
       <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to put your outbound on autopilot?</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Ready to put a trained team behind your outbound?</h2>
           <p className="text-slate-300 mb-8">Book a free call to discuss your lead list, campaign goals, and how VictorySync can deliver consistent outbound activity every week.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button onClick={openCalendly} className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold px-8 py-3">

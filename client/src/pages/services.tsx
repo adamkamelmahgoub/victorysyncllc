@@ -92,11 +92,11 @@ const services = [
   },
   {
     icon: Bot,
-    title: "AI Automation & Reporting",
+    title: "Agent Tools & Reporting",
     href: "/ai-automation",
     who: "Businesses where agents spend too much time on data entry, manual reporting, or repetitive follow-up tasks.",
     description:
-      "VictorySync layers AI automation into your workflows — automating call summaries, CRM updates, lead routing, and reporting dashboards.",
+      "VictorySync equips your agents with AI-assisted summaries, CRM updates, lead routing, and reporting dashboards while people remain in control.",
     handles: [
       "Automatic post-call summaries pushed to CRM",
       "Lead status and routing updated after every contact",
@@ -113,7 +113,7 @@ export default function Services() {
   const { open: openCalendly } = useCalendly();
   useSeo({
     title: 'Our Services | Inbound Support, Appointment Setting & More | VictorySync',
-    description: 'VictorySync offers inbound customer support, appointment setting, cold calling, lead follow-up, and AI automation — all US-managed with Cairo-based agents.',
+    description: 'VictorySync offers human-led inbound customer support, appointment setting, cold calling, and lead follow-up—all US-managed with Cairo-based agents and AI-assisted tools.',
     canonical: 'https://victorysync.com/services',
   });
 
@@ -131,7 +131,7 @@ export default function Services() {
               Everything You Need to Scale Customer Engagement
             </h1>
             <p className="text-xl text-slate-300 mb-8 leading-relaxed">
-              VictorySync covers the full customer engagement workflow — from inbound support to outbound sales and AI automation — with US-managed quality control and trained agents in Cairo, Egypt.
+              VictorySync covers the full customer engagement workflow—from inbound support to outbound sales—with US-managed quality control, trained agents in Cairo, and AI tools that help the team work efficiently.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button onClick={openCalendly} className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold px-8">

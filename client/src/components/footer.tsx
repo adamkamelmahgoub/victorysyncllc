@@ -9,18 +9,18 @@ const groups = [
 ];
 
 export default function Footer() {
-  return <footer className="border-t border-white/[0.07] bg-[#080c17] py-16 text-white">
+  return <footer className="border-t border-slate-200 bg-white py-16 text-slate-900">
     <div className="mx-auto max-w-7xl px-5 sm:px-8">
       <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
         <div className="sm:col-span-2 lg:col-span-1">
           <Link href="/" className="flex items-center gap-3"><img src="/LOGO_VS.png" alt="VictorySync" className="h-9 w-9 rounded-lg bg-white p-1"/><span className="text-lg font-bold">VictorySync</span></Link>
-          <p className="mt-4 max-w-xs text-sm leading-6 text-slate-500">US-managed contact center services, powered by trained Cairo-based agents and accountable human oversight.</p>
+          <p className="mt-4 max-w-xs text-sm leading-6 text-slate-600">US-managed contact center services delivered by trained Cairo-based agents, supported by practical AI tools.</p>
           <p className="mt-4 text-xs text-slate-600">Millstone, NJ · Cairo, Egypt</p>
           <img src={closeBadge} alt="Close Partner Since 2025" className="mt-5 h-14" />
         </div>
-        {groups.map(group=><div key={group.title}><h3 className="text-sm font-semibold">{group.title}</h3><ul className="mt-4 space-y-2.5">{group.links.map(([label,href])=><li key={label}><Link href={href} onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} className="text-sm text-slate-500 hover:text-violet-300">{label}</Link></li>)}</ul></div>)}
+        {groups.map(group=><div key={group.title}><h3 className="text-sm font-semibold text-slate-900">{group.title}</h3><ul className="mt-4 space-y-2.5">{group.links.map(([label,href])=><li key={label}><Link href={href} onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} className="text-sm text-slate-600 hover:text-blue-600">{label}</Link></li>)}</ul></div>)}
       </div>
-      <div className="mt-12 flex flex-col gap-3 border-t border-white/[0.07] pt-7 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} VictorySync LLC. All rights reserved.</p><a href="mailto:info@victorysync.com" className="hover:text-violet-300">info@victorysync.com</a></div>
+      <div className="mt-12 flex flex-col gap-3 border-t border-slate-200 pt-7 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} VictorySync LLC. All rights reserved.</p><a href="mailto:info@victorysync.com" className="hover:text-blue-600">info@victorysync.com</a></div>
     </div>
   </footer>;
 }

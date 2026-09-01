@@ -19,7 +19,7 @@ const capabilities = [
     id: 'ai-bots',
     label: 'AI Bots',
     icon: Bot,
-    title: 'Intelligent AI Automation',
+    title: 'AI-Assisted Agent Tools',
     description: 'Deploy conversational AI bots that handle customer inquiries 24/7 with natural language understanding and context-aware responses.',
     features: [
       'Natural language processing',

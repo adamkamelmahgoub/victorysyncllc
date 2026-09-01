@@ -26,7 +26,7 @@ export default function AboutUs() {
               US-Managed Quality. Cairo-Based Efficiency.
             </h1>
             <p className="text-xl text-slate-300 leading-relaxed">
-              VictorySync is a US-managed contact center and AI automation company helping US businesses handle inbound support, outbound calling, and appointment setting — with trained agents in Cairo, Egypt and direct management from New Jersey.
+              VictorySync is a US-managed contact center helping US businesses handle inbound support, outbound calling, and appointment setting—with trained agents in Cairo, Egypt, direct management from New Jersey, and AI tools that support the team behind the scenes.
             </p>
           </div>
         </div>
