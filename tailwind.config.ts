@@ -12,7 +12,7 @@ export default {
       },
       colors: {
         ink: {
-          900: "#0B1221",
+          900: "#0A0F1E",
           800: "#0F172A",
           700: "#111827",
           600: "#1E293B",
@@ -89,6 +89,7 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "soft-pulse": "pulse 2.8s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
     },
   },

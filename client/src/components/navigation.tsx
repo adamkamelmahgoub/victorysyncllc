@@ -139,7 +139,7 @@ export default function Navigation() {
             )}
             <Button
               onClick={openCalendly}
-              className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold"
+              className="bg-[#7B5CF6] hover:bg-[#8b70f7] text-white font-semibold"
               data-testid="button-get-quote"
             >
               Book a Call
@@ -239,7 +239,7 @@ export default function Navigation() {
               )}
               <Button
                 onClick={() => { openCalendly(); setMobileMenuOpen(false); }}
-                className="w-full bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold mt-2"
+                className="w-full bg-[#7B5CF6] hover:bg-[#8b70f7] text-white font-semibold mt-2"
               >
                 Book a Call
               </Button>

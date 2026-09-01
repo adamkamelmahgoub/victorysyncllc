@@ -1,92 +1,26 @@
 import { Link } from 'wouter';
 import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.png';
 
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+const groups = [
+  { title: 'Services', links: [['Inbound Support','/inbound-support'],['Appointment Setting','/appointment-setting'],['Cold Calling','/cold-calling'],['AI Automation','/ai-automation']] },
+  { title: 'Industries', links: [['Home Services','/appointment-setting'],['Real Estate','/cold-calling'],['SaaS','/services'],['Professional Services','/services']] },
+  { title: 'Company', links: [['About','/about-us'],['Pricing','/pricing'],['Careers','/careers'],['Contact','/contact']] },
+  { title: 'Resources', links: [['Blog','/blog'],['Help Center','/help-center'],['Documentation','/docs'],['Privacy','/privacy-policy'],['Terms','/terms']] },
+];
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
-
-  return (
-    <footer className="bg-ink-900 text-white py-16 border-t border-ink-700">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
-          {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center space-x-3 mb-4">
-              <img
-                src="/LOGO_VS.png"
-                alt="VictorySync Logo"
-                className="w-8 h-8 rounded-lg bg-white p-1"
-              />
-              <span className="text-xl font-bold">VictorySync</span>
-            </div>
-            <p className="text-slate-400 text-sm mb-4 leading-relaxed">
-              US-managed contact center and AI automation services. Helping US businesses scale support and sales without hiring in-house.
-            </p>
-            <p className="text-slate-500 text-xs">
-              Millstone, NJ &nbsp;·&nbsp; Cairo, Egypt
-            </p>
-          </div>
-
-          {/* Services */}
-          <div>
-            <h4 className="font-semibold mb-4 text-white text-sm">Services</h4>
-            <ul className="space-y-2.5 text-slate-400 text-sm">
-              <li><Link href="/inbound-support"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Inbound Support</span></Link></li>
-              <li><Link href="/appointment-setting"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Appointment Setting</span></Link></li>
-              <li><Link href="/cold-calling"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Cold Calling</span></Link></li>
-              <li><Link href="/ai-automation"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">AI Automation</span></Link></li>
-              <li><Link href="/services"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">All Services</span></Link></li>
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h4 className="font-semibold mb-4 text-white text-sm">Company</h4>
-            <ul className="space-y-2.5 text-slate-400 text-sm">
-              <li><Link href="/about-us"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">About Us</span></Link></li>
-              <li><Link href="/pricing"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Pricing</span></Link></li>
-              <li><Link href="/platform"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Platform</span></Link></li>
-              <li><Link href="/contact"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Contact</span></Link></li>
-              <li><Link href="/careers"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Careers</span></Link></li>
-              <li><Link href="/book-call"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Book a Call</span></Link></li>
-            </ul>
-          </div>
-
-          {/* Resources */}
-          <div>
-            <h4 className="font-semibold mb-4 text-white text-sm">Resources</h4>
-            <ul className="space-y-2.5 text-slate-400 text-sm">
-              <li><Link href="/blog"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Blog</span></Link></li>
-              <li><Link href="/help-center"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Help Center</span></Link></li>
-              <li><Link href="/docs"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Documentation</span></Link></li>
-              <li><Link href="/privacy-policy"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Privacy Policy</span></Link></li>
-              <li><Link href="/terms"><span onClick={scrollToTop} className="hover:text-cyan-400 transition-colors cursor-pointer">Terms of Service</span></Link></li>
-              <li>
-                <a href="mailto:info@victorysync.com" className="hover:text-cyan-400 transition-colors">
-                  info@victorysync.com
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Badge */}
-          <div className="flex items-start justify-center md:justify-end">
-            <img
-              src={closeBadge}
-              alt="Close Partner Since 2025"
-              className="h-20"
-            />
-          </div>
+  return <footer className="border-t border-white/[0.07] bg-[#080c17] py-16 text-white">
+    <div className="mx-auto max-w-7xl px-5 sm:px-8">
+      <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+        <div className="sm:col-span-2 lg:col-span-1">
+          <Link href="/" className="flex items-center gap-3"><img src="/LOGO_VS.png" alt="VictorySync" className="h-9 w-9 rounded-lg bg-white p-1"/><span className="text-lg font-bold">VictorySync</span></Link>
+          <p className="mt-4 max-w-xs text-sm leading-6 text-slate-500">US-managed contact center services, powered by trained Cairo-based agents and accountable human oversight.</p>
+          <p className="mt-4 text-xs text-slate-600">Millstone, NJ · Cairo, Egypt</p>
+          <img src={closeBadge} alt="Close Partner Since 2025" className="mt-5 h-14" />
         </div>
-
-        <div className="border-t border-ink-700 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-500 text-sm">
-          <p>&copy; {currentYear} VictorySync LLC. All rights reserved.</p>
-          <p>Millstone, New Jersey, USA &nbsp;·&nbsp; Cairo, Egypt</p>
-        </div>
+        {groups.map(group=><div key={group.title}><h3 className="text-sm font-semibold">{group.title}</h3><ul className="mt-4 space-y-2.5">{group.links.map(([label,href])=><li key={label}><Link href={href} onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} className="text-sm text-slate-500 hover:text-violet-300">{label}</Link></li>)}</ul></div>)}
       </div>
-    </footer>
-  );
+      <div className="mt-12 flex flex-col gap-3 border-t border-white/[0.07] pt-7 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} VictorySync LLC. All rights reserved.</p><a href="mailto:info@victorysync.com" className="hover:text-violet-300">info@victorysync.com</a></div>
+    </div>
+  </footer>;
 }

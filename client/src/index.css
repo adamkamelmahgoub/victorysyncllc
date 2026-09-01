@@ -115,6 +115,50 @@
 }
 
 @layer utilities {
+  .section-shell {
+    @apply mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28;
+  }
+
+  .glass-panel {
+    @apply rounded-3xl border border-white/[0.09] bg-white/[0.055] shadow-2xl backdrop-blur-xl;
+  }
+
+  .glass-card {
+    @apply rounded-2xl border border-white/[0.08] bg-white/[0.035] backdrop-blur-lg transition duration-300 hover:-translate-y-0.5 hover:border-violet-400/20 hover:bg-white/[0.05];
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-violet-300;
+  }
+
+  .mock-label {
+    @apply mb-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500;
+  }
+
+  .status-dot {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-emerald-400/15 bg-emerald-400/[0.08] px-2.5 py-1 text-[10px] font-medium text-emerald-300;
+  }
+
+  .status-dot > span {
+    @apply h-1.5 w-1.5 animate-soft-pulse rounded-full bg-emerald-400;
+  }
+
+  .gradient-text {
+    background: linear-gradient(105deg, #a996ff 5%, #7b5cf6 48%, #c3b8ff 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero-glow {
+    position: absolute;
+    inset: -20% auto auto 40%;
+    width: 52rem;
+    height: 42rem;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(123, 92, 246, 0.14), transparent 64%);
+  }
+
   .victory-purple {
     --victory-purple: #6B46C1;
     --victory-purple-hover: #553C9A;

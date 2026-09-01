@@ -1,438 +1,76 @@
 import { MotionPage } from '@/components/motion-page';
-import { Button } from '@/components/ui/button';
 import { useCalendly } from '@/hooks/useCalendly';
 import { useSeo } from '@/hooks/useSeo';
 import { Link } from 'wouter';
-import { Hero } from '../components/Hero';
-import { ArrowRight, Shield } from 'lucide-react';
+import { ArrowRight, Bot, CalendarCheck, Check, CheckCircle2, ChevronDown, Headphones, MessageCircle, Phone, ShieldCheck, Sparkles, UserCheck, Users, Waveform } from 'lucide-react';
 
-const services = [
-  {
-    title: 'Inbound Support',
-    sub: 'Calls, emails, chat, and tickets handled by trained agents on your schedule.',
-    detail: 'We document your call flows, escalation rules, refund policies, and CRM fields before launch so customers get consistent answers from day one. Coverage can start with business hours and expand into evenings, weekends, or overflow support as volume grows.',
-    href: '/inbound-support',
-  },
-  {
-    title: 'Appointment Setting',
-    sub: 'Lead follow-up and calendar booking so your sales team shows up to qualified calls.',
-    detail: 'Agents qualify prospects against your ideal customer profile, confirm contact details, and book directly into your calendar or CRM. Same-day reminders and clear handoff notes help reduce no-shows and give sales reps context before every conversation.',
-    href: '/appointment-setting',
-  },
-  {
-    title: 'Cold Calling',
-    sub: 'Outbound campaigns from your approved lists. DNC-conscious, daily reporting.',
-    detail: 'We run outbound calling from client-approved scripts, disposition every call, and report connect rates, objections, callbacks, and booked opportunities. Campaigns are built for measured follow-up rather than high-pressure dialing.',
-    href: '/cold-calling',
-  },
-  {
-    title: 'Lead Follow-Up',
-    sub: 'New leads contacted in under 5 minutes. Multi-touch until they convert or opt out.',
-    detail: 'Fresh form fills, missed calls, quote requests, and abandoned inquiries are routed into a fast-response workflow. Your team sees who was contacted, what they asked for, and which leads are ready for sales attention.',
-    href: '/services',
-  },
-  {
-    title: 'Email, Chat & SMS',
-    sub: 'Every channel covered. Same quality standards as your phone support.',
-    detail: 'We answer common questions, triage complex requests, and keep customer records updated across the channels your buyers already use. SMS and chat workflows are written to match your tone, compliance needs, and response-time expectations.',
-    href: '/inbound-support',
-  },
-  {
-    title: 'AI Automation',
-    sub: 'Call summaries, CRM updates, and reporting automated so nothing falls through.',
-    detail: 'VictorySync can add call summaries, intake forms, routing rules, dashboard updates, and internal alerts around the human team. The goal is less manual admin, cleaner records, and faster visibility into what happened today.',
-    href: '/ai-automation',
-  },
-];
-
-const proofStats = [
-  {
-    metric: '24-48 hrs',
-    title: 'Typical go-live window',
-    detail: 'Most simple inbound, lead follow-up, and appointment-setting accounts can move from discovery to launch in one to two business days once scripts and access are approved.',
-  },
-  {
-    metric: '98%',
-    title: 'Business-hours answer rate target',
-    detail: 'Active accounts are managed toward a 98% answer rate during contracted coverage windows, with missed-call follow-up handled as a separate workflow.',
-  },
-  {
-    metric: '< 5 min',
-    title: 'New lead response goal',
-    detail: 'For inbound lead follow-up programs, the operational target is first contact in under five minutes so prospects are reached while intent is still high.',
-  },
-  {
-    metric: '$10/hr min',
-    title: 'Starting agent rate',
-    detail: 'Cairo-based staffing gives US businesses a lower hourly floor than domestic hiring while keeping account management, training, and quality control US-managed.',
-  },
-];
+const whatsappUrl = 'https://wa.me/17188132106?text=Hi%20VictorySync%2C%20I%27d%20like%20to%20learn%20more.';
 
 const faqs = [
-  {
-    question: 'What types of businesses use VictorySync?',
-    answer: 'VictorySync works best for service businesses, agencies, clinics, local operators, SaaS teams, and sales organizations that need reliable phone coverage, lead follow-up, appointment setting, or customer support without hiring a full internal team.',
-  },
-  {
-    question: 'How quickly can a call center or appointment-setting campaign launch?',
-    answer: 'Simple accounts often launch in 24 to 48 hours after the discovery call, script approval, and access setup. More complex workflows with CRM integrations, compliance review, or multi-channel routing may take longer.',
-  },
-  {
-    question: 'Where are VictorySync agents and managers located?',
-    answer: 'VictorySync is managed from New Jersey in the United States, with trained agents based in Cairo, Egypt. Clients get US-led onboarding, account management, quality review, and daily reporting.',
-  },
-  {
-    question: 'Can VictorySync work inside our CRM and calendar tools?',
-    answer: 'Yes. The team can work with common calendars, intake forms, ticketing tools, and CRMs such as HubSpot, Salesforce, GoHighLevel, Calendly, Google Calendar, and similar systems, depending on the access and process you provide.',
-  },
-  {
-    question: 'Do we need a long-term contract to start?',
-    answer: 'No. Many clients begin with one focused workflow, such as inbound overflow, missed-call follow-up, or appointment setting, then expand once reporting shows the channel is working.',
-  },
+  { question: 'What does VictorySync do?', answer: 'We provide US-managed inbound and outbound contact center services using trained Cairo-based agents. Teams use us for cold calling, lead qualification, appointment setting, lead follow-up, and inbound customer support.' },
+  { question: 'Which industries do you work with?', answer: 'VictorySync is built for US small and midsize businesses, especially home services, real estate, agencies, professional services, and SaaS. We adapt scripts, qualification rules, and handoffs to each account.' },
+  { question: 'How are your agents managed?', answer: 'Every account has US-led onboarding and account management, documented scripts and escalation paths, Cairo-based agents trained on the campaign, and ongoing call review and quality coaching.' },
+  { question: 'How do you handle data privacy?', answer: 'Access is limited to the tools and records needed for the approved workflow. We align permissions, retention, escalation, and reporting requirements with you during onboarding and can work inside your existing CRM and phone stack.' },
+  { question: 'How does pricing work?', answer: 'Engagements are scoped around coverage, channels, agent count, and workflow complexity. Dedicated agent plans currently start from $10 per hour; we confirm the exact scope and price after a short discovery call.' },
+  { question: 'How quickly can we start?', answer: 'Straightforward appointment-setting, lead follow-up, and inbound programs can often launch within 24–48 hours after scripts, lists, access, and escalation rules are approved.' },
 ];
 
-const homeStructuredData = [
-  {
-    '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
-    name: 'VictorySync',
-    description:
-      'US-managed contact center providing inbound customer support, appointment setting, cold calling, lead follow-up, and AI automation for US businesses.',
-    url: 'https://victorysync.com',
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: 'Millstone',
-      addressRegion: 'NJ',
-      addressCountry: 'US',
-    },
-    areaServed: 'US',
-    serviceType: ['Inbound Customer Support', 'Appointment Setting', 'Cold Calling', 'Lead Follow-Up', 'AI Automation'],
-    priceRange: '$$',
-    openingHours: 'Mo-Fr 08:00-18:00',
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map((faq) => ({
-      '@type': 'Question',
-      name: faq.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.answer,
-      },
-    })),
-  },
+const structuredData = [{ '@context': 'https://schema.org', '@type': 'Organization', name: 'VictorySync', url: 'https://victorysync.com', description: 'US-managed BPO and contact center with Cairo-based agents for inbound support, cold calling, lead qualification, and appointment setting.' }, { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(({ question, answer }) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } })) }];
+
+function MockRow({ label, value }: { label: string; value: string }) {
+  return <div className="flex items-center justify-between rounded-lg bg-white/[0.035] px-3 py-2 text-xs"><span className="text-slate-500">{label}</span><span className="text-slate-200">{value}</span></div>;
+}
+
+function Tag({ children, checked = false }: { children: React.ReactNode; checked?: boolean }) {
+  return <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] ${checked ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300' : 'border-white/10 bg-white/5 text-slate-400'}`}>{checked && <Check className="h-3 w-3" />}{children}</span>;
+}
+
+const steps = [
+  { number: '01', title: 'Tell us your ICP and campaign goals', body: 'Share the offer, target customer, qualification rules, voice, and tools. We turn it into a clear operating playbook.', mock: <><div className="mock-label">Campaign brief</div><div className="space-y-2"><MockRow label="Market" value="US home services" /><MockRow label="Decision maker" value="Owner / GM" /><MockRow label="Goal" value="Book estimate" /></div></> },
+  { number: '02', title: 'We qualify and book leads', body: 'AI assists with summaries and scoring while trained agents run the conversation, verify fit, and handle objections.', mock: <><div className="flex items-center justify-between"><div className="mock-label !mb-0">Qualification</div><span className="status-dot"><span />Live call</span></div><div className="mt-4 flex flex-wrap gap-2"><Tag checked>Service area</Tag><Tag checked>Need confirmed</Tag><Tag>Budget asked</Tag></div></> },
+  { number: '03', title: 'You just show up to the call', body: 'Qualified meetings land on your calendar with clean notes, key context, and a transparent activity trail.', mock: <><div className="mock-label">Calendar handoff</div><div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-500/10 p-3"><div className="flex items-center gap-2 text-sm font-semibold text-white"><CalendarCheck className="h-4 w-4 text-violet-300" />Estimate booked</div><p className="mt-1 text-xs text-slate-400">Monday · 9:40 AM · Notes attached</p></div></> },
 ];
 
-const processSteps = [
-  {
-    n: '1',
-    title: 'We learn your operation',
-    body: 'One call where we ask about your customers, tools, scripts, and what good performance looks like. No 40-page onboarding forms.',
-  },
-  {
-    n: '2',
-    title: 'We train agents on your account',
-    body: 'Scripts, tone, escalation paths, and CRM workflows are set up before a single call is made. You sign off before we go live.',
-  },
-  {
-    n: '3',
-    title: 'We go live',
-    body: 'Calls are answered, leads are followed up, and appointments are booked. Your account manager monitors quality from day one.',
-  },
-  {
-    n: '4',
-    title: 'You get daily reports',
-    body: 'A summary lands in your inbox every day: what happened, what the numbers look like, and anything that needs your attention.',
-  },
+const capabilities = [
+  { icon: UserCheck, title: 'Lead Qualification', body: 'Every conversation follows your ICP, fit criteria, and routing rules.', ui: <div className="space-y-2"><MockRow label="Property owner" value="Yes" /><MockRow label="Timeline" value="0–30 days" /><div className="flex items-center gap-2 pt-1 text-xs text-emerald-300"><CheckCircle2 className="h-4 w-4" />Qualified for sales</div></div> },
+  { icon: Waveform, title: 'Call Transcription & Scoring', body: 'See concise summaries, outcomes, objections, and QA signals without replaying every call.', ui: <div><div className="flex h-9 items-center gap-1">{[3,6,4,8,5,11,7,4,9,5,7,3,6,4,8,3].map((h,i)=><i key={i} className="w-1 rounded-full bg-violet-400/70" style={{height:`${h*2}px`}} />)}</div><div className="mt-3 flex justify-between text-xs"><span className="text-slate-500">QA score</span><span className="font-semibold text-white">92 / 100</span></div></div> },
+  { icon: CalendarCheck, title: 'Appointment Booking', body: 'Agents book directly into your approved calendar and confirm the handoff.', ui: <div className="grid grid-cols-4 gap-2">{['9:00','9:40','10:20','11:00'].map((time,i)=><span key={time} className={`rounded-lg py-2 text-center text-[11px] ${i===1?'bg-violet-500 text-white':'bg-white/5 text-slate-500'}`}>{time}</span>)}</div> },
+  { icon: Headphones, title: 'Human Escalation', body: 'Complex questions and sensitive moments route to a real person with full context.', ui: <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/15"><Headphones className="h-4 w-4 text-violet-300" /></div><div><p className="text-xs font-medium text-white">Escalated to account lead</p><p className="mt-0.5 text-[11px] text-slate-500">Context and transcript included</p></div></div> },
 ];
 
-const pricingCards = [
-  {
-    name: 'Starter',
-    note: '1 agent',
-    features: ['Business-hours inbound or outbound', 'Daily activity report', 'Weekly QA call'],
-    highlight: false,
-  },
-  {
-    name: 'Growth',
-    note: '2 agents',
-    features: ['Extended hour coverage', 'Appointment setting or blended', 'QA scoring + CRM integration'],
-    highlight: true,
-  },
-  {
-    name: 'Scale',
-    note: '3+ agents',
-    features: ['24/7 or extended options', 'AI automation & dashboards', 'Dedicated success management'],
-    highlight: false,
-  },
-];
+function SectionHeading({ eyebrow, title, body }: { eyebrow: string; title: string; body: string }) {
+  return <div className="max-w-2xl"><p className="eyebrow">{eyebrow}</p><h2 className="mt-4 text-3xl font-bold tracking-[-.035em] sm:text-5xl">{title}</h2><p className="mt-5 text-base leading-7 text-slate-400">{body}</p></div>;
+}
 
 export default function Home() {
-  const { open: openCalendly } = useCalendly();
-  useSeo({
-    title: 'VictorySync | US-Managed Call Center & Appointment Setting',
-    description:
-      'Scale inbound support, outbound calling, and appointment setting with US-managed quality and Cairo-based efficiency. Starting from $10/hr. Launch in 24-48 hours.',
-    canonical: 'https://victorysync.com/',
-    structuredData: homeStructuredData,
-  });
+  const { open } = useCalendly();
+  useSeo({ title: 'VictorySync | US-Managed BPO & Appointment Setting', description: 'US-managed BPO and contact center with Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound support.', canonical: 'https://victorysync.com/', structuredData });
 
-  return (
-    <MotionPage className="bg-ink-900">
-      <Hero />
-
-      <div className="border-y border-ink-700/60 bg-ink-800/40">
-        <div className="max-w-5xl mx-auto px-4 py-3">
-          <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-xs text-slate-500">
-            <span>US-managed</span>
-            <span className="text-ink-600">|</span>
-            <span>Cairo-based agents</span>
-            <span className="text-ink-600">|</span>
-            <span>Daily reports</span>
-            <span className="text-ink-600">|</span>
-            <span>No long contracts</span>
-            <span className="text-ink-600">|</span>
-            <span>Compliance-aware outbound</span>
-          </div>
+  return <MotionPage className="overflow-hidden bg-[#0A0F1E] text-white">
+    <section className="relative border-b border-white/[0.07]">
+      <div className="hero-glow" aria-hidden="true" />
+      <div className="mx-auto grid max-w-7xl gap-14 px-5 pb-20 pt-16 sm:px-8 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:pb-28 lg:pt-24">
+        <div className="relative z-10">
+          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-500/10 px-3 py-1.5 text-xs font-medium text-violet-200"><Sparkles className="h-3.5 w-3.5" />Built for SMB teams in home services, real estate, and SaaS</div>
+          <h1 className="max-w-3xl text-4xl font-bold leading-[1.05] tracking-[-0.045em] sm:text-6xl lg:text-[4.25rem]">More qualified calls.<br/><span className="gradient-text">Less chasing leads.</span></h1>
+          <p className="mt-6 max-w-xl text-base leading-7 text-slate-400 sm:text-lg">A US-managed contact center that calls, qualifies, books, and supports your customers—with trained Cairo-based agents and human-reviewed quality.</p>
+          <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center"><button onClick={open} className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#7B5CF6] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(123,92,246,.25)] hover:bg-[#8b70f7] sm:w-auto">Book a 20-minute call<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></button><a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-2 py-2 text-sm text-slate-400 hover:text-white"><MessageCircle className="h-4 w-4 text-emerald-400" />or message us on WhatsApp</a></div>
+          <p className="mt-5 flex items-center gap-2 text-xs text-slate-500"><ShieldCheck className="h-3.5 w-3.5" />US-led account management · Flexible starting scope</p>
         </div>
+        <div className="relative mx-auto w-full max-w-xl lg:mx-0"><div className="absolute -inset-8 rounded-full bg-violet-600/10 blur-3xl" /><div className="glass-panel relative p-4 sm:p-6"><div className="flex items-center justify-between border-b border-white/[0.07] pb-4"><div><p className="text-xs font-medium text-slate-500">CAMPAIGN ACTIVITY</p><p className="mt-1 text-sm font-semibold">Today’s qualification flow</p></div><span className="status-dot"><span />Team live</span></div><div className="py-5"></div></div><div className="py-5"><div className="relative space-y-3 before:absolute before:bottom-5 before:left-[17px] before:top-5 before:w-px before:bg-white/10">{[['Lead called','Connected in 2 attempts','phone'],['Qualified','Need and timeline confirmed','check'],['Appointment booked','Monday · 9:40 AM','calendar']].map(([title,sub,type],i)=><div key={title} className={`relative flex items-center gap-3 rounded-xl border p-3.5 ${i===2?'border-violet-400/25 bg-violet-500/10':'border-white/[0.07] bg-white/[0.025]'}`}><div className={`z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${i===2?'bg-violet-500 text-white':'bg-[#11182a] text-slate-400'}`}>{type==='phone'?<Phone className="h-4 w-4"/>:type==='check'?<Check className="h-4 w-4"/>:<CalendarCheck className="h-4 w-4"/>}</div><div className="min-w-0"><p className="text-sm font-semibold">{title}{i===1&&<span className="ml-2 text-emerald-300">✓</span>}</p><p className="mt-0.5 text-xs text-slate-500">{sub}</p></div>{i===2&&<span className="ml-auto rounded-full bg-violet-400/15 px-2 py-1 text-[10px] font-medium text-violet-200">BOOKED</span>}</div>)}</div></div><div className="grid grid-cols-3 gap-2 border-t border-white/[0.07] pt-4">{[['18','Calls'],['7','Qualified'],['4','Booked']].map(([n,l])=><div key={l} className="rounded-xl bg-white/[0.035] p-3 text-center"><p className="text-lg font-bold">{n}</p><p className="text-[10px] text-slate-500">{l}</p></div>)}</div><p className="mt-3 text-center text-[10px] text-slate-600">Illustrative campaign activity—not live client data.</p></div></div>
       </div>
+    </section>
 
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-3">What we handle</h2>
-          <p className="text-slate-500 max-w-2xl">
-            Pick one thing or hand us the whole workflow. Most clients start with one service, prove the reporting cadence, and expand into adjacent coverage once the process is stable.
-          </p>
-        </div>
+    <section className="border-b border-white/[0.07] bg-white/[0.015]"><div className="mx-auto max-w-7xl px-5 py-8 sm:px-8"><p className="text-center text-xs font-medium uppercase tracking-[.18em] text-slate-600">Built to support growing teams</p><div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">{['Client logo','Client logo','Client logo','Client logo'].map((x,i)=><div key={i} className="flex h-12 items-center justify-center rounded-lg border border-dashed border-white/10 bg-white/[0.02] text-xs text-slate-600">{x}</div>)}</div><p className="mt-3 text-center text-[10px] text-slate-700">Approved customer logos coming soon.</p></div></section>
 
-        <div className="divide-y divide-ink-700/60">
-          {services.map((s) => (
-            <Link key={s.title} href={s.href}>
-              <div className="group flex items-start justify-between py-6 cursor-pointer hover:bg-ink-800/30 -mx-4 px-4 rounded-lg transition-colors">
-                <div className="max-w-3xl">
-                  <h3 className="font-semibold text-white group-hover:text-cyan-400 transition-colors mb-0.5">{s.title}</h3>
-                  <p className="text-sm text-slate-400 mb-2">{s.sub}</p>
-                  <p className="text-sm text-slate-500 leading-relaxed">{s.detail}</p>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all flex-shrink-0 ml-6 mt-1" />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+    <section className="section-shell" id="how-it-works"><SectionHeading eyebrow="How it works" title="From campaign brief to booked call." body="A clear operating rhythm, designed to feel like an extension of your own team."/><div className="mt-14 grid gap-6 lg:grid-cols-3">{steps.map(step=><article key={step.number} className="flex flex-col"><div className="mb-6 flex items-center gap-4"><span className="text-sm font-bold text-violet-400">{step.number}</span><div className="h-px flex-1 bg-white/[0.08]"/></div><h3 className="text-xl font-semibold tracking-tight">{step.title}</h3><p className="mt-3 min-h-[72px] text-sm leading-6 text-slate-400">{step.body}</p><div className="glass-card mt-6 min-h-[170px] p-5">{step.mock}</div></article>)}</div></section>
 
-      <section className="border-y border-ink-700/60 bg-ink-800/40">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid lg:grid-cols-5 gap-12 items-start">
-            <div className="lg:col-span-3">
-              <h2 className="text-2xl font-bold text-white mb-6">The honest pitch</h2>
-              <div className="space-y-4 text-slate-300 leading-relaxed">
-                <p>
-                  Hiring in-house support is expensive. $40-60k per agent before benefits, equipment, and the inevitable turnover. Most small businesses either burn their founders out doing it themselves, or hire too fast and get inconsistent quality.
-                </p>
-                <p>
-                  VictorySync gives you a dedicated agent team trained to your processes, managed by us, reporting to you daily. We're based in New Jersey. Our agents are in Cairo. The cost difference is real, without the quality drop you'd expect.
-                </p>
-                <p>
-                  We're not a call center in the traditional sense. You get one team, one account manager, and full visibility into what's happening every day.
-                </p>
-                <p>
-                  That visibility matters for growing teams. You should know how many calls were answered, which leads were reached, what objections came up, which appointments were booked, and where the workflow needs a better script or escalation path.
-                </p>
-              </div>
-              <button
-                onClick={openCalendly}
-                className="mt-8 inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold bg-cyan-500 text-ink-900 hover:bg-cyan-400 transition"
-              >
-                Talk to us - it's free
-              </button>
-            </div>
+    <section className="border-y border-white/[0.07] bg-white/[0.018]"><div className="section-shell grid gap-12 lg:grid-cols-[.9fr_1.1fr] lg:items-center"><div><div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-300"><Bot className="h-6 w-6" /></div><p className="eyebrow">Human oversight</p><h2 className="mt-4 text-3xl font-bold tracking-[-.035em] sm:text-5xl">Technology moves faster.<br/>People keep it right.</h2><p className="mt-5 max-w-xl text-base leading-7 text-slate-400">AI helps organize calls, notes, and signals. Trained agents own the conversation, and real managers review the work.</p></div><div className="grid gap-4 sm:grid-cols-2">{[[UserCheck,'Human-reviewed at every step','Calls, notes, and outcomes are checked against your approved playbook.'],[ShieldCheck,'Your leads, handled with care','Clear scripts and escalation rules protect the customer experience.'],[Headphones,'Real support when you need it','Reach a person who knows your workflow when priorities change.'],[Users,'One team, dedicated to your account','Account leads coach agents and keep performance aligned to your goals.']].map(([Icon,title,body])=>{const TrustIcon=Icon as typeof UserCheck; return <div key={title as string} className="glass-card p-5"><TrustIcon className="h-5 w-5 text-violet-300"/><h3 className="mt-4 text-sm font-semibold">{title as string}</h3><p className="mt-2 text-xs leading-5 text-slate-500">{body as string}</p></div>})}</div></div></section>
 
-            <div className="lg:col-span-2 space-y-4 pt-1">
-              {[
-                { num: '24-48 hrs', label: 'Typical time from discovery call to going live' },
-                { num: '$10/hr min', label: 'Per agent - a fraction of US equivalent rates' },
-                { num: '1 mgr', label: 'Dedicated US account manager per client' },
-              ].map((item) => (
-                <div key={item.label} className="border border-ink-700 rounded-xl p-5 bg-ink-900">
-                  <div className="text-2xl font-bold text-cyan-400 mb-1">{item.num}</div>
-                  <div className="text-sm text-slate-400">{item.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+    <section className="section-shell"><SectionHeading eyebrow="Capabilities" title="Every conversation, connected to an outcome." body="The human service your prospects expect, with the operational visibility your team needs."/><div className="mt-14 grid gap-5 md:grid-cols-2">{capabilities.map(({icon:Icon,title,body,ui})=><article key={title} className="glass-card group p-6 sm:p-7"><div className="flex h-11 w-11 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10 text-violet-300"><Icon className="h-5 w-5" /></div><h3 className="mt-5 text-xl font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-400">{body}</p><div className="mt-6 rounded-xl border border-white/[0.07] bg-[#080d19]/70 p-4">{ui}</div></article>)}</div></section>
 
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <h2 className="text-2xl font-bold text-white mb-10">How it actually works</h2>
-        <div className="grid md:grid-cols-2 gap-x-16 gap-y-8">
-          {processSteps.map((step) => (
-            <div key={step.n} className="flex gap-5">
-              <div className="w-7 h-7 rounded-full border border-ink-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-xs font-semibold text-slate-500">{step.n}</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1.5">{step.title}</h3>
-                <p className="text-sm text-slate-400 leading-relaxed">{step.body}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+    <section className="border-y border-white/[0.07] bg-white/[0.018]"><div className="section-shell grid gap-12 lg:grid-cols-[.7fr_1.3fr]"><div><p className="eyebrow">FAQ</p><h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">The practical questions, answered.</h2><p className="mt-4 text-sm leading-6 text-slate-500">Still deciding? Talk through your workflow with our team.</p><button onClick={open} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-300 hover:text-violet-200">Book a call <ArrowRight className="h-4 w-4"/></button></div><div className="divide-y divide-white/[0.08] border-y border-white/[0.08]">{faqs.map((faq,i)=><details key={faq.question} className="group" open={i===0}><summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-5 text-sm font-semibold [&::-webkit-details-marker]:hidden">{faq.question}<ChevronDown className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180"/></summary><p className="max-w-2xl pb-5 pr-8 text-sm leading-6 text-slate-400">{faq.answer}</p></details>)}</div></div></section>
 
-      <section className="border-y border-ink-700/60 bg-ink-800/40">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="mb-10">
-            <h2 className="text-2xl font-bold text-white mb-3">Results our clients measure</h2>
-            <p className="text-slate-500 max-w-2xl">
-              Every account gets a reporting rhythm tied to operational outcomes, not vanity activity. These are the benchmarks we use to evaluate whether phone coverage, lead follow-up, and appointment setting are actually improving the business.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-4 gap-px bg-ink-700/40 rounded-2xl overflow-hidden">
-            {proofStats.map((item) => (
-              <div key={item.title} className="bg-ink-800/60 px-6 py-8">
-                <div className="text-4xl font-bold text-white mb-1">{item.metric}</div>
-                <div className="text-sm font-medium text-cyan-400 mb-2">{item.title}</div>
-                <div className="text-xs text-slate-500 leading-relaxed">{item.detail}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid lg:grid-cols-2 gap-12">
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-5">What daily management includes</h2>
-            <div className="space-y-4 text-slate-400 leading-relaxed">
-              <p>
-                A good outsourced support team is not just a group of agents answering phones. VictorySync builds a working operating layer around your customer conversations: scripts, intake rules, escalation paths, call notes, QA checks, and reporting.
-              </p>
-              <p>
-                Your account manager watches for repeated objections, unanswered questions, missed handoffs, and slow response patterns. When something needs to change, you get a practical recommendation instead of a vague activity report.
-              </p>
-              <p>
-                For sales-driven accounts, that means faster follow-up, cleaner qualification, and more complete appointment notes. For support-driven accounts, it means fewer missed calls, clearer ticket triage, and better customer continuity across shifts.
-              </p>
-            </div>
-          </div>
-          <div className="border border-ink-700 rounded-xl p-6 bg-ink-800/40">
-            <h3 className="text-lg font-bold text-white mb-4">Common tools and workflows</h3>
-            <ul className="space-y-3 text-sm text-slate-400">
-              <li>CRM updates in HubSpot, Salesforce, GoHighLevel, and similar systems.</li>
-              <li>Calendar booking through Calendly, Google Calendar, Outlook, and client scheduling links.</li>
-              <li>Daily summaries covering calls answered, leads contacted, appointments booked, callbacks, and escalations.</li>
-              <li>Script refinement based on real objections, call outcomes, and customer questions.</li>
-              <li>Inbound overflow coverage for teams that miss calls during peak hours, lunch breaks, evenings, or weekends.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex gap-4 items-start">
-          <Shield className="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="text-sm font-semibold text-slate-400 mb-2">On outbound calling compliance</h3>
-            <p className="text-sm text-slate-500 leading-relaxed max-w-3xl">
-              We use client-approved scripts only, maintain DNC-conscious workflows, record calls where the client permits, and report everything. This isn't a certified compliance program - it's how we run campaigns responsibly. You're always responsible for your own legal obligations; we make it easier to meet them.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-ink-700/60 bg-ink-800/40">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-3">Pricing</h2>
-            <p className="text-slate-500">All packages are custom quoted. These show what's typically included at each level.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {pricingCards.map((card) => (
-              <div
-                key={card.name}
-                className={`rounded-xl p-6 border flex flex-col gap-5 ${
-                  card.highlight ? 'border-cyan-500/40 bg-ink-900 ring-1 ring-cyan-500/20' : 'border-ink-700 bg-ink-900/60'
-                }`}
-              >
-                <div>
-                  <div className="flex items-baseline gap-3 mb-1">
-                    <h3 className="text-lg font-bold text-white">{card.name}</h3>
-                    <span className="text-xs text-slate-500">{card.note}</span>
-                  </div>
-                  {card.highlight && <span className="text-xs text-cyan-400">Most requested</span>}
-                </div>
-                <ul className="space-y-2 flex-1">
-                  {card.features.map((f) => (
-                    <li key={f} className="text-sm text-slate-400 flex gap-2">
-                      <span className="text-ink-600 flex-shrink-0">-</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  onClick={openCalendly}
-                  size="sm"
-                  className={
-                    card.highlight
-                      ? 'bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold w-full'
-                      : 'border border-ink-600 text-slate-400 hover:text-white hover:bg-ink-800 w-full bg-transparent'
-                  }
-                >
-                  Get a quote
-                </Button>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-center mt-8 text-xs text-slate-600">
-            Need something custom?{' '}
-            <Link href="/pricing">
-              <span className="text-slate-500 hover:text-cyan-400 cursor-pointer transition-colors underline underline-offset-2">
-                See full pricing page
-              </span>
-            </Link>
-          </p>
-        </div>
-      </section>
-
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-3">Frequently asked questions</h2>
-          <p className="text-slate-500 max-w-2xl">
-            Clear answers for companies comparing outsourced call center support, appointment setting, lead follow-up, and AI-assisted operations.
-          </p>
-        </div>
-        <div className="divide-y divide-ink-700/60 border-y border-ink-700/60">
-          {faqs.map((faq) => (
-            <div key={faq.question} className="py-6">
-              <h3 className="font-semibold text-white mb-2">{faq.question}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed max-w-3xl">{faq.answer}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="border-t border-ink-700/60">
-        <div className="max-w-3xl mx-auto px-4 py-24 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
-            Stop losing leads after 5 PM.
-          </h2>
-          <p className="text-slate-400 mb-8 text-lg">
-            Book a 20-minute call and we'll tell you honestly whether we're a fit.
-          </p>
-          <button
-            onClick={openCalendly}
-            className="inline-flex items-center justify-center rounded-xl px-8 py-3.5 text-base font-semibold bg-cyan-500 text-ink-900 hover:bg-cyan-400 transition"
-            data-testid="button-footer-get-quote"
-          >
-            Book a free call
-          </button>
-        </div>
-      </section>
-    </MotionPage>
-  );
+    <section className="section-shell"><div className="relative overflow-hidden rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-500/20 via-[#11172a] to-[#0A0F1E] px-6 py-14 text-center sm:px-12 sm:py-20"><div className="absolute left-1/2 top-0 h-40 w-96 -translate-x-1/2 bg-violet-500/20 blur-3xl"/><div className="relative"><p className="eyebrow">Ready when you are</p><h2 className="mx-auto mt-4 max-w-2xl text-3xl font-bold tracking-[-.035em] sm:text-5xl">Turn more conversations into booked business.</h2><p className="mx-auto mt-5 max-w-lg text-sm leading-6 text-slate-400">Tell us what your team needs handled. We’ll map the people, process, and launch plan.</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><button onClick={open} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#7B5CF6] px-6 py-3.5 text-sm font-semibold hover:bg-[#8b70f7]">Book a 20-minute call<ArrowRight className="h-4 w-4"/></button><Link href="/services" className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-semibold text-slate-300 hover:bg-white/10">Explore services</Link></div></div></div></section>
+  </MotionPage>;
 }
