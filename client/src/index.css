@@ -169,6 +169,18 @@
     @apply mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28;
   }
 
+  .section-kicker {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-blue-600;
+  }
+
+  .section-title {
+    @apply mt-3 text-3xl font-bold tracking-[-0.035em] text-slate-900 sm:text-5xl;
+  }
+
+  .section-copy {
+    @apply mt-5 max-w-xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7;
+  }
+
   .glass-panel {
     @apply rounded-lg border border-slate-200 bg-white shadow-xl;
   }

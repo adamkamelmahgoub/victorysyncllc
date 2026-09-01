@@ -13,10 +13,9 @@ const serviceLinks = [
 ];
 
 const navLinks = [
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/about-us', label: 'About' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/contact', label: 'Contact' },
+  { href: '/#how-it-works', label: 'How It Works' },
+  { href: '/#pricing', label: 'Pricing' },
+  { href: '/#faq', label: 'FAQ' },
 ];
 
 export default function Navigation() {
@@ -56,7 +55,7 @@ export default function Navigation() {
 
         <div className="hidden items-center gap-3 md:flex">
           {isAuthenticated ? <><Link href="/dashboard" className="text-sm font-medium text-slate-600 hover:text-blue-600">Dashboard</Link><button onClick={logout} className="text-sm font-medium text-slate-600 hover:text-blue-600">Sign out</button></> : <a href="https://dashboard.victorysync.com" className="text-sm font-medium text-slate-600 hover:text-blue-600">Sign in</a>}
-          <button onClick={open} className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Book a Call</button>
+          <button onClick={open} className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Get Started</button>
         </div>
 
         <button onClick={() => setMobileOpen(value => !value)} className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden" aria-label="Toggle navigation">{mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}</button>
