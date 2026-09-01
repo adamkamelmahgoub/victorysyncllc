@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
 
+Disallow: /login
+Disallow: /register
+Disallow: /signup
+Disallow: /checkout
+Disallow: /dashboard
+Disallow: /api/
+
 Sitemap: https://victorysync.com/sitemap.xml

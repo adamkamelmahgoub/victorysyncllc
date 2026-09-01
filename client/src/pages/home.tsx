@@ -17,7 +17,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 
-const whatsappUrl = 'https://wa.me/17188132106?text=Hi%20VictorySync%2C%20I%27d%20like%20to%20learn%20more.';
+const whatsappUrl = 'https://wa.me/201070394707?text=Hi%20VictorySync%2C%20I%27d%20like%20to%20learn%20more.';
 
 const faqs = [
   { question: 'What does VictorySync do?', answer: 'VictorySync provides US-managed outbound and inbound contact center services with trained agents based in Cairo. Our people handle cold calling, qualification, appointment setting, lead follow-up, and customer support. AI helps them summarize calls, surface signals, and keep records organized.' },
