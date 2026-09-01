@@ -2,7 +2,7 @@ import { MotionPage } from '@/components/motion-page';
 import { useCalendly } from '@/hooks/useCalendly';
 import { useSeo } from '@/hooks/useSeo';
 import { Link } from 'wouter';
-import { ArrowRight, Bot, CalendarCheck, Check, CheckCircle2, ChevronDown, Headphones, MessageCircle, Phone, ShieldCheck, Sparkles, UserCheck, Users, Waveform } from 'lucide-react';
+import { Activity, ArrowRight, Bot, CalendarCheck, Check, CheckCircle2, ChevronDown, Headphones, MessageCircle, Phone, ShieldCheck, Sparkles, UserCheck, Users } from 'lucide-react';
 
 const whatsappUrl = 'https://wa.me/17188132106?text=Hi%20VictorySync%2C%20I%27d%20like%20to%20learn%20more.';
 
@@ -33,7 +33,7 @@ const steps = [
 
 const capabilities = [
   { icon: UserCheck, title: 'Lead Qualification', body: 'Every conversation follows your ICP, fit criteria, and routing rules.', ui: <div className="space-y-2"><MockRow label="Property owner" value="Yes" /><MockRow label="Timeline" value="0–30 days" /><div className="flex items-center gap-2 pt-1 text-xs text-emerald-300"><CheckCircle2 className="h-4 w-4" />Qualified for sales</div></div> },
-  { icon: Waveform, title: 'Call Transcription & Scoring', body: 'See concise summaries, outcomes, objections, and QA signals without replaying every call.', ui: <div><div className="flex h-9 items-center gap-1">{[3,6,4,8,5,11,7,4,9,5,7,3,6,4,8,3].map((h,i)=><i key={i} className="w-1 rounded-full bg-violet-400/70" style={{height:`${h*2}px`}} />)}</div><div className="mt-3 flex justify-between text-xs"><span className="text-slate-500">QA score</span><span className="font-semibold text-white">92 / 100</span></div></div> },
+  { icon: Activity, title: 'Call Transcription & Scoring', body: 'See concise summaries, outcomes, objections, and QA signals without replaying every call.', ui: <div><div className="flex h-9 items-center gap-1">{[3,6,4,8,5,11,7,4,9,5,7,3,6,4,8,3].map((h,i)=><i key={i} className="w-1 rounded-full bg-violet-400/70" style={{height:`${h*2}px`}} />)}</div><div className="mt-3 flex justify-between text-xs"><span className="text-slate-500">QA score</span><span className="font-semibold text-white">92 / 100</span></div></div> },
   { icon: CalendarCheck, title: 'Appointment Booking', body: 'Agents book directly into your approved calendar and confirm the handoff.', ui: <div className="grid grid-cols-4 gap-2">{['9:00','9:40','10:20','11:00'].map((time,i)=><span key={time} className={`rounded-lg py-2 text-center text-[11px] ${i===1?'bg-violet-500 text-white':'bg-white/5 text-slate-500'}`}>{time}</span>)}</div> },
   { icon: Headphones, title: 'Human Escalation', body: 'Complex questions and sensitive moments route to a real person with full context.', ui: <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/15"><Headphones className="h-4 w-4 text-violet-300" /></div><div><p className="text-xs font-medium text-white">Escalated to account lead</p><p className="mt-0.5 text-[11px] text-slate-500">Context and transcript included</p></div></div> },
 ];
