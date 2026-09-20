@@ -1,4 +1,5 @@
 import { Link } from 'wouter';
+import { SiFacebook, SiFiverr, SiGoogle, SiInstagram, SiUpwork } from 'react-icons/si';
 import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.webp';
 
 const groups = [
@@ -9,11 +10,11 @@ const groups = [
 ];
 
 const profiles = [
-  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61578278896132' },
-  { label: 'Instagram', href: 'https://www.instagram.com/victorysyncllc/' },
-  { label: 'Google Business', href: 'https://share.google/SRBDGigTm0XPhvLk3' },
-  { label: 'Upwork', href: 'https://www.upwork.com/agencies/1956546855026415688/' },
-  { label: 'Fiverr', href: 'https://www.fiverr.com/s/NeNrP98' },
+  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61578278896132', icon: SiFacebook, color: '#1877F2' },
+  { label: 'Instagram', href: 'https://www.instagram.com/victorysyncllc/', icon: SiInstagram, color: '#E4405F' },
+  { label: 'Google Business', href: 'https://share.google/SRBDGigTm0XPhvLk3', icon: SiGoogle, color: '#4285F4' },
+  { label: 'Upwork', href: 'https://www.upwork.com/agencies/1956546855026415688/', icon: SiUpwork, color: '#14A800' },
+  { label: 'Fiverr', href: 'https://www.fiverr.com/s/NeNrP98', icon: SiFiverr, color: '#1DBF73' },
 ];
 
 export default function Footer() {
@@ -33,9 +34,9 @@ export default function Footer() {
         {groups.map(group=><div key={group.title}><h3 className="text-sm font-semibold text-slate-900">{group.title}</h3><ul className="mt-4 space-y-2.5">{group.links.map(([label,href])=><li key={label}><Link href={href} onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} className="text-sm text-slate-600 hover:text-blue-600">{label}</Link></li>)}</ul></div>)}
       </div>
       <div className="mt-12 border-t border-slate-200 pt-7">
-        <nav aria-label="VictorySync profiles" className="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm">
+        <nav aria-label="VictorySync profiles" className="flex flex-wrap items-center gap-x-3 gap-y-3 text-sm">
           <span className="w-full font-semibold text-slate-900 sm:w-auto">Find us</span>
-          {profiles.map(({ label, href }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="text-slate-700 underline-offset-4 hover:text-blue-600 hover:underline">{label}</a>)}
+          {profiles.map(({ label, href, icon: Icon, color }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={`VictorySync on ${label}`} title={label} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600" style={{ color }}><Icon aria-hidden="true" className="h-5 w-5" /></a>)}
         </nav>
         <div className="mt-7 flex flex-col gap-3 border-t border-slate-200 pt-7 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} VictorySync LLC. All rights reserved.</p><a href="mailto:info@victorysync.com" className="hover:text-blue-600">info@victorysync.com</a></div>
       </div>
