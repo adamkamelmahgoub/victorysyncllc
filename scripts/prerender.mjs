@@ -51,6 +51,7 @@ try {
   let homepageHtml;
   for (const path of paths) {
     const page = await browser.newPage();
+    await page.evaluateOnNewDocument(() => { window.__PRERENDERING__ = true; });
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
     await page.setRequestInterception(true);
