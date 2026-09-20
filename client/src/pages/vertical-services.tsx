@@ -83,12 +83,12 @@ export default function VerticalService({ path }: { path: string }) {
   const page = pages[path];
   useSeo({ title: page.title, description: page.description });
   return <div className="bg-white text-slate-900">
-    <section className="bg-[#0A0F1E] px-5 py-20 text-white sm:px-8">
+    <section className="border-b border-blue-100 bg-blue-50 px-5 py-20 text-slate-950 sm:px-8">
       <div className="mx-auto max-w-4xl">
-        <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-[#9B87F8]">Industry services</p>
+        <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-blue-700">Industry services</p>
         <h1 className="text-4xl font-bold leading-tight sm:text-5xl">{page.h1}</h1>
-        <p className="mt-7 max-w-3xl text-lg leading-8 text-slate-200">{page.intro}</p>
-        <Link href="/book-call" className="mt-8 inline-block rounded-lg bg-[#7B5CF6] px-6 py-3 font-semibold text-white hover:bg-[#6848e8]">Book a consultation</Link>
+        <p className="mt-7 max-w-3xl text-lg leading-8 text-slate-700">{page.intro}</p>
+        <Link href="/book-call" className="mt-8 inline-block rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700">Book a consultation</Link>
       </div>
     </section>
     <article className="mx-auto max-w-4xl space-y-12 px-5 py-16 sm:px-8">
@@ -99,7 +99,7 @@ export default function VerticalService({ path }: { path: string }) {
       <section className="rounded-xl bg-slate-100 p-8">
         <h2 className="text-2xl font-bold">Plan the next step</h2>
         <p className="mt-4 leading-8 text-slate-700">{page.closing}</p>
-        <Link href="/book-call" className="mt-6 inline-block rounded-lg bg-[#7B5CF6] px-6 py-3 font-semibold text-white hover:bg-[#6848e8]">Book a consultation</Link>
+        <Link href="/book-call" className="mt-6 inline-block rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700">Book a consultation</Link>
       </section>
     </article>
   </div>;

@@ -2,6 +2,7 @@ import { MotionPage } from '@/components/motion-page';
 import { useCalendly } from '@/hooks/useCalendly';
 import { useSeo } from '@/hooks/useSeo';
 import { Link } from 'wouter';
+import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.webp';
 import {
   ArrowRight,
   BarChart3,
@@ -111,6 +112,13 @@ export default function Home() {
 
       <section className="relative overflow-hidden bg-white py-24">
         <div className="mx-auto max-w-6xl px-5 sm:px-8"><CenteredHeading eyebrow="Built for trust" title="Your campaign stays visible and accountable" body="Clear access rules, real ownership, and reporting keep your operation from becoming a black box." /><div className="mt-12 grid gap-8 md:grid-cols-3">{[[Lock, 'Data privacy', 'Access is limited to the systems and records required for the approved workflow.'], [Users, 'Dedicated account team', 'A consistent team learns your process, receives coaching, and owns follow-through.'], [BarChart3, 'Real-time reporting', 'Track activity, dispositions, qualification, and appointments without waiting for anecdotes.']].map(([Icon, title, body]) => { const TrustIcon = Icon as typeof Lock; return <div key={title as string} className="text-center"><div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-blue-600"><TrustIcon className="h-5 w-5" /></div><h3 className="mt-4 text-sm font-semibold text-slate-900">{title as string}</h3><p className="mx-auto mt-2 max-w-xs text-xs leading-5 text-slate-600">{body as string}</p></div>; })}</div></div>
+      </section>
+
+      <section className="border-y border-slate-200 bg-slate-50 py-14" aria-label="Close CRM partnership">
+        <div className="mx-auto flex max-w-5xl flex-col items-start gap-6 px-5 sm:px-8 md:flex-row md:items-center md:gap-10">
+          <img src={closeBadge} alt="Close partner since 2025" width="600" height="288" loading="lazy" className="h-auto w-44 shrink-0" />
+          <div><p className="section-kicker">Our partners</p><h2 className="mt-2 text-2xl font-bold text-slate-900">VictorySync is a Close CRM partner</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Our partnership with Close CRM supports our focus on clear sales workflows and accountable customer follow-up.</p></div>
+        </div>
       </section>
 
       <section id="faq" className="relative scroll-mt-16 bg-white py-24">

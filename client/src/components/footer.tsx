@@ -8,6 +8,14 @@ const groups = [
   { title: 'Resources', links: [['Help Center','/help-center'],['Privacy','/privacy-policy'],['Terms','/terms']] },
 ];
 
+const profiles = [
+  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61578278896132' },
+  { label: 'Instagram', href: 'https://www.instagram.com/victorysyncllc/' },
+  { label: 'Google Business', href: 'https://share.google/SRBDGigTm0XPhvLk3' },
+  { label: 'Upwork', href: 'https://www.upwork.com/agencies/1956546855026415688/' },
+  { label: 'Fiverr', href: 'https://www.fiverr.com/s/NeNrP98' },
+];
+
 export default function Footer() {
   return <footer className="border-t border-slate-200 bg-white py-16 text-slate-900">
     <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -16,11 +24,21 @@ export default function Footer() {
           <Link href="/" className="flex items-center gap-3"><img src="/LOGO_VS.webp" alt="VictorySync" width="1024" height="1024" className="h-9 w-9 rounded-lg bg-white p-1"/><span className="text-lg font-bold">VictorySync</span></Link>
           <p className="mt-4 max-w-xs text-sm leading-6 text-slate-600">US-managed contact center services delivered by trained Cairo-based agents, supported by practical AI tools.</p>
           <p className="mt-4 text-xs text-slate-600">Millstone, NJ · Cairo, Egypt</p>
-          <img src={closeBadge} alt="Close Partner Since 2025" width="600" height="288" loading="lazy" className="mt-5 h-14" />
+          <div className="mt-5">
+            <p className="text-sm font-semibold text-slate-900">Close CRM partner</p>
+            <p className="mt-1 max-w-xs text-xs leading-5 text-slate-600">VictorySync is partnered with Close CRM to support organized sales workflows.</p>
+            <img src={closeBadge} alt="Close partner since 2025" width="600" height="288" loading="lazy" className="mt-3 h-auto w-40 max-w-full" />
+          </div>
         </div>
         {groups.map(group=><div key={group.title}><h3 className="text-sm font-semibold text-slate-900">{group.title}</h3><ul className="mt-4 space-y-2.5">{group.links.map(([label,href])=><li key={label}><Link href={href} onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} className="text-sm text-slate-600 hover:text-blue-600">{label}</Link></li>)}</ul></div>)}
       </div>
-      <div className="mt-12 flex flex-col gap-3 border-t border-slate-200 pt-7 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} VictorySync LLC. All rights reserved.</p><a href="mailto:info@victorysync.com" className="hover:text-blue-600">info@victorysync.com</a></div>
+      <div className="mt-12 border-t border-slate-200 pt-7">
+        <nav aria-label="VictorySync profiles" className="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm">
+          <span className="w-full font-semibold text-slate-900 sm:w-auto">Find us</span>
+          {profiles.map(({ label, href }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="text-slate-700 underline-offset-4 hover:text-blue-600 hover:underline">{label}</a>)}
+        </nav>
+        <div className="mt-7 flex flex-col gap-3 border-t border-slate-200 pt-7 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} VictorySync LLC. All rights reserved.</p><a href="mailto:info@victorysync.com" className="hover:text-blue-600">info@victorysync.com</a></div>
+      </div>
     </div>
   </footer>;
 }
