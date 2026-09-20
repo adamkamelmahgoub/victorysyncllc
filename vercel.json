@@ -17,16 +17,20 @@
   ],
   "headers": [
     {
-      "source": "/cms",
+      "source": "/(cms|cms.html)",
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data: https:; frame-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+          "value": "default-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data: https:; frame-src 'self'; frame-ancestors 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
         }
       ]
     },
     {
-      "source": "/(login|register|signup|checkout|dashboard|cms)",
+      "source": "/(login|register|signup|checkout|dashboard|cms|cms.html)",
       "headers": [
         {
           "key": "X-Robots-Tag",

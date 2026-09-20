@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { CMS_FILE, CMS_OWNER, CMS_REPO, emptyContent, safeContent, type CmsBlock, type CmsContent, type ElementEdit, type SeoEdit } from '@/lib/cms';
+import { CMS_ADMIN_GITHUB_ID, CMS_FILE, CMS_OWNER, CMS_REPO, emptyContent, safeAttribute, safeContent, safeUrl, type CmsBlock, type CmsContent, type ElementEdit, type SeoEdit } from '@/lib/cms';
 
 const pages = [
   '/', '/services', '/inbound-support', '/appointment-setting', '/cold-calling', '/ai-automation',
   '/pricing', '/platform', '/about-us', '/contact', '/book-call', '/help-center',
   '/privacy-policy', '/terms', '/appointment-setting-for-home-services', '/cold-calling-for-plumbers',
   '/appointment-setting-for-real-estate', '/inbound-support-for-law-firms',
+  '/checkout', '/register', '/signup', '/login', '/dashboard',
 ];
 const api = `https://api.github.com/repos/${CMS_OWNER}/${CMS_REPO}`;
 const fileApi = `${api}/contents/${CMS_FILE}`;
@@ -26,7 +27,8 @@ function decodeBase64(value: string): string {
 }
 
 type Selection = {
-  key: string; tag: string; text: string; src?: string; alt?: string; href?: string; style: string;
+  key: string; tag: string; text: string; textNodes: string[]; src?: string; alt?: string; href?: string; style: string;
+  className: string; attributes: Record<string, string>;
 };
 
 export default function CmsPage() {
@@ -41,6 +43,7 @@ export default function CmsPage() {
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<'content' | 'sections' | 'seo' | 'media'>('content');
   const [frameVersion, setFrameVersion] = useState(0);
+  const [attributeError, setAttributeError] = useState('');
   const frame = useRef<HTMLIFrameElement>(null);
 
   const github = async (url: string, options: RequestInit = {}) => {
@@ -62,6 +65,8 @@ export default function CmsPage() {
     setBusy(true);
     setMessage('Connecting to GitHub…');
     try {
+      const user = await github('https://api.github.com/user');
+      if (user.id !== CMS_ADMIN_GITHUB_ID) throw new Error('This CMS is restricted to the VictorySync owner account.');
       const repo = await github(api);
       if (!repo.permissions?.push) throw new Error('This token needs Contents: read and write access to the VictorySync repository.');
       const file = await github(`${fileApi}?ref=main`);
@@ -102,6 +107,11 @@ export default function CmsPage() {
       ...current,
       elements: { ...current.elements, [selection.key]: { ...current.elements[selection.key], ...patch } },
     }));
+  };
+  const changeAttribute = (name: string, value: string) => {
+    if (!safeAttribute(name, value)) { setAttributeError('That attribute or value is not supported.'); return; }
+    setAttributeError('');
+    changeElement({ attributes: { ...(selection?.attributes || {}), ...(selection ? content.elements[selection.key]?.attributes : {}), [name]: value } });
   };
   const changeSeo = (patch: Partial<SeoEdit>) => setContent((current) => ({
     ...current, seo: { ...current.seo, [route]: { ...current.seo[route], ...patch } },
@@ -172,7 +182,7 @@ export default function CmsPage() {
       <div className="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-700 p-8 space-y-5">
         <div className="text-sm font-semibold tracking-widest text-cyan-400">VICTORYSYNC</div>
         <h1 className="text-3xl font-bold">Website CMS</h1>
-        <p className="text-slate-300">Connect with a GitHub fine grained token for this repository with Contents read and write permission. The token stays in this browser tab and is never saved by the site.</p>
+        <p className="text-slate-300">This private editor accepts only the VictorySync owner GitHub account. Create a fine grained token for this repository with Contents read and write permission. The token stays in this browser tab.</p>
         <label className="block text-sm font-semibold" htmlFor="github-token">GitHub token</label>
         <input id="github-token" type="password" autoComplete="off" value={token} onChange={(event) => setToken(event.target.value)} className="w-full rounded-lg bg-slate-800 border border-slate-600 px-4 py-3" />
         <button disabled={!token.trim() || busy} onClick={connect} className="w-full rounded-lg bg-cyan-500 text-slate-950 font-bold px-4 py-3 disabled:opacity-50">Connect to CMS</button>
@@ -206,13 +216,18 @@ export default function CmsPage() {
           <div className="flex gap-2 border-b border-slate-700 pb-3">
             {(['content', 'sections', 'seo', 'media'] as const).map((name) => <button key={name} onClick={() => setTab(name)} className={`rounded-lg px-3 py-2 capitalize text-sm ${tab === name ? 'bg-cyan-500 text-slate-950 font-bold' : 'bg-slate-800'}`}>{name}</button>)}
           </div>
-          {tab === 'content' && (!selection ? <p className="text-slate-300">Click text, images, or links in the preview. Hold Alt while clicking to select a section or container for styling and visibility.</p> : <>
+          {tab === 'content' && (!selection ? <p className="text-slate-300">Click any element in the preview. Hold Alt while clicking to select its exact container. Edit its text, image, link, styles, classes, and attributes.</p> : <>
             <h2 className="font-semibold">Editing {selection.tag}</h2>
             <p className="text-xs text-slate-500 break-all">{selection.key}</p>
-            {selection.text && <Field label="Text" value={edit.text ?? selection.text} multiline onChange={(value) => changeElement({ text: value })} />}
-            {selection.tag === 'img' && <><Field label="Image URL" value={edit.src ?? selection.src ?? ''} onChange={(value) => changeElement({ src: value })} /><Field label="Alt text" value={edit.alt ?? selection.alt ?? ''} onChange={(value) => changeElement({ alt: value })} /></>}
-            {selection.tag === 'a' && <Field label="Link URL" value={edit.href ?? selection.href ?? ''} onChange={(value) => changeElement({ href: value })} />}
+            {selection.textNodes.map((value, index) => <Field key={`${selection.key}-${index}`} label={`Text ${index + 1}`} value={edit.textNodes?.[index] ?? value} multiline onChange={(next) => changeElement({ textNodes: { ...(edit.textNodes || {}), [index]: next } })} />)}
+            {selection.tag === 'img' && <><Field label="Image URL" value={edit.src ?? selection.src ?? ''} onChange={(value) => safeUrl(value) ? changeElement({ src: value }) : setMessage('This image URL is not allowed.')} /><Field label="Alt text" value={edit.alt ?? selection.alt ?? ''} onChange={(value) => changeElement({ alt: value })} /></>}
+            {selection.tag === 'a' && <Field label="Link URL" value={edit.href ?? selection.href ?? ''} onChange={(value) => safeUrl(value) ? changeElement({ href: value }) : setMessage('This link URL is not allowed.')} />}
             <Field label="Custom CSS styles" value={edit.style ?? selection.style} multiline onChange={(value) => changeElement({ style: value })} />
+            <Field label="CSS classes" value={edit.className ?? selection.className} multiline onChange={(value) => changeElement({ className: value })} />
+            <h3 className="font-semibold">Element attributes</h3>
+            {Object.entries({ ...selection.attributes, ...edit.attributes }).map(([name, value]) => <Field key={name} label={name} value={value} onChange={(next) => changeAttribute(name, next)} />)}
+            <div className="flex gap-2"><input id="new-attribute-name" aria-label="New attribute name" placeholder="Attribute name" className="min-w-0 flex-1 rounded-lg bg-slate-800 border border-slate-600 px-2" /><button className="rounded-lg bg-slate-700 px-3 py-2" onClick={() => { const input = document.getElementById('new-attribute-name') as HTMLInputElement; if (input?.value) { changeAttribute(input.value.trim(), ''); input.value = ''; } }}>Add</button></div>
+            {attributeError && <p className="text-sm text-red-300">{attributeError}</p>}
             <label className="flex gap-2 items-center text-sm"><input type="checkbox" checked={Boolean(edit.hidden)} onChange={(event) => changeElement({ hidden: event.target.checked })} /> Hide this element</label>
             <button className="text-sm text-cyan-400 underline" onClick={() => { const next = { ...content.elements }; delete next[selection.key]; setContent({ ...content, elements: next }); setSelection(null); setFrameVersion((value) => value + 1); setMessage('This element is reset in the draft.'); }}>Reset this element</button>
           </>)}
