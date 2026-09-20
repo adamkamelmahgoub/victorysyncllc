@@ -77,6 +77,12 @@ try {
       }));
       throw new Error(`Prerender timeout for ${path}: ${JSON.stringify(diagnostic)}; page errors: ${pageErrors.join(' | ')}; ${error.message}`);
     }
+    // The build browser runs analytics, but those dynamically inserted scripts must not
+    // be baked into static HTML. They would otherwise execute in CMS previews too.
+    await page.evaluate(() => {
+      document.querySelectorAll('script[src^="http://"], script[src^="https://"]')
+        .forEach((script) => script.remove());
+    });
     const html = await page.content();
     await page.close();
     const canonical = html.match(/<link[^>]*rel="canonical"[^>]*href="([^"]+)"/i)?.[1];
