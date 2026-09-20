@@ -7,11 +7,6 @@ export default function HelpCenter() {
   const { open: openCalendly } = useCalendly();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("getting-started");
-  useSeo({
-    title: 'Help Center | VictorySync Support & Documentation',
-    description: 'Get help with VictorySync services. Browse guides, FAQs, and support articles on inbound support, appointment setting, and AI automation.',
-    canonical: 'https://victorysync.com/help-center',
-  });
 
   const categories = [
     { id: "getting-started", name: "Getting Started", icon: "🚀" },
@@ -108,6 +103,17 @@ export default function HelpCenter() {
       },
     ],
   };
+  useSeo({
+    title: 'Help Center | VictorySync',
+    description: 'Answers to common questions about VictorySync services, onboarding, and reporting.',
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqData['getting-started'].map(({ question, answer }) => ({
+        '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer },
+      })),
+    },
+  });
 
   const quickLinks = [
     {

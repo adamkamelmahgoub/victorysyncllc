@@ -26,6 +26,13 @@ export const pageMeta: Record<string, [string, string]> = {
   '/terms': ['Terms of Service | VictorySync', 'Terms governing use of VictorySync services.'],
 };
 
+const services: Record<string, string> = {
+  '/appointment-setting': 'Appointment Setting',
+  '/cold-calling': 'Cold Calling',
+  '/inbound-support': 'Inbound Customer Support',
+  '/ai-automation': 'AI Call Qualification and Routing',
+};
+
 export function useSeo({ title, description, ogImage, structuredData }: SeoProps) {
   useEffect(() => {
     const path = window.location.pathname.replace(/\/$/, '') || '/';
@@ -49,6 +56,53 @@ export function useSeo({ title, description, ogImage, structuredData }: SeoProps
       setTag('meta[name="twitter:image"]', 'meta', { name: 'twitter:image', content: ogImage });
     }
     document.querySelector('script[data-victorysync-schema="page"]')?.remove();
-    return () => {};
+    const schema: Record<string, unknown>[] = structuredData ? (Array.isArray(structuredData) ? [...structuredData] : [structuredData]) : [];
+    if (path === '/' || path === '/contact') {
+      schema.push({
+        '@context': 'https://schema.org', '@type': 'Organization', '@id': `${siteOrigin}/#organization`,
+        name: 'VictorySync LLC', url: siteOrigin + '/', logo: `${siteOrigin}/LOGO_VS.png`,
+        description: 'US-managed contact center with trained Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound support.',
+        address: { '@type': 'PostalAddress', addressLocality: 'Millstone', addressRegion: 'NJ', addressCountry: 'US' },
+        contactPoint: { '@type': 'ContactPoint', telephone: '+201070394707', contactType: 'sales', availableLanguage: 'English', areaServed: 'US' },
+        sameAs: [
+          'https://www.facebook.com/profile.php?id=61578278896132',
+          'https://www.instagram.com/victorysyncllc/',
+          'https://share.google/SRBDGigTm0XPhvLk3',
+          'https://www.upwork.com/agencies/1956546855026415688/',
+          'https://www.fiverr.com/s/NeNrP98',
+        ],
+        // TODO(owner): add the verified LinkedIn profile URL if one exists.
+      });
+      schema.push({
+        '@context': 'https://schema.org', '@type': 'LocalBusiness', '@id': `${siteOrigin}/#localbusiness`,
+        name: 'VictorySync LLC', url: siteOrigin + '/', telephone: '+201070394707',
+        address: { '@type': 'PostalAddress', addressLocality: 'Millstone', addressRegion: 'NJ', addressCountry: 'US' },
+        areaServed: { '@type': 'Country', name: 'United States' },
+        openingHoursSpecification: { '@type': 'OpeningHoursSpecification',
+          dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          opens: '09:00', closes: '18:00' },
+        // TODO(owner): confirm the 9 AM–6 PM ET hours shown on /book-call are the public business hours.
+        // TODO(owner): provide a public street address if the business wants it in LocalBusiness schema.
+      });
+    }
+    if (services[path]) {
+      schema.push({ '@context': 'https://schema.org', '@type': 'Service', name: services[path],
+        serviceType: services[path], provider: { '@id': `${siteOrigin}/#organization` },
+        areaServed: { '@type': 'Country', name: 'United States' }, url: canonical });
+    }
+    if (path !== '/') {
+      schema.push({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: siteOrigin + '/' },
+        { '@type': 'ListItem', position: 2, name: pageMeta[path]?.[0].split(' | ')[0] || path.slice(1).replace(/-/g, ' '), item: canonical },
+      ] });
+    }
+    if (schema.length) {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.dataset.victorysyncSchema = 'page';
+      script.textContent = JSON.stringify(schema);
+      document.head.appendChild(script);
+    }
+    return () => { document.querySelector('script[data-victorysync-schema="page"]')?.remove(); };
   }, [title, description, ogImage, structuredData]);
 }
