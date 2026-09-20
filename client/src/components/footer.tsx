@@ -4,8 +4,8 @@ import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.png';
 const groups = [
   { title: 'Services', links: [['Inbound Support','/inbound-support'],['Appointment Setting','/appointment-setting'],['Cold Calling','/cold-calling'],['AI Automation','/ai-automation']] },
   { title: 'Industries', links: [['Home Services','/appointment-setting'],['Real Estate','/cold-calling'],['SaaS','/services'],['Professional Services','/services']] },
-  { title: 'Company', links: [['About','/about-us'],['Pricing','/pricing'],['Careers','/careers'],['Contact','/contact']] },
-  { title: 'Resources', links: [['Blog','/blog'],['Help Center','/help-center'],['Documentation','/docs'],['Privacy','/privacy-policy'],['Terms','/terms']] },
+  { title: 'Company', links: [['About','/about-us'],['Pricing','/pricing'],['Contact','/contact']] },
+  { title: 'Resources', links: [['Help Center','/help-center'],['Privacy','/privacy-policy'],['Terms','/terms']] },
 ];
 
 export default function Footer() {

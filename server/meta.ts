@@ -1,6 +1,4 @@
-import { blogPostsMeta } from '../shared/blogPosts';
-
-const BASE_URL = 'https://victorysync.com';
+const BASE_URL = 'https://www.victorysync.com';
 const DEFAULT_IMAGE = `${BASE_URL}/LOGO_VS.png`;
 
 interface RouteMeta {
@@ -61,17 +59,9 @@ const STATIC_ROUTES: Record<string, RouteMeta> = {
     title: 'Book a Free Strategy Call | VictorySync Contact Center',
     description: 'Schedule a call with VictorySync to map your inbound support, outbound calling, qualification, appointment-setting, or lead-follow-up workflow.',
   },
-  '/careers': {
-    title: 'Careers at VictorySync | Join Our Contact Center Team',
-    description: 'VictorySync is hiring customer service representatives, appointment setters, and operations staff. Remote and Millstone NJ positions available.',
-  },
   '/help-center': {
     title: 'Help Center | VictorySync Support & Documentation',
     description: 'Get help with VictorySync inbound support, appointment setting, cold calling, reporting, agent workflows, and account operations.',
-  },
-  '/docs': {
-    title: 'Documentation | VictorySync Integration & API Guides',
-    description: 'Technical documentation for VictorySync integrations, webhooks, and reporting APIs. Connect your CRM, calendar, and communication tools.',
   },
   '/privacy-policy': {
     title: 'Privacy Policy | VictorySync',
@@ -81,36 +71,11 @@ const STATIC_ROUTES: Record<string, RouteMeta> = {
     title: 'Terms of Service | VictorySync',
     description: 'VictorySync terms of service — the terms and conditions governing use of our contact center and AI automation services.',
   },
-  '/blog': {
-    title: 'Blog | Contact Center & Customer Service Insights | VictorySync',
-    description: 'Tips, guides, and insights on inbound support, appointment setting, cold calling, and AI automation for US businesses. From the VictorySync team.',
-    ogType: 'website',
-  },
 };
 
 function getRouteMeta(pathname: string): RouteMeta | null {
   if (STATIC_ROUTES[pathname]) {
     return STATIC_ROUTES[pathname];
-  }
-
-  const blogSlugMatch = pathname.match(/^\/blog\/([^/]+)$/);
-  if (blogSlugMatch) {
-    const slug = blogSlugMatch[1];
-    const post = blogPostsMeta.find(p => p.slug === slug);
-    if (post) {
-      return {
-        title: `${post.title} | VictorySync Blog`,
-        description: post.excerpt,
-        ogType: 'article',
-        ogImage: post.image,
-        canonical: `${BASE_URL}/blog/${post.slug}`,
-      };
-    }
-    return {
-      title: 'Blog | VictorySync',
-      description: 'Read insights and guides from the VictorySync contact center team.',
-      ogType: 'article',
-    };
   }
 
   return null;

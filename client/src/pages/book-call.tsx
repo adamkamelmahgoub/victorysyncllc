@@ -100,11 +100,11 @@ const BookCall = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+17188132106"
+              href="tel:+201070394707"
               className="inline-flex items-center gap-2 border border-ink-600 text-slate-300 hover:text-cyan-400 hover:border-cyan-400 px-6 py-3 rounded-lg font-medium transition-colors"
             >
               <Phone className="w-4 h-4" />
-              +1 (718) 813-2106
+              +20 107 039 4707
             </a>
             <a
               href="mailto:info@victorysync.com"

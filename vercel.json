@@ -9,6 +9,12 @@
       "permanent": true
     }
   ],
+  "routes": [
+    {
+      "src": "^/(?:blog(?:/(?:reduce-customer-service-costs|ai-automation-vs-human-touch|when-to-outsource-call-center|building-customer-loyalty|scaling-outsourced-support|roi-of-customer-service))?|careers|docs)/?$",
+      "status": 410
+    }
+  ],
   "headers": [
     {
       "source": "/(login|register|signup|checkout|dashboard)",
@@ -21,6 +27,19 @@
     }
   ],
   "rewrites": [
+    { "source": "/services", "destination": "/services/index.html" },
+    { "source": "/appointment-setting", "destination": "/appointment-setting/index.html" },
+    { "source": "/cold-calling", "destination": "/cold-calling/index.html" },
+    { "source": "/inbound-support", "destination": "/inbound-support/index.html" },
+    { "source": "/ai-automation", "destination": "/ai-automation/index.html" },
+    { "source": "/pricing", "destination": "/pricing/index.html" },
+    { "source": "/platform", "destination": "/platform/index.html" },
+    { "source": "/about-us", "destination": "/about-us/index.html" },
+    { "source": "/contact", "destination": "/contact/index.html" },
+    { "source": "/book-call", "destination": "/book-call/index.html" },
+    { "source": "/help-center", "destination": "/help-center/index.html" },
+    { "source": "/privacy-policy", "destination": "/privacy-policy/index.html" },
+    { "source": "/terms", "destination": "/terms/index.html" },
     {
       "source": "/(.*)",
       "destination": "/index.html"

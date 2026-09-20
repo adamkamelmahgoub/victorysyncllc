@@ -34,7 +34,7 @@ const faqs = [
 
 const structuredData = [{
   '@context': 'https://schema.org', '@type': 'Service', name: 'VictorySync Contact Center Services',
-  provider: { '@type': 'Organization', name: 'VictorySync', url: 'https://victorysync.com' },
+  provider: { '@type': 'Organization', name: 'VictorySync', url: 'https://www.victorysync.com' },
   areaServed: 'United States', serviceType: ['Appointment Setting', 'Cold Calling', 'Lead Qualification', 'Inbound Customer Support'],
 }, {
   '@context': 'https://schema.org', '@type': 'FAQPage',
@@ -62,7 +62,7 @@ const capabilities = [
 
 export default function Home() {
   const { open } = useCalendly();
-  useSeo({ title: 'VictorySync | Human-Led Call Center & Appointment Setting', description: 'US-managed call center services with trained Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound support.', canonical: 'https://victorysync.com/', structuredData });
+  useSeo({ title: 'VictorySync | Human-Led Call Center & Appointment Setting', description: 'US-managed call center services with trained Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound support.', canonical: 'https://www.victorysync.com/', structuredData });
 
   return (
     <MotionPage className="bg-white text-slate-900">

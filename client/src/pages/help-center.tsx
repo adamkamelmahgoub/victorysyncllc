@@ -116,9 +116,9 @@ export default function HelpCenter() {
       link: "#",
     },
     {
-      title: "API Documentation",
-      description: "Developer resources and guides",
-      link: "/docs",
+      title: "Service Overview",
+      description: "Explore our services",
+      link: "/services",
     },
     {
       title: "Contact Support",
@@ -307,7 +307,7 @@ export default function HelpCenter() {
             </div>
             <div>
               <h4 className="font-semibold text-white mb-2">Phone Support</h4>
-              <p className="text-gray-300">+1 (718) 813-2106</p>
+              <p className="text-gray-300">+20 107 039 4707</p>
               <p className="text-sm text-gray-400">Available 24/7</p>
             </div>
             <div>
