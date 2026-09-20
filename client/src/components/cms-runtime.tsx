@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { applyCms, elementKey, emptyContent, firstTextNode, safeContent, type CmsContent } from '@/lib/cms';
+import { applyCms, editableAttributes, elementKey, emptyContent, firstTextNode, safeContent, type CmsContent } from '@/lib/cms';
 
 declare global {
   interface Window { __CMS_READY__?: boolean }
@@ -21,7 +21,7 @@ export default function CmsRuntime() {
     const observer = new MutationObserver(() => render());
     const headObserver = new MutationObserver(() => render());
     const root = document.getElementById('root');
-    if (root) observer.observe(root, { childList: true, subtree: true, characterData: true });
+    if (root) observer.observe(root, { childList: true, subtree: true, characterData: true, attributes: true });
     headObserver.observe(document.head, { childList: true, subtree: true, characterData: true, attributes: true });
 
     const onMessage = (event: MessageEvent) => {
@@ -41,17 +41,23 @@ export default function CmsRuntime() {
           !(element instanceof HTMLAnchorElement) && !firstTextNode(element)) element = element.parentElement;
       }
       if (!(element instanceof HTMLElement) || element.id === 'root') return;
-      const originalStyle = element.getAttribute('style') || '';
       if (selected) selected.style.outline = '';
+      const originalStyle = element.getAttribute('style') || '';
       selected = element;
       selected.style.outline = '3px solid #06b6d4';
+      const textNodes = Array.from(element.childNodes)
+        .filter((node): node is Text => node.nodeType === Node.TEXT_NODE)
+        .map((node) => node.textContent || '');
       window.parent.postMessage({
         type: 'CMS_SELECT', key: elementKey(element), tag: element.tagName.toLowerCase(),
         text: firstTextNode(element)?.textContent || '',
+        textNodes,
         src: element instanceof HTMLImageElement ? element.getAttribute('src') || '' : undefined,
         alt: element instanceof HTMLImageElement ? element.alt : undefined,
         href: element instanceof HTMLAnchorElement ? element.getAttribute('href') || '' : undefined,
         style: originalStyle,
+        className: element.className,
+        attributes: editableAttributes(element),
       }, window.location.origin);
     };
     window.addEventListener('message', onMessage);

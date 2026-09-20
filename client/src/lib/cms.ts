@@ -1,9 +1,12 @@
 export type ElementEdit = {
   text?: string;
+  textNodes?: Record<string, string>;
   src?: string;
   alt?: string;
   href?: string;
   style?: string;
+  className?: string;
+  attributes?: Record<string, string>;
   hidden?: boolean;
 };
 
@@ -29,6 +32,28 @@ export const emptyContent = (): CmsContent => ({ version: 1, elements: {}, seo: 
 export const CMS_OWNER = 'adamkamelmahgoub';
 export const CMS_REPO = 'victorysyncllc';
 export const CMS_FILE = 'client/public/cms/content.json';
+export const CMS_ADMIN_GITHUB_ID = 243559865;
+
+export function editableAttributes(element: Element): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const attribute of Array.from(element.attributes)) {
+    if (/^(title|placeholder|aria-[\w-]+|data-[\w-]+|name|value|target|rel|width|height|loading|type|role|id)$/i.test(attribute.name)) {
+      result[attribute.name] = attribute.value;
+    }
+  }
+  return result;
+}
+
+export function safeAttribute(name: string, value: string): boolean {
+  if (!/^(title|placeholder|aria-[\w-]+|data-[\w-]+|name|value|target|rel|width|height|loading|type|role|id)$/i.test(name)) return false;
+  if ((name === 'target' && !['_self', '_blank', '_parent', '_top'].includes(value)) || (name === 'type' && !/^[\w-]+$/.test(value))) return false;
+  return true;
+}
+
+export function safeUrl(value: string): boolean {
+  const trimmed = value.trim().toLowerCase();
+  return !/^(javascript|data|vbscript):/.test(trimmed);
+}
 
 export function selectorFor(element: Element): string {
   const parts: string[] = [];
@@ -70,7 +95,7 @@ export function applyCms(content: CmsContent, route = window.location.pathname):
         heading.className = 'text-3xl font-bold mb-5';
         heading.textContent = block.heading;
         inner.appendChild(heading);
-        if (block.image) {
+        if (block.image && safeUrl(block.image)) {
           const img = document.createElement('img');
           img.src = block.image;
           img.alt = block.imageAlt || '';
@@ -82,7 +107,7 @@ export function applyCms(content: CmsContent, route = window.location.pathname):
         body.className = 'text-lg leading-relaxed whitespace-pre-line';
         body.textContent = block.body;
         inner.appendChild(body);
-        if (block.buttonText && block.buttonUrl) {
+        if (block.buttonText && block.buttonUrl && safeUrl(block.buttonUrl)) {
           const button = document.createElement('a');
           button.className = 'inline-block mt-6 rounded-lg bg-cyan-500 px-6 py-3 font-bold text-slate-950';
           button.href = block.buttonUrl;
@@ -106,12 +131,26 @@ export function applyCms(content: CmsContent, route = window.location.pathname):
     if (!element) continue;
     const text = firstTextNode(element);
     if (text && edit.text !== undefined && text.textContent !== edit.text) text.textContent = edit.text;
+    if (edit.textNodes) {
+      const nodes = Array.from(element.childNodes).filter((node): node is Text => node.nodeType === Node.TEXT_NODE);
+      for (const [index, value] of Object.entries(edit.textNodes)) {
+        const node = nodes[Number(index)];
+        if (node && node.textContent !== value) node.textContent = value;
+      }
+    }
     if (element instanceof HTMLImageElement) {
-      if (edit.src !== undefined && element.getAttribute('src') !== edit.src) element.setAttribute('src', edit.src);
+      if (edit.src !== undefined && safeUrl(edit.src) && element.getAttribute('src') !== edit.src) element.setAttribute('src', edit.src);
       if (edit.alt !== undefined && element.alt !== edit.alt) element.alt = edit.alt;
     }
-    if (element instanceof HTMLAnchorElement && edit.href !== undefined && element.getAttribute('href') !== edit.href) {
+    if (element instanceof HTMLAnchorElement && edit.href !== undefined && safeUrl(edit.href) && element.getAttribute('href') !== edit.href) {
       element.setAttribute('href', edit.href);
+    }
+    if (edit.className !== undefined && element.className !== edit.className) element.className = edit.className;
+    if (edit.attributes) {
+      for (const [name, value] of Object.entries(edit.attributes)) {
+        if (!safeAttribute(name, value)) continue;
+        if (element.getAttribute(name) !== value) element.setAttribute(name, value);
+      }
     }
     if (edit.style !== undefined && element.getAttribute('style') !== edit.style) element.setAttribute('style', edit.style);
     if (edit.hidden !== undefined && element.hidden !== edit.hidden) element.hidden = edit.hidden;
