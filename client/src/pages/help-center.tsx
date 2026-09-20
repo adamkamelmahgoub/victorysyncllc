@@ -307,17 +307,17 @@ export default function HelpCenter() {
           </div>
           <div className="mt-8 grid md:grid-cols-3 gap-6 text-center">
             <div>
-              <h4 className="font-semibold text-white mb-2">Email Support</h4>
+              <h3 className="font-semibold text-white mb-2">Email Support</h3>
               <p className="text-gray-300">info@victorysync.com</p>
               <p className="text-sm text-gray-400">Response within 2 hours</p>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-2">Phone Support</h4>
+              <h3 className="font-semibold text-white mb-2">Phone Support</h3>
               <p className="text-gray-300">+20 107 039 4707</p>
               <p className="text-sm text-gray-400">Available 24/7</p>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-2">Live Chat</h4>
+              <h3 className="font-semibold text-white mb-2">Live Chat</h3>
               <p className="text-gray-300">Available in your dashboard</p>
               <p className="text-sm text-gray-400">Instant response</p>
             </div>

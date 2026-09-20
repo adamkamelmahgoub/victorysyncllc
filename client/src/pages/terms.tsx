@@ -32,9 +32,9 @@ export default function TermsOfService() {
             </p>
 
             <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-6 mb-8">
-              <h3 className="text-lg font-semibold text-cyan-400 mb-2">
+              <h2 className="text-lg font-semibold text-cyan-400 mb-2">
                 Agreement Overview
-              </h3>
+              </h2>
               <p className="text-emerald-300">
                 By accessing victorysync.com, booking a call, or using our services, you agree to these Terms. If you act on behalf of a company, you confirm you're authorized to bind that company. If you do not agree, do not use our services.
               </p>

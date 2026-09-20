@@ -41,7 +41,7 @@ export function LogoRow({ logos, title = "Trusted by leading organizations" }: L
               {logo.component ? (
                 <logo.component className="h-8 w-auto" />
               ) : logo.src ? (
-                <img src={logo.src} alt={logo.name} className="h-8 w-auto" />
+                <img src={logo.src} alt={logo.name} width="160" height="32" loading="lazy" className="h-8 w-auto" />
               ) : (
                 <span className="text-slate-400 font-semibold">{logo.name}</span>
               )}

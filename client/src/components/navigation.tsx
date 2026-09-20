@@ -50,7 +50,7 @@ export default function Navigation() {
     <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
         <Link href="/" onClick={closeAndScroll} className="flex items-center gap-3">
-          <img src="/LOGO_VS.png" alt="VictorySync" className="h-9 w-9 rounded-lg border border-slate-200 bg-white p-1" />
+          <img src="/LOGO_VS.webp" alt="VictorySync" width="1024" height="1024" className="h-9 w-9 rounded-lg border border-slate-200 bg-white p-1" />
           <span className="text-lg font-bold tracking-tight text-slate-900">VictorySync</span>
         </Link>
 

@@ -44,6 +44,17 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (/node_modules[\\/](@?react|react-dom|scheduler)[\\/]/.test(id)) return "react-vendor";
+          if (id.includes("node_modules/framer-motion")) return "motion-vendor";
+          if (id.includes("node_modules/@tanstack")) return "query-vendor";
+          if (id.includes("node_modules/@radix-ui")) return "radix-vendor";
+        },
+      },
+    },
   },
   server: {
     fs: {
