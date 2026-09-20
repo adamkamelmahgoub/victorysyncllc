@@ -5,7 +5,8 @@ import { registerUserSchema, loginSchema, type PublicUser } from "../shared/sche
 import { storage } from "./storage";
 import { sendEmail } from "./utils/sendEmail";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'development-only-secret');
+if (!JWT_SECRET) throw new Error('JWT_SECRET must be set in production');
 
 export interface AuthenticatedRequest extends Request {
   user?: PublicUser;
