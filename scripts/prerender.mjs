@@ -48,8 +48,11 @@ try {
   if (!ready) throw new Error('Vite preview did not start: ' + previewError);
 
   browser = await puppeteer.launch({ executablePath: chrome, headless, args: browserArgs });
+  let homepageHtml;
   for (const path of paths) {
     const page = await browser.newPage();
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
     await page.setRequestInterception(true);
     page.on('request', (request) => {
       if (request.url().startsWith(`http://127.0.0.1:${port}/`) || request.url().startsWith('data:')) {
@@ -59,10 +62,20 @@ try {
       }
     });
     await page.goto(`http://127.0.0.1:${port}${path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForFunction((expected) => {
-      return document.querySelector('h1') !== null &&
-        document.querySelector('link[rel="canonical"]')?.getAttribute('href') === expected;
-    }, { timeout: 30000 }, `https://www.victorysync.com${path}`);
+    try {
+      await page.waitForFunction((expected) => {
+        return document.querySelector('h1') !== null &&
+          document.querySelector('link[rel="canonical"]')?.getAttribute('href') === expected;
+      }, { timeout: 20000 }, `https://www.victorysync.com${path}`);
+    } catch (error) {
+      const diagnostic = await page.evaluate(() => ({
+        title: document.title,
+        canonical: document.querySelector('link[rel="canonical"]')?.getAttribute('href'),
+        h1: document.querySelector('h1')?.textContent,
+        root: document.querySelector('#root')?.textContent?.slice(0, 150),
+      }));
+      throw new Error(`Prerender timeout for ${path}: ${JSON.stringify(diagnostic)}; page errors: ${pageErrors.join(' | ')}; ${error.message}`);
+    }
     const html = await page.content();
     await page.close();
     const canonical = html.match(/<link[^>]*rel="canonical"[^>]*href="([^"]+)"/i)?.[1];
@@ -73,11 +86,18 @@ try {
         title === 'VictorySync | Human-Led Call Center & Appointment Setting') {
       throw new Error(`Prerender failed for ${path}`);
     }
-    const destination = path === '/' ? join(out, 'index.html') : join(out, path, 'index.html');
-    mkdirSync(resolve(destination, '..'), { recursive: true });
-    writeFileSync(destination, html);
+    if (path === '/') {
+      // Keep Vite's small SPA shell available as the fallback while rendering other routes.
+      homepageHtml = html;
+    } else {
+      const destination = join(out, path, 'index.html');
+      mkdirSync(resolve(destination, '..'), { recursive: true });
+      writeFileSync(destination, html);
+    }
     console.log(`Prerendered ${path}: ${Buffer.byteLength(html)} bytes`);
   }
+  if (!homepageHtml) throw new Error('Homepage was not prerendered');
+  writeFileSync(join(out, 'index.html'), homepageHtml);
 } finally {
   await browser?.close();
   preview.kill();
