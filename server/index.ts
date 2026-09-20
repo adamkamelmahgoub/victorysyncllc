@@ -17,7 +17,7 @@ import { injectRouteMeta } from "./meta";
 
 // Validate required environment variables at startup
 function validateEnvironment() {
-  const requiredEnvVars = ["DATABASE_URL"];
+  const requiredEnvVars = ["DATABASE_URL", ...(process.env.NODE_ENV === 'production' ? ["JWT_SECRET"] : [])];
   const missing = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
   if (missing.length > 0) {

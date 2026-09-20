@@ -4,19 +4,25 @@ import { storage } from './storage';
 
 export async function initializeAdminUser() {
   try {
+    const email = process.env.INITIAL_ADMIN_EMAIL;
+    const password = process.env.INITIAL_ADMIN_PASSWORD;
+    if (!email && !password) return;
+    if (!email || !password || password.length < 16) {
+      throw new Error('Set INITIAL_ADMIN_EMAIL and an INITIAL_ADMIN_PASSWORD of at least 16 characters together.');
+    }
     // Check if admin user already exists
-    const existingAdmin = await storage.getPublicUserByEmail('kimo8723@victorysync.com');
+    const existingAdmin = await storage.getPublicUserByEmail(email);
     if (existingAdmin) {
       console.log('✅ Admin user already exists');
       return;
     }
 
     // Create admin user
-    const hashedPassword = await bcrypt.hash('Mshmsh7184365700!', 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     
     const adminUser = await storage.createPublicUser({
       name: 'Victory Sync Admin',
-      email: 'kimo8723@victorysync.com',
+      email,
       passwordHash: hashedPassword,
       provider: 'local',
       isActive: true,
