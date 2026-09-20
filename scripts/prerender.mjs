@@ -65,7 +65,7 @@ try {
     await page.goto(`http://127.0.0.1:${port}${path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     try {
       await page.waitForFunction((expected) => {
-        return document.querySelector('h1') !== null &&
+        return window.__CMS_READY__ === true && document.querySelector('h1') !== null &&
           document.querySelector('link[rel="canonical"]')?.getAttribute('href') === expected;
       }, { timeout: 20000 }, `https://www.victorysync.com${path}`);
     } catch (error) {

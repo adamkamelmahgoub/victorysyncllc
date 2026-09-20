@@ -56,7 +56,7 @@
         };
         document.head.appendChild(o);
       }
-      initApollo();
+      if (!new URLSearchParams(window.location.search).has("cmsEdit")) initApollo();
     </script>
 
   </head>

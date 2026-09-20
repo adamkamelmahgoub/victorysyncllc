@@ -19,6 +19,7 @@ function ScrollToTop() {
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 import CartModal from "@/components/cart-modal";
+import CmsRuntime from "@/components/cms-runtime";
 
 // Pages
 const Home = lazy(() => import("@/pages/home"));
@@ -33,6 +34,7 @@ import CustomerDashboard from "@/pages/customer-dashboard";
 const Platform = lazy(() => import("@/pages/platform"));
 const BookCall = lazy(() => import("@/pages/book-call"));
 const NotFound = lazy(() => import("@/pages/not-found"));
+const CmsPage = lazy(() => import("@/pages/cms"));
 
 // Service Pages
 const InboundSupport = lazy(() => import("@/pages/inbound-support"));
@@ -57,6 +59,8 @@ function Router() {
 
   const openCartModal = () => setCartModalOpen(true);
   const closeCartModal = () => setCartModalOpen(false);
+
+  if (location === "/cms") return <Suspense fallback={null}><CmsPage /></Suspense>;
 
   return (
     <div className="site-light-theme min-h-screen flex flex-col bg-white text-slate-900">
@@ -98,6 +102,7 @@ function Router() {
             <Route component={NotFound} />
           </Switch>
         </AnimatePresence></Suspense>
+        <div id="cms-blocks" />
       </main>
 
       <Footer />
@@ -117,6 +122,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <CmsRuntime />
         </TooltipProvider>
       </CartProvider>
     </QueryClientProvider>
