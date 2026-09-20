@@ -17,7 +17,7 @@
   ],
   "headers": [
     {
-      "source": "/(login|register|signup|checkout|dashboard)",
+      "source": "/(login|register|signup|checkout|dashboard|cms)",
       "headers": [
         {
           "key": "X-Robots-Tag",
