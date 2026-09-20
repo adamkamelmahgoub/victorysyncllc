@@ -24,6 +24,22 @@ for (const { url, path } of paths) {
   if (titles.has(title) || descriptions.has(description)) throw new Error(`${path}: duplicate metadata`);
   titles.add(title);
   descriptions.add(description);
+  const headings = [...html.matchAll(/<h([1-6])(?:\s|>)/gi)].map((match) => Number(match[1]));
+  for (let i = 1; i < headings.length; i++) {
+    if (headings[i] > headings[i - 1] + 1) {
+      throw new Error(`${path}: heading level jumps from H${headings[i - 1]} to H${headings[i]}`);
+    }
+  }
+  for (const [tag] of html.matchAll(/<img\b[^>]*>/gi)) {
+    if (!/\balt=/.test(tag) || !/\bwidth=/.test(tag) || !/\bheight=/.test(tag)) {
+      throw new Error(`${path}: image missing alt or dimensions: ${tag.slice(0, 120)}`);
+    }
+  }
+  if (/^\/(?:appointment-setting-for-home-services|cold-calling-for-plumbers|appointment-setting-for-real-estate|inbound-support-for-law-firms)$/.test(path)) {
+    const content = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1] || '';
+    const words = content.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).length;
+    if (words < 600 || words > 900) throw new Error(`${path}: ${words} page words`);
+  }
   const schemaScripts = [...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)];
   for (const [, content] of schemaScripts) JSON.parse(content);
   if (html.includes('https://victorysync.com')) throw new Error(`${path}: non-www schema or metadata URL`);

@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
 import { AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -21,30 +21,30 @@ import Footer from "@/components/footer";
 import CartModal from "@/components/cart-modal";
 
 // Pages
-import Home from "@/pages/home";
-import Services from "@/pages/services";
-import Pricing from "@/pages/pricing";
-import About from "@/pages/about";
-import Contact from "@/pages/contact";
+const Home = lazy(() => import("@/pages/home"));
+const Services = lazy(() => import("@/pages/services"));
+const Pricing = lazy(() => import("@/pages/pricing"));
+const About = lazy(() => import("@/pages/about"));
+const Contact = lazy(() => import("@/pages/contact"));
 import Checkout from "@/pages/checkout";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
 import CustomerDashboard from "@/pages/customer-dashboard";
-import Platform from "@/pages/platform";
-import BookCall from "@/pages/book-call";
-import NotFound from "@/pages/not-found";
+const Platform = lazy(() => import("@/pages/platform"));
+const BookCall = lazy(() => import("@/pages/book-call"));
+const NotFound = lazy(() => import("@/pages/not-found"));
 
 // Service Pages
-import InboundSupport from "@/pages/inbound-support";
-import AppointmentSetting from "@/pages/appointment-setting";
-import ColdCalling from "@/pages/cold-calling";
-import AiAutomation from "@/pages/ai-automation";
+const InboundSupport = lazy(() => import("@/pages/inbound-support"));
+const AppointmentSetting = lazy(() => import("@/pages/appointment-setting"));
+const ColdCalling = lazy(() => import("@/pages/cold-calling"));
+const AiAutomation = lazy(() => import("@/pages/ai-automation"));
 
 // Footer Pages
-import AboutUs from "@/pages/about-us";
-import HelpCenter from "@/pages/help-center";
-import PrivacyPolicy from "@/pages/privacy-policy";
-import TermsOfService from "@/pages/terms";
+const AboutUs = lazy(() => import("@/pages/about-us"));
+const HelpCenter = lazy(() => import("@/pages/help-center"));
+const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
+const TermsOfService = lazy(() => import("@/pages/terms"));
 
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/600.css";
@@ -63,7 +63,7 @@ function Router() {
       <Navigation />
 
       <main className="flex-1">
-        <AnimatePresence mode="wait">
+        <Suspense fallback={null}><AnimatePresence mode="wait">
           <Switch key={location}>
             <Route path="/" component={Home} />
             <Route path="/services" component={Services} />
@@ -92,7 +92,7 @@ function Router() {
             
             <Route component={NotFound} />
           </Switch>
-        </AnimatePresence>
+        </AnimatePresence></Suspense>
       </main>
 
       <Footer />

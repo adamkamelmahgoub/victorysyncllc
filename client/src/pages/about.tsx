@@ -63,6 +63,8 @@ export default function About() {
               <img
                 src="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
                 alt="Modern business district"
+                width="800"
+                height="600"
                 className="rounded-2xl shadow-lg w-full border border-ink-700"
               />
             </div>
@@ -206,6 +208,9 @@ export default function About() {
                 <img
                   src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"
                   alt="CEO Portrait"
+                  width="200"
+                  height="200"
+                  loading="lazy"
                   className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-cyan-500/30"
                 />
                 <h3 className="text-xl font-bold text-white mb-2">Executive Leadership</h3>
@@ -221,6 +226,9 @@ export default function About() {
                 <img
                   src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"
                   alt="Operations Lead Portrait"
+                  width="200"
+                  height="200"
+                  loading="lazy"
                   className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-cyan-500/30"
                 />
                 <h3 className="text-xl font-bold text-white mb-2">Sarah Mitchell</h3>
@@ -236,6 +244,9 @@ export default function About() {
                 <img
                   src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"
                   alt="Quality Lead Portrait"
+                  width="200"
+                  height="200"
+                  loading="lazy"
                   className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-cyan-500/30"
                 />
                 <h3 className="text-xl font-bold text-white mb-2">Omar El-Masry</h3>

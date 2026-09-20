@@ -32,9 +32,9 @@ export default function PrivacyPolicy() {
             </p>
 
             <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-6 mb-8">
-              <h3 className="text-lg font-semibold text-cyan-400 mb-2">
+              <h2 className="text-lg font-semibold text-cyan-400 mb-2">
                 Scope
-              </h3>
+              </h2>
               <p className="text-emerald-300">
                 This Policy covers visitors to victorysync.com, prospects, and customers who use our Services. If a separate agreement applies to your engagement with us, that agreement controls where it conflicts with this Policy.
               </p>
