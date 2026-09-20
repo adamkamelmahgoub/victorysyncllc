@@ -3,7 +3,7 @@ import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.webp';
 
 const groups = [
   { title: 'Services', links: [['Inbound Support','/inbound-support'],['Appointment Setting','/appointment-setting'],['Cold Calling','/cold-calling'],['AI Automation','/ai-automation']] },
-  { title: 'Industries', links: [['Home Services','/appointment-setting'],['Real Estate','/cold-calling'],['SaaS','/services'],['Professional Services','/services']] },
+  { title: 'Industries', links: [['Home Services','/appointment-setting-for-home-services'],['Plumbers','/cold-calling-for-plumbers'],['Real Estate','/appointment-setting-for-real-estate'],['Law Firms','/inbound-support-for-law-firms']] },
   { title: 'Company', links: [['About','/about-us'],['Pricing','/pricing'],['Contact','/contact']] },
   { title: 'Resources', links: [['Help Center','/help-center'],['Privacy','/privacy-policy'],['Terms','/terms']] },
 ];

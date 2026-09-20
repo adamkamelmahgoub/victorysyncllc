@@ -24,6 +24,10 @@ export const pageMeta: Record<string, [string, string]> = {
   '/help-center': ['Help Center | VictorySync', 'Answers to common questions about VictorySync services, onboarding, and reporting.'],
   '/privacy-policy': ['Privacy Policy | VictorySync', 'How VictorySync collects, uses, and protects your data.'],
   '/terms': ['Terms of Service | VictorySync', 'Terms governing use of VictorySync services.'],
+  '/appointment-setting-for-home-services': ['Appointment Setting for Home Services | VictorySync', 'Help home service leads reach a real person, get qualified, and book the right estimate or service visit. US-managed appointment setting with clear handoffs.'],
+  '/cold-calling-for-plumbers': ['Cold Calling for Plumbers | VictorySync', 'Outbound calling for plumbing companies targeting property managers, commercial accounts, and approved prospect lists. Human agents, clear scripts, and reporting.'],
+  '/appointment-setting-for-real-estate': ['Real Estate Appointment Setting | VictorySync', 'Follow up with real estate inquiries, understand timing and intent, and schedule useful agent conversations. Human-led appointment setting with organized handoffs.'],
+  '/inbound-support-for-law-firms': ['Inbound Support for Law Firms | VictorySync', 'Help law firm callers reach a real person, share intake basics, and get routed to the right staff member. Human-led support with firm-approved scripts and boundaries.'],
 };
 
 const services: Record<string, string> = {
@@ -31,6 +35,10 @@ const services: Record<string, string> = {
   '/cold-calling': 'Cold Calling',
   '/inbound-support': 'Inbound Customer Support',
   '/ai-automation': 'AI Call Qualification and Routing',
+  '/appointment-setting-for-home-services': 'Appointment Setting for Home Services',
+  '/cold-calling-for-plumbers': 'Cold Calling for Plumbers',
+  '/appointment-setting-for-real-estate': 'Appointment Setting for Real Estate',
+  '/inbound-support-for-law-firms': 'Inbound Support for Law Firms',
 };
 
 export function useSeo({ title, description, ogImage, structuredData }: SeoProps) {

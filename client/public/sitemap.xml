@@ -14,4 +14,8 @@
   <url><loc>https://www.victorysync.com/help-center</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://www.victorysync.com/privacy-policy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://www.victorysync.com/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://www.victorysync.com/appointment-setting-for-home-services</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.victorysync.com/cold-calling-for-plumbers</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.victorysync.com/appointment-setting-for-real-estate</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.victorysync.com/inbound-support-for-law-firms</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 </urlset>
