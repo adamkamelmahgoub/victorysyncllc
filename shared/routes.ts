@@ -11,10 +11,7 @@ export const PUBLIC_ROUTES: ReadonlySet<string> = new Set([
   "/appointment-setting",
   "/cold-calling",
   "/ai-automation",
-  "/blog",
-  "/careers",
   "/help-center",
-  "/docs",
   "/privacy-policy",
   "/terms",
   "/checkout",
@@ -24,21 +21,9 @@ export const PUBLIC_ROUTES: ReadonlySet<string> = new Set([
   "/dashboard",
 ]);
 
-export const BLOG_SLUGS: ReadonlySet<string> = new Set([
-  "reduce-customer-service-costs",
-  "ai-automation-vs-human-touch",
-  "when-to-outsource-call-center",
-  "building-customer-loyalty",
-  "scaling-outsourced-support",
-  "roi-of-customer-service",
-]);
-
 export function isKnownRoute(pathname: string): boolean {
   const clean = pathname.split("?")[0].replace(/\/$/, "") || "/";
-  if (PUBLIC_ROUTES.has(clean)) return true;
-  const blogMatch = clean.match(/^\/blog\/([^/]+)$/);
-  if (blogMatch) return BLOG_SLUGS.has(blogMatch[1]);
-  return false;
+  return PUBLIC_ROUTES.has(clean);
 }
 
 export const SITEMAP_ENTRIES: ReadonlyArray<{
@@ -58,15 +43,7 @@ export const SITEMAP_ENTRIES: ReadonlyArray<{
   { path: "/platform", changefreq: "monthly", priority: "0.7" },
   { path: "/about", changefreq: "monthly", priority: "0.7" },
   { path: "/about-us", changefreq: "monthly", priority: "0.7" },
-  { path: "/careers", changefreq: "monthly", priority: "0.5" },
-  { path: "/blog", changefreq: "weekly", priority: "0.7" },
-  ...Array.from(BLOG_SLUGS).map((slug) => ({
-    path: `/blog/${slug}`,
-    changefreq: "monthly",
-    priority: "0.6",
-  })),
   { path: "/help-center", changefreq: "monthly", priority: "0.5" },
-  { path: "/docs", changefreq: "monthly", priority: "0.5" },
   { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },
   { path: "/terms", changefreq: "yearly", priority: "0.3" },
 ];

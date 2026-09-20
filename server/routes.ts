@@ -53,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Dynamic sitemap — generated from the shared route manifest
-  const BASE_URL = "https://victorysync.com";
+  const BASE_URL = "https://www.victorysync.com";
   app.get("/sitemap.xml", (_req, res) => {
     const urls = SITEMAP_ENTRIES.map(
       ({ path, changefreq, priority }) => `  <url>

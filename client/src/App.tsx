@@ -42,10 +42,7 @@ import AiAutomation from "@/pages/ai-automation";
 
 // Footer Pages
 import AboutUs from "@/pages/about-us";
-import Careers from "@/pages/careers";
-import Blog from "@/pages/blog";
 import HelpCenter from "@/pages/help-center";
-import Documentation from "@/pages/docs";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms";
 
@@ -89,11 +86,7 @@ function Router() {
 
             {/* Footer Pages */}
             <Route path="/about-us" component={AboutUs} />
-            <Route path="/careers" component={Careers} />
-            <Route path="/blog/:slug" component={Blog} />
-            <Route path="/blog" component={Blog} />
             <Route path="/help-center" component={HelpCenter} />
-            <Route path="/docs" component={Documentation} />
             <Route path="/privacy-policy" component={PrivacyPolicy} />
             <Route path="/terms" component={TermsOfService} />
             

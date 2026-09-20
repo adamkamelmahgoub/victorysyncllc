@@ -1,13 +1,19 @@
+type FacebookPixel = ((...args: unknown[]) => void) & {
+  loaded?: boolean;
+  version?: string;
+  queue?: unknown[];
+  push?: (...args: unknown[]) => void;
+};
+
 declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
-    fbq?: (...args: unknown[]) => void;
+    fbq?: FacebookPixel;
     _fbq?: unknown;
     trackingFunctions?: {
       onLoad?: (options: { appId: string }) => void;
     };
-    requestIdleCallback?: (callback: IdleRequestCallback) => number;
   }
 }
 
@@ -32,15 +38,10 @@ const appendScript = (src: string, onload?: () => void) => {
 function loadMetaPixel() {
   if (window.fbq) return;
 
-  const fbq = function (...args: unknown[]) {
-    const queue = (fbq as typeof fbq & { queue?: unknown[] }).queue || [];
+  const fbq: FacebookPixel = function (...args: unknown[]) {
+    const queue = fbq.queue || [];
     queue.push(args);
-    (fbq as typeof fbq & { queue: unknown[] }).queue = queue;
-  } as typeof window.fbq & {
-    loaded?: boolean;
-    version?: string;
-    queue?: unknown[];
-    push?: typeof window.fbq;
+    fbq.queue = queue;
   };
 
   fbq.loaded = true;
@@ -51,8 +52,8 @@ function loadMetaPixel() {
   window._fbq = fbq;
 
   appendScript("https://connect.facebook.net/en_US/fbevents.js");
-  window.fbq("init", "2060370554550917");
-  window.fbq("track", "PageView");
+  fbq("init", "2060370554550917");
+  fbq("track", "PageView");
 }
 
 export function loadMarketingAnalytics() {
