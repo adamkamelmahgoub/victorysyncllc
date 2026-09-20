@@ -10,6 +10,7 @@ function asyncStylesheets() {
     transformIndexHtml: {
       order: "post" as const,
       handler(html: string) {
+        if (html.includes("<title>VictorySync Website CMS</title>")) return html;
         return html.replace(
           /<link rel="stylesheet" crossorigin href="([^"]+\.css)">/g,
           '<link rel="preload" href="$1" as="style" onload="this.onload=null;this.rel=\'stylesheet\'"><noscript><link rel="stylesheet" href="$1"></noscript>',
@@ -45,6 +46,10 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
     rollupOptions: {
+      input: {
+        main: path.resolve(import.meta.dirname, "client", "index.html"),
+        cms: path.resolve(import.meta.dirname, "client", "cms.html"),
+      },
       output: {
         manualChunks(id) {
           if (!id.includes("node_modules")) return;

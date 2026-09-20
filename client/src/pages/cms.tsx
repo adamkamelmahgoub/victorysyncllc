@@ -79,9 +79,10 @@ export default function CmsPage() {
 
   useEffect(() => {
     if (!connected) return;
-    localStorage.setItem(draftKey, JSON.stringify(content));
+    if (JSON.stringify(content) === JSON.stringify(published)) localStorage.removeItem(draftKey);
+    else localStorage.setItem(draftKey, JSON.stringify(content));
     frame.current?.contentWindow?.postMessage({ type: 'CMS_PREVIEW', content }, window.location.origin);
-  }, [content, connected, route]);
+  }, [content, published, connected, route]);
 
   useEffect(() => {
     const receive = (event: MessageEvent) => {
@@ -187,7 +188,7 @@ export default function CmsPage() {
         <div><div className="text-xs font-bold tracking-widest text-cyan-400">VICTORYSYNC</div><h1 className="text-xl font-bold">Website CMS</h1></div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-400">{changed ? 'Unpublished changes' : 'All changes published'}</span>
-          <button onClick={() => { setContent(published); localStorage.removeItem(draftKey); setMessage('Draft discarded.'); }} disabled={!changed || busy} className="rounded-lg border border-slate-600 px-4 py-2 disabled:opacity-40">Discard draft</button>
+          <button onClick={() => { setContent(published); localStorage.removeItem(draftKey); setSelection(null); setFrameVersion((value) => value + 1); setMessage('Draft discarded.'); }} disabled={!changed || busy} className="rounded-lg border border-slate-600 px-4 py-2 disabled:opacity-40">Discard draft</button>
           <button onClick={publish} disabled={!changed || busy} className="rounded-lg bg-cyan-500 text-slate-950 font-bold px-4 py-2 disabled:opacity-40">Publish changes</button>
         </div>
       </header>
@@ -213,7 +214,7 @@ export default function CmsPage() {
             {selection.tag === 'a' && <Field label="Link URL" value={edit.href ?? selection.href ?? ''} onChange={(value) => changeElement({ href: value })} />}
             <Field label="Custom CSS styles" value={edit.style ?? selection.style} multiline onChange={(value) => changeElement({ style: value })} />
             <label className="flex gap-2 items-center text-sm"><input type="checkbox" checked={Boolean(edit.hidden)} onChange={(event) => changeElement({ hidden: event.target.checked })} /> Hide this element</label>
-            <button className="text-sm text-cyan-400 underline" onClick={() => { const next = { ...content.elements }; delete next[selection.key]; setContent({ ...content, elements: next }); setMessage('This element is reset in the draft. Reload the preview to see its original value.'); }}>Reset this element</button>
+            <button className="text-sm text-cyan-400 underline" onClick={() => { const next = { ...content.elements }; delete next[selection.key]; setContent({ ...content, elements: next }); setSelection(null); setFrameVersion((value) => value + 1); setMessage('This element is reset in the draft.'); }}>Reset this element</button>
           </>)}
           {tab === 'sections' && <>
             <h2 className="font-semibold">Additional sections on {route}</h2>

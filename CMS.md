@@ -1,6 +1,6 @@
 # VictorySync website CMS
 
-Open `https://www.victorysync.com/cms` and connect with a GitHub fine grained personal access token. Give the token access only to `adamkamelmahgoub/victorysyncllc` with **Contents: Read and write**. The CMS keeps the token in memory for the current tab only. GitHub handles authorization; the website does not have an admin password or stored token.
+Open `https://www.victorysync.com/cms` and connect with a GitHub fine grained personal access token. Give the token access only to `adamkamelmahgoub/victorysyncllc` with **Contents: Read and write**. The CMS keeps the token in memory for the current tab only. GitHub handles authorization; the website does not have an admin password or stored token. The CMS uses a separate HTML shell, and marketing trackers are disabled in both the editor and its preview.
 
 Select any of the 18 marketing pages, then click text, an image, or a link in the preview. Hold **Alt** while clicking to select a surrounding section. You can edit text, image source and alt text, link targets, inline styles, and visibility. The Sections tab adds, edits, reorders, and removes additional page sections with images and calls to action. The SEO tab edits that page's title and description; social titles and descriptions follow them. The Media tab uploads an image to the repository and inserts its URL into the selected image. A draft is saved in the current browser's local storage until it is published or discarded.
 

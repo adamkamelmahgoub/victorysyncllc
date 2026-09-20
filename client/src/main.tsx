@@ -4,6 +4,8 @@ import { loadMarketingAnalytics } from "./lib/analytics";
 import "./index.css";
 
 document.documentElement.classList.add("dark");
-loadMarketingAnalytics();
+if (window.location.pathname !== "/cms" && !new URLSearchParams(window.location.search).has("cmsEdit")) {
+  loadMarketingAnalytics();
+}
 
 createRoot(document.getElementById("root")!).render(<App />);

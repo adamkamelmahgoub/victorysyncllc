@@ -13,7 +13,8 @@ const BookCall = () => {
   });
 
   useEffect(() => {
-    if (!(window as Window & { __PRERENDERING__?: boolean }).__PRERENDERING__) open();
+    if (!(window as Window & { __PRERENDERING__?: boolean }).__PRERENDERING__ &&
+        !new URLSearchParams(window.location.search).has("cmsEdit")) open();
   }, [open]);
 
   return (
