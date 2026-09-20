@@ -27,7 +27,7 @@ const Services = lazy(() => import("@/pages/services"));
 const Pricing = lazy(() => import("@/pages/pricing"));
 const About = lazy(() => import("@/pages/about"));
 const Contact = lazy(() => import("@/pages/contact"));
-import Checkout from "@/pages/checkout";
+const Checkout = lazy(() => import("@/pages/checkout"));
 import Register from "@/pages/register";
 import Login from "@/pages/login";
 import CustomerDashboard from "@/pages/customer-dashboard";
