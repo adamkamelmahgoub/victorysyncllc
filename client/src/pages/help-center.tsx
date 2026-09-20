@@ -1,8 +1,10 @@
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import { useSeo } from "@/hooks/useSeo";
+import { useCalendly } from "@/hooks/useCalendly";
 
 export default function HelpCenter() {
+  const { open: openCalendly } = useCalendly();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("getting-started");
   useSeo({
@@ -293,11 +295,9 @@ export default function HelpCenter() {
                 Contact Support
               </button>
             </Link>
-            <Link href="/book-call">
-              <button className="border border-ink-600 hover:border-cyan-400 text-gray-300 hover:text-cyan-400 px-8 py-3 rounded-lg font-semibold transition-colors">
-                Schedule a Call
-              </button>
-            </Link>
+            <button onClick={openCalendly} className="border border-ink-600 hover:border-cyan-400 text-gray-300 hover:text-cyan-400 px-8 py-3 rounded-lg font-semibold transition-colors">
+              Schedule a Call
+            </button>
           </div>
           <div className="mt-8 grid md:grid-cols-3 gap-6 text-center">
             <div>

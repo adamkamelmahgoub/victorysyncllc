@@ -8,13 +8,7 @@ declare global {
   }
 }
 
-interface ImportMetaEnv {
-  readonly VITE_CALENDLY_URL?: string;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
+export const CALENDLY_URL = 'https://calendly.com/adam-victorysync/victorysync-consultation';
 
 export function loadCalendlyAssets(): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -23,7 +17,7 @@ export function loadCalendlyAssets(): Promise<void> {
       return;
     }
 
-    if (!document.querySelector('link[href*="calendly.com"]')) {
+    if (!document.querySelector('link[rel="stylesheet"][href="https://assets.calendly.com/assets/external/widget.css"]')) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://assets.calendly.com/assets/external/widget.css';
@@ -46,20 +40,13 @@ export function loadCalendlyAssets(): Promise<void> {
 
 export function useCalendly() {
   const open = useCallback(async () => {
-    const calendlyUrl = import.meta.env.VITE_CALENDLY_URL;
-
-    if (!calendlyUrl) {
-      console.warn('VITE_CALENDLY_URL is not configured - redirecting to contact page');
-      window.location.href = '/contact';
-      return;
-    }
-
     try {
       await loadCalendlyAssets();
-      window.Calendly?.initPopupWidget({ url: calendlyUrl });
+      if (!window.Calendly) throw new Error('Calendly widget unavailable');
+      window.Calendly.initPopupWidget({ url: CALENDLY_URL });
     } catch (err) {
-      console.warn('Calendly widget failed to load - redirecting to contact page', err);
-      window.location.href = '/contact';
+      console.warn('Calendly widget failed to load - opening booking page', err);
+      window.location.href = CALENDLY_URL;
     }
   }, []);
 

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useCalendly, loadCalendlyAssets } from "@/hooks/useCalendly";
+import { CALENDLY_URL, useCalendly, loadCalendlyAssets } from "@/hooks/useCalendly";
 import { useSeo } from "@/hooks/useSeo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -62,13 +62,11 @@ export default function Contact() {
   };
 
   useEffect(() => {
-    const calendlyUrl =
-      (import.meta as any).env?.VITE_CALENDLY_URL || "https://calendly.com";
     loadCalendlyAssets().then(() => {
       const elem = document.getElementById("calendly-inline");
       if (elem && (window as any).Calendly?.initInlineWidget) {
         (window as any).Calendly.initInlineWidget({
-          url: calendlyUrl,
+          url: CALENDLY_URL,
           parentElement: elem,
           prefill: {},
           utm: {},
@@ -295,7 +293,7 @@ export default function Contact() {
           id="calendly-inline"
           className="calendly-inline-widget w-full rounded-xl overflow-hidden border border-ink-700"
           style={{ minHeight: "700px" }}
-          data-url={`${(import.meta as any).env?.VITE_CALENDLY_URL || "https://calendly.com"}?hide_event_type_details=1&background_color=0f172a&text_color=e2e8f0&primary_color=10b981`}
+          data-url={`${CALENDLY_URL}?hide_event_type_details=1&background_color=0f172a&text_color=e2e8f0&primary_color=10b981`}
         />
       </Section>
     </MotionPage>
