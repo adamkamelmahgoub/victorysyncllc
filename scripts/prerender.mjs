@@ -1,7 +1,7 @@
-import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { tmpdir } from 'node:os';
+import puppeteer from 'puppeteer-core';
 
 const root = resolve(import.meta.dirname, '..');
 const out = join(root, 'dist', 'public');
@@ -10,11 +10,19 @@ const paths = [...sitemap.matchAll(/<loc>https:\/\/www\.victorysync\.com([^<]*)<
   .map((match) => match[1] || '/');
 if (!paths.length) throw new Error('No www URLs found in sitemap.xml');
 
-const chrome = process.env.CHROME_PATH ||
+let chrome = process.env.CHROME_PATH ||
   ['C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
    '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser']
     .find(existsSync);
+let browserArgs = ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', '--disable-background-networking'];
+let headless = true;
+if (!chrome && process.platform === 'linux') {
+  const chromium = (await import('@sparticuz/chromium')).default;
+  chrome = await chromium.executablePath();
+  browserArgs = chromium.args;
+  headless = 'shell';
+}
 if (!chrome) throw new Error('Prerender needs Chrome or Chromium. Set CHROME_PATH.');
 
 const port = 41737;
@@ -25,6 +33,7 @@ const preview = spawn(process.execPath, [join(root, 'node_modules', 'vite', 'bin
 let previewError = '';
 preview.stderr.on('data', (chunk) => { previewError += chunk; });
 
+let browser;
 try {
   let ready = false;
   for (let attempt = 0; attempt < 60; attempt++) {
@@ -38,23 +47,31 @@ try {
   }
   if (!ready) throw new Error('Vite preview did not start: ' + previewError);
 
+  browser = await puppeteer.launch({ executablePath: chrome, headless, args: browserArgs });
   for (const path of paths) {
-    const profile = join(tmpdir(), `victorysync-prerender-${process.pid}`);
-    const result = spawnSync(chrome, [
-      '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-extensions',
-      '--disable-background-networking', '--disable-dev-shm-usage',
-      `--user-data-dir=${profile}`, '--virtual-time-budget=5000', '--dump-dom',
-      `http://127.0.0.1:${port}${path}`,
-    ], { encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
-    rmSync(profile, { recursive: true, force: true });
-    const html = result.stdout.slice(result.stdout.indexOf('<!DOCTYPE html>'));
+    const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      if (request.url().startsWith(`http://127.0.0.1:${port}/`) || request.url().startsWith('data:')) {
+        request.continue();
+      } else {
+        request.abort();
+      }
+    });
+    await page.goto(`http://127.0.0.1:${port}${path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForFunction((expected) => {
+      return document.querySelector('h1') !== null &&
+        document.querySelector('link[rel="canonical"]')?.getAttribute('href') === expected;
+    }, { timeout: 30000 }, `https://www.victorysync.com${path}`);
+    const html = await page.content();
+    await page.close();
     const canonical = html.match(/<link[^>]*rel="canonical"[^>]*href="([^"]+)"/i)?.[1];
     const title = html.match(/<title>([^<]+)<\/title>/i)?.[1];
-    if (result.error || !html.startsWith('<!DOCTYPE html>') ||
+    if (!html.startsWith('<!DOCTYPE html>') ||
         !/<h1[\s>]/i.test(html) ||
         canonical !== `https://www.victorysync.com${path}` || !title ||
         title === 'VictorySync | Human-Led Call Center & Appointment Setting') {
-      throw new Error(`Prerender failed for ${path}: ${result.error?.message || result.stderr.slice(-800)}`);
+      throw new Error(`Prerender failed for ${path}`);
     }
     const destination = path === '/' ? join(out, 'index.html') : join(out, path, 'index.html');
     mkdirSync(resolve(destination, '..'), { recursive: true });
@@ -62,5 +79,6 @@ try {
     console.log(`Prerendered ${path}: ${Buffer.byteLength(html)} bytes`);
   }
 } finally {
+  await browser?.close();
   preview.kill();
 }
