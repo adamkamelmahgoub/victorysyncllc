@@ -6,7 +6,7 @@
     {
       "source": "/about",
       "destination": "/about-us",
-      "permanent": true
+      "statusCode": 301
     }
   ],
   "routes": [

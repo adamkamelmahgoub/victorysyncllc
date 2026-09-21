@@ -13,9 +13,9 @@ const serviceLinks = [
 ];
 
 const navLinks = [
-  { id: 'how-it-works', label: 'How It Works' },
-  { id: 'pricing', label: 'Pricing' },
-  { id: 'faq', label: 'FAQ' },
+  { id: 'how-it-works', href: '/#how-it-works', label: 'How It Works' },
+  { href: '/pricing', label: 'Pricing' },
+  { id: 'faq', href: '/#faq', label: 'FAQ' },
 ];
 
 export default function Navigation() {
@@ -57,10 +57,10 @@ export default function Navigation() {
         <div className="hidden items-center gap-7 md:flex">
           <Link href="/" onClick={closeAndScroll} className={linkClass(location === '/')}>Home</Link>
           <div className="relative" ref={dropdownRef}>
-            <button onClick={() => setServicesOpen(value => !value)} className={`flex items-center gap-1 ${linkClass(servicesActive)}`}>Services <ChevronDown className={`h-3.5 w-3.5 transition-transform ${servicesOpen ? 'rotate-180' : ''}`} /></button>
+            <div className="flex items-center gap-1"><Link href="/services" onClick={closeAndScroll} className={linkClass(servicesActive || location === '/services')}>Services</Link><button type="button" onClick={() => setServicesOpen(value => !value)} aria-label="Show services menu" aria-expanded={servicesOpen} className="rounded p-1 text-slate-600 hover:text-blue-600"><ChevronDown className={`h-3.5 w-3.5 transition-transform ${servicesOpen ? 'rotate-180' : ''}`} /></button></div>
             {servicesOpen && <div className="absolute left-0 top-full mt-3 w-56 rounded-lg border border-slate-200 bg-white p-2 shadow-xl">{serviceLinks.map(link => <Link key={link.href} href={link.href} onClick={closeAndScroll} className={`block rounded-md px-3 py-2.5 text-sm ${location === link.href ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'}`}>{link.label}</Link>)}</div>}
           </div>
-          {navLinks.map(link => <a key={link.id} href={`/#${link.id}`} onClick={(event) => goToSection(event, link.id)} className={linkClass(false)}>{link.label}</a>)}
+          {navLinks.map(link => link.id ? <a key={link.href} href={link.href} onClick={(event) => goToSection(event, link.id!)} className={linkClass(false)}>{link.label}</a> : <Link key={link.href} href={link.href} onClick={closeAndScroll} className={linkClass(location === link.href)}>{link.label}</Link>)}
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
@@ -71,7 +71,7 @@ export default function Navigation() {
         <button onClick={() => setMobileOpen(value => !value)} className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden" aria-label="Toggle navigation">{mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}</button>
       </div>
 
-      {mobileOpen && <div className="border-t border-slate-200 bg-white px-5 py-4 md:hidden"><div className="space-y-1"><Link href="/" onClick={closeAndScroll} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Home</Link><button onClick={() => setServicesOpen(value => !value)} className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Services <ChevronDown className={`h-4 w-4 ${servicesOpen ? 'rotate-180' : ''}`} /></button>{servicesOpen && <div className="ml-3 border-l border-slate-200 pl-3">{serviceLinks.map(link => <Link key={link.href} href={link.href} onClick={closeAndScroll} className="block px-3 py-2 text-sm text-slate-600 hover:text-blue-600">{link.label}</Link>)}</div>}{navLinks.map(link => <a key={link.id} href={`/#${link.id}`} onClick={(event) => goToSection(event, link.id)} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">{link.label}</a>)}</div><div className="mt-4 grid gap-2 border-t border-slate-200 pt-4">{isAuthenticated ? <button onClick={() => { logout(); setMobileOpen(false); }} className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700">Sign out</button> : <a href="https://dashboard.victorysync.com" className="rounded-lg border border-slate-300 px-4 py-2.5 text-center text-sm font-semibold text-slate-700">Sign in</a>}<button onClick={() => { open(); setMobileOpen(false); }} className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white">Get Started</button></div></div>}
+      {mobileOpen && <div className="border-t border-slate-200 bg-white px-5 py-4 md:hidden"><div className="space-y-1"><Link href="/" onClick={closeAndScroll} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Home</Link><div className="flex items-center justify-between"><Link href="/services" onClick={closeAndScroll} className="flex-1 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Services</Link><button type="button" onClick={() => setServicesOpen(value => !value)} aria-label="Show services menu" aria-expanded={servicesOpen} className="rounded-lg px-3 py-2.5 text-slate-700"><ChevronDown className={`h-4 w-4 ${servicesOpen ? 'rotate-180' : ''}`} /></button></div>{servicesOpen && <div className="ml-3 border-l border-slate-200 pl-3">{serviceLinks.map(link => <Link key={link.href} href={link.href} onClick={closeAndScroll} className="block px-3 py-2 text-sm text-slate-600 hover:text-blue-600">{link.label}</Link>)}</div>}{navLinks.map(link => link.id ? <a key={link.href} href={link.href} onClick={(event) => goToSection(event, link.id!)} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">{link.label}</a> : <Link key={link.href} href={link.href} onClick={closeAndScroll} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">{link.label}</Link>)}</div><div className="mt-4 grid gap-2 border-t border-slate-200 pt-4">{isAuthenticated ? <button onClick={() => { logout(); setMobileOpen(false); }} className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700">Sign out</button> : <a href="https://dashboard.victorysync.com" className="rounded-lg border border-slate-300 px-4 py-2.5 text-center text-sm font-semibold text-slate-700">Sign in</a>}<button onClick={() => { open(); setMobileOpen(false); }} className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white">Get Started</button></div></div>}
     </nav>
   );
 }

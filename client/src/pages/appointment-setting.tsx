@@ -3,6 +3,7 @@ import { useSeo } from "@/hooks/useSeo";
 import { Link } from "wouter";
 import { Calendar, CheckCircle, Users, BarChart3, Clock, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ServiceNextSteps from "@/components/service-next-steps";
 
 export default function AppointmentSetting() {
   const { open: openCalendly } = useCalendly();
@@ -141,6 +142,7 @@ export default function AppointmentSetting() {
       </section>
 
       {/* CTA */}
+      <ServiceNextSteps related={[{ label: 'Home services', href: '/appointment-setting-for-home-services' }, { label: 'Real estate', href: '/appointment-setting-for-real-estate' }]} />
       <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Let's build your appointment pipeline.</h2>

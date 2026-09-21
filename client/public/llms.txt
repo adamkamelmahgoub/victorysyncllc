@@ -17,7 +17,6 @@ VictorySync provides inbound customer support, outbound appointment setting and 
 - [Platform](https://www.victorysync.com/platform): The VictorySync technology platform and dashboard.
 - [Pricing](https://www.victorysync.com/pricing): Service package pricing and quote requests.
 - [Book a Call](https://www.victorysync.com/book-call): Schedule a discovery call with the VictorySync team.
-- [About](https://www.victorysync.com/about): Company overview.
 - [About Us](https://www.victorysync.com/about-us): Company background, mission, and leadership.
 
 
