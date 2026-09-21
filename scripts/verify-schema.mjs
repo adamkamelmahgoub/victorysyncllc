@@ -21,14 +21,19 @@ for (const path of paths) {
   if (path !== '/' && !types.includes('BreadcrumbList')) throw new Error(`${path}: missing breadcrumb`);
   if (servicePaths.has(path) && !types.includes('Service')) throw new Error(`${path}: missing service`);
   if (['/', '/contact'].includes(path)) {
-    if (!types.includes('Organization') || !types.includes('LocalBusiness')) {
+    if (!types.includes('Organization') || !types.includes('ProfessionalService')) {
       throw new Error(`${path}: missing business schema`);
     }
     const org = data.find((item) => item['@type'] === 'Organization');
-    const local = data.find((item) => item['@type'] === 'LocalBusiness');
-    if (org.contactPoint?.telephone !== '+201070394707' ||
-        local.telephone !== '+201070394707' ||
-        !Array.isArray(org.sameAs) || org.sameAs.length !== 5) {
+    const local = data.find((item) => item['@type'] === 'ProfessionalService');
+    if (!Array.isArray(org.contactPoint) ||
+        org.contactPoint[0]?.telephone !== '+1 848-216-1220' ||
+        org.contactPoint[1]?.telephone !== '+20-107-039-4707' ||
+        local.telephone !== '+1 848-216-1220' ||
+        local.address?.streetAddress !== '11 Brookside Road' ||
+        local.address?.postalCode !== '08510' ||
+        local.priceRange !== 'From $10/hr' ||
+        !Array.isArray(org.sameAs) || org.sameAs.length !== 7) {
       throw new Error(`${path}: business phone or social links missing`);
     }
   }

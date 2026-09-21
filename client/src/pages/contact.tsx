@@ -14,7 +14,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Calendar } from "lucide-react";
+import { Mail, Phone, MapPin, Calendar, Clock, MessageCircle } from "lucide-react";
+import { EMAIL, HOURS, POSTAL_CODE, STREET_ADDRESS, US_PHONE, US_PHONE_HREF, WHATSAPP, WHATSAPP_HREF } from '@/lib/site-config';
 import { useEffect } from "react";
 
 type ContactFormData = z.infer<typeof insertContactSubmissionSchema>;
@@ -122,7 +123,7 @@ export default function Contact() {
                       Email
                     </h3>
                     <p className="text-slate-300">
-                      info@victorysync.com
+                      {EMAIL}
                     </p>
                   </div>
                 </div>
@@ -135,9 +136,7 @@ export default function Contact() {
                     <h3 className="font-semibold text-white mb-1">
                       Phone
                     </h3>
-                    <p className="text-slate-300">
-                      Available via scheduled call
-                    </p>
+                    <a href={US_PHONE_HREF} className="text-slate-300 hover:underline">{US_PHONE}</a>
                   </div>
                 </div>
 
@@ -150,10 +149,12 @@ export default function Contact() {
                       Location
                     </h3>
                     <p className="text-slate-300">
-                      Millstone, New Jersey, USA
+                      {STREET_ADDRESS}, Millstone Township, NJ {POSTAL_CODE}
                     </p>
                   </div>
                 </div>
+                <div className="flex items-start gap-4"><div className="w-12 h-12 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0"><Clock className="w-6 h-6 text-cyan-400" /></div><div><h3 className="font-semibold text-white mb-1">Hours</h3><p className="text-slate-300">{HOURS}</p></div></div>
+                <div className="flex items-start gap-4"><div className="w-12 h-12 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0"><MessageCircle className="w-6 h-6 text-cyan-400" /></div><div><h3 className="font-semibold text-white mb-1">WhatsApp</h3><a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:underline">{WHATSAPP}</a></div></div>
               </div>
             </motion.div>
           </StaggerContainer>

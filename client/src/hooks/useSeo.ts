@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { CLUTCH_PROFILE_URL, EMAIL, LINKEDIN_URL, POSTAL_CODE, STREET_ADDRESS, US_PHONE, WHATSAPP } from '@/lib/site-config';
 
 interface SeoProps {
   title: string;
@@ -70,27 +71,30 @@ export function useSeo({ title, description, ogImage, structuredData }: SeoProps
         '@context': 'https://schema.org', '@type': 'Organization', '@id': `${siteOrigin}/#organization`,
         name: 'VictorySync LLC', url: siteOrigin + '/', logo: `${siteOrigin}/LOGO_VS.png`,
         description: 'US-managed contact center with trained Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound support.',
-        address: { '@type': 'PostalAddress', addressLocality: 'Millstone', addressRegion: 'NJ', addressCountry: 'US' },
-        contactPoint: { '@type': 'ContactPoint', telephone: '+201070394707', contactType: 'sales', availableLanguage: 'English', areaServed: 'US' },
+        address: { '@type': 'PostalAddress', streetAddress: STREET_ADDRESS, addressLocality: 'Millstone Township', addressRegion: 'NJ', postalCode: POSTAL_CODE, addressCountry: 'US' },
+        email: EMAIL,
+        contactPoint: [
+          { '@type': 'ContactPoint', telephone: US_PHONE, contactType: 'sales', availableLanguage: 'English', areaServed: 'US' },
+          { '@type': 'ContactPoint', telephone: WHATSAPP, contactType: 'customer support', contactOption: 'WhatsApp', availableLanguage: 'English', areaServed: 'US' },
+        ],
         sameAs: [
           'https://www.facebook.com/profile.php?id=61578278896132',
           'https://www.instagram.com/victorysyncllc/',
           'https://share.google/SRBDGigTm0XPhvLk3',
           'https://www.upwork.com/agencies/1956546855026415688/',
           'https://www.fiverr.com/s/NeNrP98',
+          LINKEDIN_URL,
+          CLUTCH_PROFILE_URL,
         ],
-        // TODO(owner): add the verified LinkedIn profile URL if one exists.
       });
       schema.push({
-        '@context': 'https://schema.org', '@type': 'LocalBusiness', '@id': `${siteOrigin}/#localbusiness`,
-        name: 'VictorySync LLC', url: siteOrigin + '/', telephone: '+201070394707',
-        address: { '@type': 'PostalAddress', addressLocality: 'Millstone', addressRegion: 'NJ', addressCountry: 'US' },
+        '@context': 'https://schema.org', '@type': 'ProfessionalService', '@id': `${siteOrigin}/#professionalservice`,
+        name: 'VictorySync LLC', url: siteOrigin + '/', telephone: US_PHONE, email: EMAIL, priceRange: 'From $10/hr',
+        address: { '@type': 'PostalAddress', streetAddress: STREET_ADDRESS, addressLocality: 'Millstone Township', addressRegion: 'NJ', postalCode: POSTAL_CODE, addressCountry: 'US' },
         areaServed: { '@type': 'Country', name: 'United States' },
         openingHoursSpecification: { '@type': 'OpeningHoursSpecification',
           dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
           opens: '09:00', closes: '18:00' },
-        // TODO(owner): confirm the 9 AM–6 PM ET hours shown on /book-call are the public business hours.
-        // TODO(owner): provide a public street address if the business wants it in LocalBusiness schema.
       });
     }
     if (services[path]) {
