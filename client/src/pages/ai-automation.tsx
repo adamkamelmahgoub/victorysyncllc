@@ -3,6 +3,7 @@ import { useSeo } from "@/hooks/useSeo";
 import { Link } from "wouter";
 import { Bot, CheckCircle, BarChart3, Zap, FileText, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ServiceNextSteps from "@/components/service-next-steps";
 
 export default function AiAutomation() {
   const { open: openCalendly } = useCalendly();
@@ -141,6 +142,7 @@ export default function AiAutomation() {
       </section>
 
       {/* CTA */}
+      <ServiceNextSteps />
       <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Let's find the automation that saves you the most time.</h2>

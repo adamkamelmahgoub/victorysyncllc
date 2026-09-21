@@ -3,6 +3,7 @@ import { useSeo } from "@/hooks/useSeo";
 import { Link } from "wouter";
 import { Phone, CheckCircle, BarChart3, Shield, Users, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ServiceNextSteps from "@/components/service-next-steps";
 
 export default function ColdCalling() {
   const { open: openCalendly } = useCalendly();
@@ -133,6 +134,7 @@ export default function ColdCalling() {
       </section>
 
       {/* CTA */}
+      <ServiceNextSteps related={[{ label: 'Cold calling for plumbers', href: '/cold-calling-for-plumbers' }]} />
       <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Ready to put a trained team behind your outbound?</h2>
