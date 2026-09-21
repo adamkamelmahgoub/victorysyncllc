@@ -46,6 +46,7 @@ const VerticalService = lazy(() => import("@/pages/vertical-services"));
 // Footer Pages
 const AboutUs = lazy(() => import("@/pages/about-us"));
 const HelpCenter = lazy(() => import("@/pages/help-center"));
+const Reviews = lazy(() => import("@/pages/reviews"));
 const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
 const TermsOfService = lazy(() => import("@/pages/terms"));
 
@@ -96,6 +97,7 @@ function Router() {
             {/* Footer Pages */}
             <Route path="/about-us" component={AboutUs} />
             <Route path="/help-center" component={HelpCenter} />
+            <Route path="/reviews" component={Reviews} />
             <Route path="/privacy-policy" component={PrivacyPolicy} />
             <Route path="/terms" component={TermsOfService} />
             

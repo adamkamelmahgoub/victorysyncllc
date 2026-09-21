@@ -52,6 +52,7 @@
     { "source": "/contact", "destination": "/contact/index.html" },
     { "source": "/book-call", "destination": "/book-call/index.html" },
     { "source": "/help-center", "destination": "/help-center/index.html" },
+    { "source": "/reviews", "destination": "/reviews/index.html" },
     { "source": "/privacy-policy", "destination": "/privacy-policy/index.html" },
     { "source": "/terms", "destination": "/terms/index.html" },
     { "source": "/appointment-setting-for-home-services", "destination": "/appointment-setting-for-home-services/index.html" },

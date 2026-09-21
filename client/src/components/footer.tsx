@@ -7,7 +7,7 @@ const groups = [
   { title: 'Services', links: [['Inbound Support','/inbound-support'],['Appointment Setting','/appointment-setting'],['Cold Calling','/cold-calling'],['AI Automation','/ai-automation']] },
   { title: 'Industries', links: [['Home Services','/appointment-setting-for-home-services'],['Plumbers','/cold-calling-for-plumbers'],['Real Estate','/appointment-setting-for-real-estate'],['Law Firms','/inbound-support-for-law-firms']] },
   { title: 'Company', links: [['About','/about-us'],['Pricing','/pricing'],['Contact','/contact']] },
-  { title: 'Resources', links: [['Help Center','/help-center'],['Privacy','/privacy-policy'],['Terms','/terms']] },
+  { title: 'Resources', links: [['Help Center','/help-center'],['Reviews','/reviews'],['Privacy','/privacy-policy'],['Terms','/terms']] },
 ];
 
 const profiles = [
@@ -45,7 +45,7 @@ export default function Footer() {
         <nav aria-label="VictorySync profiles" className="flex flex-wrap items-center gap-x-3 gap-y-3 text-sm">
           <span className="w-full font-semibold text-slate-900 sm:w-auto">Find us</span>
           {profiles.map(({ label, href, icon: Icon, color }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={`VictorySync on ${label}`} title={label} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600" style={{ color }}><Icon aria-hidden="true" className="h-5 w-5" /></a>)}
-          <a href={CLUTCH_PROFILE_URL} target="_blank" rel="noopener noreferrer" aria-label="VictorySync on Clutch" title="Clutch" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"><img src="https://clutch.co/favicon.ico" alt="" width="20" height="20" loading="lazy" /></a>
+          <a href={CLUTCH_PROFILE_URL} target="_blank" rel="noopener noreferrer" aria-label="VictorySync on Clutch" title="Clutch" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"><span aria-hidden="true" className="text-xl font-black text-red-600">C</span></a>
         </nav>
         <div className="mt-7 flex flex-col gap-3 border-t border-slate-200 pt-7 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} VictorySync LLC. All rights reserved.</p><a href={`mailto:${EMAIL}`} className="hover:text-blue-600">{EMAIL}</a></div>
       </div>

@@ -23,6 +23,7 @@ export const pageMeta: Record<string, [string, string]> = {
   '/contact': ['Contact VictorySync | Millstone, NJ', 'Get in touch with VictorySync. US-managed call center and digital marketing for small and mid-sized businesses.'],
   '/book-call': ['Book a Call with VictorySync', 'Book a free consultation. We will look at your current lead flow and tell you what we would change.'],
   '/help-center': ['Help Center | VictorySync', 'Answers to common questions about VictorySync services, onboarding, and reporting.'],
+  '/reviews': ['Reviews | VictorySync', 'Share your experience working with VictorySync on Google or Clutch.'],
   '/privacy-policy': ['Privacy Policy | VictorySync', 'How VictorySync collects, uses, and protects your data.'],
   '/terms': ['Terms of Service | VictorySync', 'Terms governing use of VictorySync services.'],
   '/appointment-setting-for-home-services': ['Appointment Setting for Home Services | VictorySync', 'Qualify home service inquiries and book useful estimates with US-managed appointment setting, clear intake rules, and organized handoffs.'],
