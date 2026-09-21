@@ -3,27 +3,9 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-function asyncStylesheets() {
-  return {
-    name: "async-production-stylesheets",
-    enforce: "post" as const,
-    transformIndexHtml: {
-      order: "post" as const,
-      handler(html: string) {
-        if (html.includes("<title>VictorySync Website CMS</title>")) return html;
-        return html.replace(
-          /<link rel="stylesheet" crossorigin href="([^"]+\.css)">/g,
-          '<link rel="preload" href="$1" as="style" onload="this.onload=null;this.rel=\'stylesheet\'"><noscript><link rel="stylesheet" href="$1"></noscript>',
-        );
-      },
-    },
-  };
-}
-
 export default defineConfig({
   plugins: [
     react(),
-    asyncStylesheets(),
     runtimeErrorOverlay(),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined

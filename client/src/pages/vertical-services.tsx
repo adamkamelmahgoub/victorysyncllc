@@ -16,7 +16,7 @@ const pages: Record<string, Page> = {
   '/appointment-setting-for-home-services': {
     slug: '/appointment-setting-for-home-services',
     title: 'Appointment Setting for Home Services | VictorySync',
-    description: 'Help home service leads reach a real person, get qualified, and book the right estimate or service visit. US-managed appointment setting with clear handoffs.',
+    description: 'Qualify home service inquiries and book useful estimates with US-managed appointment setting, clear intake rules, and organized handoffs.',
     h1: 'Appointment Setting for Home Services',
     intro: 'A homeowner who asks for an estimate is usually comparing availability, trust, and timing. If nobody follows up while the need is fresh, even a strong crew can lose the conversation. VictorySync helps home service teams turn inquiries into organized, qualified appointments. Trained agents can answer the first questions, capture the job details your dispatcher needs, and work within the service areas and booking rules you approve.',
     sections: [
@@ -32,7 +32,7 @@ const pages: Record<string, Page> = {
   '/cold-calling-for-plumbers': {
     slug: '/cold-calling-for-plumbers',
     title: 'Cold Calling for Plumbers | VictorySync',
-    description: 'Outbound calling for plumbing companies targeting property managers, commercial accounts, and approved prospect lists. Human agents, clear scripts, and reporting.',
+    description: 'Reach property managers and commercial prospects with managed cold calling for plumbers, approved scripts, and clear reporting.',
     h1: 'Cold Calling for Plumbers',
     intro: 'A plumbing company grows through more than emergency calls. Property managers, facility teams, builders, and local businesses may need a dependable contractor for recurring work, maintenance, or future projects. Reaching them takes a different conversation from answering a homeowner with a leak. VictorySync can support a focused outbound program for plumbing companies that want to introduce their services, identify the right contact, and set a useful next step for their sales or operations team.',
     sections: [
@@ -48,7 +48,7 @@ const pages: Record<string, Page> = {
   '/appointment-setting-for-real-estate': {
     slug: '/appointment-setting-for-real-estate',
     title: 'Real Estate Appointment Setting | VictorySync',
-    description: 'Follow up with real estate inquiries, understand timing and intent, and schedule useful agent conversations. Human-led appointment setting with organized handoffs.',
+    description: 'Follow up with real estate buyers and sellers, qualify timing and intent, and book useful agent conversations with organized handoffs.',
     h1: 'Appointment Setting for Real Estate',
     intro: 'Real estate inquiries arrive with very different levels of intent. One buyer wants a showing this weekend. Another is researching a move next year. A seller may be comparing agents before asking for a valuation. Treating all of them as ready for the same appointment wastes time and can feel pushy. VictorySync helps real estate teams follow up consistently, learn what the person needs, and book the right conversation with the right agent.',
     sections: [
@@ -64,7 +64,7 @@ const pages: Record<string, Page> = {
   '/inbound-support-for-law-firms': {
     slug: '/inbound-support-for-law-firms',
     title: 'Inbound Support for Law Firms | VictorySync',
-    description: 'Help law firm callers reach a real person, share intake basics, and get routed to the right staff member. Human-led support with firm-approved scripts and boundaries.',
+    description: 'Answer law firm calls with trained agents, firm-approved intake questions, and clear routing to the right staff member.',
     h1: 'Inbound Support for Law Firms',
     intro: 'A call to a law firm may be a new matter, a current client looking for an update, or someone with a time-sensitive question. Each deserves a calm, accurate response, but the next step is not always the same. VictorySync can help a firm answer calls, collect approved intake information, and route messages to the people responsible for them. The firm defines what agents may say, what they must never imply, and which calls require immediate escalation.',
     sections: [
