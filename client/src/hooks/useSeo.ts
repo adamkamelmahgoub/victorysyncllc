@@ -84,7 +84,7 @@ export function useSeo({ title, description, ogImage, structuredData }: SeoProps
           'https://share.google/SRBDGigTm0XPhvLk3',
           'https://www.upwork.com/agencies/1956546855026415688/',
           'https://www.fiverr.com/s/NeNrP98',
-          LINKEDIN_URL,
+          ...(LINKEDIN_URL ? [LINKEDIN_URL] : []),
           CLUTCH_PROFILE_URL,
         ],
       });

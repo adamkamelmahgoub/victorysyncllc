@@ -33,7 +33,7 @@ for (const path of paths) {
         local.address?.streetAddress !== '11 Brookside Road' ||
         local.address?.postalCode !== '08510' ||
         local.priceRange !== 'From $10/hr' ||
-        !Array.isArray(org.sameAs) || org.sameAs.length !== 7) {
+        !Array.isArray(org.sameAs) || org.sameAs.length !== 6) {
       throw new Error(`${path}: business phone or social links missing`);
     }
   }
