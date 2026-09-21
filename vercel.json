@@ -58,9 +58,6 @@
     { "source": "/cold-calling-for-plumbers", "destination": "/cold-calling-for-plumbers/index.html" },
     { "source": "/appointment-setting-for-real-estate", "destination": "/appointment-setting-for-real-estate/index.html" },
     { "source": "/inbound-support-for-law-firms", "destination": "/inbound-support-for-law-firms/index.html" },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/(login|register|signup|checkout|dashboard)", "destination": "/index.html" }
   ]
 }
