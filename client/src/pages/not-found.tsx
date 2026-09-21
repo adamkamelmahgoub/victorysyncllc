@@ -1,24 +1,22 @@
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-ink-900">
-      <div className="text-center px-4">
-        <div className="w-20 h-20 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-          <AlertCircle className="h-10 w-10 text-cyan-400" />
+    <div className="flex min-h-[60vh] w-full items-center justify-center bg-white px-5 py-20">
+      <div className="max-w-xl text-center">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
+          <AlertCircle className="h-8 w-8 text-blue-600" aria-hidden="true" />
         </div>
-        <h1 className="text-4xl font-bold text-white mb-4">404</h1>
-        <p className="text-xl text-slate-300 mb-2">Page Not Found</p>
-        <p className="text-slate-400 mb-8 max-w-sm mx-auto">
+        <h1 className="mb-3 text-4xl font-bold text-slate-950">Page not found</h1>
+        <p className="mx-auto mb-8 max-w-sm text-slate-600">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <Link href="/">
-          <Button className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold">
-            Back to Home
-          </Button>
-        </Link>
+        <nav aria-label="Helpful pages" className="flex flex-wrap justify-center gap-3">
+          {[
+            ['Home', '/'], ['Services', '/services'], ['Pricing', '/pricing'], ['Contact', '/contact'],
+          ].map(([label, href]) => <Link key={href} href={href} className="rounded-lg border border-slate-200 px-4 py-2 font-semibold text-blue-700 hover:bg-blue-50">{label}</Link>)}
+        </nav>
       </div>
     </div>
   );

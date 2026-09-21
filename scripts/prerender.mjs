@@ -105,6 +105,32 @@ try {
   }
   if (!homepageHtml) throw new Error('Homepage was not prerendered');
   writeFileSync(join(out, 'index.html'), homepageHtml);
+
+  const notFoundPage = await browser.newPage();
+  await notFoundPage.evaluateOnNewDocument(() => { window.__PRERENDERING__ = true; });
+  await notFoundPage.setRequestInterception(true);
+  notFoundPage.on('request', (request) => {
+    if (request.url().startsWith(`http://127.0.0.1:${port}/`) || request.url().startsWith('data:')) request.continue();
+    else request.abort();
+  });
+  await notFoundPage.goto(`http://127.0.0.1:${port}/this-page-does-not-exist`, { waitUntil: 'domcontentloaded' });
+  await notFoundPage.waitForFunction(() => document.querySelector('h1')?.textContent === 'Page not found');
+  await notFoundPage.evaluate(() => {
+    document.title = 'Page not found | VictorySync';
+    document.querySelector('link[rel="canonical"]')?.remove();
+    document.querySelectorAll('script[src^="http://"], script[src^="https://"]').forEach((script) => script.remove());
+    let robots = document.head.querySelector('meta[name="robots"]');
+    if (!robots) { robots = document.createElement('meta'); robots.setAttribute('name', 'robots'); document.head.appendChild(robots); }
+    robots.setAttribute('content', 'noindex, follow');
+  });
+  const notFoundHtml = await notFoundPage.content();
+  await notFoundPage.close();
+  if (!notFoundHtml.includes('name="robots" content="noindex, follow"') ||
+      !['href="/services"', 'href="/pricing"', 'href="/contact"'].every((link) => notFoundHtml.includes(link))) {
+    throw new Error('404 page is missing metadata or helpful links');
+  }
+  writeFileSync(join(out, '404.html'), notFoundHtml);
+  console.log(`Prerendered /404: ${Buffer.byteLength(notFoundHtml)} bytes`);
 } finally {
   await browser?.close();
   preview.kill();
