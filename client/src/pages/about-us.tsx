@@ -4,12 +4,18 @@ import { useSeo } from '@/hooks/useSeo';
 import { Button } from '@/components/ui/button';
 import { MapPin, Users, Shield, BarChart3, CheckCircle } from 'lucide-react';
 
+const aboutSchema = [
+  { '@context': 'https://schema.org', '@type': 'Organization', '@id': 'https://www.victorysync.com/#organization', name: 'VictorySync LLC', url: 'https://www.victorysync.com/', logo: 'https://www.victorysync.com/LOGO_VS.png' },
+  { '@context': 'https://schema.org', '@type': 'AboutPage', '@id': 'https://www.victorysync.com/about-us#about', url: 'https://www.victorysync.com/about-us', name: 'About VictorySync', mainEntity: { '@id': 'https://www.victorysync.com/#organization' } },
+];
+
 export default function AboutUs() {
   const { open: openCalendly } = useCalendly();
   useSeo({
     title: 'About VictorySync | US-Managed Contact Center Based in New Jersey',
     description: 'VictorySync is a US-managed contact center with trained agents in Cairo, Egypt, built to help US businesses scale support and sales without the cost of in-house hiring.',
     canonical: 'https://victorysync.com/about-us',
+    structuredData: aboutSchema,
   });
 
   return (

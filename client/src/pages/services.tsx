@@ -109,9 +109,22 @@ const services = [
   },
 ];
 
+const serviceListSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'VictorySync services',
+  itemListElement: [
+    ['Inbound Customer Support', '/inbound-support'],
+    ['Appointment Setting', '/appointment-setting'],
+    ['Cold Calling', '/cold-calling'],
+    ['AI-Assisted Operations', '/ai-automation'],
+  ].map(([name, path], index) => ({ '@type': 'ListItem', position: index + 1, name, url: `https://www.victorysync.com${path}` })),
+};
+
 export default function Services() {
   const { open: openCalendly } = useCalendly();
   useSeo({
+    structuredData: serviceListSchema,
     title: 'Our Services | Inbound Support, Appointment Setting & More | VictorySync',
     description: 'VictorySync offers human-led inbound customer support, appointment setting, cold calling, and lead follow-up—all US-managed with Cairo-based agents and AI-assisted tools.',
     canonical: 'https://victorysync.com/services',

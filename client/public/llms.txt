@@ -1,36 +1,40 @@
 # VictorySync
 
-> VictorySync is a US-managed contact center with Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound customer support.
+VictorySync is a US-managed contact center with Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound customer support.
 
-## About
+## Services and coverage
 
-VictorySync provides inbound customer support, outbound appointment setting and cold calling, and AI-powered automation services. All agent teams are English-proficient and operate in US business hours.
+Services include inbound customer support, outbound appointment setting, cold calling, and AI-assisted operations. VictorySync serves businesses in the United States, including home services, plumbing, real estate, and legal practices. Straightforward campaigns can often launch within 24 to 48 hours after scripts, access, and escalation rules are approved. VictorySync is a Close CRM partner.
 
-## Primary Sections
+Starter service begins at $10 per agent hour for one trained agent and one inbound or outbound workflow. Final pricing depends on campaign scope.
 
-- [Home](https://www.victorysync.com/): Overview of services, outcomes, and customer stories.
-- [Services](https://www.victorysync.com/services): Full catalog of contact center offerings.
-- [Inbound Support](https://www.victorysync.com/inbound-support): Live agent inbound customer service programs.
-- [Appointment Setting](https://www.victorysync.com/appointment-setting): Outbound scheduling and pipeline-building services.
-- [Cold Calling](https://www.victorysync.com/cold-calling): Outbound prospecting and lead generation.
-- [AI Automation](https://www.victorysync.com/ai-automation): Chatbot, workflow, and AI-assisted CX tools.
-- [Platform](https://www.victorysync.com/platform): The VictorySync technology platform and dashboard.
-- [Pricing](https://www.victorysync.com/pricing): Service package pricing and quote requests.
-- [Book a Call](https://www.victorysync.com/book-call): Schedule a discovery call with the VictorySync team.
-- [About Us](https://www.victorysync.com/about-us): Company background, mission, and leadership.
+## Pages
 
-
-
-## Support & Legal
-
-- [Help Center](https://www.victorysync.com/help-center): FAQs and support documentation.
-- [Privacy Policy](https://www.victorysync.com/privacy-policy)
-- [Terms of Service](https://www.victorysync.com/terms)
-
-## Sitemap
-
-https://www.victorysync.com/sitemap.xml
+- [Home](https://www.victorysync.com/): Overview of VictorySync contact center services.
+- [Services](https://www.victorysync.com/services): Inbound support, appointment setting, cold calling, and AI-assisted operations.
+- [Inbound Support](https://www.victorysync.com/inbound-support): Live agent inbound customer support.
+- [Appointment Setting](https://www.victorysync.com/appointment-setting): Lead follow-up and appointment booking.
+- [Cold Calling](https://www.victorysync.com/cold-calling): Outbound calling and prospect qualification.
+- [AI-Assisted Operations](https://www.victorysync.com/ai-automation): Tools that support human agents and workflows.
+- [Pricing](https://www.victorysync.com/pricing): Starter pricing and custom quote information.
+- [Platform](https://www.victorysync.com/platform): Campaign visibility and reporting.
+- [About Us](https://www.victorysync.com/about-us): Company background and operating model.
+- [Contact](https://www.victorysync.com/contact): Contact and inquiry options.
+- [Book a Call](https://www.victorysync.com/book-call): Schedule a discovery call.
+- [Help Center](https://www.victorysync.com/help-center): Frequently asked questions.
+- [Privacy Policy](https://www.victorysync.com/privacy-policy): Privacy terms.
+- [Terms of Service](https://www.victorysync.com/terms): Terms of service.
+- [Home Services Appointment Setting](https://www.victorysync.com/appointment-setting-for-home-services): Appointment setting for home service companies.
+- [Cold Calling for Plumbers](https://www.victorysync.com/cold-calling-for-plumbers): Outbound calling for plumbing companies.
+- [Real Estate Appointment Setting](https://www.victorysync.com/appointment-setting-for-real-estate): Lead follow-up for real estate teams.
+- [Inbound Support for Law Firms](https://www.victorysync.com/inbound-support-for-law-firms): Firm-approved intake and call routing.
 
 ## Contact
 
-For inquiries, partnerships, or attribution: https://www.victorysync.com/contact
+- US phone: +1 848-216-1220
+- WhatsApp: +20-107-039-4707
+- Email: info@victorysync.com
+- Address: 11 Brookside Road, Millstone Township, NJ 08510
+- Hours: Monday to Friday, 9:00am to 6:00pm Eastern
+
+Sitemap: https://www.victorysync.com/sitemap.xml
