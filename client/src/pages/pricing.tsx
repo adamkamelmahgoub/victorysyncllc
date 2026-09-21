@@ -8,12 +8,28 @@ import { Calculator, TrendingUp, Phone, DollarSign } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useState } from 'react';
 
+const starterOffer = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: 'VictorySync Starter contact center service',
+  serviceType: 'Inbound or outbound contact center service',
+  provider: { '@id': 'https://www.victorysync.com/#organization' },
+  offers: {
+    '@type': 'Offer',
+    price: '10',
+    priceCurrency: 'USD',
+    priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'USD', unitText: 'per agent hour' },
+    url: 'https://www.victorysync.com/pricing',
+  },
+};
+
 export default function Pricing() {
   const { open: openCalendly } = useCalendly();
   useSeo({
     title: 'Pricing | Contact Center Services Starting at $10/hr | VictorySync',
     description: 'Custom-quoted packages starting at $10/hr per agent. Inbound support, appointment setting, and cold calling — flexible pricing with no long-term contracts required.',
     canonical: 'https://victorysync.com/pricing',
+    structuredData: starterOffer,
   });
 
   const [missedCalls, setMissedCalls] = useState(50);
@@ -43,14 +59,21 @@ export default function Pricing() {
             <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
               Every business is unique. Let's create a custom solution that fits your specific requirements and budget.
             </p>
-            <div className="inline-block bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-6 py-3">
-              <p className="text-lg font-semibold text-cyan-400">
-                💰 Save up to 60% compared to US-based services
-              </p>
-            </div>
           </motion.div>
         </StaggerContainer>
       </Section>
+
+      <section className="border-y border-blue-100 bg-blue-50 px-5 py-12">
+        <div className="mx-auto max-w-4xl rounded-xl border border-blue-200 bg-white p-6 shadow-sm sm:p-8">
+          <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">Starter</p>
+          <h2 className="mt-2 text-3xl font-bold text-slate-950">From $10/hr per agent</h2>
+          <p className="mt-3 text-sm leading-6 text-slate-600">A focused starting point with one trained agent and one inbound or outbound workflow.</p>
+          <ul className="mt-5 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
+            {['One trained agent', 'One inbound or outbound workflow', 'Approved scripts', 'Daily activity reporting', 'Weekly QA review'].map(feature => <li key={feature}>✓ {feature}</li>)}
+          </ul>
+          <p className="mt-5 text-xs text-slate-500">Final pricing depends on coverage, channels, tools, and campaign scope.</p>
+        </div>
+      </section>
 
       <Section className="bg-ink-800 border-y border-ink-700">
         <div className="max-w-4xl mx-auto text-center">
