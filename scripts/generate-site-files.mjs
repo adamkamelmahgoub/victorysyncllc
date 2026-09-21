@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { publicRoutes } from './route-manifest.mjs';
+import { EMAIL, HOURS, POSTAL_CODE, STREET_ADDRESS, US_PHONE, WHATSAPP } from '../client/src/lib/site-config.ts';
 
 const root = resolve(import.meta.dirname, '..');
 const publicDir = resolve(root, 'client', 'public');
@@ -19,6 +20,6 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://w
 writeFileSync(resolve(publicDir, 'sitemap.xml'), sitemap);
 
 const pages = publicRoutes.map(({ path, label, summary }) => `- [${label}](${origin}${path}): ${summary}`).join('\n');
-const llms = `# VictorySync\n\nVictorySync is a US-managed contact center with Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound customer support.\n\n## Services and coverage\n\nServices include inbound customer support, outbound appointment setting, cold calling, and AI-assisted operations. VictorySync serves businesses in the United States, including home services, plumbing, real estate, and legal practices. Straightforward campaigns can often launch within 24 to 48 hours after scripts, access, and escalation rules are approved. VictorySync is a Close CRM partner.\n\nStarter service begins at $10 per agent hour for one trained agent and one inbound or outbound workflow. Final pricing depends on campaign scope.\n\n## Pages\n\n${pages}\n\n## Contact\n\n- US phone: +1 848-216-1220\n- WhatsApp: +20-107-039-4707\n- Email: info@victorysync.com\n- Address: 11 Brookside Road, Millstone Township, NJ 08510\n- Hours: Monday to Friday, 9:00am to 6:00pm Eastern\n\nSitemap: ${origin}/sitemap.xml\n`;
+const llms = `# VictorySync\n\nVictorySync is a US-managed contact center with Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound customer support.\n\n## Services and coverage\n\nServices include inbound customer support, outbound appointment setting, cold calling, and AI-assisted operations. VictorySync serves businesses in the United States, including home services, plumbing, real estate, and legal practices. Straightforward campaigns can often launch within 24 to 48 hours after scripts, access, and escalation rules are approved. VictorySync is a Close CRM partner.\n\nStarter service begins at $10 per agent hour for one trained agent and one inbound or outbound workflow. Final pricing depends on campaign scope.\n\n## Pages\n\n${pages}\n\n## Contact\n\n- US phone: ${US_PHONE}\n- WhatsApp: ${WHATSAPP}\n- Email: ${EMAIL}\n- Address: ${STREET_ADDRESS}, Millstone Township, NJ ${POSTAL_CODE}\n- Hours: ${HOURS}\n\nSitemap: ${origin}/sitemap.xml\n`;
 writeFileSync(resolve(publicDir, 'llms.txt'), llms);
 console.log(`Generated sitemap and llms.txt for ${publicRoutes.length} routes (lastmod ${lastmod}).`);

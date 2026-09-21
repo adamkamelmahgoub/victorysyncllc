@@ -22,6 +22,7 @@ Starter service begins at $10 per agent hour for one trained agent and one inbou
 - [Contact](https://www.victorysync.com/contact): Contact and inquiry options.
 - [Book a Call](https://www.victorysync.com/book-call): Schedule a discovery call.
 - [Help Center](https://www.victorysync.com/help-center): Frequently asked questions.
+- [Reviews](https://www.victorysync.com/reviews): Share your experience with VictorySync on Google or Clutch.
 - [Privacy Policy](https://www.victorysync.com/privacy-policy): Privacy terms.
 - [Terms of Service](https://www.victorysync.com/terms): Terms of service.
 - [Home Services Appointment Setting](https://www.victorysync.com/appointment-setting-for-home-services): Appointment setting for home service companies.

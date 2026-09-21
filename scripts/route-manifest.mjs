@@ -11,6 +11,7 @@ export const publicRoutes = [
   { path: '/contact', label: 'Contact', summary: 'Contact and inquiry options.', priority: '0.8' },
   { path: '/book-call', label: 'Book a Call', summary: 'Schedule a discovery call.', priority: '0.8' },
   { path: '/help-center', label: 'Help Center', summary: 'Frequently asked questions.', priority: '0.5' },
+  { path: '/reviews', label: 'Reviews', summary: 'Share your experience with VictorySync on Google or Clutch.', priority: '0.5' },
   { path: '/privacy-policy', label: 'Privacy Policy', summary: 'Privacy terms.', priority: '0.3', changefreq: 'yearly' },
   { path: '/terms', label: 'Terms of Service', summary: 'Terms of service.', priority: '0.3', changefreq: 'yearly' },
   { path: '/appointment-setting-for-home-services', label: 'Home Services Appointment Setting', summary: 'Appointment setting for home service companies.', priority: '0.8' },

@@ -2,6 +2,8 @@ import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import { useSeo } from "@/hooks/useSeo";
 import { useCalendly } from "@/hooks/useCalendly";
+import { EMAIL, HOURS, US_PHONE, US_PHONE_HREF, WHATSAPP, WHATSAPP_HREF } from '@/lib/site-config';
+import ReviewRequest from '@/components/review-request';
 
 export default function HelpCenter() {
   const { open: openCalendly } = useCalendly();
@@ -293,7 +295,7 @@ export default function HelpCenter() {
         <div className="mt-16 bg-ink-800 rounded-lg shadow-lg p-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Still Need Help?</h2>
           <p className="text-lg text-gray-300 mb-8">
-            Can't find what you're looking for? Our support team is here to help you 24/7.
+            Can't find what you're looking for? Contact our team during business hours.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
@@ -305,16 +307,19 @@ export default function HelpCenter() {
               Schedule a Call
             </button>
           </div>
-          <div className="mt-8 grid md:grid-cols-3 gap-6 text-center">
+          <div className="mt-8 grid gap-6 text-center md:grid-cols-4">
             <div>
               <h3 className="font-semibold text-white mb-2">Email Support</h3>
-              <p className="text-gray-300">info@victorysync.com</p>
-              <p className="text-sm text-gray-400">Response within 2 hours</p>
+              <a href={`mailto:${EMAIL}`} className="text-gray-300 hover:underline">{EMAIL}</a>
             </div>
             <div>
               <h3 className="font-semibold text-white mb-2">Phone Support</h3>
-              <p className="text-gray-300">+20 107 039 4707</p>
-              <p className="text-sm text-gray-400">Available 24/7</p>
+              <a href={US_PHONE_HREF} className="text-gray-300 hover:underline">{US_PHONE}</a>
+              <p className="text-sm text-gray-400">{HOURS}</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-white mb-2">WhatsApp</h3>
+              <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">{WHATSAPP}</a>
             </div>
             <div>
               <h3 className="font-semibold text-white mb-2">Live Chat</h3>
@@ -323,6 +328,7 @@ export default function HelpCenter() {
             </div>
           </div>
         </div>
+        <div className="mt-10"><ReviewRequest /></div>
       </div>
     </div>
   );

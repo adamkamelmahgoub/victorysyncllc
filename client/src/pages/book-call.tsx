@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import { useCalendly } from "@/hooks/useCalendly";
 import { useSeo } from "@/hooks/useSeo";
-import { CheckCircle, Clock, Users, ArrowRight, Phone, Mail } from "lucide-react";
+import { CheckCircle, Clock, Users, ArrowRight, Phone, Mail, MessageCircle } from "lucide-react";
+import { EMAIL, HOURS, US_PHONE, US_PHONE_HREF, WHATSAPP, WHATSAPP_HREF } from '@/lib/site-config';
 
 const BookCall = () => {
   const { open } = useCalendly();
@@ -97,18 +98,19 @@ const BookCall = () => {
         <div className="bg-ink-800 border border-ink-700 rounded-xl p-8 text-center">
           <h2 className="text-2xl font-bold text-white mb-4">Prefer Not to Schedule Online?</h2>
           <p className="text-slate-300 mb-6">
-            Reach our team directly — we're available Monday to Friday, 9 AM – 6 PM ET.
+            Reach our team directly — {HOURS}.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+201070394707"
+              href={US_PHONE_HREF}
               className="inline-flex items-center gap-2 border border-ink-600 text-slate-300 hover:text-cyan-400 hover:border-cyan-400 px-6 py-3 rounded-lg font-medium transition-colors"
             >
               <Phone className="w-4 h-4" />
-              +20 107 039 4707
+              {US_PHONE}
             </a>
+            <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border border-ink-600 text-slate-300 hover:text-cyan-400 hover:border-cyan-400 px-6 py-3 rounded-lg font-medium transition-colors"><MessageCircle className="w-4 h-4" />WhatsApp {WHATSAPP}</a>
             <a
-              href="mailto:info@victorysync.com"
+              href={`mailto:${EMAIL}`}
               className="inline-flex items-center gap-2 border border-ink-600 text-slate-300 hover:text-cyan-400 hover:border-cyan-400 px-6 py-3 rounded-lg font-medium transition-colors"
             >
               <Mail className="w-4 h-4" />
