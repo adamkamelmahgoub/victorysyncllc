@@ -2,6 +2,7 @@ import { Link } from 'wouter';
 import { useCalendly } from '@/hooks/useCalendly';
 import { useSeo } from '@/hooks/useSeo';
 import { Button } from '@/components/ui/button';
+import ClutchWidget from '@/components/clutch-widget';
 import { MapPin, Users, Shield, BarChart3, CheckCircle } from 'lucide-react';
 
 const aboutSchema = [
@@ -175,6 +176,7 @@ export default function AboutUs() {
       </section>
 
       {/* CTA */}
+      <div className="mx-auto max-w-5xl px-4"><ClutchWidget key="about-clutch" /></div>
       <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Ready to talk about your business?</h2>

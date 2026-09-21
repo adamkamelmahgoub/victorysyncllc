@@ -2,6 +2,7 @@ import { MotionPage } from '@/components/motion-page';
 import { useCalendly } from '@/hooks/useCalendly';
 import { useSeo } from '@/hooks/useSeo';
 import { WHATSAPP_HREF } from '@/lib/site-config';
+import ClutchWidget from '@/components/clutch-widget';
 import { Link } from 'wouter';
 import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.webp';
 import {
@@ -120,6 +121,7 @@ export default function Home() {
           <img src={closeBadge} alt="Close partner since 2025" width="600" height="288" loading="lazy" className="h-auto w-44 shrink-0" />
           <div><p className="section-kicker">Our partners</p><h2 className="mt-2 text-2xl font-bold text-slate-900">VictorySync is a Close CRM partner</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Our partnership with Close CRM supports our focus on clear sales workflows and accountable customer follow-up.</p></div>
         </div>
+        <div className="mx-auto mt-6 max-w-5xl px-5 sm:px-8"><ClutchWidget key="home-clutch" /></div>
       </section>
 
       <section id="faq" className="relative scroll-mt-16 bg-white py-24">
