@@ -1,8 +1,9 @@
-import { Phone, Calendar, Users, MessageSquare, Bot, BarChart3, ArrowRight, CheckCircle } from "lucide-react";
+import { Phone, Calendar, Users, MessageSquare, Bot, BarChart3, ArrowRight, CheckCircle, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useCalendly } from "@/hooks/useCalendly";
 import { useSeo } from "@/hooks/useSeo";
+import { siteFacts } from '@/config/siteFacts';
 
 const services = [
   {
@@ -107,6 +108,15 @@ const services = [
     ],
     outcome: "More throughput from your existing team, cleaner CRM data, and better visibility for management.",
   },
+  ...(siteFacts.digitalMarketingDetails ? [{
+    icon: Megaphone,
+    title: "Digital Marketing",
+    href: "/digital-marketing",
+    who: "Businesses that want search, paid media, content, email, website work, and lead follow-up managed as one connected process.",
+    description: siteFacts.digitalMarketingDetails.description,
+    handles: [...siteFacts.digitalMarketingDetails.services],
+    outcome: "A documented marketing system that connects campaigns and website activity to inquiries, lead handling, and useful reporting.",
+  }] : []),
 ];
 
 const serviceListSchema = {
@@ -118,6 +128,7 @@ const serviceListSchema = {
     ['Appointment Setting', '/appointment-setting'],
     ['Cold Calling', '/cold-calling'],
     ['AI-Assisted Operations', '/ai-automation'],
+    ...(siteFacts.digitalMarketingDetails ? [['Digital Marketing', '/digital-marketing']] : []),
   ].map(([name, path], index) => ({ '@type': 'ListItem', position: index + 1, name, url: `https://www.victorysync.com${path}` })),
 };
 

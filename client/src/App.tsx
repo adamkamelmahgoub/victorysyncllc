@@ -41,6 +41,7 @@ const InboundSupport = lazy(() => import("@/pages/inbound-support"));
 const AppointmentSetting = lazy(() => import("@/pages/appointment-setting"));
 const ColdCalling = lazy(() => import("@/pages/cold-calling"));
 const AiAutomation = lazy(() => import("@/pages/ai-automation"));
+const DigitalMarketing = lazy(() => import("@/pages/digital-marketing"));
 const VerticalService = lazy(() => import("@/pages/vertical-services"));
 
 // Footer Pages
@@ -89,6 +90,7 @@ function Router() {
             <Route path="/appointment-setting" component={AppointmentSetting} />
             <Route path="/cold-calling" component={ColdCalling} />
             <Route path="/ai-automation" component={AiAutomation} />
+            <Route path="/digital-marketing" component={DigitalMarketing} />
             <Route path="/appointment-setting-for-home-services"><VerticalService path="/appointment-setting-for-home-services" /></Route>
             <Route path="/cold-calling-for-plumbers"><VerticalService path="/cold-calling-for-plumbers" /></Route>
             <Route path="/answering-service-for-plumbers"><VerticalService path="/answering-service-for-plumbers" /></Route>

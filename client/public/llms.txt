@@ -8,6 +8,7 @@ Victory Sync LLC provides US-managed contact center services with Cairo-based ag
 - Outbound appointment setting and lead follow-up
 - Cold calling and lead qualification
 - AI-assisted call summaries, CRM updates, routing, reminders, and reporting
+- Digital marketing: SEO, Paid search, Paid social, Content marketing, Email marketing, Website and landing-page work, Analytics and reporting
 
 ## Who we work with
 
@@ -32,11 +33,12 @@ VictorySync is a Close CRM partner.
 ## Pages
 
 - [Home](https://www.victorysync.com/): Overview of VictorySync contact center services.
-- [Services](https://www.victorysync.com/services): Inbound support, appointment setting, cold calling, and AI-assisted operations.
+- [Services](https://www.victorysync.com/services): Inbound support, appointment setting, cold calling, AI-assisted operations, and digital marketing.
 - [Inbound Support](https://www.victorysync.com/inbound-support): Live agent inbound customer support.
 - [Appointment Setting](https://www.victorysync.com/appointment-setting): Lead follow-up and appointment booking.
 - [Cold Calling](https://www.victorysync.com/cold-calling): Outbound calling and prospect qualification.
 - [AI-Assisted Operations](https://www.victorysync.com/ai-automation): Tools that support human agents and workflows.
+- [Digital Marketing](https://www.victorysync.com/digital-marketing): SEO, paid media, content, email, website work, and analytics.
 - [Pricing](https://www.victorysync.com/pricing): Starter pricing and custom quote information.
 - [Platform](https://www.victorysync.com/platform): Campaign visibility and reporting.
 - [About Us](https://www.victorysync.com/about-us): Company background and operating model.

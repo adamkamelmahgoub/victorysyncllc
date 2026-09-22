@@ -43,6 +43,13 @@ const pricingLines = [
   `Service starts from $${siteFacts.starterRateUsd} per agent hour. Final pricing depends on campaign scope.`,
   siteFacts.pilotDescription ? `Paid pilot: ${siteFacts.pilotDescription}.` : null,
 ].filter(Boolean).join('\n\n');
+const serviceLines = [
+  '- Inbound customer support and call answering',
+  '- Outbound appointment setting and lead follow-up',
+  '- Cold calling and lead qualification',
+  '- AI-assisted call summaries, CRM updates, routing, reminders, and reporting',
+  siteFacts.digitalMarketingDetails ? `- Digital marketing: ${siteFacts.digitalMarketingDetails.services.join(', ')}` : null,
+].filter(Boolean).join('\n');
 const launchLines = [
   `Straightforward campaigns can often launch within ${siteFacts.straightforwardLaunchTimeframe} after scripts, lists, access, and escalation rules are approved.`,
   siteFacts.complexLaunchTimeframe ? `Campaigns that need a CRM integration or compliance review usually take ${siteFacts.complexLaunchTimeframe}.` : null,
@@ -58,10 +65,7 @@ ${siteFacts.legalName} provides US-managed contact center services with Cairo-ba
 
 ## Services
 
-- Inbound customer support and call answering
-- Outbound appointment setting and lead follow-up
-- Cold calling and lead qualification
-- AI-assisted call summaries, CRM updates, routing, reminders, and reporting
+${serviceLines}
 
 ## Who we work with
 

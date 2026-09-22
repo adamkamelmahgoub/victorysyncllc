@@ -7,7 +7,7 @@ const paths = [...readFileSync(join(out, 'sitemap.xml'), 'utf8')
   .matchAll(/<loc>https:\/\/www\.victorysync\.com([^<]*)<\/loc>/g)]
   .map((match) => match[1] || '/');
 const servicePaths = new Set([
-  '/appointment-setting', '/cold-calling', '/inbound-support', '/ai-automation',
+  '/appointment-setting', '/cold-calling', '/inbound-support', '/ai-automation', '/digital-marketing',
   '/appointment-setting-for-home-services', '/cold-calling-for-plumbers',
   '/answering-service-for-plumbers', '/appointment-setting-for-hvac',
   '/appointment-setting-for-real-estate', '/inbound-support-for-law-firms',

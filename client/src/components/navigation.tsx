@@ -9,6 +9,7 @@ const serviceLinks = [
   { href: '/appointment-setting', label: 'Appointment Setting' },
   { href: '/cold-calling', label: 'Cold Calling' },
   { href: '/ai-automation', label: 'AI-Assisted Operations' },
+  { href: '/digital-marketing', label: 'Digital Marketing' },
   { href: '/services', label: 'All Services →' },
 ];
 

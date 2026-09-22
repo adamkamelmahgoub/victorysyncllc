@@ -14,7 +14,11 @@ export interface SiteFacts {
   paymentMethods: string | null;
   otherCRMs: readonly string[] | null;
   dashboardFeatures: readonly string[] | null;
-  digitalMarketingDetails: { description: string; publishPricing: boolean } | null;
+  digitalMarketingDetails: {
+    description: string;
+    services: readonly string[];
+    publishPricing: boolean;
+  } | null;
   documentedSavingsClaim: string | null;
   starterRateUsd: number;
   straightforwardLaunchTimeframe: string;
@@ -36,7 +40,11 @@ export const siteFacts: SiteFacts = {
   paymentMethods: null,
   otherCRMs: null,
   dashboardFeatures: null,
-  digitalMarketingDetails: null,
+  digitalMarketingDetails: {
+    description: 'Strategy and execution across SEO, paid search, paid social, content, email marketing, website and landing-page work, and analytics.',
+    services: ['SEO', 'Paid search', 'Paid social', 'Content marketing', 'Email marketing', 'Website and landing-page work', 'Analytics and reporting'],
+    publishPricing: false,
+  },
   documentedSavingsClaim: null,
   starterRateUsd: 10,
   straightforwardLaunchTimeframe: '24 to 48 hours',
