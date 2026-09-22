@@ -6,7 +6,7 @@ import { siteFacts, starterPriceLabel } from '@/config/siteFacts';
 
 const groups = [
   { title: 'Services', links: [['Inbound Support','/inbound-support'],['Appointment Setting','/appointment-setting'],['Cold Calling','/cold-calling'],['AI Automation','/ai-automation']] },
-  { title: 'Industries', links: [['Home Services','/appointment-setting-for-home-services'],['Plumbers','/cold-calling-for-plumbers'],['Real Estate','/appointment-setting-for-real-estate'],['Law Firms','/inbound-support-for-law-firms']] },
+  { title: 'Industries', links: [['Home Services','/appointment-setting-for-home-services'],['Plumber Answering','/answering-service-for-plumbers'],['Plumber Outreach','/cold-calling-for-plumbers'],['HVAC','/appointment-setting-for-hvac'],['Real Estate','/appointment-setting-for-real-estate'],['Law Firms','/inbound-support-for-law-firms']] },
   { title: 'Company', links: [['About','/about-us'],['Pricing','/pricing'],['Contact','/contact']] },
   { title: 'Resources', links: [['Help Center','/help-center'],['Reviews','/reviews'],['Privacy','/privacy-policy'],['Terms','/terms']] },
 ];

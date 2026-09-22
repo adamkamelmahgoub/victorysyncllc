@@ -16,6 +16,8 @@ export const publicRoutes = [
   { path: '/terms', label: 'Terms of Service', summary: 'Terms of service.', priority: '0.3', changefreq: 'yearly' },
   { path: '/appointment-setting-for-home-services', label: 'Home Services Appointment Setting', summary: 'Appointment setting for home service companies.', priority: '0.8' },
   { path: '/cold-calling-for-plumbers', label: 'Cold Calling for Plumbers', summary: 'Outbound calling for plumbing companies.', priority: '0.8' },
+  { path: '/answering-service-for-plumbers', label: 'Answering Service for Plumbers', summary: 'Call answering, intake, booking, and urgent call routing for plumbing companies.', priority: '0.8' },
+  { path: '/appointment-setting-for-hvac', label: 'HVAC Appointment Setting', summary: 'Lead qualification and service appointment booking for HVAC companies.', priority: '0.8' },
   { path: '/appointment-setting-for-real-estate', label: 'Real Estate Appointment Setting', summary: 'Lead follow-up for real estate teams.', priority: '0.8' },
   { path: '/inbound-support-for-law-firms', label: 'Inbound Support for Law Firms', summary: 'Firm-approved intake and call routing.', priority: '0.8' },
 ];

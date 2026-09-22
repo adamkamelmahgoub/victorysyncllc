@@ -4,12 +4,13 @@ import { Link } from "wouter";
 import { Phone, MessageSquare, Mail, CheckCircle, ArrowRight, Clock, Shield, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ServiceNextSteps from "@/components/service-next-steps";
+import { siteFacts } from '@/config/siteFacts';
 
 export default function InboundSupport() {
   const { open: openCalendly } = useCalendly();
   useSeo({
     title: 'Inbound Customer Support Services | VictorySync',
-    description: 'Outsourced inbound call center support for US businesses. Live phone, email, chat, and ticket handling — US-managed, Cairo-staffed, starting within 24–48 hours.',
+    description: `Outsourced inbound call center support for US businesses. Live phone, email, chat, and ticket handling, US-managed and Cairo-staffed, with straightforward campaigns often starting within ${siteFacts.straightforwardLaunchTimeframe}.`,
     canonical: 'https://victorysync.com/inbound-support',
   });
 
@@ -68,9 +69,9 @@ export default function InboundSupport() {
           <p className="text-slate-400 mb-10">Our trained agents become an extension of your team, handling every inbound channel with professionalism and consistency.</p>
           <div className="grid md:grid-cols-2 gap-6">
             {[
-              { icon: Phone, title: "Phone Support", items: ["Live answer on every call", "Warm transfers and escalations", "Call recording and QA monitoring", "After-hours coverage options"] },
+              { icon: Phone, title: "Phone Support", items: ["Live call answering", "Warm transfers and escalations", "Call recording and QA monitoring", ...(siteFacts.afterHoursCoverage ? ["Coverage after the office closes"] : [])] },
               { icon: Mail, title: "Email Support", items: ["Ticket creation and routing", "Response within agreed SLAs", "Template-based and custom responses", "Escalation to your team when needed"] },
-              { icon: MessageSquare, title: "Live Chat & SMS", items: ["Real-time chat responses", "SMS follow-up and inquiry handling", "Chat-to-call escalation", "Off-hours SMS triage"] },
+              { icon: MessageSquare, title: "Live Chat & SMS", items: ["Real-time chat responses", "SMS follow-up and inquiry handling", "Chat-to-call escalation"] },
               { icon: BarChart3, title: "Reporting & QA", items: ["Daily activity summaries", "Call and ticket volume reports", "Agent performance reviews", "Weekly QA scoring and feedback"] },
             ].map((section) => {
               const Icon = section.icon;
@@ -146,7 +147,7 @@ export default function InboundSupport() {
       <section className="py-20 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Ready to stop missing calls?</h2>
-          <p className="text-slate-300 mb-8">Book a free 20-minute call and we'll show you how VictorySync can cover your inbound volume starting within 24–48 hours.</p>
+          <p className="text-slate-300 mb-8">Book a free 20-minute call and we'll map an inbound workflow that can often launch within {siteFacts.straightforwardLaunchTimeframe} after scripts, access, and escalation rules are approved.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button onClick={openCalendly} className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold px-8 py-3">
               Book a Free Call

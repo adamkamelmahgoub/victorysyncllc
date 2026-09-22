@@ -105,7 +105,7 @@ export default function AiAutomation() {
             {[
               { step: "01", title: "Workflow Audit", desc: "We map your current ops: where time is wasted, where leads get lost, and where automation would have the most impact." },
               { step: "02", title: "Automation Design", desc: "We design AI-assisted workflows that fit your existing tools — CRM, calendar, phone system, and reporting stack." },
-              { step: "03", title: "Pilot & Integrate", desc: "We deploy automations in a controlled pilot. Your team reviews outputs before anything runs at scale." },
+              { step: "03", title: "Review & Integrate", desc: "We configure the approved workflow and your team reviews outputs before anything runs at scale." },
               { step: "04", title: "Monitor & Refine", desc: "Ongoing oversight ensures automations stay accurate, and we refine them as your business evolves." },
             ].map((item) => (
               <div key={item.step} className="relative">

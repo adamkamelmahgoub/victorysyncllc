@@ -215,6 +215,25 @@ export default function Services() {
         </div>
       </section>
 
+      <section className="border-t border-ink-700 bg-ink-900 py-16">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-white">Services by industry</h2>
+          <p className="mt-3 max-w-2xl text-slate-400">See how approved intake, qualification, booking, and handoff rules apply to specific operating environments.</p>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            {[
+              ['Answering Service for Plumbers', '/answering-service-for-plumbers', 'Sort urgent calls, capture job details, and book approved estimates.'],
+              ['Appointment Setting for HVAC Companies', '/appointment-setting-for-hvac', 'Qualify repair, replacement, and maintenance leads before booking.'],
+            ].map(([label, href, description]) => (
+              <Link key={href} href={href} className="rounded-xl border border-ink-700 bg-ink-800 p-6 transition-colors hover:border-cyan-500/50">
+                <h3 className="font-semibold text-white">{label}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
+                <span className="mt-4 inline-flex items-center text-sm font-semibold text-cyan-400">Read the service guide <ArrowRight className="ml-2 h-4 w-4" /></span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="py-20 bg-ink-800 border-t border-ink-700">
         <div className="max-w-3xl mx-auto px-4 text-center">

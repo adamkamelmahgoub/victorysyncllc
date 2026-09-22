@@ -56,7 +56,7 @@ const processSteps = [
 const plans = [
   { name: 'Starter', note: 'One focused workflow', price: starterPriceLabel, description: 'A practical starting point for consistent coverage.', features: ['1 trained agent', 'Inbound or outbound workflow', 'Approved scripts and playbook', 'Daily activity reporting', 'Weekly QA review'], featured: false },
   { name: 'Growth', note: 'Most Popular', price: 'Custom', description: 'For teams building a predictable calling operation.', features: ['2+ trained agents', 'Blended calling and follow-up', 'Qualification and booking', 'CRM and calendar workflow', 'Dedicated account lead'], featured: true },
-  { name: 'Scale', note: 'Flexible coverage', price: 'Custom', description: 'For extended hours, multiple workflows, or higher volume.', features: ['3+ agents or extended coverage', 'Inbound and outbound programs', 'Custom QA scorecards', 'AI-assisted reporting', 'Operational review cadence'], featured: false },
+  { name: 'Scale', note: 'Flexible capacity', price: 'Custom', description: 'For multiple workflows or higher volume.', features: ['3+ agents', 'Inbound and outbound programs', 'Custom QA scorecards', 'AI-assisted reporting', 'Operational review cadence'], featured: false },
 ];
 
 const capabilities = [

@@ -12,15 +12,15 @@ interface SeoProps {
 export { siteOrigin } from '@/config/siteFacts';
 export const pageMeta: Record<string, [string, string]> = {
   '/': ['VictorySync | US-Managed Call Center & Appointment Setting', 'US-managed call center with trained agents for appointment setting, cold calling, lead qualification, and inbound support. Serving US SMBs from Millstone, NJ.'],
-  '/services': ['Call Center & BPO Services | VictorySync', 'Outbound appointment setting, cold calling, lead qualification, inbound support, and digital marketing for US small and mid-sized businesses.'],
+  '/services': ['Call Center & BPO Services | VictorySync', 'Outbound appointment setting, cold calling, lead qualification, and inbound support for US small and mid-sized businesses.'],
   '/appointment-setting': ['Appointment Setting Services for US Businesses | VictorySync', 'Trained agents book qualified appointments straight into your calendar. US-managed outbound appointment setting for home services, real estate, legal, and SaaS.'],
   '/cold-calling': ['Cold Calling Services | Outbound Sales Calls | VictorySync', 'Professional outbound cold calling with area-code matched caller ID, call recording, and daily reporting. US-managed team, transparent connect and booking rates.'],
   '/inbound-support': ['Inbound Customer Support Outsourcing | VictorySync', 'Stop missing calls. Trained agents answer, qualify, and book your inbound calls with US-led management and full call recording.'],
   '/ai-automation': ['AI Call Qualification & Routing | VictorySync', 'AI-assisted lead qualification and call routing layered on a human team, so every inbound lead is answered and qualified fast.'],
-  '/pricing': ['Pricing | Call Center & Appointment Setting Rates | VictorySync', 'Transparent pricing for outbound calling, appointment setting, and inbound support. Paid pilots available so you can test before you commit.'],
+  '/pricing': ['Pricing | Call Center & Appointment Setting Rates | VictorySync', `Transparent pricing from $${siteFacts.starterRateUsd}/hr per agent for outbound calling, appointment setting, and inbound support.`],
   '/platform': ['Campaign Dashboard & Daily Reports | VictorySync', 'See every call, booking, and outcome from your VictorySync campaign: call recordings, connect and booking rates, and a daily summary in your inbox.'],
   '/about-us': ['About VictorySync | US-Managed, Cairo-Staffed', 'Founded and run from Millstone, NJ with a dedicated Cairo-based agent team. Meet the people answering your calls.'],
-  '/contact': ['Contact VictorySync | Millstone, NJ', 'Get in touch with VictorySync. US-managed call center and digital marketing for small and mid-sized businesses.'],
+  '/contact': ['Contact VictorySync | Millstone, NJ', 'Get in touch with VictorySync about US-managed inbound support, appointment setting, cold calling, and lead qualification.'],
   '/book-call': ['Book a Call with VictorySync', 'Book a free consultation. We will look at your current lead flow and tell you what we would change.'],
   '/help-center': ['Help Center | VictorySync', 'Answers to common questions about VictorySync services, onboarding, and reporting.'],
   '/reviews': ['Reviews | VictorySync', 'Share your experience working with VictorySync on Google or Clutch.'],
@@ -28,6 +28,8 @@ export const pageMeta: Record<string, [string, string]> = {
   '/terms': ['Terms of Service | VictorySync', 'Terms governing use of VictorySync services.'],
   '/appointment-setting-for-home-services': ['Appointment Setting for Home Services | VictorySync', 'Qualify home service inquiries and book useful estimates with US-managed appointment setting, clear intake rules, and organized handoffs.'],
   '/cold-calling-for-plumbers': ['Cold Calling for Plumbers | VictorySync', 'Reach property managers and commercial prospects with managed cold calling for plumbers, approved scripts, and clear reporting.'],
+  '/answering-service-for-plumbers': ['Answering Service for Plumbers | VictorySync', `Trained agents answer your plumbing calls, sort emergencies from routine jobs, and book estimates into your calendar. From $${siteFacts.starterRateUsd}/hr. US-managed.`],
+  '/appointment-setting-for-hvac': ['HVAC Appointment Setting & Call Answering | VictorySync', `Follow up on HVAC leads fast, qualify the job, and book service calls and estimates your techs can use. US-managed team, from $${siteFacts.starterRateUsd}/hr.`],
   '/appointment-setting-for-real-estate': ['Real Estate Appointment Setting | VictorySync', 'Follow up with real estate buyers and sellers, qualify timing and intent, and book useful agent conversations with organized handoffs.'],
   '/inbound-support-for-law-firms': ['Inbound Support for Law Firms | VictorySync', 'Answer law firm calls with trained agents, firm-approved intake questions, and clear routing to the right staff member.'],
 };
@@ -39,6 +41,8 @@ const services: Record<string, string> = {
   '/ai-automation': 'AI Call Qualification and Routing',
   '/appointment-setting-for-home-services': 'Appointment Setting for Home Services',
   '/cold-calling-for-plumbers': 'Cold Calling for Plumbers',
+  '/answering-service-for-plumbers': 'Answering Service for Plumbers',
+  '/appointment-setting-for-hvac': 'Appointment Setting for HVAC Companies',
   '/appointment-setting-for-real-estate': 'Appointment Setting for Real Estate',
   '/inbound-support-for-law-firms': 'Inbound Support for Law Firms',
 };

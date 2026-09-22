@@ -91,6 +91,8 @@ function Router() {
             <Route path="/ai-automation" component={AiAutomation} />
             <Route path="/appointment-setting-for-home-services"><VerticalService path="/appointment-setting-for-home-services" /></Route>
             <Route path="/cold-calling-for-plumbers"><VerticalService path="/cold-calling-for-plumbers" /></Route>
+            <Route path="/answering-service-for-plumbers"><VerticalService path="/answering-service-for-plumbers" /></Route>
+            <Route path="/appointment-setting-for-hvac"><VerticalService path="/appointment-setting-for-hvac" /></Route>
             <Route path="/appointment-setting-for-real-estate"><VerticalService path="/appointment-setting-for-real-estate" /></Route>
             <Route path="/inbound-support-for-law-firms"><VerticalService path="/inbound-support-for-law-firms" /></Route>
 
