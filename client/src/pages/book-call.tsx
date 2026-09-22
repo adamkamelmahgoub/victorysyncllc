@@ -10,7 +10,7 @@ const BookCall = () => {
   const { open } = useCalendly();
   useSeo({
     title: 'Book a Free Strategy Call | VictorySync Contact Center',
-    description: 'Schedule a free 30-minute strategy call with VictorySync. Review your current lead flow and customer service setup.',
+    description: 'Book a free 30-minute call to compare a trained, US-managed team with your current setup and review your lead flow.',
     canonical: 'https://victorysync.com/book-call',
   });
 
@@ -27,7 +27,7 @@ const BookCall = () => {
             Book a Free Strategy Call with VictorySync
           </h1>
           <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-8">
-            In 30 minutes, review how our US-managed contact center could fit your customer service workflow and budget.
+            In 30 minutes, see what a trained, US-managed team would cost next to your current setup, and what we'd change about your lead flow.
           </p>
           <button
             onClick={open}
@@ -49,7 +49,7 @@ const BookCall = () => {
                 "How VictorySync's US-managed agents can close gaps in your support",
                 "AI automation opportunities specific to your business",
                 "A realistic timeline and pricing for your situation",
-                "How a campaign in your industry is planned and managed",
+                siteFacts.documentedSavingsClaim ?? "What a first campaign in your industry looks like, start to finish",
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
@@ -91,8 +91,8 @@ const BookCall = () => {
           </div>
           <div className="bg-ink-800 border border-ink-700 rounded-xl p-6 text-center">
             <Users className="w-8 h-8 text-cyan-400 mx-auto mb-3" />
-            <h3 className="font-semibold text-white mb-2">Senior Consultant</h3>
-            <p className="text-slate-400 text-sm">You'll speak directly with an experienced VictorySync strategist.</p>
+            <h3 className="font-semibold text-white mb-2">Founder-led call</h3>
+            <p className="text-slate-400 text-sm">You'll talk with our founder, who runs every client campaign.</p>
           </div>
         </div>
 

@@ -44,10 +44,9 @@ export default function Pricing() {
   const [teamSize, setTeamSize] = useState(5);
   const [hoursPerDay, setHoursPerDay] = useState(8);
 
-  const ourCost = currentCost * 0.4;
-  const monthlySavings = currentCost - ourCost;
+  const ourCost = teamSize * hoursPerDay * 22 * siteFacts.starterRateUsd;
+  const monthlySavings = Math.max(0, currentCost - ourCost);
   const yearlySavings = monthlySavings * 12;
-  const roi = ((monthlySavings / ourCost) * 100).toFixed(0);
 
   return (
     <MotionPage className="bg-ink-900">
@@ -315,14 +314,14 @@ export default function Pricing() {
                   </div>
 
                   <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border border-cyan-500/20 rounded-xl p-6">
-                    <p className="text-slate-300 text-sm mb-1">VictorySync Cost (60% savings)</p>
+                    <p className="text-slate-300 text-sm mb-1">Estimated VictorySync cost at ${siteFacts.starterRateUsd}/hr starter rate</p>
                     <p className="text-3xl font-bold text-cyan-400" data-testid="text-our-cost">
                       ${ourCost.toLocaleString()}/mo
                     </p>
                   </div>
 
                   <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border border-cyan-500/20 rounded-xl p-6">
-                    <p className="text-slate-300 text-sm mb-1">Monthly Savings</p>
+                    <p className="text-slate-300 text-sm mb-1">{monthlySavings > 0 ? 'Monthly savings' : 'Comparable cost'}</p>
                     <p className="text-3xl font-bold text-cyan-400" data-testid="text-monthly-savings">
                       ${monthlySavings.toLocaleString()}
                     </p>
@@ -339,8 +338,9 @@ export default function Pricing() {
 
               <div className="bg-gradient-to-br from-ink-900 to-ink-900 rounded-lg p-6 text-center border border-ink-700">
                 <p className="text-slate-300 mb-4">
-                  <span className="text-2xl font-bold text-cyan-400">{roi}% ROI</span> • 
-                  Save <span className="font-bold text-cyan-400">${monthlySavings.toLocaleString()}/month</span> while improving service quality
+                  {monthlySavings > 0
+                    ? <>Estimated savings: <span className="font-bold text-cyan-400">${monthlySavings.toLocaleString()}/month</span></>
+                    : <>Comparable cost at the published starter rate</>}
                 </p>
                 <Button
                   onClick={openCalendly}
