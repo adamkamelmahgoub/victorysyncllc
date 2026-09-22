@@ -4,12 +4,13 @@ import { useCalendly } from "@/hooks/useCalendly";
 import { useSeo } from "@/hooks/useSeo";
 import { CheckCircle, Clock, Users, ArrowRight, Phone, Mail, MessageCircle } from "lucide-react";
 import { EMAIL, HOURS, US_PHONE, US_PHONE_HREF, WHATSAPP, WHATSAPP_HREF } from '@/lib/site-config';
+import { siteFacts } from '@/config/siteFacts';
 
 const BookCall = () => {
   const { open } = useCalendly();
   useSeo({
     title: 'Book a Free Strategy Call | VictorySync Contact Center',
-    description: 'Schedule a free 30-minute strategy call with VictorySync. Discover how US-managed contact center services can reduce your customer service costs by up to 60%.',
+    description: 'Schedule a free 30-minute strategy call with VictorySync. Review your current lead flow and customer service setup.',
     canonical: 'https://victorysync.com/book-call',
   });
 
@@ -26,7 +27,7 @@ const BookCall = () => {
             Book a Free Strategy Call with VictorySync
           </h1>
           <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-8">
-            In 30 minutes, discover exactly how our US-managed contact center can reduce your customer service costs by up to 60% — without sacrificing quality.
+            In 30 minutes, review how our US-managed contact center could fit your customer service workflow and budget.
           </p>
           <button
             onClick={open}
@@ -48,7 +49,7 @@ const BookCall = () => {
                 "How VictorySync's US-managed agents can close gaps in your support",
                 "AI automation opportunities specific to your business",
                 "A realistic timeline and pricing for your situation",
-                "How other companies in your industry have cut costs 40–60%",
+                "How a campaign in your industry is planned and managed",
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
@@ -64,7 +65,7 @@ const BookCall = () => {
               {[
                 "Business owners spending over $5,000/month on customer support",
                 "Operations managers looking to scale without hiring in-house",
-                "Companies needing 24/7 coverage without the overhead",
+                ...(siteFacts.afterHoursCoverage ? ["Businesses missing calls during busy hours or after the office closes"] : []),
                 "Teams dealing with inconsistent service quality or high churn",
                 "Founders ready to move from reactive to proactive support",
               ].map((item, i) => (
@@ -91,14 +92,14 @@ const BookCall = () => {
           <div className="bg-ink-800 border border-ink-700 rounded-xl p-6 text-center">
             <Users className="w-8 h-8 text-cyan-400 mx-auto mb-3" />
             <h3 className="font-semibold text-white mb-2">Senior Consultant</h3>
-            <p className="text-slate-400 text-sm">You'll speak directly with an experienced VictorySync strategist — not a junior rep.</p>
+            <p className="text-slate-400 text-sm">You'll speak directly with an experienced VictorySync strategist.</p>
           </div>
         </div>
 
         <div className="bg-ink-800 border border-ink-700 rounded-xl p-8 text-center">
           <h2 className="text-2xl font-bold text-white mb-4">Prefer Not to Schedule Online?</h2>
           <p className="text-slate-300 mb-6">
-            Reach our team directly — {HOURS}.
+            Reach our team directly, {HOURS}.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
@@ -114,7 +115,7 @@ const BookCall = () => {
               className="inline-flex items-center gap-2 border border-ink-600 text-slate-300 hover:text-cyan-400 hover:border-cyan-400 px-6 py-3 rounded-lg font-medium transition-colors"
             >
               <Mail className="w-4 h-4" />
-              info@victorysync.com
+              {EMAIL}
             </a>
             <Link href="/contact">
               <span className="inline-flex items-center gap-2 border border-ink-600 text-slate-300 hover:text-cyan-400 hover:border-cyan-400 px-6 py-3 rounded-lg font-medium transition-colors cursor-pointer">

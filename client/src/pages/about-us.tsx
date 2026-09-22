@@ -1,12 +1,13 @@
 import { Link } from 'wouter';
 import { useCalendly } from '@/hooks/useCalendly';
 import { useSeo } from '@/hooks/useSeo';
+import { siteFacts, siteOrigin } from '@/config/siteFacts';
 import { Button } from '@/components/ui/button';
 import ClutchWidget from '@/components/clutch-widget';
 import { MapPin, Users, Shield, BarChart3, CheckCircle } from 'lucide-react';
 
 const aboutSchema = [
-  { '@context': 'https://schema.org', '@type': 'Organization', '@id': 'https://www.victorysync.com/#organization', name: 'VictorySync LLC', url: 'https://www.victorysync.com/', logo: 'https://www.victorysync.com/LOGO_VS.png' },
+  { '@context': 'https://schema.org', '@type': 'Organization', '@id': `${siteOrigin}/#organization`, name: siteFacts.legalName, url: `${siteOrigin}/`, logo: `${siteOrigin}/LOGO_VS.png` },
   { '@context': 'https://schema.org', '@type': 'AboutPage', '@id': 'https://www.victorysync.com/about-us#about', url: 'https://www.victorysync.com/about-us', name: 'About VictorySync', mainEntity: { '@id': 'https://www.victorysync.com/#organization' } },
 ];
 
@@ -52,7 +53,7 @@ export default function AboutUs() {
                 The answer was a hybrid model — professional, English-speaking agents trained and managed to US business standards, operating from Cairo, Egypt with US-based account management keeping quality high on every campaign.
               </p>
               <p className="text-slate-400 text-sm leading-relaxed">
-                VictorySync LLC is registered and operated from Millstone, New Jersey. Agent operations are based in Cairo, Egypt.
+                {siteFacts.legalName} is registered and operated from Millstone, New Jersey. Agent operations are based in Cairo, Egypt.
               </p>
             </div>
             <div className="space-y-4">

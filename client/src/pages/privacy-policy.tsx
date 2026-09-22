@@ -1,4 +1,5 @@
 import { useSeo } from '@/hooks/useSeo';
+import { siteFacts } from '@/config/siteFacts';
 
 export default function PrivacyPolicy() {
   useSeo({
@@ -177,11 +178,11 @@ export default function PrivacyPolicy() {
                 Contact
               </h2>
               <p className="text-gray-300 mb-4">
-                VictorySync LLC, New Jersey, USA<br/>
+                {siteFacts.legalName}, New Jersey, USA<br/>
                 Email: privacy@victorysync.com or info@victorysync.com
               </p>
               <p className="text-gray-300">
-                © 2025 VictorySync LLC. All rights reserved.
+                © 2025 {siteFacts.legalName}. All rights reserved.
               </p>
             </section>
           </div>

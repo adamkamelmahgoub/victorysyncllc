@@ -1,4 +1,5 @@
 import { useSeo } from '@/hooks/useSeo';
+import { siteFacts } from '@/config/siteFacts';
 
 export default function TermsOfService() {
   useSeo({
@@ -203,11 +204,11 @@ export default function TermsOfService() {
                 Contact
               </h2>
               <p className="text-gray-300 mb-4">
-                VictorySync LLC, New Jersey, USA<br/>
+                {siteFacts.legalName}, New Jersey, USA<br/>
                 Email: info@victorysync.com
               </p>
               <p className="text-gray-300">
-                © 2025 VictorySync LLC. All rights reserved.
+                © 2025 {siteFacts.legalName}. All rights reserved.
               </p>
             </section>
           </div>

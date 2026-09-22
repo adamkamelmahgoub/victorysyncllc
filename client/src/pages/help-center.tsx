@@ -4,6 +4,7 @@ import { useSeo } from "@/hooks/useSeo";
 import { useCalendly } from "@/hooks/useCalendly";
 import { EMAIL, HOURS, US_PHONE, US_PHONE_HREF, WHATSAPP, WHATSAPP_HREF } from '@/lib/site-config';
 import ReviewRequest from '@/components/review-request';
+import { siteFacts } from '@/config/siteFacts';
 
 export default function HelpCenter() {
   const { open: openCalendly } = useCalendly();
@@ -23,7 +24,7 @@ export default function HelpCenter() {
       {
         question: "How do I get started with VictorySync?",
         answer:
-          "Getting started is easy! Simply sign up for an account, choose your service package, and our team will contact you within 24 hours to begin onboarding. We'll help you integrate our services with your existing systems and train your team on the process.",
+          "Book a free call. We learn your customers, offer, tools, and what a good outcome looks like, then write the scripts and escalation rules with you. You approve everything before any agent makes or takes a call.",
       },
       {
         question: "What services does VictorySync offer?",
@@ -33,31 +34,31 @@ export default function HelpCenter() {
       {
         question: "How long does implementation take?",
         answer:
-          "Most implementations are completed within 5-10 business days. This includes system integration, agent training, and quality assurance testing. More complex setups may require 2-3 weeks depending on your specific requirements.",
+          `Straightforward campaigns can often launch within ${siteFacts.straightforwardLaunchTimeframe} after scripts, lists, access, and escalation rules are approved.${siteFacts.complexLaunchTimeframe ? ` Campaigns that need a CRM integration or a compliance review take longer, usually ${siteFacts.complexLaunchTimeframe}.` : ''}`,
       },
+      {
+        question: "What hours does your team work?",
+        answer: `Our team is available ${siteFacts.hours}.${typeof siteFacts.afterHoursCoverage === 'string' ? ` ${siteFacts.afterHoursCoverage}` : ''}`,
+      },
+      ...(siteFacts.pilotDescription ? [{
+        question: "How do pilots work?",
+        answer: `New clients start with ${siteFacts.pilotDescription} so you can judge real results before committing to more.`,
+      }] : []),
     ],
     billing: [
-      {
-        question: "What payment methods do you accept?",
-        answer:
-          "We accept all major credit cards (Visa, MasterCard, American Express), wire transfers, and ACH payments. All payments are processed securely through our encrypted payment system.",
-      },
+      ...(siteFacts.paymentMethods ? [{ question: "What payment methods do you accept?", answer: siteFacts.paymentMethods }] : []),
       {
         question: "Can I change my plan anytime?",
         answer:
           "Yes, you can upgrade or downgrade your plan at any time. Changes take effect at the beginning of your next billing cycle. Contact our support team to discuss plan changes and any applicable pro-rated charges.",
       },
-      {
-        question: "Do you offer refunds?",
-        answer:
-          "We offer a 30-day money-back guarantee for new customers. If you're not satisfied with our service within the first 30 days, we'll provide a full refund. Refunds for subsequent months are handled on a case-by-case basis.",
-      },
+      ...(siteFacts.refundPolicy ? [{ question: "Do you offer refunds?", answer: siteFacts.refundPolicy }] : []),
     ],
     technical: [
       {
         question: "How do I integrate VictorySync with my CRM?",
         answer:
-          "We support integration with all major CRM platforms including Salesforce, HubSpot, Pipedrive, and Zoho. Our technical team will help you set up the integration using our API or direct connectors.",
+          `Yes. Agents work inside the CRM, calendar, and phone tools you already use, with the access you approve during onboarding. VictorySync is a Close CRM partner.${siteFacts.otherCRMs ? ` Our team has also run campaigns in ${siteFacts.otherCRMs.join(', ')}.` : ''}`,
       },
       {
         question: "What are your system requirements?",
@@ -105,24 +106,20 @@ export default function HelpCenter() {
       },
     ],
   };
+  const allFaqs = Object.values(faqData).flat();
   useSeo({
     title: 'Help Center | VictorySync',
     description: 'Answers to common questions about VictorySync services, onboarding, and reporting.',
     structuredData: {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: faqData['getting-started'].map(({ question, answer }) => ({
+      mainEntity: allFaqs.map(({ question, answer }) => ({
         '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer },
       })),
     },
   });
 
   const quickLinks = [
-    {
-      title: "Service Status",
-      description: "Check real-time system status",
-      link: "#",
-    },
     {
       title: "Service Overview",
       description: "Explore our services",
@@ -132,11 +129,6 @@ export default function HelpCenter() {
       title: "Contact Support",
       description: "Get help from our team",
       link: "/contact",
-    },
-    {
-      title: "Video Tutorials",
-      description: "Step-by-step video guides",
-      link: "#",
     },
   ];
 
@@ -153,7 +145,6 @@ export default function HelpCenter() {
     window.location.hash = id;
   };
 
-  const allFaqs = Object.values(faqData).flat();
   const searchResults = searchQuery
     ? allFaqs.filter(
         (faq) =>

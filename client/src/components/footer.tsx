@@ -2,6 +2,7 @@ import { Link } from 'wouter';
 import { SiFacebook, SiFiverr, SiGoogle, SiInstagram, SiUpwork } from 'react-icons/si';
 import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.webp';
 import { CLUTCH_PROFILE_URL, EMAIL, HOURS, POSTAL_CODE, STREET_ADDRESS, US_PHONE, US_PHONE_HREF, WHATSAPP, WHATSAPP_HREF } from '@/lib/site-config';
+import { siteFacts, starterPriceLabel } from '@/config/siteFacts';
 
 const groups = [
   { title: 'Services', links: [['Inbound Support','/inbound-support'],['Appointment Setting','/appointment-setting'],['Cold Calling','/cold-calling'],['AI Automation','/ai-automation']] },
@@ -27,12 +28,12 @@ export default function Footer() {
           <p className="mt-4 max-w-xs text-sm leading-6 text-slate-600">US-managed contact center services delivered by trained Cairo-based agents, supported by practical AI tools.</p>
           <p className="mt-4 text-xs text-slate-600">Millstone, NJ · Cairo, Egypt</p>
           <address className="mt-3 space-y-1 text-xs not-italic leading-5 text-slate-600">
-            <p>{STREET_ADDRESS}, Millstone Township, NJ {POSTAL_CODE}</p>
+            <p>{siteFacts.address}</p>
             <p><a href={US_PHONE_HREF} className="hover:text-blue-700">{US_PHONE}</a> · <a href={`mailto:${EMAIL}`} className="hover:text-blue-700">{EMAIL}</a></p>
             <p>{HOURS}</p>
             <p><a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" className="hover:text-blue-700">WhatsApp {WHATSAPP}</a></p>
           </address>
-          <p className="mt-3 text-xs text-slate-600">Starter pricing from $10/hr per agent.</p>
+          <p className="mt-3 text-xs text-slate-600">Starter pricing {starterPriceLabel.toLowerCase()} per agent.</p>
           <div className="mt-5">
             <p className="text-sm font-semibold text-slate-900">Close CRM partner</p>
             <p className="mt-1 max-w-xs text-xs leading-5 text-slate-600">VictorySync is partnered with Close CRM to support organized sales workflows.</p>
@@ -47,7 +48,7 @@ export default function Footer() {
           {profiles.map(({ label, href, icon: Icon, color }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={`VictorySync on ${label}`} title={label} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600" style={{ color }}><Icon aria-hidden="true" className="h-5 w-5" /></a>)}
           <a href={CLUTCH_PROFILE_URL} target="_blank" rel="noopener noreferrer" aria-label="VictorySync on Clutch" title="Clutch" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"><span aria-hidden="true" className="text-xl font-black text-red-600">C</span></a>
         </nav>
-        <div className="mt-7 flex flex-col gap-3 border-t border-slate-200 pt-7 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} VictorySync LLC. All rights reserved.</p><a href={`mailto:${EMAIL}`} className="hover:text-blue-600">{EMAIL}</a></div>
+        <div className="mt-7 flex flex-col gap-3 border-t border-slate-200 pt-7 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} {siteFacts.legalName}. All rights reserved.</p><a href={`mailto:${EMAIL}`} className="hover:text-blue-600">{EMAIL}</a></div>
       </div>
     </div>
   </footer>;

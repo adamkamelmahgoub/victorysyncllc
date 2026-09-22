@@ -2,6 +2,7 @@ import { MotionPage } from '@/components/motion-page';
 import { useCalendly } from '@/hooks/useCalendly';
 import { useSeo } from '@/hooks/useSeo';
 import { WHATSAPP_HREF } from '@/lib/site-config';
+import { siteFacts, starterPriceLabel } from '@/config/siteFacts';
 import ClutchWidget from '@/components/clutch-widget';
 import { Link } from 'wouter';
 import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.webp';
@@ -31,7 +32,7 @@ const faqs = [
   { question: 'Where are your agents and managers based?', answer: 'Agents are based in Cairo, Egypt. Onboarding, account management, quality standards, and campaign oversight are US-led.' },
   { question: 'How do you train agents for our account?', answer: 'We document your ideal customer, offer, scripts, qualification criteria, objection handling, tools, escalation rules, and desired outcomes. Agents train on that playbook before launch and receive ongoing coaching.' },
   { question: 'Can your team work inside our CRM and calendar?', answer: 'Yes. Depending on your stack and access policies, agents can work in common CRMs, calendars, ticketing systems, forms, and phone tools while following the permissions agreed during onboarding.' },
-  { question: 'How does pricing work?', answer: 'Pricing is based on agent count, coverage, channels, and workflow complexity. Dedicated agent engagements currently start from $10 per hour. A discovery call confirms the right scope before you commit.' },
+  { question: 'How does pricing work?', answer: `Pricing is based on agent count, coverage, channels, and workflow complexity. Dedicated agent engagements currently start from $${siteFacts.starterRateUsd} per hour. A discovery call confirms the right scope before you commit.` },
   { question: 'How fast can we launch?', answer: 'Straightforward campaigns can often launch within 24–48 hours after scripts, lists, access, and escalation rules are approved. Complex integrations or compliance reviews may require more setup time.' },
 ];
 
@@ -51,7 +52,7 @@ const processSteps = [
 ];
 
 const plans = [
-  { name: 'Starter', note: 'One focused workflow', price: 'From $10/hr', description: 'A practical starting point for consistent coverage.', features: ['1 trained agent', 'Inbound or outbound workflow', 'Approved scripts and playbook', 'Daily activity reporting', 'Weekly QA review'], featured: false },
+  { name: 'Starter', note: 'One focused workflow', price: starterPriceLabel, description: 'A practical starting point for consistent coverage.', features: ['1 trained agent', 'Inbound or outbound workflow', 'Approved scripts and playbook', 'Daily activity reporting', 'Weekly QA review'], featured: false },
   { name: 'Growth', note: 'Most Popular', price: 'Custom', description: 'For teams building a predictable calling operation.', features: ['2+ trained agents', 'Blended calling and follow-up', 'Qualification and booking', 'CRM and calendar workflow', 'Dedicated account lead'], featured: true },
   { name: 'Scale', note: 'Flexible coverage', price: 'Custom', description: 'For extended hours, multiple workflows, or higher volume.', features: ['3+ agents or extended coverage', 'Inbound and outbound programs', 'Custom QA scorecards', 'AI-assisted reporting', 'Operational review cadence'], featured: false },
 ];

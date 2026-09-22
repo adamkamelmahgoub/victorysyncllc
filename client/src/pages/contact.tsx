@@ -16,6 +16,7 @@ import { z } from "zod";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Calendar, Clock, MessageCircle } from "lucide-react";
 import { EMAIL, HOURS, POSTAL_CODE, STREET_ADDRESS, US_PHONE, US_PHONE_HREF, WHATSAPP, WHATSAPP_HREF } from '@/lib/site-config';
+import { siteFacts } from '@/config/siteFacts';
 import { useEffect } from "react";
 
 type ContactFormData = z.infer<typeof insertContactSubmissionSchema>;
@@ -149,7 +150,7 @@ export default function Contact() {
                       Location
                     </h3>
                     <p className="text-slate-300">
-                      {STREET_ADDRESS}, Millstone Township, NJ {POSTAL_CODE}
+                      {siteFacts.address}
                     </p>
                   </div>
                 </div>

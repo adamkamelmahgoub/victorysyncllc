@@ -320,7 +320,7 @@ export default function Checkout() {
                   </span>
                 </div>
                 <ul className="text-sm text-slate-300 space-y-1">
-                  <li>• 24/7 customer support</li>
+                  <li>• Customer support during agreed coverage hours</li>
                   <li>• Dedicated account manager</li>
                   <li>• No setup fees</li>
                   <li>• Cancel anytime</li>

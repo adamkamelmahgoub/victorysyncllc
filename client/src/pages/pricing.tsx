@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Calculator, TrendingUp, Phone, DollarSign } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useState } from 'react';
+import { siteFacts, starterPriceLabel } from '@/config/siteFacts';
 
 const starterOffer = {
   '@context': 'https://schema.org',
@@ -16,9 +17,9 @@ const starterOffer = {
   provider: { '@id': 'https://www.victorysync.com/#organization' },
   offers: {
     '@type': 'Offer',
-    price: '10',
+    price: String(siteFacts.starterRateUsd),
     priceCurrency: 'USD',
-    priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'USD', unitText: 'per agent hour' },
+    priceSpecification: { '@type': 'UnitPriceSpecification', price: String(siteFacts.starterRateUsd), priceCurrency: 'USD', unitText: 'per agent hour' },
     url: 'https://www.victorysync.com/pricing',
   },
 };
@@ -26,8 +27,8 @@ const starterOffer = {
 export default function Pricing() {
   const { open: openCalendly } = useCalendly();
   useSeo({
-    title: 'Pricing | Contact Center Services Starting at $10/hr | VictorySync',
-    description: 'Custom-quoted packages starting at $10/hr per agent. Inbound support, appointment setting, and cold calling — flexible pricing with no long-term contracts required.',
+    title: `Pricing | Contact Center Services Starting at $${siteFacts.starterRateUsd}/hr | VictorySync`,
+    description: `Custom-quoted packages starting at $${siteFacts.starterRateUsd}/hr per agent. Inbound support, appointment setting, and cold calling, with flexible pricing and no long-term contracts required.`,
     canonical: 'https://victorysync.com/pricing',
     structuredData: starterOffer,
   });
@@ -66,7 +67,7 @@ export default function Pricing() {
       <section className="border-y border-blue-100 bg-blue-50 px-5 py-12">
         <div className="mx-auto max-w-4xl rounded-xl border border-blue-200 bg-white p-6 shadow-sm sm:p-8">
           <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">Starter</p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-950">From $10/hr per agent</h2>
+          <h2 className="mt-2 text-3xl font-bold text-slate-950">{starterPriceLabel} per agent</h2>
           <p className="mt-3 text-sm leading-6 text-slate-600">A focused starting point with one trained agent and one inbound or outbound workflow.</p>
           <ul className="mt-5 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
             {['One trained agent', 'One inbound or outbound workflow', 'Approved scripts', 'Daily activity reporting', 'Weekly QA review'].map(feature => <li key={feature}>✓ {feature}</li>)}
@@ -212,7 +213,7 @@ export default function Pricing() {
 
               <div className="bg-ink-900 rounded-lg p-6 text-center border border-ink-700">
                 <p className="text-slate-300 mb-4">
-                  Don't let missed calls cost you revenue. Our 24/7 contact center ensures you never miss an opportunity.
+                  Put a trained team on the calls you're missing now. Coverage hours are set with you during onboarding.
                 </p>
                 <Button
                   onClick={openCalendly}
