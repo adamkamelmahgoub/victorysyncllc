@@ -112,19 +112,19 @@ export default function DigitalMarketing() {
         </div>
       </Section>
 
-      <section className="relative overflow-hidden bg-[#0A0F1E] px-5 py-24 text-white sm:px-8">
-        <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-violet-600/20 blur-3xl" aria-hidden="true" />
-        <div className="absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" aria-hidden="true" />
+      <section className="relative overflow-hidden border-t border-violet-100 bg-gradient-to-br from-violet-50 via-white to-sky-50 px-5 py-24 text-slate-900 sm:px-8">
+        <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-violet-300/20 blur-3xl" aria-hidden="true" />
+        <div className="absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-sky-300/15 blur-3xl" aria-hidden="true" />
         <div className="relative mx-auto grid max-w-5xl gap-10 md:grid-cols-2 md:items-center">
           <div>
-            <h2 className="text-3xl font-bold text-white">What you receive</h2>
-            <ul className="mt-6 space-y-3 text-slate-300">
+            <h2 className="text-3xl font-bold text-slate-950">What you receive</h2>
+            <ul className="mt-6 space-y-3 text-slate-700">
               {['A documented strategy and channel scope', 'Approved messaging and campaign assets', 'Connected forms, tracking, and lead routing', 'A clear reporting and review cadence', 'Recommendations tied to lead quality and business outcomes'].map((item) => <li key={item} className="flex gap-3"><CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-violet-400" aria-hidden="true" />{item}</li>)}
             </ul>
           </div>
-          <div className="rounded-2xl border border-white/15 bg-white/[0.07] p-8 shadow-2xl shadow-violet-950/30 backdrop-blur-xl">
-            <h2 className="text-2xl font-bold text-white">Scope and pricing</h2>
-            {!details.publishPricing && <p className="mt-4 leading-7 text-slate-300">Digital marketing is custom quoted for the channels, assets, campaign volume, and reporting your business needs.</p>}
+          <div className="rounded-2xl border border-violet-200/80 bg-white/85 p-8 shadow-xl shadow-violet-200/40 backdrop-blur-xl">
+            <h2 className="text-2xl font-bold text-slate-950">Scope and pricing</h2>
+            {!details.publishPricing && <p className="mt-4 leading-7 text-slate-700">Digital marketing is custom quoted for the channels, assets, campaign volume, and reporting your business needs.</p>}
             <Link href="/book-call" className="mt-7 inline-flex rounded-lg bg-violet-600 px-6 py-3 font-semibold text-white hover:bg-violet-500">Book a free call</Link>
           </div>
         </div>

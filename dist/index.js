@@ -315,7 +315,8 @@ var sendEmail = async ({ subject, text: text2 }) => {
 };
 
 // server/publicAuth.ts
-var JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+var JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === "production" ? void 0 : "development-only-secret");
+if (!JWT_SECRET) throw new Error("JWT_SECRET must be set in production");
 var hashPassword = async (password) => {
   return await bcrypt.hash(password, 10);
 };
@@ -430,15 +431,21 @@ var getCurrentUser = async (req, res) => {
 import bcrypt2 from "bcryptjs";
 async function initializeAdminUser() {
   try {
-    const existingAdmin = await storage.getPublicUserByEmail("kimo8723@victorysync.com");
+    const email = process.env.INITIAL_ADMIN_EMAIL;
+    const password = process.env.INITIAL_ADMIN_PASSWORD;
+    if (!email && !password) return;
+    if (!email || !password || password.length < 16) {
+      throw new Error("Set INITIAL_ADMIN_EMAIL and an INITIAL_ADMIN_PASSWORD of at least 16 characters together.");
+    }
+    const existingAdmin = await storage.getPublicUserByEmail(email);
     if (existingAdmin) {
       console.log("\u2705 Admin user already exists");
       return;
     }
-    const hashedPassword = await bcrypt2.hash("Mshmsh7184365700!", 10);
+    const hashedPassword = await bcrypt2.hash(password, 10);
     const adminUser = await storage.createPublicUser({
       name: "Victory Sync Admin",
-      email: "kimo8723@victorysync.com",
+      email,
       passwordHash: hashedPassword,
       provider: "local",
       isActive: true,
@@ -477,10 +484,11 @@ var PUBLIC_ROUTES = /* @__PURE__ */ new Set([
   "/appointment-setting",
   "/cold-calling",
   "/ai-automation",
-  "/blog",
-  "/careers",
+  "/appointment-setting-for-home-services",
+  "/cold-calling-for-plumbers",
+  "/appointment-setting-for-real-estate",
+  "/inbound-support-for-law-firms",
   "/help-center",
-  "/docs",
   "/privacy-policy",
   "/terms",
   "/checkout",
@@ -489,20 +497,9 @@ var PUBLIC_ROUTES = /* @__PURE__ */ new Set([
   "/login",
   "/dashboard"
 ]);
-var BLOG_SLUGS = /* @__PURE__ */ new Set([
-  "reduce-customer-service-costs",
-  "ai-automation-vs-human-touch",
-  "when-to-outsource-call-center",
-  "building-customer-loyalty",
-  "scaling-outsourced-support",
-  "roi-of-customer-service"
-]);
 function isKnownRoute(pathname) {
   const clean = pathname.split("?")[0].replace(/\/$/, "") || "/";
-  if (PUBLIC_ROUTES.has(clean)) return true;
-  const blogMatch = clean.match(/^\/blog\/([^/]+)$/);
-  if (blogMatch) return BLOG_SLUGS.has(blogMatch[1]);
-  return false;
+  return PUBLIC_ROUTES.has(clean);
 }
 var SITEMAP_ENTRIES = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
@@ -514,18 +511,14 @@ var SITEMAP_ENTRIES = [
   { path: "/appointment-setting", changefreq: "monthly", priority: "0.9" },
   { path: "/cold-calling", changefreq: "monthly", priority: "0.9" },
   { path: "/ai-automation", changefreq: "monthly", priority: "0.8" },
+  { path: "/appointment-setting-for-home-services", changefreq: "monthly", priority: "0.8" },
+  { path: "/cold-calling-for-plumbers", changefreq: "monthly", priority: "0.8" },
+  { path: "/appointment-setting-for-real-estate", changefreq: "monthly", priority: "0.8" },
+  { path: "/inbound-support-for-law-firms", changefreq: "monthly", priority: "0.8" },
   { path: "/platform", changefreq: "monthly", priority: "0.7" },
   { path: "/about", changefreq: "monthly", priority: "0.7" },
   { path: "/about-us", changefreq: "monthly", priority: "0.7" },
-  { path: "/careers", changefreq: "monthly", priority: "0.5" },
-  { path: "/blog", changefreq: "weekly", priority: "0.7" },
-  ...Array.from(BLOG_SLUGS).map((slug) => ({
-    path: `/blog/${slug}`,
-    changefreq: "monthly",
-    priority: "0.6"
-  })),
   { path: "/help-center", changefreq: "monthly", priority: "0.5" },
-  { path: "/docs", changefreq: "monthly", priority: "0.5" },
   { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },
   { path: "/terms", changefreq: "yearly", priority: "0.3" }
 ];
@@ -562,7 +555,7 @@ async function registerRoutes(app2) {
       });
     }
   });
-  const BASE_URL2 = "https://victorysync.com";
+  const BASE_URL2 = "https://www.victorysync.com";
   app2.get("/sitemap.xml", (_req, res) => {
     const urls = SITEMAP_ENTRIES.map(
       ({ path: path3, changefreq, priority }) => `  <url>
@@ -888,25 +881,9 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
-function asyncStylesheets() {
-  return {
-    name: "async-production-stylesheets",
-    enforce: "post",
-    transformIndexHtml: {
-      order: "post",
-      handler(html) {
-        return html.replace(
-          /<link rel="stylesheet" crossorigin href="([^"]+\.css)">/g,
-          `<link rel="preload" href="$1" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="$1"></noscript>`
-        );
-      }
-    }
-  };
-}
 var vite_config_default = defineConfig({
   plugins: [
     react(),
-    asyncStylesheets(),
     runtimeErrorOverlay(),
     ...process.env.NODE_ENV !== "production" && process.env.REPL_ID !== void 0 ? [
       await import("@replit/vite-plugin-cartographer").then(
@@ -924,7 +901,22 @@ var vite_config_default = defineConfig({
   root: path.resolve(import.meta.dirname, "client"),
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
-    emptyOutDir: true
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(import.meta.dirname, "client", "index.html"),
+        cms: path.resolve(import.meta.dirname, "client", "cms.html")
+      },
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (/node_modules[\\/](@?react|react-dom|scheduler)[\\/]/.test(id)) return "react-vendor";
+          if (id.includes("node_modules/framer-motion")) return "motion-vendor";
+          if (id.includes("node_modules/@tanstack")) return "query-vendor";
+          if (id.includes("node_modules/@radix-ui")) return "radix-vendor";
+        }
+      }
+    }
   },
   server: {
     fs: {
@@ -1008,66 +1000,50 @@ function serveStatic(app2) {
 import passport from "passport";
 var passport_default = passport;
 
-// shared/blogPosts.ts
-var blogPostsMeta = [
-  {
-    slug: "reduce-customer-service-costs",
-    title: "How to Reduce Customer Service Costs by 60% Without Sacrificing Quality",
-    excerpt: "Discover proven strategies that successful businesses use to dramatically cut customer service expenses while improving customer satisfaction scores.",
-    image: "https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
-  },
-  {
-    slug: "ai-automation-vs-human-touch",
-    title: "The Future of Customer Service: AI Automation vs Human Touch",
-    excerpt: "Exploring the perfect balance between artificial intelligence and human empathy in modern customer service operations.",
-    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
-  },
-  {
-    slug: "when-to-outsource-call-center",
-    title: "5 Signs Your Business Needs Professional Call Center Services",
-    excerpt: "Learn to identify the key indicators that suggest it's time to outsource your customer support operations to professionals.",
-    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&auto=format&fit=crop&w=1974&q=80"
-  },
-  {
-    slug: "building-customer-loyalty",
-    title: "Building Customer Loyalty Through Exceptional Support Experiences",
-    excerpt: "How to turn customer service interactions into relationship-building opportunities that drive long-term business growth.",
-    image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
-  },
-  {
-    slug: "scaling-outsourced-support",
-    title: "Scaling Your Business with Outsourced Customer Support",
-    excerpt: "A comprehensive guide to successfully implementing outsourced support solutions that grow with your business needs.",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2015&q=80"
-  },
-  {
-    slug: "roi-of-customer-service",
-    title: "The ROI of Professional Customer Service: A Data-Driven Analysis",
-    excerpt: "Real numbers and case studies showing the measurable impact of professional customer service on business performance.",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
-  }
-];
-
 // server/meta.ts
-var BASE_URL = "https://victorysync.com";
+var BASE_URL = "https://www.victorysync.com";
 var DEFAULT_IMAGE = `${BASE_URL}/LOGO_VS.png`;
 var STATIC_ROUTES = {
   "/": {
-    title: "VictorySync | US-Managed Call Center & Appointment Setting",
-    description: "VictorySync helps US businesses scale inbound support, outbound calling, appointment setting, lead follow-up, and customer engagement with US-managed operations.",
+    title: "VictorySync | Human-Led Call Center & Appointment Setting",
+    description: "US-managed call center services with trained Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound customer support.",
     ogType: "website"
+  },
+  "/services": {
+    title: "Call Center Services for US Businesses | VictorySync",
+    description: "Explore human-led inbound support, cold calling, lead qualification, appointment setting, and follow-up services managed for US SMBs."
+  },
+  "/inbound-support": {
+    title: "Inbound Customer Support Services | VictorySync",
+    description: "Outsource calls, email, chat, and ticket support to trained agents with US-led account management, quality review, and flexible coverage."
+  },
+  "/appointment-setting": {
+    title: "B2B Appointment Setting Services | VictorySync",
+    description: "Trained agents follow up, qualify prospects, and book sales appointments directly into your calendar with clear notes and reporting."
+  },
+  "/cold-calling": {
+    title: "Cold Calling & Outbound Calling Services | VictorySync",
+    description: "Managed outbound campaigns with trained English-speaking agents, client-approved scripts, lead qualification, and appointment booking."
+  },
+  "/ai-automation": {
+    title: "AI-Assisted Contact Center Operations | VictorySync",
+    description: "Help human agents work faster with AI-assisted call summaries, qualification prompts, CRM updates, routing, QA signals, and reporting."
   },
   "/about": {
     title: "About VictorySync | US-Managed Contact Center, Millstone NJ",
     description: "VictorySync is a US-managed contact center with trained agents in Cairo, Egypt. We help US businesses scale support and sales without in-house hiring overhead."
   },
+  "/about-us": {
+    title: "About VictorySync | US-Managed, Cairo-Based Contact Center",
+    description: "Meet the human-led contact center team helping US SMBs improve calling, qualification, appointment setting, and customer support."
+  },
   "/platform": {
     title: "Platform | VictorySync Contact Center Technology",
-    description: "VictorySync platform capabilities: AI call summaries, CRM integrations, real-time dashboards, and workflow automation for US contact center operations."
+    description: "See the tools VictorySync agents use for call summaries, CRM integrations, qualification, appointment booking, routing, and campaign reporting."
   },
   "/pricing": {
     title: "Pricing | VictorySync Contact Center Services",
-    description: "Transparent, flexible pricing for US contact center services. From starter inbound support to full-service AI-powered automation. Starting from $10/hr."
+    description: "Flexible pricing for inbound support, appointment setting, cold calling, and lead follow-up with managed human agents. Plans start from $10 per hour."
   },
   "/contact": {
     title: "Contact VictorySync | Get a Free Quote",
@@ -1075,19 +1051,11 @@ var STATIC_ROUTES = {
   },
   "/book-call": {
     title: "Book a Free Strategy Call | VictorySync Contact Center",
-    description: "Schedule a free 30-minute strategy call with VictorySync. Discover how US-managed contact center services can reduce your customer service costs by up to 60%."
-  },
-  "/careers": {
-    title: "Careers at VictorySync | Join Our Contact Center Team",
-    description: "VictorySync is hiring customer service representatives, appointment setters, and operations staff. Remote and Millstone NJ positions available."
+    description: "Schedule a call with VictorySync to map your inbound support, outbound calling, qualification, appointment-setting, or lead-follow-up workflow."
   },
   "/help-center": {
     title: "Help Center | VictorySync Support & Documentation",
-    description: "Get help with VictorySync services. Browse guides, FAQs, and support articles on inbound support, appointment setting, and AI automation."
-  },
-  "/docs": {
-    title: "Documentation | VictorySync Integration & API Guides",
-    description: "Technical documentation for VictorySync integrations, webhooks, and reporting APIs. Connect your CRM, calendar, and communication tools."
+    description: "Get help with VictorySync inbound support, appointment setting, cold calling, reporting, agent workflows, and account operations."
   },
   "/privacy-policy": {
     title: "Privacy Policy | VictorySync",
@@ -1096,35 +1064,11 @@ var STATIC_ROUTES = {
   "/terms": {
     title: "Terms of Service | VictorySync",
     description: "VictorySync terms of service \u2014 the terms and conditions governing use of our contact center and AI automation services."
-  },
-  "/blog": {
-    title: "Blog | Contact Center & Customer Service Insights | VictorySync",
-    description: "Tips, guides, and insights on inbound support, appointment setting, cold calling, and AI automation for US businesses. From the VictorySync team.",
-    ogType: "website"
   }
 };
 function getRouteMeta(pathname) {
   if (STATIC_ROUTES[pathname]) {
     return STATIC_ROUTES[pathname];
-  }
-  const blogSlugMatch = pathname.match(/^\/blog\/([^/]+)$/);
-  if (blogSlugMatch) {
-    const slug = blogSlugMatch[1];
-    const post = blogPostsMeta.find((p) => p.slug === slug);
-    if (post) {
-      return {
-        title: `${post.title} | VictorySync Blog`,
-        description: post.excerpt,
-        ogType: "article",
-        ogImage: post.image,
-        canonical: `${BASE_URL}/blog/${post.slug}`
-      };
-    }
-    return {
-      title: "Blog | VictorySync",
-      description: "Read insights and guides from the VictorySync contact center team.",
-      ogType: "article"
-    };
   }
   return null;
 }
@@ -1191,7 +1135,7 @@ var __filename = fileURLToPath(import.meta.url);
 var __dirname = dirname(__filename);
 globalThis.__dirname = dirname(fileURLToPath(import.meta.url));
 function validateEnvironment() {
-  const requiredEnvVars = ["DATABASE_URL"];
+  const requiredEnvVars = ["DATABASE_URL", ...process.env.NODE_ENV === "production" ? ["JWT_SECRET"] : []];
   const missing = requiredEnvVars.filter((envVar) => !process.env[envVar]);
   if (missing.length > 0) {
     console.error(

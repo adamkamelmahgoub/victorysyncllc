@@ -61,9 +61,9 @@ export function loadMarketingAnalytics() {
     window.dataLayer = window.dataLayer || [];
     window.gtag = (...args: unknown[]) => window.dataLayer?.push(args);
     window.gtag("js", new Date());
-    window.gtag("config", "G-QG0JH52J6D");
+    window.gtag("config", "G-7DG7J3MKTB");
 
-    appendScript("https://www.googletagmanager.com/gtag/js?id=G-QG0JH52J6D");
+    appendScript("https://www.googletagmanager.com/gtag/js?id=G-7DG7J3MKTB");
     loadMetaPixel();
     appendScript(
       `https://assets.apollo.io/micro/website-tracker/tracker.iife.js?nocache=${Math.random()

@@ -122,6 +122,87 @@
       #ffffff;
   }
 
+  /* Older marketing pages use the ink palette as structural class names.
+     Keep those pages light without changing auth, dashboard, or CMS screens. */
+  .marketing-site main .bg-ink-900,
+  .marketing-site main .bg-ink-900\/50 {
+    background-color: #ffffff !important;
+  }
+
+  .marketing-site main .bg-ink-800,
+  .marketing-site main .bg-ink-800\/50,
+  .marketing-site main .bg-ink-800\/60,
+  .marketing-site main .bg-ink-800\/70 {
+    background-color: #f8fafc !important;
+  }
+
+  .marketing-site main .bg-ink-700 {
+    background-color: #eef2f7 !important;
+  }
+
+  .marketing-site main .from-ink-900 {
+    --tw-gradient-from: #ffffff var(--tw-gradient-from-position) !important;
+    --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position) !important;
+  }
+
+  .marketing-site main .via-ink-800 {
+    --tw-gradient-to: rgb(248 250 252 / 0) var(--tw-gradient-to-position) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), #f8fafc var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
+  }
+
+  .marketing-site main .to-ink-900 {
+    --tw-gradient-to: #ffffff var(--tw-gradient-to-position) !important;
+  }
+
+  .marketing-site main .border-ink-700,
+  .marketing-site main .border-ink-600 {
+    border-color: #e2e8f0 !important;
+  }
+
+  .marketing-site main .ring-ink-700\/80 {
+    --tw-ring-color: rgb(226 232 240 / 0.8) !important;
+  }
+
+  .marketing-site main .text-white,
+  .marketing-site main .text-gray-100,
+  .marketing-site main .text-gray-200,
+  .marketing-site main .text-ink-900 {
+    color: #0f172a !important;
+  }
+
+  .marketing-site main .text-slate-200,
+  .marketing-site main .text-slate-300,
+  .marketing-site main .text-gray-300 {
+    color: #475569 !important;
+  }
+
+  .marketing-site main .text-slate-400,
+  .marketing-site main .text-gray-400 {
+    color: #64748b !important;
+  }
+
+  .marketing-site main .text-cyan-300,
+  .marketing-site main .text-cyan-400,
+  .marketing-site main .text-violet-300,
+  .marketing-site main .text-violet-400 {
+    color: #7b5cf6 !important;
+  }
+
+  .marketing-site main a.bg-blue-600.text-white,
+  .marketing-site main button.bg-blue-600.text-white,
+  .marketing-site main a.bg-violet-600.text-white,
+  .marketing-site main button.bg-violet-600.text-white,
+  .marketing-site main a.bg-victory-purple.text-white,
+  .marketing-site main button.bg-victory-purple.text-white,
+  .marketing-site main [class*="from-violet-600"][class*="to-violet-500"].text-white {
+    color: #ffffff !important;
+  }
+
+  .marketing-site main input.text-white,
+  .marketing-site main textarea.text-white {
+    color: #0f172a !important;
+  }
+
   .marketing-site .reveal-section {
     opacity: 0;
     transform: translateY(32px);
