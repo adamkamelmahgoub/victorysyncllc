@@ -33,7 +33,7 @@ const faqs = [
   { question: 'How do you train agents for our account?', answer: 'We document your ideal customer, offer, scripts, qualification criteria, objection handling, tools, escalation rules, and desired outcomes. Agents train on that playbook before launch and receive ongoing coaching.' },
   { question: 'Can your team work inside our CRM and calendar?', answer: 'Yes. Depending on your stack and access policies, agents can work in common CRMs, calendars, ticketing systems, forms, and phone tools while following the permissions agreed during onboarding.' },
   { question: 'How does pricing work?', answer: `Pricing is based on agent count, coverage, channels, and workflow complexity. Dedicated agent engagements currently start from $${siteFacts.starterRateUsd} per hour. A discovery call confirms the right scope before you commit.` },
-  { question: 'How fast can we launch?', answer: 'Straightforward campaigns can often launch within 24–48 hours after scripts, lists, access, and escalation rules are approved. Complex integrations or compliance reviews may require more setup time.' },
+  { question: 'How fast can we launch?', answer: `Straightforward campaigns can often launch within ${siteFacts.straightforwardLaunchTimeframe} after scripts, lists, access, and escalation rules are approved.${siteFacts.complexLaunchTimeframe ? ` Campaigns that need a CRM integration or a compliance review take longer, usually ${siteFacts.complexLaunchTimeframe}.` : ''}` },
 ];
 
 const structuredData = [{
@@ -77,8 +77,9 @@ export default function Home() {
         <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-[1fr_.9fr]">
           <div>
             <div className="mb-6 inline-flex items-center gap-2 text-xs font-semibold text-slate-600"><span className="h-2 w-2 rounded-full bg-sky-500" />US-managed · Cairo-based calling team</div>
-            <h1 className="text-4xl font-bold leading-[1.04] tracking-[-.045em] text-slate-950 sm:text-6xl lg:text-[4.25rem]">Your next customer is a conversation away.</h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">Trained agents call, qualify, book, and support your customers. AI helps our team move faster while people remain in control.</p>
+            <h1 className="text-4xl font-bold leading-[1.04] tracking-[-.045em] text-slate-950 sm:text-6xl lg:text-[4.25rem]">US-managed call center for appointment setting and inbound support</h1>
+            <p className="mt-5 text-2xl font-semibold tracking-tight text-blue-700 sm:text-3xl">Your next customer is a conversation away.</p>
+            <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">Trained agents call, qualify, book, and support your customers. AI helps our team move faster while people remain in control.</p>
             <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center"><Link href="/book-call" className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 sm:w-auto">Get started <ArrowRight className="h-4 w-4" /></Link><a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 py-2 text-sm font-medium text-slate-600 hover:text-blue-600"><MessageCircle className="h-4 w-4 text-sky-500" />or message us on WhatsApp</a></div>
             <p className="mt-4 text-xs text-slate-500">Start with one workflow. No long-term contract required to begin.</p>
           </div>
