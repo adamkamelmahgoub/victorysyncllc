@@ -70,7 +70,7 @@ export const phoneHref = `tel:${siteFacts.phoneUS.replace(/[^+\d]/g, '')}`;
 export const whatsappHref = `https://wa.me/${siteFacts.whatsapp.replace(/\D/g, '')}`;
 
 const addressParts = siteFacts.address.split(',').map((part) => part.trim());
-const regionAndPostal = addressParts.at(-1)?.match(/^([A-Z]{2})\s+(\d{5})$/);
+const regionAndPostal = addressParts[addressParts.length - 1]?.match(/^([A-Z]{2})\s+(\d{5})$/);
 if (addressParts.length !== 3 || !regionAndPostal) throw new Error('siteFacts.address must use street, city, ST ZIP format');
 export const postalAddress = {
   streetAddress: addressParts[0],

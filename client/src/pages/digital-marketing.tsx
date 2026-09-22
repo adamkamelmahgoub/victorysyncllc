@@ -62,13 +62,15 @@ export default function DigitalMarketing() {
 
   return (
     <MotionPage className="bg-white text-slate-900">
-      <section className="border-b border-blue-100 bg-gradient-to-br from-white via-blue-50 to-violet-50 px-5 py-20 sm:px-8">
-        <div className="mx-auto max-w-5xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-violet-700">Digital marketing</p>
-          <h1 className="mt-4 max-w-4xl text-4xl font-bold tracking-tight text-slate-950 sm:text-6xl">Digital marketing connected to real conversations</h1>
+      <section className="relative overflow-hidden border-b border-violet-100 bg-gradient-to-br from-white via-violet-50/70 to-sky-50 px-5 py-24 sm:px-8 sm:py-32">
+        <div className="absolute -right-28 -top-24 h-96 w-96 rounded-full bg-violet-300/25 blur-3xl" aria-hidden="true" />
+        <div className="absolute -bottom-36 left-1/3 h-80 w-80 rounded-full bg-sky-300/20 blur-3xl" aria-hidden="true" />
+        <div className="relative mx-auto max-w-5xl">
+          <p className="inline-flex rounded-full border border-violet-200 bg-white/75 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700 shadow-sm backdrop-blur">Digital marketing</p>
+          <h1 className="mt-6 max-w-4xl text-4xl font-bold tracking-[-0.045em] text-slate-950 sm:text-6xl lg:text-7xl">Digital marketing connected to <span className="gradient-text">real conversations</span></h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-700">{details.description} We connect the campaign, conversion path, and lead follow-up process so your team can see what generated an inquiry and what happened next.</p>
           <ul className="mt-6 flex max-w-4xl flex-wrap gap-2" aria-label="Digital marketing services">{details.services.map((service) => <li key={service} className="rounded-full border border-violet-200 bg-white px-3 py-1.5 text-sm font-medium text-violet-800">{service}</li>)}</ul>
-          <Link href="/book-call" className="mt-8 inline-flex rounded-lg bg-violet-600 px-6 py-3 font-semibold text-white hover:bg-violet-700">Discuss your marketing plan</Link>
+          <Link href="/book-call" className="mt-8 inline-flex rounded-xl bg-violet-600 px-6 py-3.5 font-semibold text-white hover:bg-violet-700">Discuss your marketing plan</Link>
         </div>
       </section>
 
@@ -86,8 +88,8 @@ export default function DigitalMarketing() {
           <p className="mt-4 max-w-3xl leading-7 text-slate-700">The exact mix depends on your goals and existing setup. We agree on the channels, deliverables, responsibilities, and review cadence before work begins.</p>
           <div className="mt-10 grid gap-5 md:grid-cols-2">
             {disciplines.map(({ icon: Icon, title, copy }) => (
-              <article key={title} className="rounded-xl border border-slate-200 bg-white p-7 shadow-sm">
-                <Icon className="h-7 w-7 text-violet-600" aria-hidden="true" />
+              <article key={title} className="group rounded-2xl border border-slate-200/80 bg-white/90 p-7 shadow-sm shadow-slate-200/60 backdrop-blur">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-50 text-violet-600 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"><Icon className="h-6 w-6" aria-hidden="true" /></div>
                 <h3 className="mt-4 text-xl font-semibold text-slate-950">{title}</h3>
                 <p className="mt-3 leading-7 text-slate-700">{copy}</p>
               </article>
@@ -101,8 +103,8 @@ export default function DigitalMarketing() {
           <h2 className="text-3xl font-bold text-slate-950">How the work is managed</h2>
           <div className="mt-10 space-y-6">
             {workflow.map(([number, title, copy]) => (
-              <article key={number} className="grid gap-4 rounded-xl border border-slate-200 p-6 sm:grid-cols-[64px_1fr]">
-                <span className="text-3xl font-bold text-violet-600">{number}</span>
+              <article key={number} className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:grid-cols-[64px_1fr]">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-50 text-lg font-bold text-violet-600">{number}</span>
                 <div><h3 className="text-xl font-semibold text-slate-950">{title}</h3><p className="mt-2 leading-7 text-slate-700">{copy}</p></div>
               </article>
             ))}
@@ -110,16 +112,18 @@ export default function DigitalMarketing() {
         </div>
       </Section>
 
-      <section className="bg-[#0A0F1E] px-5 py-20 text-white sm:px-8">
-        <div className="mx-auto grid max-w-5xl gap-10 md:grid-cols-2 md:items-center">
+      <section className="relative overflow-hidden bg-[#0A0F1E] px-5 py-24 text-white sm:px-8">
+        <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-violet-600/20 blur-3xl" aria-hidden="true" />
+        <div className="absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" aria-hidden="true" />
+        <div className="relative mx-auto grid max-w-5xl gap-10 md:grid-cols-2 md:items-center">
           <div>
-            <h2 className="text-3xl font-bold">What you receive</h2>
+            <h2 className="text-3xl font-bold text-white">What you receive</h2>
             <ul className="mt-6 space-y-3 text-slate-300">
               {['A documented strategy and channel scope', 'Approved messaging and campaign assets', 'Connected forms, tracking, and lead routing', 'A clear reporting and review cadence', 'Recommendations tied to lead quality and business outcomes'].map((item) => <li key={item} className="flex gap-3"><CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-violet-400" aria-hidden="true" />{item}</li>)}
             </ul>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-8">
-            <h2 className="text-2xl font-bold">Scope and pricing</h2>
+          <div className="rounded-2xl border border-white/15 bg-white/[0.07] p-8 shadow-2xl shadow-violet-950/30 backdrop-blur-xl">
+            <h2 className="text-2xl font-bold text-white">Scope and pricing</h2>
             {!details.publishPricing && <p className="mt-4 leading-7 text-slate-300">Digital marketing is custom quoted for the channels, assets, campaign volume, and reporting your business needs.</p>}
             <Link href="/book-call" className="mt-7 inline-flex rounded-lg bg-violet-600 px-6 py-3 font-semibold text-white hover:bg-violet-500">Book a free call</Link>
           </div>

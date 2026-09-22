@@ -72,18 +72,19 @@ export default function Home() {
 
   return (
     <MotionPage className="bg-white text-slate-900">
-      <section className="relative overflow-hidden bg-white pb-16 pt-16 sm:pb-20 sm:pt-24">
-        <div className="absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(circle_at_75%_20%,rgba(14,165,233,.12),transparent_36%),radial-gradient(circle_at_20%_20%,rgba(37,99,235,.08),transparent_32%)]" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-white via-violet-50/50 to-sky-50 pb-20 pt-20 sm:pb-28 sm:pt-28">
+        <div className="absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(circle_at_78%_18%,rgba(56,189,248,.16),transparent_34%),radial-gradient(circle_at_18%_18%,rgba(123,92,246,.14),transparent_34%)]" />
+        <div className="absolute left-1/2 top-12 h-px w-[80%] -translate-x-1/2 bg-gradient-to-r from-transparent via-violet-300/60 to-transparent" aria-hidden="true" />
         <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-[1fr_.9fr]">
           <div>
-            <div className="mb-6 inline-flex items-center gap-2 text-xs font-semibold text-slate-600"><span className="h-2 w-2 rounded-full bg-sky-500" />US-managed · Cairo-based calling team</div>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white/75 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur"><span className="h-2 w-2 rounded-full bg-violet-500 shadow-[0_0_0_4px_rgba(123,92,246,.12)]" />US-managed · Cairo-based calling team</div>
             <h1 className="text-4xl font-bold leading-[1.04] tracking-[-.045em] text-slate-950 sm:text-6xl lg:text-[4.25rem]">US-managed call center for appointment setting and inbound support</h1>
-            <p className="mt-5 text-2xl font-semibold tracking-tight text-blue-700 sm:text-3xl">Your next customer is a conversation away.</p>
+            <p className="gradient-text mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">Your next customer is a conversation away.</p>
             <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">Trained agents call, qualify, book, and support your customers. AI helps our team move faster while people remain in control.</p>
-            <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center"><Link href="/book-call" className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 sm:w-auto">Get started <ArrowRight className="h-4 w-4" /></Link><a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 py-2 text-sm font-medium text-slate-600 hover:text-blue-600"><MessageCircle className="h-4 w-4 text-sky-500" />or message us on WhatsApp</a></div>
+            <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center"><Link href="/book-call" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-600/20 hover:bg-violet-700 sm:w-auto">Get started <ArrowRight className="h-4 w-4" /></Link><a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 py-2 text-sm font-medium text-slate-600 hover:text-violet-700"><MessageCircle className="h-4 w-4 text-violet-500" />or message us on WhatsApp</a></div>
             <p className="mt-4 text-xs text-slate-500">Start with one workflow. No long-term contract required to begin.</p>
           </div>
-          <LeadFlowMockup />
+          <div className="animate-float-slow"><LeadFlowMockup /></div>
         </div>
       </section>
 

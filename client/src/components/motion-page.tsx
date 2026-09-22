@@ -9,22 +9,27 @@ interface MotionPageProps {
 const pageVariants = {
   initial: {
     opacity: 0,
-    y: 12,
+    y: 18,
+    scale: 0.995,
+    filter: 'blur(4px)',
   },
   animate: {
     opacity: 1,
     y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
     transition: {
-      duration: 0.24,
-      ease: 'easeInOut',
+      duration: 0.5,
+      ease: [0.22, 1, 0.36, 1],
     },
   },
   exit: {
     opacity: 0,
-    y: -8,
+    y: -6,
+    filter: 'blur(2px)',
     transition: {
-      duration: 0.22,
-      ease: 'easeInOut',
+      duration: 0.18,
+      ease: 'easeOut',
     },
   },
 };

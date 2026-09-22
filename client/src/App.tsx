@@ -15,6 +15,46 @@ function ScrollToTop() {
   return null;
 }
 
+function MarketingEffects({ enabled, location }: { enabled: boolean; location: string }) {
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const observed = new Set<Element>();
+    const reveal = (element: Element) => element.classList.add("is-visible");
+    const observer = reducedMotion ? null : new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        reveal(entry.target);
+        observer?.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -8%", threshold: 0.08 });
+
+    const scan = () => {
+      document.querySelectorAll(".marketing-site main section").forEach((section, index) => {
+        if (observed.has(section)) return;
+        observed.add(section);
+        section.classList.add("reveal-section");
+        (section as HTMLElement).style.setProperty("--reveal-delay", `${Math.min(index, 3) * 45}ms`);
+        if (reducedMotion) reveal(section);
+        else observer?.observe(section);
+      });
+    };
+
+    scan();
+    const mutationObserver = new MutationObserver(scan);
+    const main = document.querySelector(".marketing-site main");
+    if (main) mutationObserver.observe(main, { childList: true, subtree: true });
+
+    return () => {
+      observer?.disconnect();
+      mutationObserver.disconnect();
+    };
+  }, [enabled, location]);
+
+  return null;
+}
+
 // Layout Components
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
@@ -58,6 +98,7 @@ import "@fontsource/inter/700.css";
 function Router() {
   const [cartModalOpen, setCartModalOpen] = useState(false);
   const [location] = useLocation();
+  const isMarketingRoute = !['/login', '/register', '/signup', '/dashboard', '/checkout'].includes(location);
 
   const openCartModal = () => setCartModalOpen(true);
   const closeCartModal = () => setCartModalOpen(false);
@@ -65,8 +106,9 @@ function Router() {
   if (location === "/cms") return <Suspense fallback={null}><CmsPage /></Suspense>;
 
   return (
-    <div className="site-light-theme min-h-screen flex flex-col bg-white text-slate-900">
+    <div className={`${isMarketingRoute ? 'marketing-site' : ''} min-h-screen flex flex-col bg-white text-slate-900`}>
       <ScrollToTop />
+      <MarketingEffects enabled={isMarketingRoute} location={location} />
       <Navigation />
 
       <main className="flex-1">

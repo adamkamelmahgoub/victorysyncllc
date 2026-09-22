@@ -6,19 +6,19 @@ export default {
   theme: {
     extend: {
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        xl: "var(--radius)",
-        "2xl": "var(--radius)",
-        "3xl": "var(--radius)",
+        lg: "0.875rem",
+        md: "0.7rem",
+        sm: "0.5rem",
+        xl: "1.125rem",
+        "2xl": "1.5rem",
+        "3xl": "2rem",
       },
       colors: {
         ink: {
-          900: "#FFFFFF",
-          800: "#F1F5F9",
-          700: "#E2E8F0",
-          600: "#CBD5E1",
+          900: "#0A0F1E",
+          800: "#111827",
+          700: "#1E293B",
+          600: "#334155",
         },
         background: "var(--background)",
         foreground: "var(--foreground)",
