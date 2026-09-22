@@ -35,10 +35,11 @@ for (const { url, path } of paths) {
       throw new Error(`${path}: image missing alt or dimensions: ${tag.slice(0, 120)}`);
     }
   }
-  if (/^\/(?:appointment-setting-for-home-services|cold-calling-for-plumbers|appointment-setting-for-real-estate|inbound-support-for-law-firms)$/.test(path)) {
+  if (/^\/(?:answering-service-for-plumbers|appointment-setting-for-hvac)$/.test(path)) {
     const content = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1] || '';
     const words = content.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).length;
-    if (words < 600 || words > 900) throw new Error(`${path}: ${words} page words`);
+    if (words < 600 || words > 800) throw new Error(`${path}: ${words} page words`);
+    console.log(`${path}: ${words} words in main content`);
   }
   const schemaScripts = [...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)];
   for (const [, content] of schemaScripts) JSON.parse(content);

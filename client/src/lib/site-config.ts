@@ -4,8 +4,6 @@ import { phoneHref, siteFacts, whatsappHref } from '@/config/siteFacts';
 // All public business facts originate in config/siteFacts.ts.
 export const US_PHONE = siteFacts.phoneUS;
 export const WHATSAPP = siteFacts.whatsapp;
-export const STREET_ADDRESS = siteFacts.address;
-export const POSTAL_CODE = '08510';
 export const EMAIL = siteFacts.email;
 export const HOURS = siteFacts.hours;
 export const LINKEDIN_URL = '';

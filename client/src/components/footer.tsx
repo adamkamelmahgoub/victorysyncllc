@@ -1,7 +1,7 @@
 import { Link } from 'wouter';
 import { SiFacebook, SiFiverr, SiGoogle, SiInstagram, SiUpwork } from 'react-icons/si';
 import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.webp';
-import { CLUTCH_PROFILE_URL, EMAIL, HOURS, POSTAL_CODE, STREET_ADDRESS, US_PHONE, US_PHONE_HREF, WHATSAPP, WHATSAPP_HREF } from '@/lib/site-config';
+import { CLUTCH_PROFILE_URL, EMAIL, HOURS, US_PHONE, US_PHONE_HREF, WHATSAPP, WHATSAPP_HREF } from '@/lib/site-config';
 import { siteFacts, starterPriceLabel } from '@/config/siteFacts';
 
 const groups = [

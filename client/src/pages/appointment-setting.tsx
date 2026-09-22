@@ -65,7 +65,7 @@ export default function AppointmentSetting() {
       <section className="py-16 bg-ink-900 border-b border-ink-700">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-white mb-4">What VictorySync Handles</h2>
-          <p className="text-slate-400 mb-10">From first outreach to confirmed appointment — our team manages the full follow-up and booking workflow.</p>
+          <p className="text-slate-400 mb-10">From first outreach through a booked appointment, our team manages the full follow-up and booking workflow.</p>
           <div className="grid md:grid-cols-2 gap-6">
             {[
               { icon: Phone, title: "Lead Follow-Up Calls", items: ["Call inbound and outbound leads within minutes", "Multi-touch follow-up sequences", "Voicemail drops where appropriate", "Warm handoffs to your sales team"] },

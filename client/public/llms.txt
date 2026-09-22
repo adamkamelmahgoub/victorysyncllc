@@ -1,12 +1,33 @@
 # VictorySync
 
-VictorySync is a US-managed contact center with Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound customer support.
+Victory Sync LLC provides US-managed contact center services with Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound customer support.
 
-## Services and coverage
+## Services
 
-Services include inbound customer support, outbound appointment setting, cold calling, and AI-assisted operations. VictorySync serves businesses in the United States, including home services, plumbing, real estate, and legal practices. Straightforward campaigns can often launch within 24 to 48 hours after scripts, access, and escalation rules are approved. VictorySync is a Close CRM partner.
+- Inbound customer support and call answering
+- Outbound appointment setting and lead follow-up
+- Cold calling and lead qualification
+- AI-assisted call summaries, CRM updates, routing, reminders, and reporting
 
-Starter service begins at $10 per agent hour for one trained agent and one inbound or outbound workflow. Final pricing depends on campaign scope.
+## Who we work with
+
+Home services, including plumbing and HVAC, real estate, legal, and SaaS businesses in the United States.
+
+## Pricing
+
+Service starts from $10 per agent hour. Final pricing depends on campaign scope.
+
+## Launch time
+
+Straightforward campaigns can often launch within 24 to 48 hours after scripts, lists, access, and escalation rules are approved.
+
+## Hours
+
+Monday to Friday, 9:00am to 6:00pm Eastern
+
+## Partners
+
+VictorySync is a Close CRM partner.
 
 ## Pages
 
@@ -27,15 +48,18 @@ Starter service begins at $10 per agent hour for one trained agent and one inbou
 - [Terms of Service](https://www.victorysync.com/terms): Terms of service.
 - [Home Services Appointment Setting](https://www.victorysync.com/appointment-setting-for-home-services): Appointment setting for home service companies.
 - [Cold Calling for Plumbers](https://www.victorysync.com/cold-calling-for-plumbers): Outbound calling for plumbing companies.
+- [Answering Service for Plumbers](https://www.victorysync.com/answering-service-for-plumbers): Call answering, intake, booking, and urgent call routing for plumbing companies.
+- [HVAC Appointment Setting](https://www.victorysync.com/appointment-setting-for-hvac): Lead qualification and service appointment booking for HVAC companies.
 - [Real Estate Appointment Setting](https://www.victorysync.com/appointment-setting-for-real-estate): Lead follow-up for real estate teams.
 - [Inbound Support for Law Firms](https://www.victorysync.com/inbound-support-for-law-firms): Firm-approved intake and call routing.
 
 ## Contact
 
-- US phone: +1 848-216-1220
+- US phone: +1-848-216-1220
 - WhatsApp: +20-107-039-4707
 - Email: info@victorysync.com
 - Address: 11 Brookside Road, Millstone Township, NJ 08510
-- Hours: Monday to Friday, 9:00am to 6:00pm Eastern
 
-Sitemap: https://www.victorysync.com/sitemap.xml
+## Sitemap
+
+https://www.victorysync.com/sitemap.xml

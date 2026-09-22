@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Calendar, Clock, MessageCircle } from "lucide-react";
-import { EMAIL, HOURS, POSTAL_CODE, STREET_ADDRESS, US_PHONE, US_PHONE_HREF, WHATSAPP, WHATSAPP_HREF } from '@/lib/site-config';
+import { EMAIL, HOURS, US_PHONE, US_PHONE_HREF, WHATSAPP, WHATSAPP_HREF } from '@/lib/site-config';
 import { siteFacts } from '@/config/siteFacts';
 import { useEffect } from "react";
 

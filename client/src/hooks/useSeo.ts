@@ -65,10 +65,11 @@ export function useSeo({ title, description, ogImage, structuredData }: SeoProps
     setTag('meta[property="og:url"]', 'meta', { property: 'og:url', content: canonical });
     setTag('meta[name="twitter:title"]', 'meta', { name: 'twitter:title', content: pageTitle });
     setTag('meta[name="twitter:description"]', 'meta', { name: 'twitter:description', content: pageDescription });
-    if (ogImage) {
-      setTag('meta[property="og:image"]', 'meta', { property: 'og:image', content: ogImage });
-      setTag('meta[name="twitter:image"]', 'meta', { name: 'twitter:image', content: ogImage });
-    }
+    const socialImage = ogImage || `${siteOrigin}/og-image.png`;
+    setTag('meta[property="og:image"]', 'meta', { property: 'og:image', content: socialImage });
+    setTag('meta[property="og:image:width"]', 'meta', { property: 'og:image:width', content: '1200' });
+    setTag('meta[property="og:image:height"]', 'meta', { property: 'og:image:height', content: '630' });
+    setTag('meta[name="twitter:image"]', 'meta', { name: 'twitter:image', content: socialImage });
     document.querySelector('script[data-victorysync-schema="page"]')?.remove();
     const schema: Record<string, unknown>[] = structuredData ? (Array.isArray(structuredData) ? [...structuredData] : [structuredData]) : [];
     if (path === '/' || path === '/contact') {
@@ -80,6 +81,7 @@ export function useSeo({ title, description, ogImage, structuredData }: SeoProps
         telephone: siteFacts.phoneUS, email: siteFacts.email, priceRange: starterPriceLabel,
         address: { '@type': 'PostalAddress', ...postalAddress },
         areaServed: { '@type': 'Country', name: 'United States' },
+        openingHours: siteFacts.hours,
         openingHoursSpecification: { '@type': 'OpeningHoursSpecification', ...openingHours },
         knowsAbout: ['Appointment setting', 'Cold calling', 'Lead qualification', 'Inbound customer support', 'Call answering'],
         contactPoint: [{ '@type': 'ContactPoint', telephone: siteFacts.phoneUS, contactType: 'sales', availableLanguage: 'English', areaServed: 'US' }],
