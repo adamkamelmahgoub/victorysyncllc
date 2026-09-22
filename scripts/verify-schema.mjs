@@ -21,19 +21,19 @@ for (const path of paths) {
   if (path !== '/' && !types.includes('BreadcrumbList')) throw new Error(`${path}: missing breadcrumb`);
   if (servicePaths.has(path) && !types.includes('Service')) throw new Error(`${path}: missing service`);
   if (['/', '/contact'].includes(path)) {
-    if (!types.includes('Organization') || !types.includes('ProfessionalService')) {
-      throw new Error(`${path}: missing business schema`);
+    if (types.filter((type) => type === 'ProfessionalService').length !== 1 || types.includes('Organization')) {
+      throw new Error(`${path}: expected exactly one ProfessionalService business entity`);
     }
-    const org = data.find((item) => item['@type'] === 'Organization');
     const local = data.find((item) => item['@type'] === 'ProfessionalService');
-    if (!Array.isArray(org.contactPoint) ||
-        org.contactPoint[0]?.telephone !== '+1 848-216-1220' ||
-        org.contactPoint[1]?.telephone !== '+20-107-039-4707' ||
-        local.telephone !== '+1 848-216-1220' ||
+    if (local['@id'] !== 'https://www.victorysync.com/#organization' ||
+        !Array.isArray(local.contactPoint) ||
+        local.contactPoint.length !== 1 ||
+        local.contactPoint[0]?.telephone !== '+1-848-216-1220' ||
+        local.telephone !== '+1-848-216-1220' ||
         local.address?.streetAddress !== '11 Brookside Road' ||
         local.address?.postalCode !== '08510' ||
         local.priceRange !== 'From $10/hr' ||
-        !Array.isArray(org.sameAs) || org.sameAs.length !== 6) {
+        !Array.isArray(local.sameAs) || local.sameAs.length !== 6) {
       throw new Error(`${path}: business phone or social links missing`);
     }
   }
@@ -43,6 +43,7 @@ for (const path of paths) {
   if (JSON.stringify(data).includes('https://victorysync.com')) {
     throw new Error(`${path}: non-www schema URL`);
   }
+  if (types.includes('Review') || types.includes('AggregateRating')) throw new Error(`${path}: review schema is not allowed`);
   console.log(`${path}: ${types.join(', ')}`);
 }
 console.log(`Verified structured data on ${paths.length} pages.`);

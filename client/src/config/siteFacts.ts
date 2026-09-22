@@ -60,3 +60,26 @@ export const siteOrigin = 'https://www.victorysync.com';
 export const starterPriceLabel = `From $${siteFacts.starterRateUsd}/hr`;
 export const phoneHref = `tel:${siteFacts.phoneUS.replace(/[^+\d]/g, '')}`;
 export const whatsappHref = `https://wa.me/${siteFacts.whatsapp.replace(/\D/g, '')}`;
+
+const addressParts = siteFacts.address.split(',').map((part) => part.trim());
+const regionAndPostal = addressParts.at(-1)?.match(/^([A-Z]{2})\s+(\d{5})$/);
+if (addressParts.length !== 3 || !regionAndPostal) throw new Error('siteFacts.address must use street, city, ST ZIP format');
+export const postalAddress = {
+  streetAddress: addressParts[0],
+  addressLocality: addressParts[1],
+  addressRegion: regionAndPostal[1],
+  postalCode: regionAndPostal[2],
+  addressCountry: 'US',
+} as const;
+
+const hoursMatch = siteFacts.hours.match(/^Monday to Friday, (\d{1,2}):(\d{2})(am|pm) to (\d{1,2}):(\d{2})(am|pm) Eastern$/);
+if (!hoursMatch) throw new Error('siteFacts.hours must use the expected weekday and Eastern time format');
+const to24Hour = (hour: string, minute: string, period: string) => {
+  const numericHour = Number(hour) % 12 + (period === 'pm' ? 12 : 0);
+  return `${String(numericHour).padStart(2, '0')}:${minute}`;
+};
+export const openingHours = {
+  dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+  opens: to24Hour(hoursMatch[1], hoursMatch[2], hoursMatch[3]),
+  closes: to24Hour(hoursMatch[4], hoursMatch[5], hoursMatch[6]),
+} as const;

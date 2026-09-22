@@ -7,8 +7,7 @@ import ClutchWidget from '@/components/clutch-widget';
 import { MapPin, Users, Shield, BarChart3, CheckCircle } from 'lucide-react';
 
 const aboutSchema = [
-  { '@context': 'https://schema.org', '@type': 'Organization', '@id': `${siteOrigin}/#organization`, name: siteFacts.legalName, url: `${siteOrigin}/`, logo: `${siteOrigin}/LOGO_VS.png` },
-  { '@context': 'https://schema.org', '@type': 'AboutPage', '@id': 'https://www.victorysync.com/about-us#about', url: 'https://www.victorysync.com/about-us', name: 'About VictorySync', mainEntity: { '@id': 'https://www.victorysync.com/#organization' } },
+  { '@context': 'https://schema.org', '@type': 'AboutPage', '@id': `${siteOrigin}/about-us#about`, url: `${siteOrigin}/about-us`, name: `About ${siteFacts.brandName}`, mainEntity: { '@id': `${siteOrigin}/#organization` } },
 ];
 
 export default function AboutUs() {

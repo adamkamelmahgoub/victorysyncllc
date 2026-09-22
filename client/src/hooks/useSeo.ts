@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { CLUTCH_PROFILE_URL, EMAIL, LINKEDIN_URL, POSTAL_CODE, STREET_ADDRESS, US_PHONE, WHATSAPP } from '@/lib/site-config';
+import { openingHours, postalAddress, siteFacts, siteOrigin, starterPriceLabel } from '@/config/siteFacts';
 
 interface SeoProps {
   title: string;
@@ -9,7 +9,7 @@ interface SeoProps {
   structuredData?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-export const siteOrigin = 'https://www.victorysync.com';
+export { siteOrigin } from '@/config/siteFacts';
 export const pageMeta: Record<string, [string, string]> = {
   '/': ['VictorySync | US-Managed Call Center & Appointment Setting', 'US-managed call center with trained agents for appointment setting, cold calling, lead qualification, and inbound support. Serving US SMBs from Millstone, NJ.'],
   '/services': ['Call Center & BPO Services | VictorySync', 'Outbound appointment setting, cold calling, lead qualification, inbound support, and digital marketing for US small and mid-sized businesses.'],
@@ -69,33 +69,24 @@ export function useSeo({ title, description, ogImage, structuredData }: SeoProps
     const schema: Record<string, unknown>[] = structuredData ? (Array.isArray(structuredData) ? [...structuredData] : [structuredData]) : [];
     if (path === '/' || path === '/contact') {
       schema.push({
-        '@context': 'https://schema.org', '@type': 'Organization', '@id': `${siteOrigin}/#organization`,
-        name: 'VictorySync LLC', url: siteOrigin + '/', logo: `${siteOrigin}/LOGO_VS.png`,
+        '@context': 'https://schema.org', '@type': 'ProfessionalService', '@id': `${siteOrigin}/#organization`,
+        name: siteFacts.brandName, legalName: siteFacts.legalName, alternateName: siteFacts.alternateNames,
+        url: `${siteOrigin}/`, logo: `${siteOrigin}/LOGO_VS.png`,
         description: 'US-managed contact center with trained Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound support.',
-        address: { '@type': 'PostalAddress', streetAddress: STREET_ADDRESS, addressLocality: 'Millstone Township', addressRegion: 'NJ', postalCode: POSTAL_CODE, addressCountry: 'US' },
-        email: EMAIL,
-        contactPoint: [
-          { '@type': 'ContactPoint', telephone: US_PHONE, contactType: 'sales', availableLanguage: 'English', areaServed: 'US' },
-          { '@type': 'ContactPoint', telephone: WHATSAPP, contactType: 'customer support', contactOption: 'WhatsApp', availableLanguage: 'English', areaServed: 'US' },
-        ],
+        telephone: siteFacts.phoneUS, email: siteFacts.email, priceRange: starterPriceLabel,
+        address: { '@type': 'PostalAddress', ...postalAddress },
+        areaServed: { '@type': 'Country', name: 'United States' },
+        openingHoursSpecification: { '@type': 'OpeningHoursSpecification', ...openingHours },
+        knowsAbout: ['Appointment setting', 'Cold calling', 'Lead qualification', 'Inbound customer support', 'Call answering'],
+        contactPoint: [{ '@type': 'ContactPoint', telephone: siteFacts.phoneUS, contactType: 'sales', availableLanguage: 'English', areaServed: 'US' }],
         sameAs: [
+          'https://clutch.co/profile/victorysync',
+          'https://www.upwork.com/agencies/1956546855026415688/',
+          'https://www.fiverr.com/s/NeNrP98',
           'https://www.facebook.com/profile.php?id=61578278896132',
           'https://www.instagram.com/victorysyncllc/',
           'https://share.google/SRBDGigTm0XPhvLk3',
-          'https://www.upwork.com/agencies/1956546855026415688/',
-          'https://www.fiverr.com/s/NeNrP98',
-          ...(LINKEDIN_URL ? [LINKEDIN_URL] : []),
-          CLUTCH_PROFILE_URL,
         ],
-      });
-      schema.push({
-        '@context': 'https://schema.org', '@type': 'ProfessionalService', '@id': `${siteOrigin}/#professionalservice`,
-        name: 'VictorySync LLC', url: siteOrigin + '/', telephone: US_PHONE, email: EMAIL, priceRange: 'From $10/hr',
-        address: { '@type': 'PostalAddress', streetAddress: STREET_ADDRESS, addressLocality: 'Millstone Township', addressRegion: 'NJ', postalCode: POSTAL_CODE, addressCountry: 'US' },
-        areaServed: { '@type': 'Country', name: 'United States' },
-        openingHoursSpecification: { '@type': 'OpeningHoursSpecification',
-          dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-          opens: '09:00', closes: '18:00' },
       });
     }
     if (services[path]) {
@@ -103,7 +94,7 @@ export function useSeo({ title, description, ogImage, structuredData }: SeoProps
         serviceType: services[path], provider: { '@id': `${siteOrigin}/#organization` },
         areaServed: { '@type': 'Country', name: 'United States' }, url: canonical });
     }
-    if (path !== '/') {
+    if (path !== '/' && !schema.some((item) => item['@type'] === 'BreadcrumbList')) {
       schema.push({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: siteOrigin + '/' },
         { '@type': 'ListItem', position: 2, name: pageMeta[path]?.[0].split(' | ')[0] || path.slice(1).replace(/-/g, ' '), item: canonical },

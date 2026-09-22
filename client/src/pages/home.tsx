@@ -2,7 +2,7 @@ import { MotionPage } from '@/components/motion-page';
 import { useCalendly } from '@/hooks/useCalendly';
 import { useSeo } from '@/hooks/useSeo';
 import { WHATSAPP_HREF } from '@/lib/site-config';
-import { siteFacts, starterPriceLabel } from '@/config/siteFacts';
+import { siteFacts, siteOrigin, starterPriceLabel } from '@/config/siteFacts';
 import ClutchWidget from '@/components/clutch-widget';
 import { Link } from 'wouter';
 import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.webp';
@@ -38,8 +38,10 @@ const faqs = [
 
 const structuredData = [{
   '@context': 'https://schema.org', '@type': 'Service', name: 'VictorySync Contact Center Services',
-  provider: { '@type': 'Organization', name: 'VictorySync', url: 'https://www.victorysync.com' },
+  provider: { '@id': `${siteOrigin}/#organization` },
   areaServed: 'United States', serviceType: ['Appointment Setting', 'Cold Calling', 'Lead Qualification', 'Inbound Customer Support'],
+  url: `${siteOrigin}/`,
+  description: 'US-managed contact center services for appointment setting, cold calling, lead qualification, and inbound customer support.',
 }, {
   '@context': 'https://schema.org', '@type': 'FAQPage',
   mainEntity: faqs.map(({ question, answer }) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } })),

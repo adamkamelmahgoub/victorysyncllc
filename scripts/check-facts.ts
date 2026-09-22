@@ -28,6 +28,21 @@ for (const file of files) {
     if (html.toLowerCase().includes(phrase.toLowerCase())) failures.push(`${file}: ${phrase}`);
   }
   if (/href=["']#["']/i.test(main)) failures.push(`${file}: href="#" in main content`);
+  const types: string[] = [];
+  for (const match of html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try {
+      const parsed = JSON.parse(match[1]);
+      const entries = Array.isArray(parsed) ? parsed : [parsed];
+      for (const entry of entries) {
+        if (entry?.['@type']) types.push(String(entry['@type']));
+      }
+    } catch (error) {
+      failures.push(`${file}: invalid JSON-LD, ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  if (types.some((type) => type === 'Review' || type === 'AggregateRating')) failures.push(`${file}: prohibited review schema`);
+  const route = file.replace(builtDir, '').replace(/\\index\.html$/, '').replace(/\\/g, '/') || '/';
+  console.log(`JSON-LD ${route}: ${types.length ? types.join(', ') : '(none)'}`);
 }
 
 if (failures.length) {
