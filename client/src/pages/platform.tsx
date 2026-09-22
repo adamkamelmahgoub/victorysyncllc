@@ -1,205 +1,76 @@
+import { Link } from 'wouter';
+import { BarChart3, Bot, CheckCircle2, Mail } from 'lucide-react';
 import { MotionPage } from '@/components/motion-page';
-import { Section, StaggerContainer, fadeInUp } from '@/components/section';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCalendly } from '@/hooks/useCalendly';
+import { Section } from '@/components/section';
+import { siteFacts, siteOrigin } from '@/config/siteFacts';
 import { useSeo } from '@/hooks/useSeo';
-import { motion } from 'framer-motion';
-import { 
-  Bot, 
-  Database, 
-  BarChart3, 
-  Users, 
-  Phone, 
-  MessageSquare
-} from 'lucide-react';
 
-const capabilities = [
-  {
-    id: 'ai-bots',
-    label: 'AI Bots',
-    icon: Bot,
-    title: 'AI-Assisted Agent Tools',
-    description: 'Deploy conversational AI bots that handle customer inquiries 24/7 with natural language understanding and context-aware responses.',
-    features: [
-      'Natural language processing',
-      'Multi-channel support',
-      'Sentiment analysis',
-      'Self-learning capabilities'
-    ]
-  },
-  {
-    id: 'engagement',
-    label: 'Engagement Hub',
-    icon: MessageSquare,
-    title: 'Customer Engagement Data Hub',
-    description: 'Centralize all customer interactions across channels for a unified view of your customer engagement.',
-    features: [
-      'Omnichannel integration',
-      'Real-time data sync',
-      'Customer journey tracking',
-      'Interaction analytics'
-    ]
-  },
-  {
-    id: 'analytics',
-    label: 'Analytics',
-    icon: BarChart3,
-    title: 'Advanced Analytics & Insights',
-    description: 'Gain actionable insights from your customer data with powerful analytics and reporting tools.',
-    features: [
-      'Real-time dashboards',
-      'Predictive analytics',
-      'Custom reports',
-      'Performance metrics'
-    ]
-  },
-  {
-    id: 'wfm',
-    label: 'WFM/WFO',
-    icon: Users,
-    title: 'Workforce Management & Optimization',
-    description: 'Optimize your workforce with intelligent scheduling, forecasting, and performance management.',
-    features: [
-      'Smart scheduling',
-      'Forecasting tools',
-      'Performance tracking',
-      'Quality management'
-    ]
-  },
-  {
-    id: 'channels',
-    label: 'Channels',
-    icon: Phone,
-    title: 'Multi-Channel Support',
-    description: 'Connect with customers on their preferred channels - voice, chat, email, SMS, and social media.',
-    features: [
-      'Voice & IVR',
-      'Live chat',
-      'Email support',
-      'SMS & WhatsApp'
-    ]
-  },
-  {
-    id: 'platform',
-    label: 'Open Platform',
-    icon: Database,
-    title: 'Open Integration Platform',
-    description: 'Integrate seamlessly with your existing tools and systems through our open API architecture.',
-    features: [
-      'RESTful APIs',
-      'Webhook support',
-      'Pre-built integrations',
-      'Custom connectors'
-    ]
-  }
-];
+const title = 'Campaign Dashboard & Daily Reports | VictorySync';
+const description = 'See every call, booking, and outcome from your VictorySync campaign: call recordings, connect and booking rates, and a daily summary in your inbox.';
 
 export default function Platform() {
-  const { open: openCalendly } = useCalendly();
   useSeo({
-    title: 'Platform | VictorySync Contact Center Technology',
-    description: 'VictorySync platform capabilities: AI call summaries, CRM integrations, real-time dashboards, and workflow automation for US contact center operations.',
-    canonical: 'https://victorysync.com/platform',
+    title,
+    description,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteOrigin}/` },
+        { '@type': 'ListItem', position: 2, name: 'Campaign Dashboard and Daily Reports', item: `${siteOrigin}/platform` },
+      ],
+    },
   });
 
+  const visibleFeatures = siteFacts.dashboardFeatures ?? [
+    'A daily written summary: what happened, what the numbers look like, and what needs your attention.',
+  ];
+
   return (
-    <MotionPage className="bg-ink-900">
+    <MotionPage className="bg-ink-900 text-white">
       <Section className="pt-24 pb-16 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900">
-        <StaggerContainer className="text-center">
-          <motion.div variants={fadeInUp}>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-              Our Platform
-            </h1>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
-              A comprehensive suite of tools designed to transform your customer experience operations
-            </p>
-            <Button 
-              size="lg"
-              onClick={openCalendly}
-              className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold"
-              data-testid="button-hero-get-quote"
-            >
-              Get a Quote
-            </Button>
-          </motion.div>
-        </StaggerContainer>
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-cyan-400">Campaign visibility</p>
+          <h1 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">See everything your team does for you</h1>
+          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-slate-300">
+            The VictorySync client dashboard shows what our agents did on your campaign, and a written summary lands in your inbox every business day.
+          </p>
+        </div>
       </Section>
 
-      <Section className="bg-ink-800">
-        <Tabs defaultValue="ai-bots" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 bg-ink-900 p-2 rounded-lg mb-12">
-            {capabilities.map((cap) => {
-              const Icon = cap.icon;
-              return (
-                <TabsTrigger 
-                  key={cap.id} 
-                  value={cap.id}
-                  className="data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400 text-slate-400 hover:text-slate-200"
-                  data-testid={`tab-${cap.id}`}
-                >
-                  <Icon className="w-4 h-4 mr-2" />
-                  <span className="hidden md:inline">{cap.label}</span>
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-
-          {capabilities.map((cap) => {
-            const Icon = cap.icon;
-            return (
-              <TabsContent key={cap.id} value={cap.id} className="space-y-8">
-                <div className="grid md:grid-cols-2 gap-12 items-center">
-                  <div>
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-cyan-500/10 text-cyan-400 mb-6">
-                      <Icon className="w-8 h-8" />
-                    </div>
-                    <h2 className="text-3xl font-bold text-white mb-4">
-                      {cap.title}
-                    </h2>
-                    <p className="text-lg text-slate-300 mb-6">
-                      {cap.description}
-                    </p>
-                    <ul className="space-y-3 mb-8">
-                      {cap.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-3 text-slate-300">
-                          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                    <Button 
-                      onClick={openCalendly}
-                      className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold"
-                    >
-                      Learn More
-                    </Button>
-                  </div>
-                  <div className="bg-ink-700 rounded-xl p-12 flex items-center justify-center min-h-[400px]">
-                    <Icon className="w-48 h-48 text-cyan-400/20" />
-                  </div>
-                </div>
-              </TabsContent>
-            );
-          })}
-        </Tabs>
+      <Section className="border-y border-ink-700 bg-ink-800">
+        <div className="grid gap-10 md:grid-cols-[0.9fr_1.1fr] md:items-center">
+          <div className="flex min-h-64 items-center justify-center rounded-2xl border border-ink-700 bg-ink-900">
+            <BarChart3 className="h-32 w-32 text-cyan-400/30" aria-hidden="true" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold">What you can see</h2>
+            <ul className="mt-6 space-y-4">
+              {visibleFeatures.map((feature) => (
+                <li key={feature} className="flex items-start gap-3 text-lg leading-8 text-slate-300">
+                  <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-cyan-400" aria-hidden="true" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 flex items-center gap-3 rounded-xl border border-ink-700 bg-ink-900 p-4 text-sm text-slate-300">
+              <Mail className="h-5 w-5 shrink-0 text-cyan-400" aria-hidden="true" />
+              Your daily report keeps the campaign visible without requiring another meeting.
+            </div>
+          </div>
+        </div>
       </Section>
 
       <Section className="bg-ink-900">
-        <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Transform Your CX Operations?
-          </h2>
-          <p className="text-lg text-slate-300 mb-8">
-            Schedule a consultation to see how our platform can help you achieve your goals
+        <div className="mx-auto max-w-3xl text-center">
+          <Bot className="mx-auto h-12 w-12 text-cyan-400" aria-hidden="true" />
+          <h2 className="mt-5 text-3xl font-bold">Where AI fits</h2>
+          <p className="mt-5 text-lg leading-8 text-slate-300">
+            AI helps our agents with call summaries, CRM updates, lead routing, reminders, and reporting. People handle every customer conversation. Nothing goes live without your approval.
           </p>
-          <Button 
-            size="lg"
-            onClick={openCalendly}
-            className="bg-cyan-500 hover:bg-cyan-600 text-ink-900 font-semibold"
-          >
-            Get a Quote
-          </Button>
+          <Link href="/book-call" className="mt-8 inline-flex rounded-lg bg-cyan-500 px-6 py-3 font-semibold text-ink-900 transition-colors hover:bg-cyan-600">
+            Book a free call
+          </Link>
         </div>
       </Section>
     </MotionPage>

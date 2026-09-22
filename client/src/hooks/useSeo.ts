@@ -18,7 +18,7 @@ export const pageMeta: Record<string, [string, string]> = {
   '/inbound-support': ['Inbound Customer Support Outsourcing | VictorySync', 'Stop missing calls. Trained agents answer, qualify, and book your inbound calls with US-led management and full call recording.'],
   '/ai-automation': ['AI Call Qualification & Routing | VictorySync', 'AI-assisted lead qualification and call routing layered on a human team, so every inbound lead is answered and qualified fast.'],
   '/pricing': ['Pricing | Call Center & Appointment Setting Rates | VictorySync', 'Transparent pricing for outbound calling, appointment setting, and inbound support. Paid pilots available so you can test before you commit.'],
-  '/platform': ['The VictorySync Platform | Call Tracking & Reporting', 'See every call, booking, and outcome in one dashboard. Call recordings, connect rates, booking rates, and daily performance summaries.'],
+  '/platform': ['Campaign Dashboard & Daily Reports | VictorySync', 'See every call, booking, and outcome from your VictorySync campaign: call recordings, connect and booking rates, and a daily summary in your inbox.'],
   '/about-us': ['About VictorySync | US-Managed, Cairo-Staffed', 'Founded and run from Millstone, NJ with a dedicated Cairo-based agent team. Meet the people answering your calls.'],
   '/contact': ['Contact VictorySync | Millstone, NJ', 'Get in touch with VictorySync. US-managed call center and digital marketing for small and mid-sized businesses.'],
   '/book-call': ['Book a Call with VictorySync', 'Book a free consultation. We will look at your current lead flow and tell you what we would change.'],
