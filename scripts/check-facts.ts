@@ -18,7 +18,7 @@ function htmlFiles(directory: string): string[] {
   });
 }
 
-const prohibited = ['24/7', '24 hours a day', '60% savings', 'up to 60%', '40–60%', '40-60%', 'money-back', 'self-learning', 'WFM/WFO', 'TBD', 'TO CONFIRM'];
+const prohibited = ['24/7', '24 hours a day', '60% savings', 'up to 60%', '40–60%', '40-60%', 'money-back', 'self-learning', 'WFM/WFO', 'TBD'];
 const files = htmlFiles(builtDir);
 const failures: string[] = [];
 for (const file of files) {
@@ -27,6 +27,8 @@ for (const file of files) {
   for (const phrase of prohibited) {
     if (html.toLowerCase().includes(phrase.toLowerCase())) failures.push(`${file}: ${phrase}`);
   }
+  // Check the placeholder syntax so normal legal wording such as "to confirm" is allowed.
+  if (/\[TO CONFIRM(?:\]|:)/i.test(html)) failures.push(`${file}: [TO CONFIRM] placeholder`);
   if (/href=["']#["']/i.test(main)) failures.push(`${file}: href="#" in main content`);
   const types: string[] = [];
   for (const match of html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
