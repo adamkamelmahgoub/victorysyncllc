@@ -1,161 +1,61 @@
-import { MotionPage } from '@/components/motion-page';
-import { useCalendly } from '@/hooks/useCalendly';
-import { useSeo } from '@/hooks/useSeo';
-import { WHATSAPP_HREF } from '@/lib/site-config';
-import { siteFacts, siteOrigin, starterPriceLabel } from '@/config/siteFacts';
-import ClutchWidget from '@/components/clutch-widget';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'wouter';
+import { ArrowUpRight, Check, MessageCircle } from 'lucide-react';
+import { useSeo } from '@/hooks/useSeo';
+import { siteContent } from '@/content/site';
+import { WHATSAPP_HREF, CLUTCH_PROFILE_URL } from '@/lib/site-config';
 import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.webp';
-import {
-  ArrowRight,
-  BarChart3,
-  CalendarCheck,
-  Check,
-  ChevronDown,
-  Headphones,
-  Lock,
-  MessageCircle,
-  Phone,
-  Settings2,
-  ShieldCheck,
-  Sparkles,
-  UserCheck,
-  Users,
-  X,
-} from 'lucide-react';
 
-const whatsappUrl = `${WHATSAPP_HREF}?text=Hi%20VictorySync%2C%20I%27d%20like%20to%20discuss%20a%20campaign.`;
-
-const faqs = [
-  { question: 'What does VictorySync handle?', answer: 'Our agents handle inbound support, cold calling, lead follow-up, qualification, and appointment setting. AI assists the team with summaries, prompts, routing, and reporting; people remain responsible for every customer conversation.' },
-  { question: 'Which businesses are the best fit?', answer: 'VictorySync works with US small and midsize businesses that need dependable conversation capacity, especially home services, real estate, SaaS, agencies, and professional services.' },
-  { question: 'Where are your agents and managers based?', answer: 'Agents are based in Cairo, Egypt. Onboarding, account management, quality standards, and campaign oversight are US-led.' },
-  { question: 'How do you train agents for our account?', answer: 'We document your ideal customer, offer, scripts, qualification criteria, objection handling, tools, escalation rules, and desired outcomes. Agents train on that playbook before launch and receive ongoing coaching.' },
-  { question: 'Can your team work inside our CRM and calendar?', answer: 'Yes. Depending on your stack and access policies, agents can work in common CRMs, calendars, ticketing systems, forms, and phone tools while following the permissions agreed during onboarding.' },
-  { question: 'How does pricing work?', answer: `Pricing is based on agent count, coverage, channels, and workflow complexity. Dedicated agent engagements currently start from $${siteFacts.starterRateUsd} per hour. A discovery call confirms the right scope before you commit.` },
-  { question: 'How fast can we launch?', answer: `Straightforward campaigns can often launch within ${siteFacts.straightforwardLaunchTimeframe} after scripts, lists, access, and escalation rules are approved.${siteFacts.complexLaunchTimeframe ? ` Campaigns that need a CRM integration or a compliance review take longer, usually ${siteFacts.complexLaunchTimeframe}.` : ''}` },
-];
-
-const structuredData = [{
-  '@context': 'https://schema.org', '@type': 'Service', name: 'VictorySync Contact Center Services',
-  provider: { '@id': `${siteOrigin}/#organization` },
-  areaServed: 'United States', serviceType: ['Appointment Setting', 'Cold Calling', 'Lead Qualification', 'Inbound Customer Support'],
-  url: `${siteOrigin}/`,
-  description: 'US-managed contact center services for appointment setting, cold calling, lead qualification, and inbound customer support.',
-}, {
-  '@context': 'https://schema.org', '@type': 'FAQPage',
-  mainEntity: faqs.map(({ question, answer }) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } })),
-}];
-
-const processSteps = [
-  { number: '01', title: 'Tell us your ICP and campaign goals', body: 'Share your offer, audience, qualification rules, voice, and tools. Our account team turns them into an agent-ready playbook.', mock: <div className="space-y-2"><DataRow label="Audience" value="US homeowners" /><DataRow label="Trigger" value="Estimate request" /><DataRow label="Outcome" value="Qualified booking" /></div> },
-  { number: '02', title: 'Our agents call and qualify', body: 'Trained agents lead every conversation. AI helps them surface prompts, capture details, and update your systems faster.', mock: <div><div className="flex items-center justify-between"><span className="text-xs font-semibold text-slate-800">Qualification checklist</span><LivePill>Agent on call</LivePill></div><div className="mt-4 space-y-2"><CheckLine text="Decision maker confirmed" /><CheckLine text="Need and timeline captured" /><CheckLine text="Service area verified" /></div></div> },
-  { number: '03', title: 'You show up to the right calls', body: 'Qualified appointments arrive on your calendar with contact details, agent notes, and the context your sales team needs.', mock: <div className="rounded-lg border border-blue-200 bg-blue-50 p-4"><div className="flex items-center gap-2 text-sm font-semibold text-blue-900"><CalendarCheck className="h-4 w-4 text-blue-600" />Appointment confirmed</div><p className="mt-2 text-xs text-blue-700">Monday · 9:40 AM · Notes attached</p></div> },
-];
-
-const plans = [
-  { name: 'Starter', note: 'One focused workflow', price: starterPriceLabel, description: 'A practical starting point for consistent coverage.', features: ['1 trained agent', 'Inbound or outbound workflow', 'Approved scripts and playbook', 'Daily activity reporting', 'Weekly QA review'], featured: false },
-  { name: 'Growth', note: 'Most Popular', price: 'Custom', description: 'For teams building a predictable calling operation.', features: ['2+ trained agents', 'Blended calling and follow-up', 'Qualification and booking', 'CRM and calendar workflow', 'Dedicated account lead'], featured: true },
-  { name: 'Scale', note: 'Flexible capacity', price: 'Custom', description: 'For multiple workflows or higher volume.', features: ['3+ agents', 'Inbound and outbound programs', 'Custom QA scorecards', 'AI-assisted reporting', 'Operational review cadence'], featured: false },
-];
-
-const capabilities = [
-  { icon: Headphones, title: 'Live Calling Agents', body: 'Real people handle outreach, follow-up, objections, and inbound conversations in your brand voice.', snippet: <div className="flex items-center gap-3"><Avatar initials="MS" /><div><p className="text-xs font-semibold text-slate-800">Maria S. · Agent</p><p className="text-[11px] text-sky-600">Connected · 02:14</p></div></div> },
-  { icon: UserCheck, title: 'AI-Assisted Qualification', body: 'Your criteria guide the agent while AI helps organize signals and reduce repetitive admin.', snippet: <div className="space-y-2"><CheckLine text="Budget range captured" /><CheckLine text="Timeline confirmed" /></div> },
-  { icon: CalendarCheck, title: 'Appointment Booking', body: 'Agents book qualified prospects directly into approved calendars and confirm the handoff.', snippet: <div className="grid grid-cols-4 gap-1.5">{['9:00', '9:40', '10:20', '11:00'].map((time, i) => <span key={time} className={`rounded-md py-2 text-center text-[10px] ${i === 1 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>{time}</span>)}</div> },
-  { icon: BarChart3, title: 'Campaign Reporting', body: 'See activity, outcomes, objections, qualification rates, and booked meetings in a clear review rhythm.', snippet: <div className="flex h-12 items-end gap-1.5">{[35, 55, 42, 75, 62, 88, 72].map((height, i) => <i key={i} className="flex-1 rounded-t-sm bg-sky-400" style={{ height: `${height}%` }} />)}</div> },
-];
-
+function SignalCanvas() {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas || matchMedia('(prefers-reduced-motion: reduce)').matches || matchMedia('(max-width: 640px)').matches) return;
+    const ctx = canvas.getContext('2d'); if (!ctx) return;
+    let tick = 0, id = 0;
+    const resize = () => { canvas.width = canvas.clientWidth * Math.min(devicePixelRatio, 2); canvas.height = canvas.clientHeight * Math.min(devicePixelRatio, 2); };
+    resize(); const observer = new ResizeObserver(resize); observer.observe(canvas);
+    const draw = () => { tick++; ctx.clearRect(0, 0, canvas.width, canvas.height); const w = canvas.width, h = canvas.height;
+      const nodes = Array.from({ length: 19 }, (_, i) => ({ x: w * (.06 + i % 5 * .22) + Math.sin(tick * .006 + i) * 17, y: h * (.12 + Math.floor(i / 5) * .24) + Math.cos(tick * .008 + i) * 13 }));
+      nodes.forEach((a, i) => nodes.slice(i + 1).forEach(b => { const d = Math.hypot(a.x - b.x, a.y - b.y); if (d < w * .27) { ctx.strokeStyle = `rgba(141,118,255,${(1 - d / (w * .27)) * .22})`; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); } }));
+      nodes.forEach((n, i) => { ctx.fillStyle = i % 4 === 0 ? '#b9abff' : 'rgba(164,150,255,.5)'; ctx.beginPath(); ctx.arc(n.x, n.y, i % 4 === 0 ? 3 : 1.8, 0, Math.PI * 2); ctx.fill(); }); id = requestAnimationFrame(draw); };
+    draw(); return () => { cancelAnimationFrame(id); observer.disconnect(); };
+  }, []);
+  return <canvas ref={ref} className="signal-canvas" aria-hidden="true" />;
+}
+function ClientMark({ client }: { client: typeof siteContent.clients[number] }) {
+  const [failed, setFailed] = useState(false);
+  return !failed ? <img src={client.logo} alt={client.name} loading="lazy" onError={() => setFailed(true)} /> : <span className="client-wordmark">{client.name}</span>;
+}
 export default function Home() {
-  const { open } = useCalendly();
-  useSeo({ title: 'VictorySync | Human-Led Call Center & Appointment Setting', description: 'US-managed call center services with trained Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound support.', canonical: 'https://www.victorysync.com/', structuredData });
-
-  return (
-    <MotionPage className="bg-white text-slate-900">
-      <section className="relative overflow-hidden bg-gradient-to-br from-white via-violet-50/50 to-sky-50 pb-20 pt-20 sm:pb-28 sm:pt-28">
-        <div className="absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(circle_at_78%_18%,rgba(56,189,248,.16),transparent_34%),radial-gradient(circle_at_18%_18%,rgba(123,92,246,.14),transparent_34%)]" />
-        <div className="absolute left-1/2 top-12 h-px w-[80%] -translate-x-1/2 bg-gradient-to-r from-transparent via-violet-300/60 to-transparent" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-[1fr_.9fr]">
-          <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white/75 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur"><span className="h-2 w-2 rounded-full bg-violet-500 shadow-[0_0_0_4px_rgba(123,92,246,.12)]" />US-managed · Cairo-based calling team</div>
-            <h1 className="text-4xl font-bold leading-[1.04] tracking-[-.045em] text-slate-950 sm:text-6xl lg:text-[4.25rem]">US-managed call center for appointment setting and inbound support</h1>
-            <p className="gradient-text mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">Your next customer is a conversation away.</p>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">Trained agents call, qualify, book, and support your customers. AI helps our team move faster while people remain in control.</p>
-            <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center"><Link href="/book-call" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-600/20 hover:bg-violet-700 sm:w-auto">Get started <ArrowRight className="h-4 w-4" /></Link><a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 py-2 text-sm font-medium text-slate-600 hover:text-violet-700"><MessageCircle className="h-4 w-4 text-violet-500" />or message us on WhatsApp</a></div>
-            <p className="mt-4 text-xs text-slate-500">Start with one workflow. No long-term contract required to begin.</p>
-          </div>
-          <div className="animate-float-slow"><LeadFlowMockup /></div>
-        </div>
-      </section>
-
-      <section id="how-it-works" className="relative scroll-mt-16 bg-slate-100 py-24">
-        <div className="mx-auto max-w-6xl px-5 sm:px-8"><CenteredHeading eyebrow="How it works" title="Three steps to a working campaign" body="From your first brief to qualified appointments, the process stays clear and accountable." /><div className="mt-14 grid gap-6 lg:grid-cols-3">{processSteps.map(step => <article key={step.number}><p className="text-sm font-bold text-blue-600">{step.number}</p><h3 className="mt-4 text-xl font-semibold text-slate-900">{step.title}</h3><p className="mt-3 min-h-[72px] text-sm leading-6 text-slate-600">{step.body}</p><div className="mt-6 min-h-[178px] rounded-lg border border-slate-200 bg-white p-5 shadow-sm">{step.mock}</div></article>)}</div></div>
-      </section>
-
-      <section className="relative overflow-hidden bg-white py-24">
-        <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-2">
-          <ReviewTeamMockup />
-          <div><p className="section-kicker">Human oversight</p><h2 className="section-title">People lead the work. AI helps them do it better.</h2><p className="section-copy">Your customers speak with trained agents—not autonomous bots. Technology supports quality, speed, and visibility behind the scenes.</p><div className="mt-9 grid gap-6 sm:grid-cols-2">{[[UserCheck, 'Agent-led at every step', 'A real person owns the call, judgment, and outcome.'], [ShieldCheck, 'Your leads, handled with care', 'Approved scripts and escalation rules protect the experience.'], [Headphones, 'Real support when needed', 'Reach an account lead who understands your workflow.'], [Users, 'One accountable team', 'Coaching and QA stay connected to your campaign goals.']].map(([Icon, title, body]) => { const PointIcon = Icon as typeof UserCheck; return <div key={title as string}><PointIcon className="h-5 w-5 text-blue-600" /><h3 className="mt-3 text-sm font-semibold text-slate-900">{title as string}</h3><p className="mt-1.5 text-xs leading-5 text-slate-600">{body as string}</p></div>; })}</div></div>
-        </div>
-      </section>
-
-      <section id="pricing" className="relative scroll-mt-16 bg-white py-24">
-        <div className="mx-auto max-w-6xl px-5 sm:px-8"><CenteredHeading eyebrow="Services & pricing" title="Choose the team shape that fits" body="Start focused, prove the workflow, and expand coverage as volume grows." /><div className="mt-14 grid gap-5 lg:grid-cols-3">{plans.map(plan => <article key={plan.name} className={`relative flex flex-col rounded-lg border p-6 ${plan.featured ? 'border-blue-500 bg-blue-50/60 shadow-lg shadow-blue-100' : 'border-slate-200 bg-white shadow-sm'}`}>{plan.featured && <span className="absolute -top-3 left-5 rounded-full bg-blue-600 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white">Most popular</span>}<p className="text-sm font-semibold text-slate-900">{plan.name}</p><p className="mt-1 text-xs text-slate-500">{plan.note}</p><p className="mt-6 text-3xl font-bold tracking-tight text-slate-950">{plan.price}</p><p className="mt-3 min-h-[40px] text-sm leading-6 text-slate-600">{plan.description}</p><div className="my-6 h-px bg-slate-200" /><ul className="flex-1 space-y-3">{plan.features.map(feature => <li key={feature} className="flex gap-2.5 text-sm text-slate-700"><Check className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />{feature}</li>)}</ul><button onClick={open} className={`mt-7 rounded-lg px-4 py-3 text-sm font-semibold ${plan.featured ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-slate-300 bg-white text-slate-800 hover:bg-slate-50'}`}>Discuss this plan</button></article>)}</div><p className="mt-5 text-center text-xs text-slate-500">Final pricing depends on coverage, channels, tools, and campaign complexity.</p></div>
-      </section>
-
-      <section className="relative bg-slate-100 py-24">
-        <div className="mx-auto max-w-5xl px-5 sm:px-8"><CenteredHeading eyebrow="Compare" title="VictorySync vs. hiring in-house" body="Add a managed operating team without building every process from zero." /><div className="mt-12 grid overflow-hidden rounded-lg border border-slate-200 bg-white md:grid-cols-2"><ComparisonColumn title="With VictorySync" positive items={['Recruiting and agent management handled', 'Scripts, QA, and reporting built into the service', 'Flexible coverage as call volume changes', 'AI-assisted notes and operational visibility', 'One accountable account team']} /><ComparisonColumn title="Hiring in-house" items={['Recruiting, onboarding, and turnover stay with you', 'Managers must build QA and reporting', 'Fixed headcount before demand is proven', 'Tools and integrations require internal ownership', 'Coverage gaps become your team’s problem']} /></div></div>
-      </section>
-
-      <section className="relative bg-white py-14"><div className="mx-auto flex max-w-4xl flex-col items-center justify-between gap-5 px-5 text-center sm:px-8 md:flex-row md:text-left"><div><h2 className="text-2xl font-bold text-slate-900">Prefer WhatsApp? Talk to our team there.</h2><p className="mt-2 text-sm text-slate-600">Share your campaign idea and we’ll point you in the right direction.</p></div><a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"><MessageCircle className="h-4 w-4" />Message us on WhatsApp</a></div></section>
-
-      <section id="features" className="relative bg-white py-24">
-        <div className="mx-auto max-w-6xl px-5 sm:px-8"><CenteredHeading eyebrow="Capabilities" title="The conversations and the operations, handled" body="Every capability combines trained people, a clear process, and tools that keep your team informed." /><div className="mt-14 grid gap-5 md:grid-cols-2">{capabilities.map(({ icon: Icon, title, body, snippet }) => <article key={title} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600"><Icon className="h-5 w-5" /></div><h3 className="mt-5 text-lg font-semibold text-slate-900">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{body}</p><div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4">{snippet}</div></article>)}</div><Link href="/services" className="mt-8 inline-flex items-center gap-2 font-semibold text-blue-700 hover:underline">Explore all services <ArrowRight className="h-4 w-4" /></Link></div>
-      </section>
-
-      <section className="relative bg-[#f4f7fb] py-16 sm:py-20">
-        <div className="mx-auto grid max-w-5xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-[1fr_.75fr]"><div><p className="section-kicker">Custom campaigns</p><h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">Need a workflow or industry we didn’t list?</h2><p className="mt-4 max-w-xl text-sm leading-6 text-slate-600">We can scope custom intake, calling, qualification, support, and handoff processes around your customer journey and existing tools.</p><div className="mt-6 flex flex-wrap gap-2">{['Custom scripts', 'Industry training', 'Flexible coverage', 'CRM workflows'].map(item => <span key={item} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600">{item}</span>)}</div></div><div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-700"><Settings2 className="h-5 w-5" /></div><div><p className="text-sm font-semibold text-slate-900">Custom workflow review</p><p className="text-xs text-slate-500">Built around your process</p></div></div><button onClick={open} className="mt-5 w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700">Talk through your use case</button></div></div>
-      </section>
-
-      <section className="relative overflow-hidden bg-white py-24">
-        <div className="mx-auto max-w-6xl px-5 sm:px-8"><CenteredHeading eyebrow="Built for trust" title="Your campaign stays visible and accountable" body="Clear access rules, real ownership, and reporting keep your operation from becoming a black box." /><div className="mt-12 grid gap-8 md:grid-cols-3">{[[Lock, 'Data privacy', 'Access is limited to the systems and records required for the approved workflow.'], [Users, 'Dedicated account team', 'A consistent team learns your process, receives coaching, and owns follow-through.'], [BarChart3, 'Real-time reporting', 'Track activity, dispositions, qualification, and appointments without waiting for anecdotes.']].map(([Icon, title, body]) => { const TrustIcon = Icon as typeof Lock; return <div key={title as string} className="text-center"><div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-blue-600"><TrustIcon className="h-5 w-5" /></div><h3 className="mt-4 text-sm font-semibold text-slate-900">{title as string}</h3><p className="mx-auto mt-2 max-w-xs text-xs leading-5 text-slate-600">{body as string}</p>{title === 'Real-time reporting' && <Link href="/platform" className="mt-3 inline-block text-sm font-semibold text-blue-700 hover:underline">Explore the platform</Link>}</div>; })}</div></div>
-      </section>
-
-      <section className="border-y border-slate-200 bg-slate-50 py-14" aria-label="Close CRM partnership">
-        <div className="mx-auto flex max-w-5xl flex-col items-start gap-6 px-5 sm:px-8 md:flex-row md:items-center md:gap-10">
-          <img src={closeBadge} alt="Close partner since 2025" width="600" height="288" loading="lazy" className="h-auto w-44 shrink-0" />
-          <div><p className="section-kicker">Our partners</p><h2 className="mt-2 text-2xl font-bold text-slate-900">VictorySync is a Close CRM partner</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Our partnership with Close CRM supports our focus on clear sales workflows and accountable customer follow-up.</p></div>
-        </div>
-        <div className="mx-auto mt-6 max-w-5xl px-5 sm:px-8"><ClutchWidget key="home-clutch" /></div>
-      </section>
-
-      <section id="faq" className="relative scroll-mt-16 bg-white py-24">
-        <div className="mx-auto grid max-w-5xl gap-12 px-5 sm:px-8 lg:grid-cols-[.65fr_1.35fr]"><div><p className="section-kicker">FAQ</p><h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">Frequently asked questions</h2><p className="mt-4 text-sm leading-6 text-slate-600">Need a more specific answer? Our team can map it to your workflow.</p></div><div className="divide-y divide-slate-200 border-y border-slate-200">{faqs.map((faq, index) => <details key={faq.question} className="group" open={index === 0}><summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-sm font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">{faq.question}<ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" /></summary><p className="pb-5 pr-8 text-sm leading-6 text-slate-600">{faq.answer}</p></details>)}</div></div>
-      </section>
-
-      <section className="relative overflow-hidden border-y border-violet-100 bg-gradient-to-br from-violet-50 via-white to-sky-50 py-24"><div className="absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-violet-200/35 blur-3xl" aria-hidden="true" /><div className="relative mx-auto max-w-3xl px-5 text-center text-slate-950 sm:px-8"><p className="text-xs font-semibold uppercase tracking-[.18em] text-violet-700">Build your calling team</p><h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">More conversations. Better handoffs. A team you can see.</h2><p className="mx-auto mt-5 max-w-xl text-sm leading-6 text-slate-600">Tell us what needs handling and we’ll map the agents, workflow, tools, and launch plan.</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><Link href="/book-call" className="rounded-xl bg-violet-600 px-6 py-3.5 text-sm font-semibold text-white hover:bg-violet-700">Get started</Link><Link href="/pricing" className="rounded-xl border border-violet-200 bg-white px-6 py-3.5 text-sm font-semibold text-violet-700 shadow-sm hover:border-violet-300 hover:bg-violet-50">View pricing</Link></div></div></section>
-    </MotionPage>
-  );
+  const clientsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = clientsRef.current;
+    if (!element || !matchMedia('(max-width: 640px)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let paused = false;
+    const pause = () => { paused = true; };
+    const resume = () => { paused = false; };
+    element.addEventListener('touchstart', pause, { passive: true });
+    element.addEventListener('touchend', resume, { passive: true });
+    const timer = window.setInterval(() => { if (!paused) element.scrollTo({ left: element.scrollLeft + element.clientWidth * .85 >= element.scrollWidth - element.clientWidth ? 0 : element.scrollLeft + element.clientWidth * .85, behavior: 'smooth' }); }, 5500);
+    return () => { clearInterval(timer); element.removeEventListener('touchstart', pause); element.removeEventListener('touchend', resume); };
+  }, []);
+  useSeo({ title: 'VictorySync | Digital Marketing, Calling & Growth Operations', description: 'U.S.-managed growth partner: digital marketing and trained human agents who call, qualify, book, and help close leads.', canonical: 'https://www.victorysync.com/' });
+  const whatsapp = `${WHATSAPP_HREF}?text=Hi%20VictorySync%2C%20I%27d%20like%20to%20discuss%20a%20campaign.`;
+  return <div className="vs-home">
+    <section className="vs-hero"><SignalCanvas /><div className="vs-hero-glow" aria-hidden="true" /><div className="vs-wrap vs-hero-content"><div className="vs-kicker"><span className="vs-kicker-dot" />{siteContent.hero.eyebrow}</div><h1>Make every lead <em>count.</em><span className="vs-hero-subline">From first click to closed deal.</span></h1><p>{siteContent.hero.body}</p><div className="vs-actions"><Link className="vs-button vs-button-primary" href="/book-call">Book a Consultation <ArrowUpRight size={18} /></Link><a className="vs-button vs-button-secondary" href={whatsapp} target="_blank" rel="noopener noreferrer"><MessageCircle size={18} /> Message us on WhatsApp</a></div><div className="vs-proof"><span>U.S.-managed from New Jersey</span><a href={CLUTCH_PROFILE_URL} target="_blank" rel="noopener noreferrer" className="vs-clutch">clutch<span>.</span></a><img src={closeBadge} alt="Close CRM partner" width="110" height="53" /></div></div><div className="vs-hero-visual" aria-label="Illustrative lead journey"><div><small>01 / CAMPAIGN</small><strong>Attract</strong></div><i /><div><small>02 / CONVERSATION</small><strong>Qualify</strong></div><i /><div><small>03 / OUTCOME</small><strong>Book & close</strong></div></div></section>
+    <div className="vs-marquee" aria-label="Clients"><div className="vs-marquee-track">{[...siteContent.clients, ...siteContent.clients, ...siteContent.clients].map((client, i) => <div key={`${client.name}-${i}`} className="vs-marquee-item"><ClientMark client={client} /></div>)}</div></div>
+    <section className="vs-section" id="services"><div className="vs-wrap"><div className="vs-section-head"><span className="vs-eyebrow">ONE CONNECTED ENGINE</span><h2>Demand is only the beginning.</h2><p>We connect the campaign to the conversation, so leads have a clear path from interest to action.</p></div><div className="vs-services-grid">{siteContent.services.map(service => <Link href={service.href} key={service.title} className="vs-glass-card vs-service-card"><span className="vs-card-number">{service.icon} / 07</span><div><h3>{service.title}</h3><p>{service.detail}</p></div><ArrowUpRight size={20} /></Link>)}</div></div></section>
+    <section className="vs-section vs-journey" id="journey"><div className="vs-wrap vs-journey-layout"><div className="vs-journey-intro"><span className="vs-eyebrow">THE LEAD JOURNEY</span><h2>Every handoff matters.</h2><p>Marketing, calling, qualification, and booking work as one accountable process.</p></div><div className="vs-journey-stages">{siteContent.journey.map((stage, i) => <div className="vs-journey-stage" key={stage.title}><span>{String(i + 1).padStart(2, '0')}</span><div><h3>{stage.title}</h3><p>{stage.detail}</p></div></div>)}</div></div></section>
+    <section className="vs-section vs-clients" id="clients"><div className="vs-wrap"><div className="vs-section-head center"><span className="vs-eyebrow">TRUSTED BY</span><h2>Built around real partnerships.</h2><p>Different businesses. One standard: thoughtful execution from the first interaction onward.</p></div><div className="vs-client-orbit" aria-hidden="true"><span>VS</span></div><div className="vs-client-cards" ref={clientsRef} role="region" aria-label="Client showcase" tabIndex={0}>{siteContent.clients.map(client => <article key={client.name} className="vs-glass-card vs-client-card"><div className="vs-client-logo"><ClientMark client={client} /></div><h3>{client.name}</h3><p>{client.industry}</p><small>{client.services}</small></article>)}</div></div></section>
+    <section className="vs-section" id="how-it-works"><div className="vs-wrap"><div className="vs-section-head"><span className="vs-eyebrow">HOW IT WORKS</span><h2>A clear path from plan to performance.</h2></div><div className="vs-three-grid">{siteContent.process.map((step, i) => <div className="vs-glass-card vs-process-card" key={step.title}><span>0{i + 1}</span><h3>{step.title}</h3><p>{step.detail}</p></div>)}</div></div></section>
+    <section className="vs-section vs-people"><div className="vs-wrap vs-split"><div><span className="vs-eyebrow">PEOPLE-LED. AI-ASSISTED.</span><h2>Technology supports the team. People earn the trust.</h2><p>Our Cairo-based agents are trained on your offer, qualification rules, CRM, and customer experience. AI helps with routing, summaries, reminders, and reporting; a person owns the conversation.</p><Link className="vs-text-link" href="/platform">Explore the platform <ArrowUpRight size={17} /></Link></div><div className="vs-workspace vs-glass-card"><div className="vs-workspace-top"><span className="vs-live-dot" /> Agent workspace <small>Illustrative, not live client data.</small></div>{[['New inquiry','Assigned to agent'],['Qualification','In progress'],['Next action','Schedule follow-up']].map(([a,b]) => <div className="vs-workspace-row" key={a}><span>{a}</span><strong>{b}</strong></div>)}<div className="vs-workspace-wave" aria-hidden="true" /></div></div></section>
+    <section className="vs-section" id="pricing"><div className="vs-wrap"><div className="vs-section-head"><span className="vs-eyebrow">PRICING</span><h2>Start with the right level of support.</h2><p>Starter service begins from $10/hr per agent. Campaign scope, marketing work, and ad spend are agreed separately.</p></div><div className="vs-three-grid">{['Starter','Growth','Scale'].map((tier, i) => <div className="vs-glass-card vs-price-card" key={tier}><span className="vs-eyebrow">0{i + 1} / {tier.toUpperCase()}</span><h3>{tier}</h3><p>{['A focused pilot or first dedicated workflow.','Coordinated outreach and customer operations.','A broader marketing and sales operation.'][i]}</p><strong>{i === 0 ? 'From $10/hr' : 'Custom scope'}</strong><Link href="/pricing">View pricing <ArrowUpRight size={17} /></Link></div>)}</div></div></section>
+    <section className="vs-section vs-comparison"><div className="vs-wrap"><div className="vs-section-head"><span className="vs-eyebrow">THE OPERATING MODEL</span><h2>Built for the whole growth journey.</h2></div><div className="vs-compare-grid"><div className="vs-glass-card"><h3>Hiring in-house</h3><p>Recruiting, training, tooling, coverage, management, and campaign handoffs sit with your team.</p></div><div className="vs-glass-card accent"><h3>With VictorySync</h3><p>A U.S.-managed account team aligns your marketing, calling, qualification, and reporting in one workflow.</p></div></div></div></section>
+    <section className="vs-section"><div className="vs-wrap"><div className="vs-section-head"><span className="vs-eyebrow">TRUST IS OPERATIONAL</span><h2>Controls you can ask us about.</h2></div><div className="vs-trust-grid">{siteContent.trust.map(item => <div key={item} className="vs-trust-item"><Check size={18} /><span>{item}</span></div>)}</div></div></section>
+    <section className="vs-section vs-results"><div className="vs-wrap vs-split"><div><span className="vs-eyebrow">RESULTS & VOICES</span><h2>Evidence belongs in the open.</h2><p>We publish customer results and testimonials only when verified and approved.</p></div><div className="vs-glass-card vs-placeholder"><span>COMING WITH CUSTOMER APPROVAL</span><p>{siteContent.placeholders.results}</p><p>{siteContent.placeholders.testimonial}</p></div></div></section>
+    <section className="vs-section vs-clutch-section"><div className="vs-wrap vs-split"><div><span className="vs-eyebrow">INDEPENDENT PROFILE</span><h2>See us on Clutch.</h2><p>Explore our public profile and independently hosted reviews.</p></div><a className="vs-button vs-button-secondary" href={CLUTCH_PROFILE_URL} target="_blank" rel="noopener noreferrer">View Clutch profile <ArrowUpRight size={18} /></a></div></section>
+    <section className="vs-section" id="faq"><div className="vs-wrap vs-faq-layout"><div className="vs-section-head"><span className="vs-eyebrow">FAQ</span><h2>Good questions deserve clear answers.</h2></div><div>{siteContent.faqs.map(item => <details className="vs-faq" key={item.q}><summary>{item.q}<span>+</span></summary><p>{item.a}</p></details>)}</div></div></section>
+    <section className="vs-section vs-final"><div className="vs-wrap"><span className="vs-eyebrow">LET'S BUILD YOUR NEXT STAGE</span><h2>Make the next lead the start of something bigger.</h2><p>Tell us where your funnel needs help. We’ll map a practical first step together.</p><div className="vs-actions"><Link href="/book-call" className="vs-button vs-button-primary">Book a Consultation <ArrowUpRight size={18} /></Link><a href={whatsapp} className="vs-button vs-button-secondary" target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a></div></div></section>
+  </div>;
 }
-
-function LeadFlowMockup() {
-  const events = [{ icon: Phone, title: 'Agent connected', text: 'Reached decision maker', color: 'bg-sky-50 text-sky-600' }, { icon: UserCheck, title: 'Lead qualified', text: 'Fit criteria confirmed', color: 'bg-blue-50 text-blue-600' }, { icon: CalendarCheck, title: 'Appointment booked', text: 'Monday · 9:40 AM', color: 'bg-amber-50 text-amber-700' }];
-  return <div className="rounded-lg border border-slate-200 bg-slate-100 p-4 shadow-xl shadow-slate-200/70"><div className="rounded-lg border border-slate-200 bg-white p-5"><div className="flex items-center justify-between border-b border-slate-200 pb-4"><div><p className="text-[10px] font-semibold uppercase tracking-[.16em] text-slate-400">Lead qualification</p><p className="mt-1 text-sm font-semibold text-slate-900">Campaign activity</p></div><LivePill>Checking status</LivePill></div><div className="space-y-3 py-5">{events.map(({ icon: Icon, title, text, color }) => <div key={title} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm"><div className={`flex h-9 w-9 items-center justify-center rounded-lg ${color}`}><Icon className="h-4 w-4" /></div><div><p className="text-sm font-semibold text-slate-900">{title}</p><p className="text-xs text-slate-500">{text}</p></div>{title === 'Appointment booked' && <span className="ml-auto rounded-full bg-amber-100 px-2 py-1 text-[10px] font-bold text-amber-800">BOOKED</span>}</div>)}</div><div className="grid grid-cols-3 gap-2 border-t border-slate-200 pt-4">{[['18', 'Calls'], ['7', 'Qualified'], ['4', 'Booked']].map(([value, label]) => <div key={label} className="rounded-lg bg-slate-50 p-3 text-center"><p className="font-bold text-slate-900">{value}</p><p className="text-[10px] text-slate-500">{label}</p></div>)}</div></div><p className="mt-3 text-center text-[10px] text-slate-400">Illustrative agent workspace—not live client data.</p></div>;
-}
-
-function ReviewTeamMockup() {
-  return <div className="rounded-lg border border-slate-200 bg-slate-100 p-5"><div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><div><p className="text-xs font-semibold text-slate-900">Campaign review queue</p><p className="mt-1 text-[11px] text-slate-500">Human QA · Today</p></div><span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">3 to review</span></div><div className="mt-5 space-y-3">{[['MS', 'Maria S.', 'Qualification complete'], ['AK', 'Ahmed K.', 'Escalation reviewed'], ['LN', 'Lina N.', 'Booking confirmed']].map(([initials, name, status]) => <div key={name} className="flex items-center gap-3 rounded-lg border border-slate-200 p-3"><Avatar initials={initials} /><div><p className="text-xs font-semibold text-slate-800">{name}</p><p className="text-[11px] text-slate-500">{status}</p></div><Check className="ml-auto h-4 w-4 text-blue-600" /></div>)}</div><div className="mt-5 flex items-center gap-2 rounded-lg bg-blue-50 p-3 text-xs text-blue-800"><Sparkles className="h-4 w-4 text-blue-600" />AI summary ready for manager review</div></div></div>;
-}
-
-function ComparisonColumn({ title, items, positive = false }: { title: string; items: string[]; positive?: boolean }) {
-  return <div className={`p-6 sm:p-8 ${positive ? 'bg-blue-50/70' : 'bg-white'}`}><div className="flex items-center gap-2"><div className={`flex h-7 w-7 items-center justify-center rounded-full ${positive ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>{positive ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}</div><h3 className="text-lg font-semibold text-slate-900">{title}</h3></div><ul className="mt-6 space-y-4">{items.map(item => <li key={item} className="flex gap-3 text-sm leading-6 text-slate-600">{positive ? <Check className="mt-1 h-4 w-4 shrink-0 text-blue-600" /> : <X className="mt-1 h-4 w-4 shrink-0 text-slate-400" />}{item}</li>)}</ul></div>;
-}
-
-function CenteredHeading({ eyebrow, title, body }: { eyebrow: string; title: string; body: string }) {
-  return <div className="mx-auto max-w-2xl text-center"><p className="section-kicker">{eyebrow}</p><h2 className="section-title">{title}</h2><p className="section-copy mx-auto">{body}</p></div>;
-}
-
-function DataRow({ label, value }: { label: string; value: string }) { return <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs"><span className="text-slate-500">{label}</span><span className="font-medium text-slate-800">{value}</span></div>; }
-function CheckLine({ text }: { text: string }) { return <div className="flex items-center gap-2 text-xs text-slate-700"><span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-blue-700"><Check className="h-2.5 w-2.5" /></span>{text}</div>; }
-function LivePill({ children }: { children: React.ReactNode }) { return <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sky-500" />{children}</span>; }
-function Avatar({ initials }: { initials: string }) { return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[11px] font-bold text-blue-700">{initials}</span>; }

@@ -46,6 +46,7 @@
     { "source": "/cold-calling", "destination": "/cold-calling/index.html" },
     { "source": "/inbound-support", "destination": "/inbound-support/index.html" },
     { "source": "/ai-automation", "destination": "/ai-automation/index.html" },
+    { "source": "/digital-marketing", "destination": "/digital-marketing/index.html" },
     { "source": "/pricing", "destination": "/pricing/index.html" },
     { "source": "/platform", "destination": "/platform/index.html" },
     { "source": "/about-us", "destination": "/about-us/index.html" },
@@ -57,6 +58,8 @@
     { "source": "/terms", "destination": "/terms/index.html" },
     { "source": "/appointment-setting-for-home-services", "destination": "/appointment-setting-for-home-services/index.html" },
     { "source": "/cold-calling-for-plumbers", "destination": "/cold-calling-for-plumbers/index.html" },
+    { "source": "/answering-service-for-plumbers", "destination": "/answering-service-for-plumbers/index.html" },
+    { "source": "/appointment-setting-for-hvac", "destination": "/appointment-setting-for-hvac/index.html" },
     { "source": "/appointment-setting-for-real-estate", "destination": "/appointment-setting-for-real-estate/index.html" },
     { "source": "/inbound-support-for-law-firms", "destination": "/inbound-support-for-law-firms/index.html" },
     { "source": "/(login|register|signup|checkout|dashboard)", "destination": "/index.html" }

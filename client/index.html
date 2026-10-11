@@ -44,25 +44,9 @@
     <link rel="preconnect" href="https://assets.calendly.com" />
     <link rel="preconnect" href="https://js.stripe.com" />
 
-    <!-- Apollo website tracker -->
-    <script>
-      function initApollo() {
-        var n = Math.random().toString(36).substring(7);
-        var o = document.createElement("script");
-        o.src = "https://assets.apollo.io/micro/website-tracker/tracker.iife.js?nocache=" + n;
-        o.async = true;
-        o.defer = true;
-        o.onload = function () {
-          window.trackingFunctions.onLoad({ appId: "6a499750f77c9a0014bc8080" });
-        };
-        document.head.appendChild(o);
-      }
-      if (!new URLSearchParams(window.location.search).has("cmsEdit")) initApollo();
-    </script>
 
   </head>
   <body>
-    <noscript><img height="1" width="1" class="hidden" alt="" src="https://www.facebook.com/tr?id=2060370554550917&ev=PageView&noscript=1" /></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -57,7 +57,9 @@ function loadMetaPixel() {
 }
 
 export function loadMarketingAnalytics() {
+  if ((navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl || localStorage.getItem('vs-cookie-consent-v1') !== 'accepted') return;
   runWhenIdle(() => {
+    if ((navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl || localStorage.getItem('vs-cookie-consent-v1') !== 'accepted') return;
     window.dataLayer = window.dataLayer || [];
     window.gtag = (...args: unknown[]) => window.dataLayer?.push(args);
     window.gtag("js", new Date());

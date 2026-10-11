@@ -276,6 +276,7 @@ export default function Contact() {
               >
                 {contactMutation.isPending ? "Sending..." : "Send Message"}
               </Button>
+              <p className="text-xs text-slate-400">By submitting, you agree to our <a className="underline" href="/terms">Terms of Service</a> and <a className="underline" href="/privacy-policy">Privacy Policy</a>.</p>
             </form>
           </motion.div>
         </div>

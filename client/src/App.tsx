@@ -17,6 +17,19 @@ function ScrollToTop() {
 
 function MarketingEffects({ enabled, location }: { enabled: boolean; location: string }) {
   useEffect(() => {
+    if (!enabled || window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.matchMedia('(max-width: 640px)').matches) return;
+    let active = true;
+    let frame = 0;
+    let instance: { raf: (time: number) => void; destroy: () => void } | undefined;
+    import('@studio-freight/lenis').then(({ default: Lenis }) => {
+      if (!active) return;
+      instance = new Lenis({ duration: 1.05 });
+      const loop = (time: number) => { instance?.raf(time); frame = requestAnimationFrame(loop); };
+      frame = requestAnimationFrame(loop);
+    });
+    return () => { active = false; cancelAnimationFrame(frame); instance?.destroy(); };
+  }, [enabled]);
+  useEffect(() => {
     if (!enabled || typeof window === "undefined") return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -60,6 +73,7 @@ import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 import CartModal from "@/components/cart-modal";
 import CmsRuntime from "@/components/cms-runtime";
+import CookieConsent from "@/components/cookie-consent";
 
 // Pages
 const Home = lazy(() => import("@/pages/home"));
@@ -154,6 +168,7 @@ function Router() {
       </main>
 
       <Footer />
+      {isMarketingRoute && <CookieConsent />}
 
       <CartModal 
         isOpen={cartModalOpen} 

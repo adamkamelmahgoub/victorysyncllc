@@ -11,7 +11,7 @@ interface SeoProps {
 
 export { siteOrigin } from '@/config/siteFacts';
 export const pageMeta: Record<string, [string, string]> = {
-  '/': ['VictorySync | US-Managed Call Center & Appointment Setting', 'US-managed call center with trained agents for appointment setting, cold calling, lead qualification, and inbound support. Serving US SMBs from Millstone, NJ.'],
+  '/': ['VictorySync | Digital Marketing, Calling & Growth Operations', 'U.S.-managed growth partner: digital marketing and trained human agents who call, qualify, book, and help close leads.'],
   '/services': ['Call Center, BPO & Digital Marketing Services | VictorySync', 'Inbound support, appointment setting, cold calling, lead qualification, AI-assisted operations, and digital marketing for US businesses.'],
   '/appointment-setting': ['Appointment Setting Services for US Businesses | VictorySync', 'Trained agents book qualified appointments straight into your calendar. US-managed outbound appointment setting for home services, real estate, legal, and SaaS.'],
   '/cold-calling': ['Cold Calling Services | Outbound Sales Calls | VictorySync', 'Professional outbound cold calling with area-code matched caller ID, call recording, and daily reporting. US-managed team, transparent connect and booking rates.'],
@@ -76,11 +76,11 @@ export function useSeo({ title, description, ogImage, structuredData }: SeoProps
     const schema: Record<string, unknown>[] = structuredData ? (Array.isArray(structuredData) ? [...structuredData] : [structuredData]) : [];
     if (path === '/' || path === '/contact') {
       schema.push({
-        '@context': 'https://schema.org', '@type': 'ProfessionalService', '@id': `${siteOrigin}/#organization`,
+        '@context': 'https://schema.org', '@type': ['Organization', 'LocalBusiness'], '@id': `${siteOrigin}/#organization`,
         name: siteFacts.brandName, legalName: siteFacts.legalName, alternateName: siteFacts.alternateNames,
         url: `${siteOrigin}/`, logo: `${siteOrigin}/LOGO_VS.png`,
-        description: 'US-managed contact center with trained Cairo-based agents for appointment setting, cold calling, lead qualification, and inbound support.',
-        telephone: siteFacts.phoneUS, email: siteFacts.email, priceRange: starterPriceLabel,
+        description: 'U.S.-managed growth partner connecting digital marketing with human-led calling, booking, support, and sales.',
+        telephone: [siteFacts.phoneUS, '+1-732-328-6846'], email: siteFacts.email, priceRange: starterPriceLabel,
         address: { '@type': 'PostalAddress', ...postalAddress },
         areaServed: { '@type': 'Country', name: 'United States' },
         openingHours: siteFacts.hours,
