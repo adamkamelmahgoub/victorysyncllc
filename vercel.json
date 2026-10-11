@@ -42,6 +42,9 @@
   "rewrites": [
     { "source": "/cms", "destination": "/cms.html" },
     { "source": "/services", "destination": "/services/index.html" },
+    { "source": "/how-it-works", "destination": "/how-it-works/index.html" },
+    { "source": "/faq", "destination": "/faq/index.html" },
+    { "source": "/clients", "destination": "/clients/index.html" },
     { "source": "/appointment-setting", "destination": "/appointment-setting/index.html" },
     { "source": "/cold-calling", "destination": "/cold-calling/index.html" },
     { "source": "/inbound-support", "destination": "/inbound-support/index.html" },

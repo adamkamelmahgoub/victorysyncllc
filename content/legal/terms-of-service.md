@@ -2,7 +2,7 @@
 
 **Victory Sync LLC**
 **Effective Date:** October 11, 2026
-**Last Updated:** [EFFECTIVE DATE]
+**Last Updated:** October 11, 2026
 
 PLEASE READ THESE TERMS CAREFULLY. SECTION 24 CONTAINS A BINDING ARBITRATION AGREEMENT AND A CLASS ACTION AND JURY TRIAL WAIVER THAT AFFECT HOW DISPUTES ARE RESOLVED. SECTION 19 LIMITS OUR LIABILITY TO YOU.
 
@@ -175,7 +175,7 @@ PLEASE READ THESE TERMS CAREFULLY. SECTION 24 CONTAINS A BINDING ARBITRATION AGR
 
 12.1. Our agents, closers, managers, and other personnel are a core asset that we recruit, train, and manage at significant expense. During the term of any engagement and for twelve (12) months after it ends, you will not, directly or indirectly (including through an affiliate, staffing agency, marketplace, or other third party), solicit, hire, engage, or contract with any person who performed Services for you or who was introduced to you through VictorySync, without our prior written consent.
 
-12.2. If you breach Section 12.1, you agree to pay us, as liquidated damages and not as a penalty, a placement fee equal to the greater of (a) [PLACEMENT FEE AMOUNT, e.g., US$5,000] or (b) the total fees you paid us for that individual's services during the six (6) months before the breach, for each individual. The parties agree that our actual damages would be difficult to calculate and that this amount is a reasonable estimate. This does not limit our right to seek an injunction.
+12.2. If you breach Section 12.1, you agree to pay us, as liquidated damages and not as a penalty, a placement fee equal to the greater of (a) US$5,000 or (b) the total fees you paid us for that individual's services during the six (6) months before the breach, for each individual. The parties agree that our actual damages would be difficult to calculate and that this amount is a reasonable estimate. This does not limit our right to seek an injunction.
 
 12.3. General job postings not directed at our personnel do not violate this Section, but hiring a person who responds to such a posting still requires payment of the placement fee during the restricted period.
 

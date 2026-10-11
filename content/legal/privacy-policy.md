@@ -2,7 +2,7 @@
 
 **Victory Sync LLC**
 **Effective Date:** October 11, 2026
-**Last Updated:** [EFFECTIVE DATE]
+**Last Updated:** October 11, 2026
 
 This Privacy Policy explains how Victory Sync LLC, doing business as VictorySync ("VictorySync," "we," "us," or "our"), collects, uses, discloses, and protects personal information, and the choices and rights available to you.
 
@@ -118,7 +118,6 @@ We do not sell, rent, or share mobile phone numbers or text messaging opt-in dat
 
 5.3. We do not use AI to make decisions that produce legal or similarly significant effects about individuals, such as decisions about credit, housing, insurance, or employment, without human involvement.
 
-5.4. We require our AI providers to process data under terms that protect its confidentiality. [REVIEW: confirm the data-use and model-training settings of each AI provider in use and update this sentence to match.]
 
 ## 6. Cookies, Pixels, and Similar Technologies
 
@@ -156,10 +155,10 @@ VictorySync is based in the United States, and our calling team and other person
 We keep personal information only as long as reasonably necessary for the purposes described in this Policy, including to provide the Services, comply with legal, tax, accounting, and regulatory obligations, resolve disputes, and enforce our agreements. Retention periods depend on the type of data and our relationship with you. As a general guide:
 
 - **Client account and billing records:** for the duration of the relationship and up to seven (7) years afterward for tax and legal purposes.
-- **Call recordings and transcripts:** as instructed by the client, or otherwise up to [RECORDING RETENTION PERIOD, e.g., 12 months] from the date of the call, unless needed longer for a dispute or legal hold.
+- **Call recordings and transcripts:** as instructed by the client, or otherwise up to 12 months from the date of the call, unless needed longer for a dispute or legal hold.
 - **Lead and campaign data handled for clients:** for the duration of the engagement and up to thirty (30) days after it ends, unless the client instructs otherwise or a longer period is required by law.
 - **Do not call and opt-out records:** for at least five (5) years, so that we can continue to honor them.
-- **Job applicant information:** up to [APPLICANT RETENTION PERIOD, e.g., 24 months] after the application, so we can consider you for future roles, unless you ask us to delete it sooner or law requires otherwise.
+- **Job applicant information:** up to 12 months after the application, so we can consider you for future roles, unless you ask us to delete it sooner or law requires otherwise.
 - **Website analytics data:** according to the retention settings of our analytics providers.
 
 When we no longer need personal information, we delete it, de-identify it, or securely store it until deletion is possible.
