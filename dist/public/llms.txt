@@ -34,9 +34,13 @@ VictorySync is a Close CRM partner.
 
 - [Home](https://www.victorysync.com/): Overview of VictorySync contact center services.
 - [Services](https://www.victorysync.com/services): Inbound support, appointment setting, cold calling, AI-assisted operations, and digital marketing.
+- [How It Works](https://www.victorysync.com/how-it-works): How VictorySync plans, launches, and reviews connected growth workflows.
+- [FAQ](https://www.victorysync.com/faq): Answers about services, pricing, marketing, and operations.
 - [Inbound Support](https://www.victorysync.com/inbound-support): Live agent inbound customer support.
 - [Appointment Setting](https://www.victorysync.com/appointment-setting): Lead follow-up and appointment booking.
 - [Cold Calling](https://www.victorysync.com/cold-calling): Outbound calling and prospect qualification.
+- [Live Transfers and Lead Reactivation](https://www.victorysync.com/live-transfers): Reactivation, qualification, and live transfers.
+- [Sales Closers](https://www.victorysync.com/sales-closers): Human-led sales conversations and approved handoffs.
 - [AI-Assisted Operations](https://www.victorysync.com/ai-automation): Tools that support human agents and workflows.
 - [Digital Marketing](https://www.victorysync.com/digital-marketing): SEO, paid media, content, email, website work, and analytics.
 - [Pricing](https://www.victorysync.com/pricing): Starter pricing and custom quote information.

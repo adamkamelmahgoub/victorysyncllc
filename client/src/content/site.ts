@@ -109,11 +109,6 @@ export const siteContent = {
     { title: 'Appointment', detail: 'Book the right conversation and record the handoff.' },
     { title: 'Review', detail: 'Use activity and call feedback to improve the next cycle.' },
   ],
-  clients: [
-    { name: 'Unified Service Partners', logo: '/clients/unified-service-partners.webp', industry: 'Roofing and home services', website: 'https://www.unifiedservicepartners.com/about-us/' },
-    { name: 'GenX Capital Group', logo: '/clients/genx-capital-group.webp', industry: 'Investment and M&A', website: 'https://genxcapital3x.com/contact/' },
-    { name: 'The Score Machine', logo: '/clients/the-score-machine.webp', industry: 'Credit intelligence software', website: 'https://thescoremachine.com/' },
-  ],
   process: [
     { title: 'Understand the work', detail: 'We map your offer, audience, existing tools, qualification rules, and the customer experience you want.' },
     { title: 'Build the workflow', detail: 'We agree on campaigns, scripts, access, handoffs, reporting, and the people responsible for each step.' },

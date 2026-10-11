@@ -3,7 +3,6 @@ export const publicRoutes = [
   { path: '/services', label: 'Services', summary: 'Inbound support, appointment setting, cold calling, AI-assisted operations, and digital marketing.', priority: '0.9' },
   { path: '/how-it-works', label: 'How It Works', summary: 'How VictorySync plans, launches, and reviews connected growth workflows.', priority: '0.8' },
   { path: '/faq', label: 'FAQ', summary: 'Answers about services, pricing, marketing, and operations.', priority: '0.7' },
-  { path: '/clients', label: 'Clients', summary: 'Featured VictorySync clients and their industries.', priority: '0.7' },
   { path: '/inbound-support', label: 'Inbound Support', summary: 'Live agent inbound customer support.', priority: '0.9' },
   { path: '/appointment-setting', label: 'Appointment Setting', summary: 'Lead follow-up and appointment booking.', priority: '0.9' },
   { path: '/cold-calling', label: 'Cold Calling', summary: 'Outbound calling and prospect qualification.', priority: '0.9' },

@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
 import { AnimatePresence } from "framer-motion";
 import { useState, useEffect, lazy, Suspense } from "react";
-import { PublicPage, PricingPage, HowItWorksPage, FaqPage, ReviewsPage, ClientsPage } from '@/pages/public-page';
+import { PublicPage, PricingPage, HowItWorksPage, FaqPage, ReviewsPage } from '@/pages/public-page';
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -68,7 +68,6 @@ function Router() {
             <Route path="/about"><PublicPage path="/about-us" /></Route>
             <Route path="/how-it-works" component={HowItWorksPage} />
             <Route path="/faq"><FaqPage /></Route>
-            <Route path="/clients" component={ClientsPage} />
             <Route path="/contact" component={Contact} />
             <Route path="/book-call" component={BookCall} />
             <Route path="/checkout" component={Checkout} />

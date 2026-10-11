@@ -15,7 +15,6 @@ export const pageMeta: Record<string, [string, string]> = {
   '/services': ['Call Center, BPO & Digital Marketing Services | VictorySync', 'Inbound support, appointment setting, cold calling, lead qualification, AI-assisted operations, and digital marketing for US businesses.'],
   '/how-it-works': ['How It Works | VictorySync', 'How VictorySync plans, launches, and reviews connected marketing and human-led calling workflows.'],
   '/faq': ['FAQ | VictorySync', 'Answers about VictorySync services, pricing, digital marketing, U.S. management, Cairo-based agents, and CRM workflows.'],
-  '/clients': ['Clients | VictorySync', 'Featured VictorySync clients across home services, investment, and credit intelligence software.'],
   '/appointment-setting': ['Appointment Setting Services for US Businesses | VictorySync', 'Trained agents book qualified appointments straight into your calendar. US-managed outbound appointment setting for home services, real estate, legal, and SaaS.'],
   '/cold-calling': ['Cold Calling Services | Outbound Sales Calls | VictorySync', 'Professional outbound cold calling with area-code matched caller ID, call recording, and daily reporting. US-managed team, transparent connect and booking rates.'],
   '/live-transfers': ['Live Transfers & Lead Reactivation | VictorySync', 'Reconnect with eligible leads, qualify current interest, and transfer ready prospects to your team using approved rules.'],
