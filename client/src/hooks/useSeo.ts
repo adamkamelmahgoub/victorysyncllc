@@ -18,6 +18,8 @@ export const pageMeta: Record<string, [string, string]> = {
   '/clients': ['Clients | VictorySync', 'Featured VictorySync clients across home services, investment, and credit intelligence software.'],
   '/appointment-setting': ['Appointment Setting Services for US Businesses | VictorySync', 'Trained agents book qualified appointments straight into your calendar. US-managed outbound appointment setting for home services, real estate, legal, and SaaS.'],
   '/cold-calling': ['Cold Calling Services | Outbound Sales Calls | VictorySync', 'Professional outbound cold calling with area-code matched caller ID, call recording, and daily reporting. US-managed team, transparent connect and booking rates.'],
+  '/live-transfers': ['Live Transfers & Lead Reactivation | VictorySync', 'Reconnect with eligible leads, qualify current interest, and transfer ready prospects to your team using approved rules.'],
+  '/sales-closers': ['Sales Closers & Sales Conversations | VictorySync', 'Human-led sales conversations, approved offer guidance, qualified lead handoffs, and documented next steps.'],
   '/inbound-support': ['Inbound Customer Support Outsourcing | VictorySync', 'Stop missing calls. Trained agents answer, qualify, and book your inbound calls with US-led management and full call recording.'],
   '/ai-automation': ['AI Call Qualification & Routing | VictorySync', 'AI-assisted lead qualification and call routing layered on a human team, so every inbound lead is answered and qualified fast.'],
   '/digital-marketing': ['Digital Marketing Services | VictorySync', 'SEO, paid search, paid social, content, email marketing, websites, landing pages, and analytics connected to your lead follow-up process.'],
@@ -41,6 +43,8 @@ export const pageMeta: Record<string, [string, string]> = {
 const services: Record<string, string> = {
   '/appointment-setting': 'Appointment Setting',
   '/cold-calling': 'Cold Calling',
+  '/live-transfers': 'Live Transfers and Lead Reactivation',
+  '/sales-closers': 'Sales Closers',
   '/inbound-support': 'Inbound Customer Support',
   '/ai-automation': 'AI Call Qualification and Routing',
   '/digital-marketing': 'Digital Marketing',

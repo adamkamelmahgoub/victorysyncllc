@@ -3,7 +3,7 @@ import { Link } from 'wouter';
 import { ArrowUpRight, Check, MessageCircle } from 'lucide-react';
 import { useSeo } from '@/hooks/useSeo';
 import { siteContent } from '@/content/site';
-import { WHATSAPP_HREF, CLUTCH_PROFILE_URL } from '@/lib/site-config';
+import { WHATSAPP_HREF, CLUTCH_PROFILE_URL, CLOSE_PARTNER_URL } from '@/lib/site-config';
 import closeBadge from '@assets/Close_PartnerBadge_Since25_1765323409008.webp';
 
 function SignalCanvas() {
@@ -12,14 +12,18 @@ function SignalCanvas() {
     const canvas = ref.current;
     if (!canvas || matchMedia('(prefers-reduced-motion: reduce)').matches || matchMedia('(max-width: 640px)').matches) return;
     const ctx = canvas.getContext('2d'); if (!ctx) return;
-    let tick = 0, id = 0;
+    let tick = 0, id = 0, inView = false;
     const resize = () => { canvas.width = canvas.clientWidth * Math.min(devicePixelRatio, 2); canvas.height = canvas.clientHeight * Math.min(devicePixelRatio, 2); };
     resize(); const observer = new ResizeObserver(resize); observer.observe(canvas);
     const draw = () => { tick++; ctx.clearRect(0, 0, canvas.width, canvas.height); const w = canvas.width, h = canvas.height;
       const nodes = Array.from({ length: 19 }, (_, i) => ({ x: w * (.06 + i % 5 * .22) + Math.sin(tick * .006 + i) * 17, y: h * (.12 + Math.floor(i / 5) * .24) + Math.cos(tick * .008 + i) * 13 }));
       nodes.forEach((a, i) => nodes.slice(i + 1).forEach(b => { const d = Math.hypot(a.x - b.x, a.y - b.y); if (d < w * .27) { ctx.strokeStyle = `rgba(141,118,255,${(1 - d / (w * .27)) * .22})`; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); } }));
-      nodes.forEach((n, i) => { ctx.fillStyle = i % 4 === 0 ? '#b9abff' : 'rgba(164,150,255,.5)'; ctx.beginPath(); ctx.arc(n.x, n.y, i % 4 === 0 ? 3 : 1.8, 0, Math.PI * 2); ctx.fill(); }); id = requestAnimationFrame(draw); };
-    draw(); return () => { cancelAnimationFrame(id); observer.disconnect(); };
+      nodes.forEach((n, i) => { ctx.fillStyle = i % 4 === 0 ? '#b9abff' : 'rgba(164,150,255,.5)'; ctx.beginPath(); ctx.arc(n.x, n.y, i % 4 === 0 ? 3 : 1.8, 0, Math.PI * 2); ctx.fill(); }); if (inView && !document.hidden) id = requestAnimationFrame(draw); };
+    const sync = () => { cancelAnimationFrame(id); if (inView && !document.hidden) id = requestAnimationFrame(draw); };
+    const visibility = new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; sync(); }, { threshold: 0 });
+    visibility.observe(canvas);
+    document.addEventListener('visibilitychange', sync);
+    return () => { cancelAnimationFrame(id); observer.disconnect(); visibility.disconnect(); document.removeEventListener('visibilitychange', sync); };
   }, []);
   return <canvas ref={ref} className="signal-canvas" aria-hidden="true" />;
 }
@@ -43,7 +47,7 @@ export default function Home() {
   useSeo({ title: 'VictorySync | Digital Marketing, Calling & Growth Operations', description: 'U.S.-managed growth partner: digital marketing and trained human agents who call, qualify, book, and help close leads.', canonical: 'https://www.victorysync.com/' });
   const whatsapp = `${WHATSAPP_HREF}?text=Hi%20VictorySync%2C%20I%27d%20like%20to%20discuss%20a%20campaign.`;
   return <div className="vs-home">
-    <section className="vs-hero"><SignalCanvas /><div className="vs-hero-glow" aria-hidden="true" /><div className="vs-wrap vs-hero-content"><div className="vs-kicker"><span className="vs-kicker-dot" />{siteContent.hero.eyebrow}</div><h1>Make every lead <em>count.</em><span className="vs-hero-subline">From first click to closed deal.</span></h1><p>{siteContent.hero.body}</p><div className="vs-actions"><Link className="vs-button vs-button-primary" href="/book-call">Book a Consultation <ArrowUpRight size={18} /></Link><a className="vs-button vs-button-secondary" href={whatsapp} target="_blank" rel="noopener noreferrer"><MessageCircle size={18} /> Message us on WhatsApp</a></div><div className="vs-proof"><span>U.S.-managed from New Jersey</span><a href={CLUTCH_PROFILE_URL} target="_blank" rel="noopener noreferrer" className="vs-clutch">clutch<span>.</span></a><img src={closeBadge} alt="Close CRM partner" width="110" height="53" /></div></div><div className="vs-hero-visual" aria-label="Illustrative lead journey"><div><small>01 / CAMPAIGN</small><strong>Attract</strong></div><i /><div><small>02 / CONVERSATION</small><strong>Qualify</strong></div><i /><div><small>03 / OUTCOME</small><strong>Book & close</strong></div></div></section>
+    <section className="vs-hero"><SignalCanvas /><div className="vs-hero-glow" aria-hidden="true" /><div className="vs-wrap vs-hero-content"><div className="vs-kicker"><span className="vs-kicker-dot" />{siteContent.hero.eyebrow}</div><h1>Make every lead <em>count.</em><span className="vs-hero-subline">From first click to closed deal.</span></h1><p>{siteContent.hero.body}</p><div className="vs-actions"><Link className="vs-button vs-button-primary" href="/book-call">Book a Consultation <ArrowUpRight size={18} /></Link><a className="vs-button vs-button-secondary" href={whatsapp} target="_blank" rel="noopener noreferrer"><MessageCircle size={18} /> Message us on WhatsApp</a></div><div className="vs-proof"><span>U.S.-managed from New Jersey</span><a href={CLUTCH_PROFILE_URL} target="_blank" rel="noopener noreferrer" className="vs-clutch">clutch<span>.</span></a><a href={CLOSE_PARTNER_URL} target="_blank" rel="noopener noreferrer" aria-label="View VictorySync in the Close Partner Directory"><img src={closeBadge} alt="Close CRM partner" width="110" height="53" /></a></div></div><div className="vs-hero-visual" aria-label="Illustrative lead journey"><div><small>01 / CAMPAIGN</small><strong>Attract</strong></div><i /><div><small>02 / CONVERSATION</small><strong>Qualify</strong></div><i /><div><small>03 / OUTCOME</small><strong>Book & close</strong></div></div></section>
     <div className="vs-marquee" aria-label="Clients"><div className="vs-marquee-track">{[...siteContent.clients, ...siteContent.clients, ...siteContent.clients].map((client, i) => <div key={`${client.name}-${i}`} className="vs-marquee-item"><ClientMark client={client} /></div>)}</div></div>
     <section className="vs-section" id="services"><div className="vs-wrap"><div className="vs-section-head"><span className="vs-eyebrow">ONE CONNECTED ENGINE</span><h2>Demand is only the beginning.</h2><p>We connect the campaign to the conversation, so leads have a clear path from interest to action.</p></div><div className="vs-services-grid">{siteContent.services.map(service => <Link href={service.href} key={service.title} className="vs-glass-card vs-service-card"><span className="vs-card-number">{service.icon} / 07</span><div><h3>{service.title}</h3><p>{service.detail}</p></div><ArrowUpRight size={20} /></Link>)}</div></div></section>
     <section className="vs-section vs-journey" id="journey"><div className="vs-wrap vs-journey-layout"><div className="vs-journey-intro"><span className="vs-eyebrow">THE LEAD JOURNEY</span><h2>Every handoff matters.</h2><p>Marketing, calling, qualification, and booking work as one accountable process.</p></div><div className="vs-journey-stages">{siteContent.journey.map((stage, i) => <div className="vs-journey-stage" key={stage.title}><span>{String(i + 1).padStart(2, '0')}</span><div><h3>{stage.title}</h3><p>{stage.detail}</p></div></div>)}</div></div></section>

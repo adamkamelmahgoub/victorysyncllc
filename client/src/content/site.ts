@@ -7,6 +7,85 @@ export type MarketingPageContent = {
   related?: { label: string; href: string }[];
 };
 
+export type ServiceFlow = {
+  heading: string;
+  summary: string;
+  steps: { title: string; description: string; output: string }[];
+};
+
+export const serviceFlows: Record<string, ServiceFlow> = {
+  '/inbound-support': {
+    heading: 'From the first ring to a resolved next step.',
+    summary: 'We shape the answering experience around your business rules, then make every call easy to review.',
+    steps: [
+      { title: 'Define the playbook', description: 'Agree on hours, greetings, common questions, intake fields, urgent cases, and who owns each escalation.', output: 'Approved call guide and routing rules' },
+      { title: 'Prepare the team', description: 'Train agents on your services, tone, tools, and examples of calls they should transfer rather than answer.', output: 'Agent briefing and access plan' },
+      { title: 'Handle the conversation', description: 'A person answers, captures the reason for the call, follows the approved path, and confirms the next action.', output: 'Call disposition and useful notes' },
+      { title: 'Review and improve', description: 'Review call patterns and quality feedback together, then update the guide where customers need clearer answers.', output: 'Quality notes and playbook changes' },
+    ],
+  },
+  '/appointment-setting': {
+    heading: 'A booked meeting should arrive with context.',
+    summary: 'The process starts with your definition of a useful appointment and ends with a handoff your team can act on.',
+    steps: [
+      { title: 'Set qualification rules', description: 'Agree on customer fit, service area, timing, exclusions, calendar availability, and what information your team needs.', output: 'Qualification and booking criteria' },
+      { title: 'Connect lead sources', description: 'Route approved inquiries from forms, campaigns, or your CRM to the right queue with a clear owner.', output: 'Lead source and routing map' },
+      { title: 'Call and confirm', description: 'Agents ask discovery questions, handle common objections within your guidance, and offer the right available time.', output: 'Confirmed appointment and notes' },
+      { title: 'Close the loop', description: 'Send the agreed handoff, track outcomes and no-shows, and adjust qualification using your team’s feedback.', output: 'Handoff and review rhythm' },
+    ],
+  },
+  '/cold-calling': {
+    heading: 'Outbound calling with a clear reason to call.',
+    summary: 'Audience, compliance checks, messaging, and the next step are set before a person dials.',
+    steps: [
+      { title: 'Plan the audience', description: 'Define who belongs in the campaign, where the list comes from, calling windows, DNC handling, and exclusions.', output: 'Approved audience and list rules' },
+      { title: 'Build the conversation', description: 'Agree on opening language, discovery questions, objection guidance, and when to stop or escalate.', output: 'Call guide and qualification rubric' },
+      { title: 'Call and qualify', description: 'Agents make the calls, listen for fit and timing, and record each meaningful outcome in the approved system.', output: 'Documented dispositions' },
+      { title: 'Transfer or follow up', description: 'Ready prospects can be transferred live, booked, or placed in an agreed follow-up path; results inform the next list.', output: 'Handoff and campaign learning' },
+    ],
+  },
+  '/digital-marketing': {
+    heading: 'Build demand with the response already designed.',
+    summary: 'Campaign work and human follow-up share one definition of a qualified lead.',
+    steps: [
+      { title: 'Agree on the economics', description: 'Review the offer, audience, geography, budget, ad-account ownership, success measures, and approval process.', output: 'Campaign brief and budget guardrails' },
+      { title: 'Create the path', description: 'Plan the creative, ads, landing experience, form questions, tracking, and CRM destination for each inquiry.', output: 'Creative and lead-flow plan' },
+      { title: 'Launch with follow-up', description: 'Publish approved campaigns and route new inquiries to the team responsible for timely human contact.', output: 'Connected campaign and calling workflow' },
+      { title: 'Improve from evidence', description: 'Compare campaign signals with call outcomes and customer questions before changing spend, creative, or qualification.', output: 'Review notes and next tests' },
+    ],
+  },
+  '/ai-automation': {
+    heading: 'Automate the handoffs around a human conversation.',
+    summary: 'We start with the people and permissions in the workflow, then decide which repetitive steps benefit from automation.',
+    steps: [
+      { title: 'Map the journey', description: 'Identify data sources, trigger events, ownership, exceptions, and points where a person must review or act.', output: 'Workflow and access map' },
+      { title: 'Design the rules', description: 'Specify routing, reminders, summaries, CRM fields, and fallback behavior before building anything.', output: 'Approved automation specification' },
+      { title: 'Test with real scenarios', description: 'Check normal cases, missing data, duplicate leads, and escalation paths with the people who will use the workflow.', output: 'Tested handoff examples' },
+      { title: 'Monitor and revise', description: 'Review errors and agent feedback, refine the rules, and keep a person accountable for the customer interaction.', output: 'Change log and review cadence' },
+    ],
+  },
+  '/live-transfers': {
+    heading: 'Reconnect, qualify, and hand off while interest is live.',
+    summary: 'The transfer rules are agreed in advance so agents know when to reconnect a lead and when your team is ready to take over.',
+    steps: [
+      { title: 'Segment the leads', description: 'Agree on which prior inquiries may be contacted, list ownership, exclusions, DNC handling, and the context available to agents.', output: 'Approved reactivation audience' },
+      { title: 'Set transfer criteria', description: 'Define fit, intent, timing, receiving-team availability, and the information a closer needs before taking the call.', output: 'Qualification and transfer rules' },
+      { title: 'Reopen the conversation', description: 'An agent calls with relevant context, checks whether the need remains, and qualifies current interest.', output: 'Current lead disposition' },
+      { title: 'Connect and review', description: 'Ready leads move to a live transfer or agreed booking path; outcomes show which segments deserve more attention.', output: 'Warm handoff and feedback' },
+    ],
+  },
+  '/sales-closers': {
+    heading: 'Give qualified opportunities a disciplined sales conversation.',
+    summary: 'Closing support is shaped around the offer, authority, approvals, and handoff points your business defines.',
+    steps: [
+      { title: 'Learn the offer', description: 'Review the product, buyer questions, pricing authority, exclusions, and what an agent may or may not promise.', output: 'Approved sales guide' },
+      { title: 'Prepare the pipeline', description: 'Agree on what makes an opportunity sales-ready and how context moves from setter or campaign to closer.', output: 'Sales-ready criteria and notes' },
+      { title: 'Lead the conversation', description: 'A trained person handles discovery, explains the approved offer, addresses questions, and follows the agreed next step.', output: 'Documented conversation outcome' },
+      { title: 'Protect the handoff', description: 'Any proposal, payment, contract, or specialist decision follows your approval process; the team reviews outcomes and objections.', output: 'Clear next action and review notes' },
+    ],
+  },
+};
+
 export const siteContent = {
   hero: {
     eyebrow: 'U.S.-managed in New Jersey · Agent team in Cairo',
@@ -16,9 +95,9 @@ export const siteContent = {
   services: [
     { title: 'Appointment setting', href: '/appointment-setting', detail: 'Follow up with interested prospects and book qualified conversations.', icon: '01' },
     { title: 'Cold calling & qualification', href: '/cold-calling', detail: 'Reach the right people with approved scripts and clear qualification criteria.', icon: '02' },
-    { title: 'Live transfers & reactivation', href: '/cold-calling', detail: 'Reconnect with existing leads and hand ready prospects to your team.', icon: '03' },
+    { title: 'Live transfers & reactivation', href: '/live-transfers', detail: 'Reconnect with existing leads and hand ready prospects to your team.', icon: '03' },
     { title: 'Inbound support & answering', href: '/inbound-support', detail: 'Give callers a trained person and a clear next step.', icon: '04' },
-    { title: 'Sales conversations', href: '/appointment-setting', detail: 'Support qualified prospects through the sales process you approve.', icon: '05' },
+    { title: 'Sales conversations', href: '/sales-closers', detail: 'Support qualified prospects through the sales process you approve.', icon: '05' },
     { title: 'Digital marketing', href: '/digital-marketing', detail: 'Connect ads, creative, SEO, websites, and landing pages to lead follow-up.', icon: '06' },
     { title: 'AI automation & CRM', href: '/ai-automation', detail: 'Use routing, reminders, and summaries to support the human team.', icon: '07' },
   ],
@@ -92,6 +171,16 @@ export const marketingPages: Record<string, MarketingPageContent> = {
     { title: 'Automate the repeatable steps', body: 'Routing, reminders, call summaries, CRM updates, and follow-up tasks can reduce manual handoffs.' },
     { title: 'Keep people accountable', body: 'Agents and managers review context and outcomes. Automated output should support decisions, not replace oversight.' },
   ], points: ['Lead routing', 'CRM workflow design', 'Summaries and notes', 'Reminders', 'Reporting support', 'Human review'], related: [{ label: 'Platform', href: '/platform' }, { label: 'Contact us', href: '/contact' }] },
+  '/live-transfers': { eyebrow: 'Live transfers and reactivation', title: 'Bring the right conversation back to life.', intro: 'Existing leads can still have a current need. Our agents reconnect, qualify, and bring ready prospects to the right person on your team using transfer rules you approve.', sections: [
+    { title: 'Start with eligible leads', body: 'We review source, prior contact, permissions, exclusions, and what makes reactivation appropriate for your business.' },
+    { title: 'Check current intent', body: 'Agents establish whether the prospect still needs help and use your criteria to identify a timely opportunity.' },
+    { title: 'Make the handoff count', body: 'A live transfer or booked next step includes useful context, so your team can continue the conversation.' },
+  ], points: ['Lead reactivation', 'Qualification', 'Live transfer rules', 'Receiving-team availability', 'CRM dispositions', 'Outcome review'], related: [{ label: 'Cold calling', href: '/cold-calling' }, { label: 'Sales closers', href: '/sales-closers' }] },
+  '/sales-closers': { eyebrow: 'Sales closers', title: 'A human sales conversation built around your offer.', intro: 'Qualified prospects need clear answers and an accountable next step. We can support the sales conversation within the pricing, approval, and customer-experience rules you set.', sections: [
+    { title: 'Define authority', body: 'Agree on the offer, pricing boundaries, claims, objections, approvals, and situations that need a specialist or your team.' },
+    { title: 'Take the handoff', body: 'The closer receives qualification notes and customer context before speaking, then runs discovery rather than starting cold.' },
+    { title: 'Record the next move', body: 'Outcomes, objections, and follow-up actions are documented so your team can review quality and pipeline movement.' },
+  ], points: ['Qualified lead handoff', 'Discovery', 'Approved offer presentation', 'Objection handling', 'Follow-up', 'Sales outcome review'], related: [{ label: 'Appointment setting', href: '/appointment-setting' }, { label: 'How it works', href: '/how-it-works' }] },
   '/platform': { eyebrow: 'Campaign visibility', title: 'See the work. Understand the next move.', intro: 'Your campaign should be understandable to the people paying for it. We agree on what gets recorded, how activity is summarized, and when the team meets to improve it.', sections: [
     { title: 'Useful activity', body: 'Call outcomes, appointment status, and follow-up notes provide context beyond a raw lead count.' },
     { title: 'Daily written summary', body: 'A concise written update can show what happened, what needs attention, and what the team plans next.' },

@@ -7,6 +7,8 @@ export const publicRoutes = [
   { path: '/inbound-support', label: 'Inbound Support', summary: 'Live agent inbound customer support.', priority: '0.9' },
   { path: '/appointment-setting', label: 'Appointment Setting', summary: 'Lead follow-up and appointment booking.', priority: '0.9' },
   { path: '/cold-calling', label: 'Cold Calling', summary: 'Outbound calling and prospect qualification.', priority: '0.9' },
+  { path: '/live-transfers', label: 'Live Transfers and Lead Reactivation', summary: 'Reactivation, qualification, and live transfers.', priority: '0.8' },
+  { path: '/sales-closers', label: 'Sales Closers', summary: 'Human-led sales conversations and approved handoffs.', priority: '0.8' },
   { path: '/ai-automation', label: 'AI-Assisted Operations', summary: 'Tools that support human agents and workflows.', priority: '0.8' },
   { path: '/digital-marketing', label: 'Digital Marketing', summary: 'SEO, paid media, content, email, website work, and analytics.', priority: '0.9' },
   { path: '/pricing', label: 'Pricing', summary: 'Starter pricing and custom quote information.', priority: '0.8' },

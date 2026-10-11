@@ -47,6 +47,8 @@
     { "source": "/clients", "destination": "/clients/index.html" },
     { "source": "/appointment-setting", "destination": "/appointment-setting/index.html" },
     { "source": "/cold-calling", "destination": "/cold-calling/index.html" },
+    { "source": "/live-transfers", "destination": "/live-transfers/index.html" },
+    { "source": "/sales-closers", "destination": "/sales-closers/index.html" },
     { "source": "/inbound-support", "destination": "/inbound-support/index.html" },
     { "source": "/ai-automation", "destination": "/ai-automation/index.html" },
     { "source": "/digital-marketing", "destination": "/digital-marketing/index.html" },

@@ -12,7 +12,7 @@ const routeSource = (path) => {
   if (path === '/') return 'client/src/pages/home.tsx';
   if (path === '/terms') return 'client/src/pages/terms.tsx';
   if (path === '/privacy-policy') return 'client/src/pages/privacy-policy.tsx';
-  if (path === '/faq' || path === '/how-it-works' || path === '/clients') return 'client/src/pages/public-page.tsx';
+  if (path === '/faq' || path === '/how-it-works' || path === '/clients' || path === '/live-transfers' || path === '/sales-closers') return 'client/src/pages/public-page.tsx';
   if (['/appointment-setting-for-home-services', '/cold-calling-for-plumbers', '/answering-service-for-plumbers', '/appointment-setting-for-hvac', '/appointment-setting-for-real-estate', '/inbound-support-for-law-firms'].includes(path)) {
     return 'client/src/pages/vertical-services.tsx';
   }

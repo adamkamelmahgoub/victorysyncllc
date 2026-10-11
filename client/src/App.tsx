@@ -82,6 +82,8 @@ function Router() {
             <Route path="/inbound-support"><PublicPage path="/inbound-support" /></Route>
             <Route path="/appointment-setting"><PublicPage path="/appointment-setting" /></Route>
             <Route path="/cold-calling"><PublicPage path="/cold-calling" /></Route>
+            <Route path="/live-transfers"><PublicPage path="/live-transfers" /></Route>
+            <Route path="/sales-closers"><PublicPage path="/sales-closers" /></Route>
             <Route path="/ai-automation"><PublicPage path="/ai-automation" /></Route>
             <Route path="/digital-marketing"><PublicPage path="/digital-marketing" /></Route>
             <Route path="/appointment-setting-for-home-services"><PublicPage path="/appointment-setting-for-home-services" /></Route>

@@ -8,6 +8,8 @@ const services = [
   { label: 'Digital marketing', href: '/digital-marketing' },
   { label: 'Appointment setting', href: '/appointment-setting' },
   { label: 'Cold calling', href: '/cold-calling' },
+  { label: 'Live transfers', href: '/live-transfers' },
+  { label: 'Sales closers', href: '/sales-closers' },
   { label: 'Inbound support', href: '/inbound-support' },
   { label: 'AI and CRM workflows', href: '/ai-automation' },
 ];

@@ -1,0 +1,92 @@
+.marketing-site{--vs-ink:#f5f4ff;--vs-muted:#afb9d2;--vs-line:#313755;--vs-violet:#a28cff;--vs-lavender:#1d1b3e;--vs-paper:#131a2e;--vs-bg:#090e1c;background:#090e1c;color:#f5f4ff}
+.marketing-site main,.marketing-site .site-page,.marketing-site .vs-section,.marketing-site .vs-section.light-tint,.marketing-site .vs-home .vs-section:nth-of-type(even){background:#090e1c;color:#f5f4ff}
+.marketing-site .vs-section{border-top:1px solid #ffffff0d}
+.marketing-site .vs-section.light-tint,.marketing-site .vs-home .vs-section:nth-of-type(even),.marketing-site .vs-comparison,.marketing-site .vs-people{background:#0e1425}
+.marketing-site .vs-nav{background:#0a0f1ee8;border-bottom-color:#ffffff1c;box-shadow:0 10px 35px #0003}
+.marketing-site .vs-brand,.marketing-site .vs-footer-logo,.marketing-site .vs-nav-link,.marketing-site .vs-nav-service>button{color:#f5f4ff}
+.marketing-site .vs-nav-link:hover,.marketing-site .vs-nav-link.active,.marketing-site .vs-nav-service>button:hover{color:#ae9aff}
+.marketing-site .vs-nav-dropdown,.marketing-site .vs-mobile-menu{background:#131a2e;border-color:#373d60;box-shadow:0 18px 40px #0006}
+.marketing-site .vs-nav-dropdown a,.marketing-site .vs-mobile-menu a{color:#edf0ff}
+.marketing-site .vs-nav-dropdown a:hover,.marketing-site .vs-mobile-menu a:hover{background:#242043;color:#c2b5ff}
+.marketing-site .vs-menu-toggle{color:#f5f4ff}
+.marketing-site .vs-nav-cta,.marketing-site .vs-button-primary{background:#876aff;color:#fff;box-shadow:0 10px 35px #6546ea44}
+.marketing-site .vs-nav-cta:hover,.marketing-site .vs-button-primary:hover{background:#9c84ff;color:#fff}
+.marketing-site .vs-button-secondary{background:#161d31;border-color:#505b80;color:#f4f2ff}
+.marketing-site .vs-button-secondary:hover{background:#242743;border-color:#a18afc;color:#fff}
+.marketing-site .vs-hero,.marketing-site .light-page-hero{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 76% 17%,#3b277e 0,transparent 35%),radial-gradient(ellipse at 9% 87%,#13234e 0,transparent 42%),#090e1c;border-bottom-color:#ffffff21}
+.marketing-site .vs-hero:before,.marketing-site .light-page-hero:before{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(#b4a6ff0b 1px,transparent 1px),linear-gradient(90deg,#b4a6ff0b 1px,transparent 1px);background-size:52px 52px;mask-image:linear-gradient(to bottom,#0009,transparent 85%)}
+.marketing-site .vs-hero:after,.marketing-site .light-page-hero:after{content:"";position:absolute;z-index:-1;width:470px;height:470px;right:-160px;top:-160px;border:1px solid #a490ff50;border-radius:50%;box-shadow:0 0 0 75px #8b75ff0b,0 0 0 150px #8b75ff08;animation:vs-orbit 22s ease-in-out infinite alternate}
+.marketing-site .vs-hero-glow{background:#8b6fff;opacity:.2}
+.marketing-site .signal-canvas{opacity:.5}
+.marketing-site .vs-kicker{background:#a18aff1e;border-color:#a18aff62;color:#c6baff}
+.marketing-site .vs-hero h1,.marketing-site .light-page-hero h1,.marketing-site .vs-section h2,.marketing-site .vs-section h3,.marketing-site .vs-workspace-top,.marketing-site .vs-legal-content h1,.marketing-site .vs-legal-content h2,.marketing-site .vs-legal-content h3{color:#f7f6ff}
+.marketing-site .vs-hero h1 em{color:#ae99ff;text-shadow:0 0 38px #876aff7c}
+.marketing-site .vs-hero-subline{color:#c3c9e0}
+.marketing-site .vs-hero-content>p,.marketing-site .light-page-hero p,.marketing-site .vs-section p,.marketing-site .vs-legal-content p,.marketing-site .vs-legal-content li{color:#b7c1d8}
+.marketing-site .vs-proof{color:#c1c8df}
+.marketing-site .vs-clutch{color:#fff}
+.marketing-site .vs-hero-visual div,.marketing-site .vs-glass-card,.marketing-site .vs-workspace,.marketing-site .vs-compare-grid .accent{background:linear-gradient(145deg,#1a2238e8,#11182bdd);border-color:#465072;box-shadow:inset 0 1px #ffffff12,0 14px 40px #0003;backdrop-filter:blur(15px)}
+.marketing-site .vs-hero-visual strong,.marketing-site .vs-client-card h3,.marketing-site .light-client-grid h2,.marketing-site .vs-price-card strong{color:#f6f5ff}
+.marketing-site .vs-hero-visual small,.marketing-site .vs-card-number,.marketing-site .vs-eyebrow,.marketing-site .vs-process-card>span,.marketing-site .vs-journey-stage span{color:#ae9aff}
+.marketing-site .vs-marquee{background:#11182b;border-bottom-color:#ffffff20}
+.marketing-site .client-wordmark{color:#e8e7fa}
+.marketing-site .vs-clients{background:radial-gradient(circle at 50% 25%,#33285c,#0e1425 58%)!important}
+.marketing-site .vs-client-logo{background:#ffffff0b;border:1px solid #ffffff13}
+.marketing-site .vs-client-orbit{background:radial-gradient(circle at 30% 25%,#4f3b98,#171d34)}
+.marketing-site .vs-service-card:hover,.marketing-site .vs-client-card:hover,.marketing-site .vs-flow-card:hover{border-color:#9d86ff;box-shadow:0 0 0 1px #9d86ff30,0 20px 60px #6d53e43a;transform:translateY(-6px)}
+.marketing-site .vs-journey-stages{border-color:#5b4d93}
+.marketing-site .vs-journey-stage:before{background:#a28cff;border-color:#15162e}
+.marketing-site .vs-journey-intro{position:sticky;top:125px}
+.marketing-site .vs-journey-stage{min-height:145px;padding:12px 24px 40px;border-radius:0 16px 16px 0;transition:background .25s ease,box-shadow .25s ease}
+.marketing-site .vs-journey-stage:hover{background:#a28cff12;box-shadow:inset 3px 0 #a28cff}
+.marketing-site .vs-journey-stage h3{font-size:25px}
+.marketing-site .vs-client-orbit{border-color:#8a74e855;box-shadow:0 0 55px #876aff20}
+.marketing-site .vs-client-orbit span{color:#c2b5ff}
+.marketing-site .vs-client-orbit{animation:vs-monogram 7s ease-in-out infinite}
+.marketing-site .vs-workspace-row,.marketing-site .vs-faq,.marketing-site .vs-legal-content h2{border-color:#ffffff22}
+.marketing-site .vs-workspace-row,.marketing-site .vs-workspace-top small{color:#b7c1d8}
+.marketing-site .vs-workspace-row strong,.marketing-site .vs-price-card a,.marketing-site .vs-text-link,.marketing-site .vs-legal-anchor{color:#bcaaff}
+.marketing-site .vs-trust-item{background:#171e33;border-color:#3c4563;color:#e5e9f9}
+.marketing-site .vs-socials a{background:#182036;border-color:#465072;color:#e5e9f9}
+.marketing-site .vs-footer-bottom{border-color:#ffffff24}
+.marketing-site .vs-footer-badges a{color:#f5f4ff}
+.marketing-site .light-check-list li,.marketing-site .light-related a,.marketing-site .light-contact-grid p,.marketing-site .light-info-card address{color:#d5dcf0}
+.marketing-site .light-related a:hover{color:#c3b2ff}
+.marketing-site .vs-faq summary{color:#f2f2ff}
+.marketing-site .vs-faq summary span{color:#ae9aff}
+.marketing-site .vs-final{background:radial-gradient(circle at 50% 8%,#533a9d 0,transparent 46%),#151a31!important}
+.marketing-site .vs-footer{background:#080c18;border-top:1px solid #ffffff22;color:#c8d1e7}
+.marketing-site .vs-footer h3,.marketing-site .vs-footer-logo{color:#f5f4ff}
+.marketing-site .vs-footer a,.marketing-site .vs-footer button,.marketing-site .vs-footer p,.marketing-site .vs-footer address{color:#b7c1d8}
+.marketing-site .vs-footer a:hover,.marketing-site .vs-footer button:hover{color:#c5b8ff}
+.marketing-site .vs-consent,.marketing-site .vs-legal-toc{background:#182036;border-color:#635494;color:#f4f2ff;box-shadow:0 18px 50px #0009}
+.marketing-site .vs-consent p,.marketing-site .vs-legal-toc a{color:#c2c9e0}
+.marketing-site .vs-consent-actions button{color:#efeaff;border-color:#7964c7}
+.marketing-site .vs-consent-actions button:nth-child(2){background:#876aff;color:#fff}
+.marketing-site .vs-legal-page{background:#0b1120;color:#e7ebf8}
+.marketing-site .vs-legal-content strong,.marketing-site .vs-legal-toc strong{color:#f6f5ff}
+.marketing-site .vs-legal-content a:not(.vs-legal-anchor){color:#bcaaff}
+.marketing-site .vs-legal-content hr{border-color:#ffffff25}
+.marketing-site .vs-flow-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;list-style:none;margin:0;padding:0;counter-reset:flow}
+.marketing-site .vs-flow-card{position:relative;display:flex;flex-direction:column;min-height:350px;padding:24px;border:1px solid #465072;border-radius:20px;background:radial-gradient(circle at 100% 0,#55408d3d,transparent 42%),linear-gradient(155deg,#1b233a,#101728);box-shadow:inset 0 1px #ffffff18,0 16px 36px #0004;transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.marketing-site .vs-flow-index{display:flex;align-items:center;justify-content:space-between;color:#bfaeff;font-size:13px;font-weight:800;letter-spacing:.15em}
+.marketing-site .vs-flow-index i{display:block;width:28px;height:28px;border:1px solid #bbaaff88;border-radius:50%;box-shadow:0 0 18px #9d82ff55}
+.marketing-site .vs-flow-card h3{margin:38px 0 11px;font-size:23px;line-height:1.2}
+.marketing-site .vs-flow-card p{font-size:14px;line-height:1.65}
+.marketing-site .vs-flow-output{display:grid;gap:8px;margin-top:auto;padding-top:18px;border-top:1px solid #ffffff26}
+.marketing-site .vs-flow-output span{color:#a899ed;font-size:10px;font-weight:800;letter-spacing:.17em}
+.marketing-site .vs-flow-output strong{color:#f0efff;font-size:13px;line-height:1.4}
+.marketing-site .vs-service-process{background:radial-gradient(ellipse at 40% 0,#2c2156,transparent 57%),#0e1425}
+@keyframes vs-orbit{to{transform:translate(-65px,45px) scale(1.12)}}
+@keyframes vs-monogram{50%{box-shadow:0 0 0 20px #977cff0b,0 0 55px #876aff44;transform:rotate(6deg) scale(1.06)}}
+@supports(animation-timeline:view()){
+  .marketing-site .vs-section-head,.marketing-site .vs-process-card{animation:vs-enter .7s both;animation-timeline:view();animation-range:entry 0% entry 35%}
+  .marketing-site .vs-service-card,.marketing-site .vs-flow-card,.marketing-site .vs-client-card{animation:vs-enter-opacity .7s both;animation-timeline:view();animation-range:entry 0% entry 35%}
+}
+@keyframes vs-enter{from{opacity:.5;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes vs-enter-opacity{from{opacity:.5}to{opacity:1}}
+@media(max-width:1100px){.marketing-site .vs-flow-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.marketing-site .vs-flow-grid{grid-template-columns:1fr}.marketing-site .vs-flow-card{min-height:300px}.marketing-site .vs-hero:after,.marketing-site .light-page-hero:after{width:270px;height:270px;right:-140px;top:-90px}.marketing-site .vs-nav{backdrop-filter:blur(10px)}}
+@media(max-width:640px){.marketing-site .vs-journey-intro{position:static}.marketing-site .vs-journey-stage{min-height:110px}}
+@media(prefers-reduced-motion:reduce){.marketing-site .vs-hero:after,.marketing-site .light-page-hero:after,.marketing-site .vs-client-orbit,.marketing-site .vs-section-head,.marketing-site .vs-process-card,.marketing-site .vs-service-card,.marketing-site .vs-flow-card,.marketing-site .vs-client-card{animation:none!important}.marketing-site .vs-flow-card{transition:none}}
+@media print{.marketing-site .vs-legal-page,.marketing-site .vs-legal-page *{background:#fff!important;color:#111!important;box-shadow:none!important}}
