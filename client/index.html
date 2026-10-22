@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7DG7J3MKTB"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('consent', 'default', { ad_storage: 'denied', analytics_storage: 'denied' });
+      if (localStorage.getItem('vs-cookie-consent-v1') === 'accepted' && !navigator.globalPrivacyControl) {
+        gtag('consent', 'update', { ad_storage: 'granted', analytics_storage: 'granted' });
+      }
+      gtag('config', 'G-7DG7J3MKTB');
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#FFFFFF" />

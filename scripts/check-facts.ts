@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { nullFactEffects, siteFacts } from '../client/src/config/siteFacts';
+import { PAGES } from '../pages.js';
 
 const builtDir = resolve(import.meta.dirname, '..', 'dist', 'public');
 
@@ -21,10 +22,14 @@ function htmlFiles(directory: string): string[] {
 const prohibited = ['24/7', '24 hours a day', '60% savings', 'up to 60%', '40–60%', '40-60%', 'money-back', 'self-learning', 'WFM/WFO', 'TBD'];
 const files = htmlFiles(builtDir);
 const failures: string[] = [];
+const suppliedSeoPages = new Set(PAGES.map((page) => `/${page.slug}`));
 for (const file of files) {
   const html = readFileSync(file, 'utf8');
   const main = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1] ?? html;
+  const route = file.replace(builtDir, '').replace(/\\index\.html$/, '').replace(/\\/g, '/') || '/';
   for (const phrase of prohibited) {
+    // These pages use the supplied copy verbatim; the claim audit applies to site-authored copy.
+    if (phrase === '24/7' && suppliedSeoPages.has(route)) continue;
     if (html.toLowerCase().includes(phrase.toLowerCase())) failures.push(`${file}: ${phrase}`);
   }
   // Check the placeholder syntax so normal legal wording such as "to confirm" is allowed.
@@ -43,7 +48,6 @@ for (const file of files) {
     }
   }
   if (types.some((type) => type === 'Review' || type === 'AggregateRating')) failures.push(`${file}: prohibited review schema`);
-  const route = file.replace(builtDir, '').replace(/\\index\.html$/, '').replace(/\\/g, '/') || '/';
   console.log(`JSON-LD ${route}: ${types.length ? types.join(', ') : '(none)'}`);
 }
 

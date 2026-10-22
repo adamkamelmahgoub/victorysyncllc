@@ -1,0 +1,1094 @@
+<title>Victory Sync Industry Pages</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: a live "call desk". Every page opens on a real call being handled, then proves it with the transcript, the routing rules, and the caller's own numbers. */
+:root{
+  --bg:#0A0F1E; --bg-2:#0E1428; --bg-3:#131B36;
+  --glass:rgba(140,150,255,.05); --glass-2:rgba(140,150,255,.09);
+  --line:rgba(170,180,255,.12); --line-2:rgba(170,180,255,.22);
+  --fg:#EEF0FA; --muted:#9AA3C4; --dim:#6B7396;
+  --violet:#7B5CF6; --violet-hi:#A996FF; --violet-ink:#FFFFFF;
+  --ok:#34D399; --warn:#FBBF24; --hot:#F87171;
+  --sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --r:18px; --r-sm:12px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.mono{font-family:var(--mono)}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--violet-hi);display:inline-flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(52,211,153,.15)}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.025em}
+h2{font-size:clamp(28px,3.6vw,44px);line-height:1.08;font-weight:800}
+.lede{color:var(--muted);font-size:18px;max-width:60ch;margin:0}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:15px 22px;border-radius:999px;font-weight:700;font-size:15px;text-decoration:none;border:1px solid transparent;transition:transform .15s,background .15s,border-color .15s;cursor:pointer}
+.btn-primary{background:var(--violet);color:var(--violet-ink);box-shadow:0 10px 30px -10px rgba(123,92,246,.8)}
+.btn-primary:hover{background:#8B70FF;transform:translateY(-1px)}
+.btn-ghost{border-color:var(--line-2);color:var(--fg)}
+.btn-ghost:hover{border-color:var(--violet-hi)}
+.btn:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--violet-hi);outline-offset:3px}
+section{padding-block:clamp(64px,9vw,112px)}
+.sec-head{display:grid;gap:14px;margin-bottom:40px;max-width:760px}
+
+/* preview switcher (preview only, not part of the real page) */
+.switcher{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:#05070F;border-bottom:1px solid var(--line)}
+.switcher .wrap{display:flex;gap:12px;align-items:center;padding-block:10px}
+.switcher label{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.switcher select{flex:1;min-width:0;background:var(--bg-3);color:var(--fg);border:1px solid var(--line-2);border-radius:10px;padding:8px 10px;font:500 14px var(--sans)}
+
+/* nav */
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;font-weight:800;letter-spacing:-.01em;font-size:18px}
+.brand .mark{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(145deg,#E9EBF6,#B9BED6);box-shadow:inset 0 1px 0 #fff,0 6px 18px -8px rgba(169,150,255,.6)}
+.brand .mark img{width:28px;height:auto}
+.nav-links{display:flex;gap:26px;align-items:center;font-size:14px;color:var(--muted)}
+.nav-links a{text-decoration:none}
+.nav-links a:hover{color:var(--fg)}
+.nav .btn{padding:11px 18px;font-size:14px}
+@media (max-width:820px){.nav-links .hide-sm{display:none}}
+@media (max-width:700px){.nav .btn{display:none}}
+
+/* hero */
+.hero{padding-block:clamp(36px,6vw,72px) clamp(56px,8vw,96px);position:relative}
+.hero::before{content:"";position:absolute;inset:-120px 0 auto;height:620px;background:radial-gradient(600px 340px at 78% 30%,rgba(123,92,246,.28),transparent 70%),radial-gradient(500px 300px at 10% 0%,rgba(52,211,153,.08),transparent 70%);pointer-events:none}
+.hero-grid{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,5vw,64px);align-items:center}
+.hero-copy{display:grid;gap:24px;min-width:0}
+.hero h1{font-size:clamp(40px,5.6vw,72px);line-height:1.02;font-weight:900}
+.hero h1 span{display:block}
+.hero h1 span:last-child{color:var(--violet-hi)}
+.hero .lede{font-size:clamp(17px,1.5vw,19px)}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.phone-txt{font:500 14px var(--mono);color:var(--muted);user-select:all}
+.trust{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{font:500 13px var(--sans);color:var(--muted);padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--glass)}
+.chip b{color:var(--fg);font-weight:600}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr}}
+
+/* call console */
+.console{position:relative;border-radius:22px;padding:1px;background:linear-gradient(160deg,rgba(169,150,255,.55),rgba(169,150,255,.06) 40%,rgba(52,211,153,.25));min-width:0}
+.console-in{border-radius:21px;background:linear-gradient(180deg,rgba(19,27,54,.96),rgba(10,15,30,.98));padding:22px;display:grid;gap:16px;backdrop-filter:blur(12px)}
+.con-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font:500 12px var(--mono);color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.status{display:inline-flex;align-items:center;gap:8px;padding:6px 11px;border-radius:999px;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;background:rgba(251,191,36,.12);color:var(--warn);transition:all .3s}
+.status i{width:7px;height:7px;border-radius:50%;background:currentColor;animation:blink 1s infinite}
+.status.live{background:rgba(52,211,153,.12);color:var(--ok)}
+.status.done{background:rgba(169,150,255,.14);color:var(--violet-hi)}
+.status.done i{animation:none}
+@keyframes blink{50%{opacity:.25}}
+.caller{display:flex;gap:14px;align-items:center}
+.avatar{flex:none;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--glass-2);border:1px solid var(--line-2);position:relative}
+.avatar svg{width:22px;height:22px;color:var(--fg)}
+.ring .avatar::after{content:"";position:absolute;inset:-6px;border-radius:18px;border:2px solid var(--warn);opacity:0;animation:ring 1.2s infinite}
+@keyframes ring{0%{opacity:.8;transform:scale(.9)}100%{opacity:0;transform:scale(1.25)}}
+.caller-meta{min-width:0}
+.caller-name{font-weight:700;font-size:17px}
+.caller-line{color:var(--muted);font-size:14px}
+.timer{margin-left:auto;font:600 15px var(--mono);color:var(--fg);font-variant-numeric:tabular-nums}
+.bubbles{display:grid;gap:8px;min-height:208px;align-content:start}
+.bub{max-width:88%;padding:10px 13px;border-radius:14px;font-size:14px;line-height:1.45;animation:pop .35s ease both}
+.bub.c-caller{background:var(--glass-2);border:1px solid var(--line);justify-self:start;border-bottom-left-radius:4px}
+.bub.c-agent{background:rgba(123,92,246,.18);border:1px solid rgba(169,150,255,.3);justify-self:end;border-bottom-right-radius:4px}
+.bub small{display:block;font:600 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.typing{justify-self:end;display:flex;gap:4px;padding:12px 14px;border-radius:14px;background:rgba(123,92,246,.12)}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--violet-hi);animation:dots 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dots{50%{opacity:.2;transform:translateY(-2px)}}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.outcome{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r-sm);background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--ok);font-weight:600;font-size:14px;transition:opacity .4s}
+.outcome svg{flex:none;width:18px;height:18px}
+.outcome.off{opacity:.25;filter:grayscale(1)}
+
+/* leaks */
+.leaks{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.leak{padding:26px;border-radius:var(--r);background:var(--glass);border:1px solid var(--line);display:grid;gap:10px;align-content:start}
+.leak .k{font:600 12px var(--mono);color:var(--hot);letter-spacing:.08em}
+.leak h3{font-size:20px;line-height:1.25}
+.leak p{margin:0;color:var(--muted);font-size:15px}
+@media (max-width:820px){.leaks{grid-template-columns:1fr}}
+
+/* listen in */
+.listen{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:start}
+.panel{border-radius:var(--r);background:var(--bg-2);border:1px solid var(--line);padding:24px;min-width:0}
+.panel-h{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.replay{background:none;border:1px solid var(--line-2);color:var(--fg);border-radius:999px;padding:7px 14px;font:600 12px var(--mono);letter-spacing:.06em;cursor:pointer;text-transform:uppercase}
+.replay:hover{border-color:var(--violet-hi)}
+.transcript{display:grid;gap:10px;min-height:300px;align-content:start}
+.summary{display:grid;gap:0}
+.sum-row{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:13px 0;border-bottom:1px dashed var(--line);font-size:15px;opacity:.25;transition:opacity .4s}
+.sum-row.on{opacity:1}
+.sum-row:last-child{border-bottom:0}
+.sum-row dt{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding-top:3px}
+.sum-row dd{margin:0;font-weight:600}
+.sum-row:last-child dd{color:var(--ok)}
+.sum-foot{margin-top:16px;font-size:13px;color:var(--dim)}
+@media (max-width:900px){.listen{grid-template-columns:1fr}}
+
+/* rules */
+.rules{display:grid;gap:10px}
+.rule{display:grid;grid-template-columns:1fr 64px 1fr;align-items:center;gap:0;padding:6px;border-radius:16px;border:1px solid var(--line);background:var(--glass);cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%;transition:border-color .2s,background .2s}
+.rule:hover,.rule.on{border-color:rgba(169,150,255,.5);background:rgba(123,92,246,.09)}
+.rule .t,.rule .a{padding:16px 18px;border-radius:11px;font-weight:600;font-size:15px;line-height:1.35}
+.rule .t{background:var(--bg-2)}
+.rule .t small,.rule .a small{display:block;font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;font-weight:600}
+.rule .a{background:var(--bg-3)}
+.rule.on .a{background:var(--violet);color:#fff}
+.rule.on .a small{color:rgba(255,255,255,.75)}
+.wire{position:relative;height:2px;background:var(--line-2);margin:0 6px}
+.wire::after{content:"";position:absolute;right:-2px;top:-4px;border:5px solid transparent;border-left:7px solid var(--line-2);border-right:0}
+.rule.on .wire{background:linear-gradient(90deg,transparent,var(--violet-hi));background-size:200% 100%;animation:flow 1s linear infinite}
+.rule.on .wire::after{border-left-color:var(--violet-hi)}
+@keyframes flow{from{background-position:100% 0}to{background-position:-100% 0}}
+@media (max-width:640px){.rule{grid-template-columns:1fr}.wire{height:18px;width:2px;margin:4px auto}.wire::after{right:-4px;top:auto;bottom:-3px;border:5px solid transparent;border-top:7px solid var(--line-2);border-bottom:0}.rule.on .wire::after{border-top-color:var(--violet-hi);border-left-color:transparent}}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:stretch}
+.sliders{display:grid;gap:26px;align-content:start}
+.sl label{display:flex;justify-content:space-between;gap:12px;font-weight:600;font-size:15px;margin-bottom:12px}
+.sl label output{font:600 16px var(--mono);color:var(--violet-hi);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--violet);height:6px}
+.result{border-radius:var(--r);padding:30px;background:radial-gradient(400px 220px at 80% 0%,rgba(123,92,246,.35),transparent 70%),var(--bg-3);border:1px solid rgba(169,150,255,.3);display:grid;gap:18px;align-content:center}
+.result .lab{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.big{font:800 clamp(44px,6vw,68px)/1 var(--sans);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.big small{font-size:.38em;color:var(--muted);font-weight:600;letter-spacing:0}
+.result .sub2{display:flex;gap:24px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+.result .sub2 b{display:block;color:var(--fg);font:700 20px var(--mono);font-variant-numeric:tabular-nums}
+.fine{font-size:12px;color:var(--dim);margin:0}
+@media (max-width:900px){.calc{grid-template-columns:1fr}}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;counter-reset:s;position:relative}
+.step{padding:0 22px 0 0;display:grid;gap:10px;align-content:start;position:relative}
+.step .n{font:600 13px var(--mono);color:var(--violet-hi);display:flex;align-items:center;gap:10px}
+.step .n::after{content:"";flex:1;height:1px;background:var(--line-2)}
+.step:last-child .n::after{background:linear-gradient(90deg,var(--line-2),transparent)}
+.step h3{font-size:19px}
+.step p{margin:0;color:var(--muted);font-size:15px}
+@media (max-width:900px){.steps{grid-template-columns:1fr 1fr;gap:32px}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+
+/* why */
+.why{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.why div{background:var(--bg);padding:28px;display:grid;gap:8px;align-content:start}
+.why .k{font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.why h3{font-size:19px}
+.why p{margin:0;color:var(--muted);font-size:15px}
+@media (max-width:820px){.why{grid-template-columns:1fr}}
+
+/* faq */
+.faq{display:grid;gap:10px;max-width:860px}
+.faq details{border:1px solid var(--line);border-radius:14px;background:var(--glass);padding:0 20px}
+.faq summary{list-style:none;cursor:pointer;padding:20px 0;font-weight:700;font-size:17px;display:flex;justify-content:space-between;gap:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font:500 22px/1 var(--mono);color:var(--violet-hi);transition:transform .2s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{margin:0 0 20px;color:var(--muted);max-width:70ch}
+
+/* related */
+.related{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.rel{display:grid;gap:6px;padding:20px;border-radius:14px;border:1px solid var(--line);text-decoration:none;transition:border-color .2s,transform .2s}
+.rel:hover{border-color:var(--violet-hi);transform:translateY(-2px)}
+.rel small{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.rel b{font-size:16px}
+.rel span{color:var(--violet-hi);font-size:14px;font-weight:600}
+@media (max-width:820px){.related{grid-template-columns:1fr}}
+
+/* cta band */
+.band{border-radius:28px;padding:clamp(32px,5vw,64px);background:radial-gradient(500px 300px at 85% 20%,rgba(123,92,246,.55),transparent 70%),radial-gradient(400px 260px at 0% 100%,rgba(52,211,153,.14),transparent 70%),var(--bg-3);border:1px solid rgba(169,150,255,.3);display:grid;grid-template-columns:1.4fr auto;gap:28px;align-items:center}
+.band h2{font-size:clamp(28px,3.4vw,42px)}
+.band p{margin:10px 0 0;color:var(--muted)}
+@media (max-width:820px){.band{grid-template-columns:1fr}}
+
+/* compare */
+.vs-hero{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+.vs-card{padding:22px;border-radius:var(--r);border:1px solid var(--line);background:var(--glass);display:grid;gap:6px}
+.vs-card.b{border-color:rgba(169,150,255,.45);background:rgba(123,92,246,.1)}
+.vs-card small{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.vs-card b{font-size:20px}
+.table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{padding:16px 20px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);font-size:15px}
+thead th{font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);background:var(--bg-2)}
+thead th:last-child{color:var(--violet-hi)}
+tbody th{font-weight:700;width:28%}
+tbody td:nth-child(2){color:var(--muted)}
+tbody td:last-child{background:rgba(123,92,246,.06)}
+tbody tr:last-child>*{border-bottom:0}
+.when{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.when .panel h3{font-size:20px;margin-bottom:14px}
+.when ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.when li{display:grid;grid-template-columns:22px 1fr;gap:10px;color:var(--muted)}
+.when li::before{content:"✓";font:700 14px var(--mono);color:var(--ok)}
+.when .panel.b{border-color:rgba(169,150,255,.4)}
+@media (max-width:820px){.when,.vs-hero{grid-template-columns:1fr}}
+
+/* footer + sticky */
+footer{border-top:1px solid var(--line);padding-block:36px;color:var(--dim);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(10,15,30,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:none}
+.sticky .btn{width:100%;justify-content:center}
+@media (max-width:700px){.sticky{display:block}footer{padding-bottom:110px}}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="switcher" id="switcher"><div class="wrap"><label for="pagepick">Preview page</label><select id="pagepick"></select></div></div>
+<div id="app"></div>
+
+<script>
+// Victory Sync SEO pages: content for 10 industry/service pages + 2 comparison pages.
+// Rules: no pricing, no em dashes, no made-up statistics. Calculator defaults are examples the visitor edits.
+// CTA everywhere: https://consult.victorysync.com
+
+const SITE = {
+  name: "Victory Sync",
+  url: "https://victorysync.com",
+  cta: "https://consult.victorysync.com",
+  ctaLabel: "Book a free consultation",
+  phone: "(732) 328-6846",
+  phoneHref: "tel:+17323286846",
+};
+
+const PAGES = [
+  // ───────────────────────────── 1
+  {
+    slug: "answering-service-for-plumbers",
+    kind: "service",
+    mode: "call",
+    industry: "Plumbing",
+    title: "Answering Service for Plumbers | Live Answering, 24/7 Booking | Victory Sync",
+    description:
+      "A live answering service for plumbing companies. Real people answer in your company's name, book jobs on your calendar, and send emergencies straight to your on-call tech.",
+    eyebrow: "Answering service for plumbers",
+    h1: ["Every burst pipe", "is a booked job.", "If someone picks up."],
+    sub: "We answer your plumbing company's phones in your name, nights and weekends included. Emergencies go to your on-call tech. Everything else gets booked on your calendar, and you get a summary of every call.",
+    call: { time: "Sun 9:47 PM", caller: "Dana R.", line: "Water's coming through the kitchen ceiling", outcome: "Sent to on-call tech in 40 sec" },
+    pains: [
+      { t: "You're under a sink when it rings", d: "You can't stop a job to answer. The caller doesn't wait. They hang up and call the next plumber on Google." },
+      { t: "Emergencies don't keep office hours", d: "The calls worth the most come in at 10 PM on a Saturday. Voicemail tells them to go somewhere else." },
+      { t: "Your office line is a bottleneck", d: "One person answering, scheduling, and chasing invoices means some calls just don't get picked up." },
+    ],
+    transcript: [
+      { who: "agent", text: "Thanks for calling Reliable Plumbing, this is Mariam. What's going on?" },
+      { who: "caller", text: "Water is dripping through my kitchen ceiling. I think something upstairs burst." },
+      { who: "agent", text: "Okay, first thing: do you know where your main water shutoff is? Let's turn that off while I get you help." },
+      { who: "caller", text: "Yeah, it's in the basement. Okay... it's off." },
+      { who: "agent", text: "Perfect. I'm connecting you to our on-call technician right now. Can I confirm your address in case we get cut off?" },
+    ],
+    summary: [
+      ["Caller", "Dana R., existing customer"],
+      ["Issue", "Active leak, upstairs bathroom"],
+      ["Action", "Main shut off, live transfer to on-call"],
+      ["Outcome", "Tech dispatched, 9:52 PM"],
+    ],
+    rules: [
+      { trigger: "Active leak or no water", action: "Live transfer to on-call tech" },
+      { trigger: "Drain or water heater quote", action: "Book next open slot" },
+      { trigger: "Existing job question", action: "Take message, text the office" },
+      { trigger: "Sales or vendor call", action: "Take a message, no transfer" },
+    ],
+    calc: { unit: "missed calls a week", missed: 8, bookRate: 40, value: 450, valueLabel: "Average plumbing ticket" },
+    faqs: [
+      { q: "Will callers know you're not in our office?", a: "No. We answer in your company's name with a greeting you approve, and we're trained on your services, service area, and how you like to book." },
+      { q: "How do you handle emergencies?", a: "You set the rules. Most plumbers have us send active leaks, sewer backups, and no-water calls to the on-call tech live, and book everything else." },
+      { q: "Can you book straight onto our schedule?", a: "Yes. We book into the scheduling tool you already use, or a shared calendar if you don't have one yet." },
+      { q: "Do we have to sign a long contract?", a: "We start with a small pilot so you can see real calls and real bookings before committing to anything bigger." },
+      { q: "Can I hear how calls are going?", a: "Yes. You can review any call, and you get a written summary after each one." },
+    ],
+    related: ["answering-service-for-hvac", "plumber-marketing", "answering-service-for-electricians"],
+  },
+
+  // ───────────────────────────── 2
+  {
+    slug: "answering-service-for-hvac",
+    kind: "service",
+    mode: "call",
+    industry: "HVAC",
+    title: "HVAC Answering Service | Book Service Calls 24/7 | Victory Sync",
+    description:
+      "An HVAC answering service with real people. We book tune-ups and repairs, route no-heat and no-cool emergencies to your tech, and send a summary of every call.",
+    eyebrow: "HVAC answering service",
+    h1: ["No heat at midnight.", "Who answers", "your phone?"],
+    sub: "When the first cold snap hits, your phones light up all at once. We answer every call in your company's name, book repairs and maintenance, and route true emergencies to whoever is on call.",
+    call: { time: "Tue 11:58 PM", caller: "Marcus T.", line: "Furnace stopped, house is at 54 degrees", outcome: "Booked first slot, 7:30 AM" },
+    pains: [
+      { t: "Peak season breaks your phone line", d: "A heat wave or cold snap doubles call volume overnight. That's exactly when calls get missed." },
+      { t: "Maintenance calls fall through the cracks", d: "Tune-up and replacement leads are worth a lot over time, but they're the first ones nobody calls back." },
+      { t: "Your techs end up answering phones", d: "Every call a tech takes on a roof is time they're not finishing the job in front of them." },
+    ],
+    transcript: [
+      { who: "agent", text: "Thank you for calling Northside Heating and Air, this is Youssef. How can I help?" },
+      { who: "caller", text: "My furnace just stopped and it's freezing in here. Can someone come tonight?" },
+      { who: "agent", text: "I'm sorry, that's no fun. Is anyone in the home elderly, an infant, or someone with a medical need?" },
+      { who: "caller", text: "No, just me and my wife. We have space heaters for tonight." },
+      { who: "agent", text: "Good. Then the fastest option is our first slot at 7:30 tomorrow morning. I'll lock that in for you now." },
+    ],
+    summary: [
+      ["Caller", "Marcus T., new customer"],
+      ["Issue", "Furnace not running, 54°F inside"],
+      ["Triage", "No vulnerable occupants, safe overnight"],
+      ["Outcome", "Booked Wed 7:30 AM, first slot"],
+    ],
+    rules: [
+      { trigger: "No heat with elderly or infant", action: "Live transfer to on-call tech" },
+      { trigger: "No heat or no cool, safe overnight", action: "Book first morning slot" },
+      { trigger: "Tune-up or maintenance plan", action: "Book and confirm by text" },
+      { trigger: "Replacement or new system quote", action: "Book estimate with comfort advisor" },
+    ],
+    calc: { unit: "missed calls a week", missed: 10, bookRate: 40, value: 380, valueLabel: "Average service call" },
+    faqs: [
+      { q: "Can you tell the difference between an emergency and a regular call?", a: "Yes. We follow triage questions you approve, like checking for elderly or infants in the home, and route or book based on your rules." },
+      { q: "What about maintenance plan members?", a: "We can flag members, follow your priority rules for them, and book their tune-ups when they call." },
+      { q: "Can you handle the summer rush?", a: "That's one of the main reasons HVAC companies use us. We scale with your call volume so the busiest weeks don't turn into missed calls." },
+      { q: "Will you book replacement estimates?", a: "Yes. We qualify the basics, like system age and what's going on, and book the estimate with your comfort advisor." },
+      { q: "How do we get started?", a: "We learn your services and booking rules, you approve the script, and we run a small pilot so you can judge it on real calls." },
+    ],
+    related: ["answering-service-for-plumbers", "hvac-marketing", "in-house-receptionist-vs-outsourced"],
+  },
+
+  // ───────────────────────────── 3
+  {
+    slug: "plumber-marketing",
+    kind: "service",
+    mode: "lead",
+    industry: "Plumbing",
+    title: "Plumber Marketing That Books Jobs | Google Maps, Meta Ads, Follow-Up | Victory Sync",
+    description:
+      "Marketing for plumbing companies that doesn't stop at the click. We grow your Google Maps presence, run Meta ads and landing pages, and our team calls every lead fast.",
+    eyebrow: "Marketing for plumbers",
+    h1: ["More calls", "from Google Maps.", "And someone to answer them."],
+    sub: "Most plumbing marketing ends at the lead. Ours doesn't. We get you found on Google Maps and Facebook, then our team calls every new lead back within minutes so it turns into a booked job.",
+    call: { time: "Mon 9:02 AM", caller: "Web form: Kevin L.", line: "Water heater leaking, need a quote", outcome: "Called back in 3 min, booked" },
+    pains: [
+      { t: "Your Google Maps listing is invisible", d: "If you're not in the top three on the map for 'plumber near me', most people never see you." },
+      { t: "Ads bring leads that go nowhere", d: "Form fills sit in an inbox until the end of the day. By then the customer has already hired someone." },
+      { t: "Nobody can tell you what's working", d: "You're paying for marketing but nobody shows you which calls and jobs actually came from it." },
+    ],
+    transcript: [
+      { who: "agent", text: "Hi Kevin, this is Sara from Reliable Plumbing. You just sent us a request about your water heater?" },
+      { who: "caller", text: "Wow, that was fast. Yeah, it's leaking from the bottom." },
+      { who: "agent", text: "That usually means the tank is on its way out. How old is it, roughly?" },
+      { who: "caller", text: "Twelve years, maybe more." },
+      { who: "agent", text: "Got it. I can get a technician out tomorrow between 10 and 12 to look and give you replacement options. Does that work?" },
+    ],
+    summary: [
+      ["Source", "Meta ad, water heater campaign"],
+      ["Lead", "Kevin L., homeowner"],
+      ["Speed", "Called back in 3 minutes"],
+      ["Outcome", "Estimate booked, Tue 10 AM"],
+    ],
+    rules: [
+      { trigger: "Google Maps listing", action: "Weekly posts, photos, reviews, services" },
+      { trigger: "Meta ads", action: "Offers built around your best-paying jobs" },
+      { trigger: "Landing pages", action: "One page per service, built to convert" },
+      { trigger: "Every new lead", action: "Our team calls back within minutes" },
+    ],
+    rulesTitle: "What we run for you",
+    calc: { unit: "new leads a month", missed: 40, bookRate: 25, value: 450, valueLabel: "Average plumbing ticket", leakLabel: "Leads lost to slow follow-up (%)" },
+    faqs: [
+      { q: "What's included?", a: "Google Maps optimization, Meta (Facebook and Instagram) ads, ad creative, landing pages, and fast follow-up calls on every lead from our team." },
+      { q: "Why do you call the leads too?", a: "Because speed decides who gets the job. A lead called back in minutes is far more likely to book than one called back hours later, and most shops can't do that consistently." },
+      { q: "Do I need a new website?", a: "Not always. We often start with focused landing pages for your main services and improve your existing site over time." },
+      { q: "Do I approve the ads?", a: "Yes. You sign off on the plan, the creative, and the ad budget before anything goes live." },
+      { q: "How will I know it's working?", a: "You get a dashboard showing leads, calls, and booked jobs, so you can see what each channel actually brought in." },
+    ],
+    related: ["hvac-marketing", "answering-service-for-plumbers", "lead-reactivation-service"],
+  },
+
+  // ───────────────────────────── 4
+  {
+    slug: "hvac-marketing",
+    kind: "service",
+    mode: "lead",
+    industry: "HVAC",
+    title: "HVAC Marketing: Google Maps, Meta Ads and Lead Follow-Up | Victory Sync",
+    description:
+      "HVAC marketing built to book service calls and replacements. Google Maps, Meta ads, landing pages, and a team that calls every lead back fast.",
+    eyebrow: "Marketing for HVAC companies",
+    h1: ["Fill the slow season.", "Win the busy one."],
+    sub: "We run your Google Maps presence, Meta ads, and landing pages around the jobs you actually want: tune-ups in the off season, repairs and replacements when it counts. Then our team calls every lead back fast.",
+    call: { time: "Thu 2:14 PM", caller: "Ad lead: Priya S.", line: "AC is 18 years old, thinking about replacing", outcome: "Comfort visit booked Sat 9 AM" },
+    pains: [
+      { t: "Feast or famine", d: "Peak season you can't keep up. Shoulder season the phone goes quiet and your techs sit idle." },
+      { t: "Replacement leads cool off fast", d: "A homeowner shopping for a new system calls three companies. The first one to reach them usually wins." },
+      { t: "Marketing and follow-up don't talk", d: "Your agency sends leads, your office calls them when they can, and nobody owns what happens in between." },
+    ],
+    transcript: [
+      { who: "agent", text: "Hi Priya, it's Omar from Northside Heating and Air. You asked about replacing your AC?" },
+      { who: "caller", text: "Yes, it's 18 years old and it's struggling. I'm just starting to look." },
+      { who: "agent", text: "Makes sense. A comfort advisor can come take a look and walk you through options, no pressure. Is Saturday morning good?" },
+      { who: "caller", text: "Saturday at 9 would actually be perfect." },
+      { who: "agent", text: "Done. You'll get a text confirmation with the advisor's name in a minute." },
+    ],
+    summary: [
+      ["Source", "Meta ad, AC replacement offer"],
+      ["Lead", "Priya S., 18-year-old system"],
+      ["Speed", "Called back in 4 minutes"],
+      ["Outcome", "Comfort visit, Sat 9 AM"],
+    ],
+    rules: [
+      { trigger: "Off season", action: "Tune-up and maintenance plan campaigns" },
+      { trigger: "Peak season", action: "Repair and replacement campaigns" },
+      { trigger: "Google Maps", action: "Weekly posts, photos, review growth" },
+      { trigger: "Every lead", action: "Called back fast, booked on your calendar" },
+    ],
+    rulesTitle: "What we run for you",
+    calc: { unit: "new leads a month", missed: 50, bookRate: 25, value: 600, valueLabel: "Average job value", leakLabel: "Leads lost to slow follow-up (%)" },
+    faqs: [
+      { q: "Can you help in the slow season?", a: "Yes. Off-season campaigns around tune-ups, maintenance plans, and indoor air quality keep your techs busy between peaks." },
+      { q: "Do you run Google ads too?", a: "Yes, alongside Meta ads and Google Maps optimization. We choose the mix based on your area and the jobs you want more of." },
+      { q: "Who calls the leads?", a: "Our own team, trained on your services. They call fast, qualify, and book straight onto your calendar." },
+      { q: "Do I approve the budget?", a: "Always. Nothing goes live until you sign off on the plan, the creative, and the spend." },
+      { q: "What do I see each week?", a: "Leads, calls, booked jobs, and where each one came from, in your own dashboard." },
+    ],
+    related: ["plumber-marketing", "answering-service-for-hvac", "roofing-appointment-setting"],
+  },
+
+  // ───────────────────────────── 5
+  {
+    slug: "roofing-appointment-setting",
+    kind: "service",
+    mode: "lead",
+    industry: "Roofing",
+    title: "Roofing Appointment Setting | Book More Inspections | Victory Sync",
+    description:
+      "Appointment setting for roofing companies. We call your leads fast, qualify them on your terms, and book inspections and estimates onto your reps' calendars.",
+    eyebrow: "Appointment setting for roofers",
+    h1: ["Storm hits.", "Leads flood in.", "We book the inspections."],
+    sub: "After a storm, the roofer who calls first usually gets the inspection. Our team calls your leads within minutes, asks your qualifying questions, and books inspections straight onto your reps' calendars.",
+    call: { time: "Fri 6:20 PM", caller: "Storm lead: James W.", line: "Shingles in the yard after last night", outcome: "Inspection booked Sat 11 AM" },
+    pains: [
+      { t: "Leads arrive in waves", d: "One storm brings a week's worth of leads in a day. Your office can't call them all back fast enough." },
+      { t: "Reps waste time on bad fits", d: "Renters, people outside your area, and tire-kickers end up on the calendar next to real homeowners." },
+      { t: "Old estimates go cold", d: "Homeowners who got a quote and went quiet are rarely followed up, even though many still need the work." },
+    ],
+    transcript: [
+      { who: "agent", text: "Hi James, this is Nour with Summit Roofing. You reported storm damage on our site?" },
+      { who: "caller", text: "Yeah, there are shingles all over my yard after last night." },
+      { who: "agent", text: "Sorry to hear that. Quick check: do you own the home, and is anything leaking inside right now?" },
+      { who: "caller", text: "I own it. No leaks yet that I can see." },
+      { who: "agent", text: "Good. I can get an inspector out tomorrow at 11 to document everything. Want me to book it?" },
+    ],
+    summary: [
+      ["Lead", "James W., homeowner"],
+      ["Qualified", "Owner, in service area, storm damage"],
+      ["Speed", "Called in 2 minutes"],
+      ["Outcome", "Inspection Sat 11 AM, rep: Chris"],
+    ],
+    rules: [
+      { trigger: "Homeowner, in area, damage", action: "Book inspection with next rep" },
+      { trigger: "Active leak inside", action: "Flag urgent, notify on-call" },
+      { trigger: "Renter or outside area", action: "Log reason, politely close" },
+      { trigger: "Got a quote, went quiet", action: "Follow-up call sequence" },
+    ],
+    rulesTitle: "How every lead is handled",
+    calc: { unit: "new leads a month", missed: 60, bookRate: 30, value: 9000, valueLabel: "Average roof job", leakLabel: "Leads lost to slow follow-up (%)" },
+    faqs: [
+      { q: "Do you knock doors or only call?", a: "We call, text-confirm, and follow up. Your reps handle the inspections and the close." },
+      { q: "Can you handle storm surges?", a: "Yes. That's when we're most useful, since lead volume spikes far beyond what an office can call back quickly." },
+      { q: "What questions do you ask?", a: "Whatever matters to you, usually ownership, location, type of damage, insurance status, and timing. You approve the script." },
+      { q: "Can you work our old estimates?", a: "Yes. Reactivating homeowners who got a quote and went quiet is one of the fastest wins we see." },
+      { q: "Which CRM do you work in?", a: "We work inside your existing CRM or scheduling tool so your reps see bookings where they already look." },
+    ],
+    related: ["lead-reactivation-service", "hvac-marketing", "plumber-marketing"],
+  },
+
+  // ───────────────────────────── 6
+  {
+    slug: "answering-service-for-electricians",
+    kind: "service",
+    mode: "call",
+    industry: "Electrical",
+    title: "Answering Service for Electricians | Live Call Answering | Victory Sync",
+    description:
+      "A live answering service for electrical contractors. We answer in your name, book service calls and estimates, and route urgent safety calls to your on-call electrician.",
+    eyebrow: "Answering service for electricians",
+    h1: ["You're on a panel.", "Your phone is ringing.", "We've got it."],
+    sub: "Electricians can't drop a job to grab the phone. We answer every call in your company's name, book service calls and estimates, and send anything urgent to the electrician on call.",
+    call: { time: "Wed 3:31 PM", caller: "Lisa M.", line: "Half the house lost power, breaker won't reset", outcome: "Booked today, 5 PM" },
+    pains: [
+      { t: "Hands full, phone ringing", d: "On a ladder, in an attic, in a panel. You can't answer, and the caller won't leave a voicemail." },
+      { t: "Estimates need fast replies", d: "Panel upgrades, EV chargers, and remodels get quoted by several shops. The fastest response usually wins." },
+      { t: "Safety calls need judgment", d: "Burning smells and sparking outlets can't wait in a voicemail box until morning." },
+    ],
+    transcript: [
+      { who: "agent", text: "Bright Line Electric, this is Hana. What's going on?" },
+      { who: "caller", text: "Half my house lost power and the breaker keeps tripping when I reset it." },
+      { who: "agent", text: "Okay. Any burning smell, sparking, or heat around the panel or outlets?" },
+      { who: "caller", text: "No, nothing like that." },
+      { who: "agent", text: "Good, please leave that breaker off for now. I have an electrician available at 5 today. Shall I book it?" },
+    ],
+    summary: [
+      ["Caller", "Lisa M., new customer"],
+      ["Issue", "Breaker trips on reset, partial outage"],
+      ["Safety check", "No burning smell or sparking"],
+      ["Outcome", "Service call today 5 PM"],
+    ],
+    rules: [
+      { trigger: "Burning smell or sparking", action: "Advise 911 if needed, live transfer" },
+      { trigger: "Outage or tripping breaker", action: "Book first available slot" },
+      { trigger: "Panel, EV charger, remodel", action: "Book estimate" },
+      { trigger: "Contractor or builder call", action: "Message to owner by text" },
+    ],
+    calc: { unit: "missed calls a week", missed: 6, bookRate: 40, value: 400, valueLabel: "Average service ticket" },
+    faqs: [
+      { q: "How do you handle safety issues?", a: "With questions you approve. Signs of fire risk follow your emergency rules, which can include telling the caller to contact 911 and transferring to your on-call electrician." },
+      { q: "Can you book estimates for bigger jobs?", a: "Yes. We gather the basics like job type, address, and timing, and book the estimate on your calendar." },
+      { q: "Do you take calls from builders and GCs?", a: "Yes. We can route them however you like, often a text message straight to the owner." },
+      { q: "Is there a minimum?", a: "We start with a small pilot sized to your call volume, so you can judge results before scaling." },
+      { q: "Will you sound like my company?", a: "Yes. We use your name, your greeting, and your way of explaining things. You approve the script before we take a single call." },
+    ],
+    related: ["answering-service-for-plumbers", "answering-service-for-hvac", "ai-receptionist-vs-answering-service"],
+  },
+
+  // ───────────────────────────── 7
+  {
+    slug: "answering-service-for-law-firms",
+    kind: "service",
+    mode: "call",
+    industry: "Legal",
+    title: "Legal Answering Service & Intake for Law Firms | Victory Sync",
+    description:
+      "Live answering and client intake for law firms. We answer in your firm's name, run your intake questions, screen for fit, and book consultations with your attorneys.",
+    eyebrow: "Answering service for law firms",
+    h1: ["The client who calls", "at 7 PM hires", "the firm that answers."],
+    sub: "People call a lawyer when something has just gone wrong. We answer in your firm's name, run your intake questions, screen out bad fits, and book consultations so your attorneys spend time on cases, not phone tag.",
+    call: { time: "Mon 7:12 PM", caller: "Andre P.", line: "Rear-ended this afternoon, other driver had no insurance", outcome: "Consult booked Tue 10 AM" },
+    pains: [
+      { t: "After-hours calls go to competitors", d: "Accidents, arrests, and family emergencies don't happen 9 to 5. Whoever answers first usually gets the case." },
+      { t: "Attorneys stuck screening calls", d: "Billable time disappears into calls from people outside your practice area or jurisdiction." },
+      { t: "Intake is inconsistent", d: "Different staff ask different questions, so key details are missing when the attorney calls back." },
+    ],
+    transcript: [
+      { who: "agent", text: "Thank you for calling Carter & Hale, this is Laila. How can we help today?" },
+      { who: "caller", text: "I was rear-ended this afternoon and the other driver didn't have insurance." },
+      { who: "agent", text: "I'm sorry that happened. First, are you okay, and did you get checked out by a doctor?" },
+      { who: "caller", text: "Sore neck. I'm going to urgent care tonight." },
+      { who: "agent", text: "That's a good idea. I'll get a few details for the attorney and book you a free consultation for tomorrow at 10." },
+    ],
+    summary: [
+      ["Caller", "Andre P., potential new client"],
+      ["Matter", "Auto accident, uninsured driver"],
+      ["Intake", "Date, location, injury, police report: yes"],
+      ["Outcome", "Consultation Tue 10 AM"],
+    ],
+    rules: [
+      { trigger: "Fits your practice areas", action: "Full intake, book consultation" },
+      { trigger: "Urgent matter, like an arrest", action: "Live transfer or page attorney" },
+      { trigger: "Outside practice area", action: "Polite decline, referral if you have one" },
+      { trigger: "Existing client", action: "Message to assigned attorney" },
+    ],
+    calc: { unit: "missed calls a week", missed: 5, bookRate: 25, value: 3500, valueLabel: "Average case value" },
+    faqs: [
+      { q: "Do you give legal advice?", a: "Never. Our team gathers information using your intake script and books consultations. Legal advice always comes from your attorneys." },
+      { q: "Can you follow our intake form?", a: "Yes. We use your questions, in your order, and log answers so your attorney has everything before the consult." },
+      { q: "What about conflicts and confidentiality?", a: "We follow the process you set, including collecting names for conflict checks and keeping intake details limited to what your firm needs." },
+      { q: "Which practice areas do you handle?", a: "Personal injury, family law, criminal defense, estate planning, immigration, and more. We train on your specific areas." },
+      { q: "Can calls go into our case management software?", a: "We work inside the tools you already use whenever possible, or send intake summaries in the format you prefer." },
+    ],
+    related: ["in-house-receptionist-vs-outsourced", "ai-receptionist-vs-answering-service", "real-estate-appointment-setting"],
+  },
+
+  // ───────────────────────────── 8
+  {
+    slug: "real-estate-appointment-setting",
+    kind: "service",
+    mode: "lead",
+    industry: "Real estate",
+    title: "Real Estate Appointment Setting & Inside Sales Support | Victory Sync",
+    description:
+      "Appointment setting for real estate agents and teams. We call your leads fast, qualify buyers and sellers, and book showings and listing appointments.",
+    eyebrow: "Appointment setting for real estate",
+    h1: ["Your leads aren't cold.", "They're just", "waiting for a call."],
+    sub: "Portal leads, sign calls, and old database contacts all go cold when nobody calls. Our team calls fast, qualifies buyers and sellers, and books showings and listing appointments for your agents.",
+    call: { time: "Sat 8:40 AM", caller: "Zillow lead: Megan K.", line: "Interested in 42 Oak St, pre-approved", outcome: "Showing booked Sat 1 PM" },
+    pains: [
+      { t: "Leads cost money and go uncalled", d: "Agents are showing homes and closing deals. New leads sit for hours, and old ones never get a second call." },
+      { t: "Your database is full of opportunities", d: "Past clients and old leads move, refinance, and refer, but nobody has time to call them." },
+      { t: "Hiring an ISA is a gamble", d: "Recruiting, training, and managing an in-house ISA is expensive, and turnover is high." },
+    ],
+    transcript: [
+      { who: "agent", text: "Hi Megan, this is Mostafa with Coastline Realty. You asked about 42 Oak Street?" },
+      { who: "caller", text: "Yes! Is it still available? We'd love to see it this weekend." },
+      { who: "agent", text: "It is. Are you working with an agent already, and have you been pre-approved?" },
+      { who: "caller", text: "No agent yet, and yes, we're pre-approved." },
+      { who: "agent", text: "Perfect. Jenna can show it today at 1. I'll send you her contact details by text." },
+    ],
+    summary: [
+      ["Lead", "Megan K., buyer"],
+      ["Qualified", "Pre-approved, no agent, buying in 60 days"],
+      ["Speed", "Called in 4 minutes"],
+      ["Outcome", "Showing Sat 1 PM with Jenna"],
+    ],
+    rules: [
+      { trigger: "Pre-approved buyer, no agent", action: "Book showing with your agent" },
+      { trigger: "Seller thinking of listing", action: "Book listing appointment" },
+      { trigger: "Early stage, 6+ months out", action: "Add to follow-up sequence" },
+      { trigger: "Already has an agent", action: "Log and close politely" },
+    ],
+    rulesTitle: "How every lead is handled",
+    calc: { unit: "new leads a month", missed: 80, bookRate: 10, value: 8000, valueLabel: "Average commission", leakLabel: "Leads never reached (%)" },
+    faqs: [
+      { q: "Is this like having an ISA?", a: "Yes, without hiring, training, and managing one yourself. You get a trained team plus a named team owner you can always call." },
+      { q: "Which lead sources can you work?", a: "Portal leads, website forms, sign calls, open house sign-ins, and your past client database." },
+      { q: "Do you follow up with long-term leads?", a: "Yes. Leads who aren't ready get a follow-up schedule you approve, so they hear from you when they are." },
+      { q: "Can you work in our CRM?", a: "We work inside your existing CRM so every call, note, and appointment is where your agents expect it." },
+      { q: "Do you call FSBO and expired listings?", a: "We can, using scripts you approve and following do-not-call rules." },
+    ],
+    related: ["lead-reactivation-service", "saas-appointment-setting", "answering-service-for-law-firms"],
+  },
+
+  // ───────────────────────────── 9
+  {
+    slug: "saas-appointment-setting",
+    kind: "service",
+    mode: "lead",
+    industry: "SaaS",
+    title: "Outsourced SDR & Appointment Setting for SaaS | Victory Sync",
+    description:
+      "Outsourced SDRs for SaaS companies. We call your inbound and outbound leads, qualify on your criteria, and book demos for your account executives.",
+    eyebrow: "Appointment setting for SaaS",
+    h1: ["Your AEs should be", "running demos.", "Not chasing them."],
+    sub: "We act as your outsourced SDR team. We call inbound demo requests fast, work outbound lists you approve, qualify on your criteria, and put booked demos on your account executives' calendars.",
+    call: { time: "Tue 10:06 AM", caller: "Demo request: Ryan O.", line: "Ops lead, 40-person team, evaluating tools", outcome: "Demo booked Thu 2 PM" },
+    pains: [
+      { t: "Inbound demo requests wait too long", d: "A buyer who fills out your form is comparing you with others. Hours of silence hands the deal to a competitor." },
+      { t: "Outbound is a full-time job", d: "Building lists, calling, and following up takes more hours than your sales team has." },
+      { t: "Hiring SDRs is slow and costly", d: "Recruiting, ramping, and replacing SDRs eats months before you see a pipeline." },
+    ],
+    transcript: [
+      { who: "agent", text: "Hi Ryan, this is Karim from Flowdesk. You just asked for a demo?" },
+      { who: "caller", text: "Yeah, we're looking at a few tools for our ops team." },
+      { who: "agent", text: "Great. How big is the team, and what are you using today?" },
+      { who: "caller", text: "About 40 people. We're on spreadsheets and it's falling apart." },
+      { who: "agent", text: "That's exactly who we help. Dana on our team can walk you through it Thursday at 2. Does that work?" },
+    ],
+    summary: [
+      ["Lead", "Ryan O., Head of Ops"],
+      ["Qualified", "40 seats, on spreadsheets, buying this quarter"],
+      ["Speed", "Called in 5 minutes"],
+      ["Outcome", "Demo Thu 2 PM with Dana (AE)"],
+    ],
+    rules: [
+      { trigger: "Fits your ICP", action: "Book demo with assigned AE" },
+      { trigger: "Too small or wrong use case", action: "Send to self-serve, log reason" },
+      { trigger: "Not ready yet", action: "Nurture sequence, follow-up date" },
+      { trigger: "Existing customer", action: "Route to customer success" },
+    ],
+    rulesTitle: "How every lead is handled",
+    calc: { unit: "new leads a month", missed: 120, bookRate: 15, value: 6000, valueLabel: "First-year deal value", leakLabel: "Leads not reached in time (%)" },
+    faqs: [
+      { q: "Do you do inbound, outbound, or both?", a: "Both. Fast follow-up on inbound demo requests, plus outbound calling to lists and criteria you approve." },
+      { q: "How do you qualify?", a: "On your criteria. Common ones are company size, current tools, timeline, and whether they're the decision maker." },
+      { q: "Can you sell technical products?", a: "We train on your product, your ICP, and your objections. Technical deep dives stay with your AEs and sales engineers." },
+      { q: "Which tools do you use?", a: "Your CRM and calendar tools, so your team sees every touch and booking where they already work." },
+      { q: "How do we measure it?", a: "Booked demos, show rate, and pipeline created, reviewed with you every week." },
+    ],
+    related: ["lead-reactivation-service", "real-estate-appointment-setting", "in-house-receptionist-vs-outsourced"],
+  },
+
+  // ───────────────────────────── 10
+  {
+    slug: "lead-reactivation-service",
+    kind: "service",
+    mode: "lead",
+    industry: "Any industry",
+    title: "Lead Reactivation Service | Turn Old Leads Into Booked Calls | Victory Sync",
+    description:
+      "A lead reactivation service that calls your old quotes and dead leads, finds who's still interested, and books them or transfers them live to your team.",
+    eyebrow: "Lead reactivation",
+    h1: ["Your next customers", "are already", "in your CRM."],
+    sub: "Old quotes, unanswered web forms, people who said 'not right now'. Most of them never got a second call. We call them back, find who's still interested, and book them or transfer them live to your team.",
+    call: { time: "Quote from March", caller: "Old lead: Tom B.", line: "We never got around to it. Still need it.", outcome: "Live transfer to your closer" },
+    pains: [
+      { t: "You already paid for these leads", d: "Ads, referrals, and marketing brought them in. When nobody follows up, that spend is wasted." },
+      { t: "Timing changed, the need didn't", d: "People who weren't ready three months ago often are now. They just haven't been asked again." },
+      { t: "Your team is busy with new leads", d: "Nobody has time to dig through old records, so the database gets older and bigger every month." },
+    ],
+    transcript: [
+      { who: "agent", text: "Hi Tom, it's Salma with Reliable Plumbing. You asked us for a quote back in March?" },
+      { who: "caller", text: "Oh right, the water softener. We never got around to it." },
+      { who: "agent", text: "Totally understand. Is it still something you want to look at?" },
+      { who: "caller", text: "Actually yes, the water's been really bad lately." },
+      { who: "agent", text: "Let me get Mike on the line, he can sort out the details with you right now." },
+    ],
+    summary: [
+      ["List", "Quotes, last 12 months"],
+      ["Contact", "Tom B., quote from March"],
+      ["Status", "Still interested, ready now"],
+      ["Outcome", "Live transfer to Mike"],
+    ],
+    rules: [
+      { trigger: "Ready now", action: "Live transfer to your team" },
+      { trigger: "Interested, not today", action: "Book a call or appointment" },
+      { trigger: "Later this year", action: "Set follow-up date" },
+      { trigger: "Not interested or DNC", action: "Log, remove from list" },
+    ],
+    rulesTitle: "How every old lead is handled",
+    calc: { unit: "old leads in your CRM", missed: 500, bookRate: 5, value: 1500, valueLabel: "Average deal value", leakLabel: "Reachable by phone (%)", reactivation: true },
+    faqs: [
+      { q: "Which leads should we start with?", a: "Usually quotes and estimates from the last 6 to 12 months. They're the warmest and fastest to convert." },
+      { q: "Do you need a clean list?", a: "No. Send what you have and we'll work through it, logging who's reachable, interested, or should be removed." },
+      { q: "What if someone is ready to buy on the call?", a: "We transfer them live to your team so you talk to them while they're warm." },
+      { q: "Don't have a closer?", a: "Our sales team can take those conversations for you, using your process and offers." },
+      { q: "Do you follow do-not-call rules?", a: "Yes. We scrub against do-not-call lists and remove anyone who asks." },
+    ],
+    related: ["roofing-appointment-setting", "saas-appointment-setting", "plumber-marketing"],
+  },
+
+  // ───────────────────────────── 11 compare
+  {
+    slug: "in-house-receptionist-vs-outsourced",
+    kind: "compare",
+    title: "In-House Receptionist vs Outsourced Answering Service: An Honest Comparison | Victory Sync",
+    description:
+      "Should you hire a receptionist or outsource your phones? An honest side-by-side on coverage, cost drivers, quality control, and when each one makes sense.",
+    eyebrow: "Honest comparison",
+    h1: ["In-house receptionist", "or outsourced team?"],
+    sub: "Both can work. Here's an honest look at where each one wins, so you can pick what fits your business. (Yes, even if it isn't us.)",
+    a: "In-house receptionist",
+    b: "Outsourced team",
+    rows: [
+      ["Hours covered", "Usually business hours, one person", "Business hours, nights, and weekends"],
+      ["Sick days and vacations", "Phones go uncovered or to voicemail", "Covered by the rest of the team"],
+      ["Busy spikes", "Calls stack up or go to voicemail", "Team scales with volume"],
+      ["Knows your business deeply", "Yes, over time", "Trained on your business, improves weekly"],
+      ["Handles in-office tasks", "Yes: greeting visitors, filing, admin", "Phone, scheduling, and follow-up only"],
+      ["Hiring and turnover", "You recruit, train, and replace", "Handled for you"],
+      ["Call recordings and summaries", "Rarely", "Every call, reviewable"],
+      ["Management time", "Yours", "A named team owner manages it"],
+    ],
+    whenA: [
+      "Most of your work happens in person at a front desk",
+      "You need someone doing admin and filing between calls",
+      "Your call volume is steady and fits one person's day",
+    ],
+    whenB: [
+      "Calls come in after hours, on weekends, or in waves",
+      "You're missing calls while your team is busy on jobs",
+      "You want every call recorded, summarized, and reviewable",
+      "You'd rather not hire, train, and manage another person",
+    ],
+    faqs: [
+      { q: "Can I do both?", a: "Yes, and many businesses do. An in-house person handles the office, and an outsourced team covers overflow, lunch breaks, after hours, and weekends." },
+      { q: "Will callers notice the difference?", a: "With a good team, no. We answer in your company's name with a script you approve." },
+      { q: "How do I try outsourcing without risk?", a: "Start with overflow or after-hours calls in a small pilot, then decide based on real results." },
+    ],
+    related: ["ai-receptionist-vs-answering-service", "answering-service-for-plumbers", "answering-service-for-law-firms"],
+  },
+
+  // ───────────────────────────── 12 compare
+  {
+    slug: "ai-receptionist-vs-answering-service",
+    kind: "compare",
+    title: "AI Receptionist vs Live Answering Service: Which Is Right for You? | Victory Sync",
+    description:
+      "AI receptionists or real people? A straight comparison of what each handles well, where AI struggles, and why many businesses use people backed by AI tools.",
+    eyebrow: "Honest comparison",
+    h1: ["AI receptionist", "or real people?"],
+    sub: "AI phone agents have gotten good at simple, predictable calls. Real people still win when callers are stressed, confused, or ready to buy. Here's how they compare.",
+    a: "AI receptionist",
+    b: "People + AI tools",
+    rows: [
+      ["Simple FAQs and hours", "Handles well", "Handles well"],
+      ["Upset or panicked callers", "Can sound scripted or miss the urgency", "Calms them down and takes control"],
+      ["Unusual requests", "Often gets stuck or loops", "Uses judgment and asks the right follow-up"],
+      ["Booking appointments", "Good for simple bookings", "Good, including tricky reschedules"],
+      ["Selling and objections", "Limited", "Trained on your offer and objections"],
+      ["Call summaries", "Automatic", "Automatic (AI writes them, people check them)"],
+      ["Caller trust", "Some callers hang up on bots", "Callers talk to a person"],
+      ["Who's accountable", "Software settings", "A named team owner you can call"],
+    ],
+    whenA: [
+      "Most of your calls are simple and repetitive",
+      "Callers mainly want hours, directions, or basic info",
+      "Volume is high and each call is low value",
+    ],
+    whenB: [
+      "Calls are emergencies, emotional, or high value",
+      "You need judgment on what's urgent and what can wait",
+      "You want callers to feel heard by a real person",
+      "You want AI's speed for summaries and routing, with people on the line",
+    ],
+    faqs: [
+      { q: "Does Victory Sync use AI?", a: "Yes, for the busywork: call summaries, routing, reminders, and CRM updates. A real person owns every conversation." },
+      { q: "Is AI cheaper?", a: "Often per call, yes. The question is what a mishandled emergency or lost sale costs you. For high-value calls, people usually pay for themselves." },
+      { q: "Can I use AI for some calls and people for others?", a: "Yes. A common setup is automation for simple info requests and people for anything urgent, sales-related, or new-customer." },
+    ],
+    related: ["in-house-receptionist-vs-outsourced", "answering-service-for-hvac", "answering-service-for-electricians"],
+  },
+];
+
+const LOGO = "data:image/png;base64,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";
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const bySlug = Object.fromEntries(PAGES.map(p => [p.slug, p]));
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const ICON = {
+  phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
+  form: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  arrow: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+};
+const money = n => "$" + Math.round(n).toLocaleString("en-US");
+const shortName = p => p.kind === "compare" ? p.h1.join(" ") : p.eyebrow;
+
+let timers = [];
+const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+const clearTimers = () => { timers.forEach(t => t && t.clear ? t.clear() : clearTimeout(t)); timers = []; };
+
+function nav() {
+  return `<header class="nav"><div class="wrap">
+    <a class="brand" href="#${PAGES[0].slug}"><span class="mark"><img src="${LOGO}" alt=""></span>Victory Sync</a>
+    <nav class="nav-links"><a class="hide-sm" href="#how">How it works</a><a class="hide-sm" href="#faq">FAQ</a>
+    <a class="btn btn-primary" href="${SITE.cta}" target="_blank" rel="noopener">${SITE.ctaLabel}</a></nav>
+  </div></header>`;
+}
+function ctaRow() {
+  return `<div class="cta-row"><a class="btn btn-primary" href="${SITE.cta}" target="_blank" rel="noopener">${SITE.ctaLabel} ${ICON.arrow}</a>
+    <span class="phone-txt">or call ${SITE.phone}</span></div>`;
+}
+function trust() {
+  return `<div class="trust"><span class="chip"><b>Managed in</b> Millstone, NJ</span><span class="chip"><b>One named</b> team owner</span><span class="chip"><b>You approve</b> every script</span></div>`;
+}
+
+function consoleCard(p) {
+  const isLead = p.mode === "lead";
+  return `<div class="console" aria-label="Example of a call being handled"><div class="console-in" id="con">
+    <div class="con-top"><span>${isLead ? "New lead" : "Incoming call"} · ${esc(p.call.time)}</span><span class="status" id="st"><i></i><span id="stx">${isLead ? "New lead" : "Ringing"}</span></span></div>
+    <div class="caller ring" id="caller"><div class="avatar">${isLead ? ICON.form : ICON.phone}</div>
+      <div class="caller-meta"><div class="caller-name">${esc(p.call.caller)}</div><div class="caller-line">“${esc(p.call.line)}”</div></div>
+      <div class="timer" id="tm">0:00</div></div>
+    <div class="bubbles" id="hb"></div>
+    <div class="outcome off" id="oc">${ICON.check}<span>${esc(p.call.outcome)}</span></div>
+  </div></div>`;
+}
+
+function servicePage(p) {
+  const isLead = p.mode === "lead";
+  const c = p.calc;
+  const sliders = c.reactivation ? [
+      ["c1", `Old leads in your CRM`, c.missed, 50, 5000, 50, ""],
+      ["c2", c.leakLabel, 60, 10, 90, 5, "%"],
+      ["c3", "Reached leads who book (%)", c.bookRate, 1, 30, 1, "%"],
+      ["c4", c.valueLabel, c.value, 100, 20000, 100, "$"],
+    ] : isLead ? [
+      ["c1", "New leads per month", c.missed, 5, 400, 5, ""],
+      ["c2", c.leakLabel, 30, 5, 80, 5, "%"],
+      ["c3", "Leads who'd book if reached fast (%)", c.bookRate, 5, 60, 1, "%"],
+      ["c4", c.valueLabel, c.value, 100, Math.max(20000, c.value * 3), 50, "$"],
+    ] : [
+      ["c1", "Missed calls per week", c.missed, 1, 60, 1, ""],
+      ["c2", "Callers who'd have booked (%)", c.bookRate, 5, 90, 5, "%"],
+      ["c4", c.valueLabel, c.value, 50, Math.max(10000, c.value * 3), 50, "$"],
+    ];
+  return `
+  <section class="hero"><div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow">${esc(p.eyebrow)}</span>
+      <h1>${p.h1.map(l => `<span>${esc(l)}</span>`).join("")}</h1>
+      <p class="lede">${esc(p.sub)}</p>
+      ${ctaRow()}
+      ${trust()}
+    </div>
+    ${consoleCard(p)}
+  </div></section>
+
+  <section style="padding-top:0"><div class="wrap">
+    <div class="sec-head"><span class="eyebrow">${c.reactivation ? "Why old leads go to waste" : `Where ${esc(p.industry.toLowerCase())} ${isLead ? "leads" : "calls"} leak`}</span><h2>${isLead ? "Leads aren't the problem. What happens next is." : "You're not losing calls. You're losing jobs."}</h2></div>
+    <div class="leaks">${p.pains.map((x, i) => `<div class="leak"><span class="k">LEAK 0${i + 1}</span><h3>${esc(x.t)}</h3><p>${esc(x.d)}</p></div>`).join("")}</div>
+  </div></section>
+
+  <section style="padding-top:0"><div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Listen in</span><h2>${c.reactivation ? "What a second call sounds like." : isLead ? "What happens three minutes after the form fill." : "What your callers actually hear."}</h2>
+      <p class="lede">An example call, start to finish, and the summary that lands in your inbox when it ends.</p></div>
+    <div class="listen">
+      <div class="panel"><div class="panel-h"><span>Call transcript · example</span><button class="replay" id="replay" type="button">Replay</button></div><div class="transcript" id="tr"></div></div>
+      <div class="panel"><div class="panel-h"><span>Call summary · sent to you</span></div>
+        <dl class="summary" id="sum">${p.summary.map(([k, v]) => `<div class="sum-row"><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+        <p class="sum-foot">Every call is recorded and summarized. You can listen back to any of them.</p></div>
+    </div>
+  </div></section>
+
+  <section style="padding-top:0"><div class="wrap">
+    <div class="sec-head"><span class="eyebrow">${isLead ? "The system" : "You set the rules"}</span><h2>${esc(p.rulesTitle || "Every call goes exactly where you want it.")}</h2>
+      <p class="lede">${isLead ? "Tap any line to see how it connects." : "You decide what counts as urgent and what gets booked. Tap a rule to see the route."}</p></div>
+    <div class="rules" id="rules">${p.rules.map((r, i) => `<button type="button" class="rule${i === 0 ? " on" : ""}" aria-pressed="${i === 0}">
+      <span class="t"><small>${isLead ? "Channel" : "When the caller says"}</small>${esc(r.trigger)}</span><span class="wire" aria-hidden="true"></span><span class="a"><small>${isLead ? "We handle" : "We do this"}</small>${esc(r.action)}</span></button>`).join("")}</div>
+  </div></section>
+
+  <section style="padding-top:0"><div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Run your numbers</span><h2>${c.reactivation ? "What's sitting in your old leads?" : isLead ? "What slow follow-up costs you." : "What missed calls cost you."}</h2>
+      <p class="lede">Move the sliders to match your business. The starting values are only examples.</p></div>
+    <div class="calc">
+      <div class="panel sliders">${sliders.map(([id, lab, val, min, max, step, u]) => `<div class="sl"><label for="${id}">${esc(lab)} <output id="${id}o"></output></label><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" data-u="${u}"></div>`).join("")}</div>
+      <div class="result" aria-live="polite">
+        <span class="lab">${c.reactivation ? "Revenue waiting in your CRM" : "Revenue walking out the door"}</span>
+        <div class="big" id="big">$0 <small>${c.reactivation ? "potential" : "/ month"}</small></div>
+        <div class="sub2"><div><b id="r1">0</b>${c.reactivation ? "people reached" : isLead ? "leads lost a month" : "lost jobs a month"}</div><div><b id="r2">$0</b>${c.reactivation ? "booked deals" : "a year"}</div></div>
+        <p class="fine">An estimate from the numbers you enter. Your results depend on your market, pricing, and offer.</p>
+      </div>
+    </div>
+  </div></section>
+
+  ${howWeStart()}
+  ${whyUs()}
+  ${faqBlock(p)}
+  ${relatedBlock(p)}
+  ${band(p)}`;
+}
+
+function howWeStart() {
+  const s = [
+    ["We learn your business", "Your services, service area, customers, tools, and what a good job looks like to you."],
+    ["We build it together", "Scripts, routing rules, and handoffs. You approve every word before we go live."],
+    ["We run a small pilot", "Real calls and real results you can judge before committing to anything bigger."],
+    ["We improve every week", "We review calls with you and keep tightening the script and the rules."],
+  ];
+  return `<section id="how" style="padding-top:0"><div class="wrap"><div class="sec-head"><span class="eyebrow">How we start</span><h2>Live in days, proven in weeks.</h2></div>
+    <div class="steps">${s.map(([h, d], i) => `<div class="step"><span class="n">0${i + 1}</span><h3>${h}</h3><p>${d}</p></div>`).join("")}</div></div></section>`;
+}
+function whyUs() {
+  return `<section style="padding-top:0"><div class="wrap"><div class="sec-head"><span class="eyebrow">Why Victory Sync</span><h2>A team you can actually see.</h2></div>
+    <div class="why">
+      <div><span class="k">Accountable</span><h3>One named owner</h3><p>Every client gets one person to call. Managed from Millstone, New Jersey.</p></div>
+      <div><span class="k">Trained</span><h3>Agents who know you</h3><p>Our Cairo team is hired for clear English and trained on your business before taking a single call.</p></div>
+      <div><span class="k">Visible</span><h3>Nothing hidden</h3><p>Listen to any call, read every summary, and check your numbers in your own dashboard.</p></div>
+    </div></div></section>`;
+}
+function faqBlock(p) {
+  return `<section id="faq" style="padding-top:0"><div class="wrap"><div class="sec-head"><span class="eyebrow">Questions</span><h2>What owners ask us first.</h2></div>
+    <div class="faq">${p.faqs.map((f, i) => `<details${i === 0 ? " open" : ""}><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join("")}</div></div></section>`;
+}
+function relatedBlock(p) {
+  return `<section style="padding-top:0"><div class="wrap"><div class="sec-head"><span class="eyebrow">Keep reading</span><h2>Related services</h2></div>
+    <div class="related">${p.related.map(s => bySlug[s]).filter(Boolean).map(r => `<a class="rel" href="#${r.slug}"><small>${r.kind === "compare" ? "Comparison" : esc(r.industry)}</small><b>${esc(shortName(r))}</b><span>Read more →</span></a>`).join("")}</div></div></section>`;
+}
+function band(p) {
+  return `<section style="padding-top:0"><div class="wrap"><div class="band"><div><h2>${p.kind === "compare" ? "Not sure which fits? Let's look at your calls together." : "Let's look at your calls together."}</h2><p>A free consultation. We'll show you where calls and leads are slipping and how we'd fix it. No pressure.</p></div>
+    <div style="display:grid;gap:10px;justify-items:start"><a class="btn btn-primary" href="${SITE.cta}" target="_blank" rel="noopener">${SITE.ctaLabel} ${ICON.arrow}</a><span class="phone-txt">${SITE.phone}</span></div></div></div></section>`;
+}
+
+function comparePage(p) {
+  return `
+  <section class="hero"><div class="wrap" style="position:relative;display:grid;gap:24px;max-width:900px">
+    <span class="eyebrow">${esc(p.eyebrow)}</span>
+    <h1>${p.h1.map(l => `<span>${esc(l)}</span>`).join("")}</h1>
+    <p class="lede">${esc(p.sub)}</p>
+    <div class="vs-hero"><div class="vs-card"><small>Option A</small><b>${esc(p.a)}</b></div><div class="vs-card b"><small>Option B</small><b>${esc(p.b)}</b></div></div>
+  </div></section>
+  <section style="padding-top:0"><div class="wrap"><div class="sec-head"><span class="eyebrow">Side by side</span><h2>How they compare.</h2></div>
+    <div class="table-wrap"><table><thead><tr><th scope="col"> </th><th scope="col">${esc(p.a)}</th><th scope="col">${esc(p.b)}</th></tr></thead>
+    <tbody>${p.rows.map(r => `<tr><th scope="row">${esc(r[0])}</th><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</tbody></table></div></div></section>
+  <section style="padding-top:0"><div class="wrap"><div class="sec-head"><span class="eyebrow">The honest answer</span><h2>When each one makes sense.</h2></div>
+    <div class="when"><div class="panel"><h3>Choose ${esc(p.a)} when</h3><ul>${p.whenA.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+    <div class="panel b"><h3>Choose ${esc(p.b)} when</h3><ul>${p.whenB.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div></div></div></section>
+  ${faqBlock(p)}
+  ${relatedBlock(p)}
+  ${band(p)}`;
+}
+
+function bubble(m) { return `<div class="bub c-${m.who}"><small>${m.who === "agent" ? "Victory Sync agent" : "Caller"}</small>${esc(m.text)}</div>`; }
+
+function runHero(p) {
+  const st = $("#st"), stx = $("#stx"), tm = $("#tm"), hb = $("#hb"), oc = $("#oc"), caller = $("#caller");
+  if (!st) return;
+  const isLead = p.mode === "lead";
+  const lines = p.transcript.slice(0, 3);
+  if (reduced) {
+    caller.classList.remove("ring"); st.className = "status done"; stx.textContent = "Handled"; tm.textContent = "2:41";
+    hb.innerHTML = lines.map(bubble).join(""); oc.classList.remove("off"); return;
+  }
+  const cycle = () => {
+    hb.innerHTML = ""; oc.classList.add("off"); caller.classList.add("ring"); st.className = "status"; stx.textContent = isLead ? "New lead" : "Ringing"; tm.textContent = "0:00";
+    let sec = 0, tick;
+    later(() => {
+      caller.classList.remove("ring"); st.className = "status live"; stx.textContent = isLead ? "Calling back" : "Answered";
+      tick = setInterval(() => { sec++; tm.textContent = Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); }, 1000);
+      timers.push({ clear: () => clearInterval(tick) });
+      let t = 400;
+      lines.forEach(m => {
+        later(() => { hb.insertAdjacentHTML("beforeend", m.who === "agent" ? '<div class="typing" data-t><i></i><i></i><i></i></div>' : ""); }, t);
+        t += m.who === "agent" ? 900 : 300;
+        later(() => { hb.querySelector("[data-t]")?.remove(); hb.insertAdjacentHTML("beforeend", bubble(m)); }, t);
+        t += 1700;
+      });
+      later(() => { clearInterval(tick); oc.classList.remove("off"); st.className = "status done"; stx.textContent = "Handled"; }, t + 200);
+      later(cycle, t + 5200);
+    }, 1800);
+  };
+  cycle();
+}
+
+function runTranscript(p) {
+  const tr = $("#tr"), rows = [...document.querySelectorAll(".sum-row")];
+  if (!tr) return;
+  const done = () => { tr.innerHTML = p.transcript.map(bubble).join(""); rows.forEach(r => r.classList.add("on")); };
+  let started = false;
+  const play = () => {
+    started = true; tr.innerHTML = ""; rows.forEach(r => r.classList.remove("on"));
+    if (reduced) return done();
+    let t = 0;
+    p.transcript.forEach((m, i) => { later(() => tr.insertAdjacentHTML("beforeend", bubble(m)), t); t += 1500; });
+    rows.forEach((r, i) => later(() => r.classList.add("on"), t + i * 450));
+  };
+  done(); // complete at rest
+  $("#replay").onclick = play;
+  const io = new IntersectionObserver(es => { if (es[0].isIntersecting && !started) { play(); io.disconnect(); } }, { threshold: .4 });
+  io.observe(tr);
+}
+
+function runRules() {
+  const btns = [...document.querySelectorAll(".rule")];
+  btns.forEach(b => b.onclick = () => btns.forEach(x => { const on = x === b; x.classList.toggle("on", on); x.setAttribute("aria-pressed", on); }));
+}
+
+function runCalc(p) {
+  const v = id => +($("#" + id)?.value ?? 0);
+  const upd = () => {
+    document.querySelectorAll(".sl input").forEach(i => {
+      const u = i.dataset.u; $("#" + i.id + "o").textContent = u === "$" ? money(i.value) : (+i.value).toLocaleString() + (u || "");
+    });
+    const c = p.calc;
+    if (c.reactivation) {
+      const reached = v("c1") * v("c2") / 100, deals = reached * v("c3") / 100;
+      $("#big").innerHTML = money(deals * v("c4")) + " <small>potential</small>";
+      $("#r1").textContent = Math.round(reached).toLocaleString(); $("#r2").textContent = Math.round(deals).toLocaleString();
+    } else if (p.mode === "lead") {
+      const lost = v("c1") * v("c2") / 100, jobs = lost * v("c3") / 100, m = jobs * v("c4");
+      $("#big").innerHTML = money(m) + " <small>/ month</small>";
+      $("#r1").textContent = Math.round(lost).toLocaleString(); $("#r2").textContent = money(m * 12);
+    } else {
+      const jobs = v("c1") * 4.33 * v("c2") / 100, m = jobs * v("c4");
+      $("#big").innerHTML = money(m) + " <small>/ month</small>";
+      $("#r1").textContent = Math.round(jobs).toLocaleString(); $("#r2").textContent = money(m * 12);
+    }
+  };
+  document.querySelectorAll(".sl input").forEach(i => i.addEventListener("input", upd));
+  upd();
+}
+
+function render(slug) {
+  clearTimers();
+  const p = bySlug[slug] || PAGES[0];
+  document.title = p.title;
+  $("#app").innerHTML = nav() + `<main>${p.kind === "compare" ? comparePage(p) : servicePage(p)}</main>
+    <footer><div class="wrap"><span>© ${new Date().getFullYear()} Victory Sync LLC · Millstone, NJ</span><span class="mono">${SITE.phone}</span></div></footer>
+    <div class="sticky"><a class="btn btn-primary" href="${SITE.cta}" target="_blank" rel="noopener">${SITE.ctaLabel}</a></div>`;
+  $("#pagepick").value = p.slug;
+  if (p.kind !== "compare") { runHero(p); runTranscript(p); runRules(); runCalc(p); }
+  window.scrollTo(0, 0);
+}
+
+const pick = $("#pagepick");
+pick.innerHTML = PAGES.map(p => `<option value="${p.slug}">/${p.slug}</option>`).join("");
+pick.onchange = () => { location.hash = pick.value; };
+window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (bySlug[h]) render(h); });
+render(location.hash.slice(1));
+</script>

@@ -9,4 +9,4 @@ Disallow: /checkout
 Disallow: /dashboard
 Disallow: /api/
 
-Sitemap: https://www.victorysync.com/sitemap.xml
+Sitemap: https://victorysync.com/sitemap.xml

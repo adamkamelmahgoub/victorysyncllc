@@ -66,6 +66,18 @@
     { "source": "/appointment-setting-for-hvac", "destination": "/appointment-setting-for-hvac/index.html" },
     { "source": "/appointment-setting-for-real-estate", "destination": "/appointment-setting-for-real-estate/index.html" },
     { "source": "/inbound-support-for-law-firms", "destination": "/inbound-support-for-law-firms/index.html" },
-    { "source": "/(login|register|signup|checkout|dashboard)", "destination": "/index.html" }
+    { "source": "/answering-service-for-hvac", "destination": "/answering-service-for-hvac/index.html" },
+    { "source": "/plumber-marketing", "destination": "/plumber-marketing/index.html" },
+    { "source": "/hvac-marketing", "destination": "/hvac-marketing/index.html" },
+    { "source": "/roofing-appointment-setting", "destination": "/roofing-appointment-setting/index.html" },
+    { "source": "/answering-service-for-electricians", "destination": "/answering-service-for-electricians/index.html" },
+    { "source": "/answering-service-for-law-firms", "destination": "/answering-service-for-law-firms/index.html" },
+    { "source": "/real-estate-appointment-setting", "destination": "/real-estate-appointment-setting/index.html" },
+    { "source": "/saas-appointment-setting", "destination": "/saas-appointment-setting/index.html" },
+    { "source": "/lead-reactivation-service", "destination": "/lead-reactivation-service/index.html" },
+    { "source": "/in-house-receptionist-vs-outsourced", "destination": "/in-house-receptionist-vs-outsourced/index.html" },
+    { "source": "/ai-receptionist-vs-answering-service", "destination": "/ai-receptionist-vs-answering-service/index.html" },
+    { "source": "/(login|register|signup|checkout|dashboard)", "destination": "/index.html" },
+    { "source": "/:slug", "destination": "/:slug/index.html" }
   ]
 }

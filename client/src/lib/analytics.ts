@@ -58,14 +58,10 @@ function loadMetaPixel() {
 
 export function loadMarketingAnalytics() {
   if ((navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl || localStorage.getItem('vs-cookie-consent-v1') !== 'accepted') return;
+  window.gtag?.('consent', 'update', { ad_storage: 'granted', analytics_storage: 'granted' });
+  window.fbq?.('consent', 'grant');
   runWhenIdle(() => {
     if ((navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl || localStorage.getItem('vs-cookie-consent-v1') !== 'accepted') return;
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = (...args: unknown[]) => window.dataLayer?.push(args);
-    window.gtag("js", new Date());
-    window.gtag("config", "G-7DG7J3MKTB");
-
-    appendScript("https://www.googletagmanager.com/gtag/js?id=G-7DG7J3MKTB");
     loadMetaPixel();
     appendScript(
       `https://assets.apollo.io/micro/website-tracker/tracker.iife.js?nocache=${Math.random()

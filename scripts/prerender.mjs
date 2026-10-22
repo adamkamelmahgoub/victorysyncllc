@@ -81,7 +81,9 @@ try {
     // be baked into static HTML. They would otherwise execute in CMS previews too.
     await page.evaluate(() => {
       document.querySelectorAll('script[src^="http://"], script[src^="https://"]')
-        .forEach((script) => script.remove());
+        .forEach((script) => {
+          if (!script.src.startsWith('https://www.googletagmanager.com/gtag/js?id=G-7DG7J3MKTB')) script.remove();
+        });
     });
     const html = await page.content();
     await page.close();
@@ -118,7 +120,9 @@ try {
   await notFoundPage.evaluate(() => {
     document.title = 'Page not found | VictorySync';
     document.querySelector('link[rel="canonical"]')?.remove();
-    document.querySelectorAll('script[src^="http://"], script[src^="https://"]').forEach((script) => script.remove());
+    document.querySelectorAll('script[src^="http://"], script[src^="https://"]').forEach((script) => {
+      if (!script.src.startsWith('https://www.googletagmanager.com/gtag/js?id=G-7DG7J3MKTB')) script.remove();
+    });
     let robots = document.head.querySelector('meta[name="robots"]');
     if (!robots) { robots = document.createElement('meta'); robots.setAttribute('name', 'robots'); document.head.appendChild(robots); }
     robots.setAttribute('content', 'noindex, follow');

@@ -9,6 +9,7 @@ const groups = [
   { title: 'Industries', links: [['Home Services','/appointment-setting-for-home-services'],['Plumber Answering','/answering-service-for-plumbers'],['Plumber Outreach','/cold-calling-for-plumbers'],['HVAC','/appointment-setting-for-hvac'],['Real Estate','/appointment-setting-for-real-estate'],['Law Firms','/inbound-support-for-law-firms']] },
   { title: 'Company', links: [['About','/about-us'],['How It Works','/how-it-works'],['Pricing','/pricing'],['Contact','/contact'],['Reviews','/reviews']] },
   { title: 'Resources', links: [['FAQ','/faq'],['Help Center','/help-center'],['Privacy Policy','/privacy-policy'],['Terms of Service','/terms']] },
+  { title: 'Compare', links: [['In-house vs outsourced','/in-house-receptionist-vs-outsourced'],['AI vs live answering','/ai-receptionist-vs-answering-service']] },
 ];
 const profiles = [
   { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61578278896132', icon: SiFacebook },
