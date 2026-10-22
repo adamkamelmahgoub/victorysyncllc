@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 import { nullFactEffects, siteFacts } from '../client/src/config/siteFacts';
 import { PAGES } from '../pages.js';
 
@@ -26,7 +26,7 @@ const suppliedSeoPages = new Set(PAGES.map((page) => `/${page.slug}`));
 for (const file of files) {
   const html = readFileSync(file, 'utf8');
   const main = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1] ?? html;
-  const route = file.replace(builtDir, '').replace(/\\index\.html$/, '').replace(/\\/g, '/') || '/';
+  const route = '/' + relative(builtDir, file).replace(/\\/g, '/').replace(/(^|\/)index\.html$/, '').replace(/\/$/, '');
   for (const phrase of prohibited) {
     // These pages use the supplied copy verbatim; the claim audit applies to site-authored copy.
     if (phrase === '24/7' && suppliedSeoPages.has(route)) continue;
