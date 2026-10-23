@@ -6,7 +6,7 @@ const pages = [
   '/pricing', '/platform', '/about-us', '/contact', '/book-call', '/help-center',
   '/privacy-policy', '/terms', '/appointment-setting-for-home-services', '/cold-calling-for-plumbers',
   '/appointment-setting-for-real-estate', '/inbound-support-for-law-firms',
-  '/checkout', '/register', '/signup', '/login', '/dashboard',
+  '/dashboard',
 ];
 const api = `https://api.github.com/repos/${CMS_OWNER}/${CMS_REPO}`;
 const fileApi = `${api}/contents/${CMS_FILE}`;

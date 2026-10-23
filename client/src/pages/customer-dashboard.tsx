@@ -65,7 +65,7 @@ export default function CustomerDashboard() {
         description: "Please log in to access your dashboard.",
         variant: "destructive"
       });
-      window.location.href = '/login?redirect=/dashboard';
+      window.location.href = 'https://dashboard.victorysync.com';
       return;
     }
   }, [user, isCustomer, isLoading]);
@@ -90,7 +90,7 @@ export default function CustomerDashboard() {
             <p className="text-gray-600 mb-6">
               Please log in to access your customer dashboard.
             </p>
-            <Button onClick={() => window.location.href = '/login'} className="w-full">
+            <Button onClick={() => window.location.href = 'https://dashboard.victorysync.com'} className="w-full">
               Go to Login
             </Button>
           </CardContent>

@@ -18,10 +18,6 @@ export const PUBLIC_ROUTES: ReadonlySet<string> = new Set([
   "/help-center",
   "/privacy-policy",
   "/terms",
-  "/checkout",
-  "/register",
-  "/signup",
-  "/login",
   "/dashboard",
 ]);
 

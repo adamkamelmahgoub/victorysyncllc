@@ -10,14 +10,6 @@ import { testDatabaseConnection } from "./db";
 import { sendEmail } from "./utils/sendEmail";
 import { SITEMAP_ENTRIES } from "../shared/routes";
 
-let stripe: Stripe | null = null;
-
-if (process.env.STRIPE_SECRET_KEY) {
-  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2025-05-28.basil",
-  });
-}
-
 // Remove duplicate admin middleware - using the one from publicAuth.ts
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -130,47 +122,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error creating contact submission:", error);
       res.status(500).json({ message: "Failed to submit contact form" });
-    }
-  });
-
-  // Stripe payment route for one-time payments
-  app.post("/api/create-payment-intent", authenticateJWT as any, async (req: any, res: any) => {
-    try {
-      if (!stripe) {
-        return res.status(503).json({ 
-          message: "Payment processing is currently unavailable. Please contact support." 
-        });
-      }
-
-      const { items } = req.body;
-
-      if (!items || !Array.isArray(items) || items.length === 0) {
-        return res.status(400).json({ message: "Items are required" });
-      }
-
-      // Calculate total from items
-      let total = 0;
-      for (const item of items) {
-        const pkg = await storage.getPackage(item.packageId);
-        if (!pkg) {
-          return res.status(400).json({ message: `Package ${item.packageId} not found` });
-        }
-        total += parseFloat(pkg.price) * item.quantity;
-      }
-
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(total * 100), // Convert to cents
-        currency: "usd",
-        metadata: {
-          userId: req.user!.id.toString(),
-          items: JSON.stringify(items),
-        },
-      });
-
-      res.json({ clientSecret: paymentIntent.client_secret });
-    } catch (error: any) {
-      console.error("Error creating payment intent:", error);
-      res.status(500).json({ message: "Error creating payment intent: " + error.message });
     }
   });
 

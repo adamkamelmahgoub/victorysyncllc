@@ -3,9 +3,8 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { CartProvider } from "@/contexts/CartContext";
 import { AnimatePresence } from "framer-motion";
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { PublicPage, PricingPage, HowItWorksPage, FaqPage, ReviewsPage } from '@/pages/public-page';
 
 function ScrollToTop() {
@@ -19,16 +18,12 @@ function ScrollToTop() {
 // Layout Components
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
-import CartModal from "@/components/cart-modal";
 import CmsRuntime from "@/components/cms-runtime";
 import CookieConsent from "@/components/cookie-consent";
 
 // Pages
 const Home = lazy(() => import("@/pages/home"));
 const Contact = lazy(() => import("@/pages/contact"));
-const Checkout = lazy(() => import("@/pages/checkout"));
-import Register from "@/pages/register";
-import Login from "@/pages/login";
 import CustomerDashboard from "@/pages/customer-dashboard";
 const BookCall = lazy(() => import("@/pages/book-call"));
 const NotFound = lazy(() => import("@/pages/not-found"));
@@ -45,12 +40,8 @@ import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 
 function Router() {
-  const [cartModalOpen, setCartModalOpen] = useState(false);
   const [location] = useLocation();
-  const isMarketingRoute = !['/login', '/register', '/signup', '/dashboard', '/checkout'].includes(location);
-
-  const openCartModal = () => setCartModalOpen(true);
-  const closeCartModal = () => setCartModalOpen(false);
+  const isMarketingRoute = location !== '/dashboard';
 
   if (location === "/cms") return <Suspense fallback={null}><CmsPage /></Suspense>;
 
@@ -70,10 +61,6 @@ function Router() {
             <Route path="/faq"><FaqPage /></Route>
             <Route path="/contact" component={Contact} />
             <Route path="/book-call" component={BookCall} />
-            <Route path="/checkout" component={Checkout} />
-            <Route path="/register" component={Register} />
-            <Route path="/signup" component={Register} />
-            <Route path="/login" component={Login} />
             <Route path="/dashboard" component={CustomerDashboard} />
             <Route path="/platform"><PublicPage path="/platform" /></Route>
 
@@ -107,11 +94,6 @@ function Router() {
 
       <Footer />
       {isMarketingRoute && <CookieConsent />}
-
-      <CartModal 
-        isOpen={cartModalOpen} 
-        onClose={closeCartModal} 
-      />
     </div>
   );
 }
@@ -119,13 +101,11 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-          <CmsRuntime />
-        </TooltipProvider>
-      </CartProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Router />
+        <CmsRuntime />
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
