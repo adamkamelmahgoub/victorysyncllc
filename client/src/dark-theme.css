@@ -90,3 +90,6 @@
 @media(max-width:640px){.marketing-site .vs-journey-intro{position:static}.marketing-site .vs-journey-stage{min-height:110px}}
 @media(prefers-reduced-motion:reduce){.marketing-site .vs-hero:after,.marketing-site .light-page-hero:after,.marketing-site .vs-client-orbit,.marketing-site .vs-section-head,.marketing-site .vs-process-card,.marketing-site .vs-service-card,.marketing-site .vs-flow-card,.marketing-site .vs-client-card{animation:none!important}.marketing-site .vs-flow-card{transition:none}}
 @media print{.marketing-site .vs-legal-page,.marketing-site .vs-legal-page *{background:#fff!important;color:#111!important;box-shadow:none!important}}
+.marketing-site .vs-mobile-services,.marketing-site .vs-mobile-menu a,.marketing-site .vs-mobile-link{border-color:#373d60;color:#edf0ff}
+.marketing-site .vs-mobile-services button{color:#edf0ff}
+.marketing-site .vs-mobile-menu .vs-mobile-sub{color:#b7c1d8}

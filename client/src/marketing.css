@@ -36,3 +36,34 @@ html{scroll-behavior:auto!important}
 @media(max-width:640px){.vs-wrap{width:calc(100% - 32px)}.vs-section{padding:70px 0}.vs-hero{min-height:600px;padding:72px 0}.vs-hero h1{font-size:clamp(3.3rem,12.5vw,5.2rem)}.vs-hero-content>p,.light-page-hero p{font-size:16px}.vs-proof{gap:15px}.vs-actions{flex-direction:column}.vs-button{width:100%}.vs-services-grid,.vs-three-grid,.vs-split,.vs-compare-grid,.vs-trust-grid,.vs-faq-layout,.vs-journey-layout,.light-related{grid-template-columns:1fr}.vs-service-card{min-height:190px}.vs-client-orbit{display:none}.vs-client-cards{grid-template-columns:repeat(3,minmax(260px,85%))}.vs-marquee-track{animation-duration:65s}.light-page-hero{padding:68px 0 75px}.light-page-hero h1{font-size:clamp(2.8rem,11vw,4.4rem)}.vs-footer-grid{grid-template-columns:repeat(2,1fr);gap:28px}.vs-footer-brand{grid-column:span 2}.vs-footer-bottom>span{margin-left:0}.vs-consent{display:block;bottom:8px;left:8px;right:8px}.vs-consent-actions{margin-top:14px}.vs-legal-page{padding:50px 18px 80px}.vs-legal-content h2{font-size:1.45rem}}
 @media(prefers-reduced-motion:reduce){.vs-marquee-track{animation:none}.vs-button,.vs-service-card,.vs-client-card{transition:none!important}}
 @media print{.vs-nav,.vs-footer,.vs-consent,.vs-legal-toc{display:none!important}.vs-legal-page{padding:0!important}.vs-legal-page,.vs-legal-page *{background:#fff!important;color:#111!important;box-shadow:none!important}.vs-legal-content{max-width:none}.vs-legal-content h2{break-after:avoid}.vs-legal-content p,.vs-legal-content li{font-size:10pt}}
+
+/* Keep navigation usable on narrow laptops, tablets, and phones. */
+.vs-nav-open{z-index:110}
+@media(max-width:1100px){
+  .vs-nav-desktop,.vs-nav-right{display:none}
+  .vs-menu-toggle{display:grid;place-items:center;width:44px;height:44px;color:#263650;border-radius:10px}
+  .vs-mobile-menu{display:block;border-top:1px solid #e1e6ef;background:#fff;max-height:calc(100dvh - 74px);overflow-y:auto;overscroll-behavior:contain}
+  .vs-mobile-menu .vs-wrap{display:grid;gap:0;padding:10px 0 24px}
+  .vs-mobile-menu a,.vs-mobile-link{display:flex;align-items:center;min-height:46px;padding:11px 6px;border-bottom:1px solid #eef1f6;color:#253650;font-size:15px;font-weight:700;text-align:left}
+  .vs-mobile-services{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eef1f6}
+  .vs-mobile-services a{flex:1;border:0}
+  .vs-mobile-services button{display:grid;place-items:center;width:44px;height:44px;color:#253650}
+  .vs-mobile-submenu{display:grid;padding:4px 0 8px}
+  .vs-mobile-menu .vs-mobile-sub{min-height:42px;padding-left:20px;color:#61718c;font-size:13px;font-weight:500}
+  .vs-mobile-menu .vs-nav-cta{justify-content:center;min-height:48px;margin-top:17px;padding:11px 16px;color:#fff;border:0}
+}
+@media(max-width:640px){
+  .vs-hero{min-height:0}
+  .vs-hero h1{font-size:clamp(2.65rem,11.5vw,5.2rem);letter-spacing:-.065em}
+  .vs-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .vs-glass-card,.light-info-card{min-width:0}
+  .light-info-card{padding:20px}
+  .vs-workspace-top{flex-wrap:wrap}
+  .vs-workspace-top small{width:100%;margin-left:16px}
+  .hs-form-frame,.hs-form-frame iframe{max-width:100%}
+}
+@media(max-width:360px){
+  .vs-footer-grid{grid-template-columns:1fr}
+  .vs-footer-brand{grid-column:auto}
+  .vs-hero h1{font-size:2.5rem}
+}
