@@ -26,6 +26,7 @@ export const pageMeta: Record<string, [string, string]> = {
   '/platform': ['Campaign Dashboard & Daily Reports | VictorySync', 'See every call, booking, and outcome from your VictorySync campaign: call recordings, connect and booking rates, and a daily summary in your inbox.'],
   '/about-us': ['About VictorySync | US-Managed, Cairo-Staffed', 'Founded and run from Millstone, NJ with a dedicated Cairo-based agent team. Meet the people answering your calls.'],
   '/contact': ['Contact VictorySync | Millstone, NJ', 'Contact VictorySync about inbound support, appointment setting, cold calling, lead qualification, AI-assisted operations, or digital marketing.'],
+  '/clients': ['Featured Clients | Roofing Companies We Work With | VictorySync', 'VictorySync handles inbound appointment setting and lead reactivation for Unified Service Partners and its roofing brands: Level Roofing, Titan Roofing, Trademark Roofing, and Pro Restoration.'],
   '/book-call': ['Book a Call with VictorySync', 'Book a free consultation. We will look at your current lead flow and tell you what we would change.'],
   '/help-center': ['Help Center | VictorySync', 'Answers to common questions about VictorySync services, onboarding, and reporting.'],
   '/reviews': ['Reviews | VictorySync', 'Share your experience working with VictorySync on Google or Clutch.'],

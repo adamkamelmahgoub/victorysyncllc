@@ -23,6 +23,7 @@ const prohibited = ['24/7', '24 hours a day', '60% savings', 'up to 60%', '40–
 const files = htmlFiles(builtDir);
 const failures: string[] = [];
 const suppliedSeoPages = new Set(PAGES.map((page) => `/${page.slug}`));
+suppliedSeoPages.add('/clients'); // Client-provided profile copy includes Pro Restoration's stated coverage.
 for (const file of files) {
   const html = readFileSync(file, 'utf8');
   const main = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1] ?? html;

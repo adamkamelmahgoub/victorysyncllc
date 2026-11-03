@@ -39,12 +39,24 @@ for (const p of PAGES) {
     const money = n => '$' + Math.round(n).toLocaleString('en-US');
     body = body.replace('<div class="big" id="big">$0', `<div class="big" id="big">${money(monthly)}`).replace('<b id="r1">0</b>', `<b id="r1">${Math.round(c.reactivation ? reached : p.mode === 'lead' ? lost : jobs).toLocaleString('en-US')}</b>`).replace('<b id="r2">$0</b>', `<b id="r2">${c.reactivation ? Math.round(jobs).toLocaleString('en-US') : money(monthly * 12)}</b>`);
   }
+  if (p.slug === 'roofing-appointment-setting') body = body.replace('</main>', '<section><div class="wrap"><a href="/clients">See the roofers we work with →</a></div></section></main>');
   const interactive = p.kind === 'service' ? `<script type="module">\nconst SITE=${json(SITE)},PAGES=[],LOGO='';const p=${json(p)};\n${logic}\nrunHero(p);runTranscript(p);runRules();runCalc(p);\nwindow.addEventListener('pagehide',clearTimers);\n</script>` : '';
   const html = `<!doctype html><html lang="en"><head>${googleTag}<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.title)}</title><meta name="description" content="${esc(p.description)}"><link rel="canonical" href="${canonical}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(p.title)}"><meta name="twitter:card" content="summary"><meta property="og:description" content="${esc(p.description)}"><meta property="og:url" content="${canonical}"><meta name="twitter:title" content="${esc(p.title)}"><meta name="twitter:description" content="${esc(p.description)}"><meta name="twitter:url" content="${canonical}"><style>${css}</style>${schema.map(x => `<script type="application/ld+json">${json(x)}</script>`).join('')}</head><body>${body}${interactive}</body></html>`;
   const dir = join(out, p.slug); mkdirSync(dir, { recursive: true }); writeFileSync(join(dir, 'index.html'), html);
 }
 for (const sitemapPath of [join(out, 'sitemap.xml'), join(root, 'client', 'public', 'sitemap.xml'), join(root, 'public', 'sitemap.xml')]) {
   let sitemap = readFileSync(sitemapPath, 'utf8');
-  for (const p of PAGES) if (!sitemap.includes(`<loc>${SITE.url}/${p.slug}</loc>`)) sitemap = sitemap.replace('</urlset>', `  <url><loc>${SITE.url}/${p.slug}</loc><priority>0.8</priority></url>\n</urlset>`);
+  const today = new Date().toISOString().slice(0, 10);
+  const entries = new Map();
+  for (const match of sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
+    const block = match[1];
+    const loc = block.match(/<loc>(.*?)<\/loc>/)?.[1];
+    if (!loc) continue;
+    const path = new URL(loc).pathname;
+    entries.set(path, { lastmod: block.match(/<lastmod>(.*?)<\/lastmod>/)?.[1] || today, changefreq: block.match(/<changefreq>(.*?)<\/changefreq>/)?.[1] || 'monthly', priority: block.match(/<priority>(.*?)<\/priority>/)?.[1] || '0.8' });
+  }
+  for (const p of PAGES) if (!entries.has(`/${p.slug}`)) entries.set(`/${p.slug}`, { lastmod: today, changefreq: 'monthly', priority: '0.8' });
+  entries.set('/clients', { lastmod: '2026-11-04', changefreq: 'monthly', priority: '0.7' });
+  sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...entries].map(([path, data]) => `  <url><loc>https://www.victorysync.com${path}</loc><lastmod>${data.lastmod}</lastmod><changefreq>${data.changefreq}</changefreq><priority>${data.priority}</priority></url>`).join('\n')}\n</urlset>\n`;
   writeFileSync(sitemapPath, sitemap);
 }

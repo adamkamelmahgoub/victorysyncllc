@@ -24,6 +24,7 @@ import CookieConsent from "@/components/cookie-consent";
 // Pages
 const Home = lazy(() => import("@/pages/home"));
 const Contact = lazy(() => import("@/pages/contact"));
+const Clients = lazy(() => import("@/pages/clients"));
 import CustomerDashboard from "@/pages/customer-dashboard";
 const BookCall = lazy(() => import("@/pages/book-call"));
 const NotFound = lazy(() => import("@/pages/not-found"));
@@ -60,6 +61,7 @@ function Router() {
             <Route path="/how-it-works" component={HowItWorksPage} />
             <Route path="/faq"><FaqPage /></Route>
             <Route path="/contact" component={Contact} />
+            <Route path="/clients" component={Clients} />
             <Route path="/book-call" component={BookCall} />
             <Route path="/dashboard" component={CustomerDashboard} />
             <Route path="/platform"><PublicPage path="/platform" /></Route>

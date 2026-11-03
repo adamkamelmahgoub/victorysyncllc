@@ -2,6 +2,7 @@ export const publicRoutes = [
   { path: '/', label: 'Home', summary: 'Overview of VictorySync contact center services.', priority: '1.0', changefreq: 'weekly' },
   { path: '/services', label: 'Services', summary: 'Inbound support, appointment setting, cold calling, AI-assisted operations, and digital marketing.', priority: '0.9' },
   { path: '/how-it-works', label: 'How It Works', summary: 'How VictorySync plans, launches, and reviews connected growth workflows.', priority: '0.8' },
+  { path: '/clients', label: 'Clients', summary: 'Featured roofing clients and Unified Service Partners brands.', priority: '0.7', changefreq: 'monthly' },
   { path: '/faq', label: 'FAQ', summary: 'Answers about services, pricing, marketing, and operations.', priority: '0.7' },
   { path: '/inbound-support', label: 'Inbound Support', summary: 'Live agent inbound customer support.', priority: '0.9' },
   { path: '/appointment-setting', label: 'Appointment Setting', summary: 'Lead follow-up and appointment booking.', priority: '0.9' },

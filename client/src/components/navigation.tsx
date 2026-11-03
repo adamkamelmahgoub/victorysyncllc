@@ -15,6 +15,7 @@ const services = [
 ];
 const links = [
   ['How It Works', '/how-it-works'],
+  ['Clients', '/clients'],
   ['Pricing', '/pricing'],
   ['FAQ', '/faq'],
   ['About us', '/about-us'],
