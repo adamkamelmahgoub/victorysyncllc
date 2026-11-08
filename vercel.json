@@ -79,6 +79,8 @@
     { "source": "/in-house-receptionist-vs-outsourced", "destination": "/in-house-receptionist-vs-outsourced/index.html" },
     { "source": "/ai-receptionist-vs-answering-service", "destination": "/ai-receptionist-vs-answering-service/index.html" },
     { "source": "/(login|register|signup|checkout|dashboard)", "destination": "/index.html" },
+    { "source": "/calling-consultation", "destination": "https://149614201.hs-sites-eu1.com/calling-consultation" },
+    { "source": "/digital-marketing-consultation", "destination": "https://149614201.hs-sites-eu1.com/digital-marketing-consultation" },
     { "source": "/:slug", "destination": "/:slug/index.html" }
   ]
 }
