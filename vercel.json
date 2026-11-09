@@ -11,7 +11,7 @@
   ],
   "routes": [
     {
-      "src": "^/(?:blog(?:/(?:reduce-customer-service-costs|ai-automation-vs-human-touch|when-to-outsource-call-center|building-customer-loyalty|scaling-outsourced-support|roi-of-customer-service))?|careers|docs)/?$",
+      "src": "^/(?:blog/(?:reduce-customer-service-costs|ai-automation-vs-human-touch|when-to-outsource-call-center|building-customer-loyalty|scaling-outsourced-support|roi-of-customer-service)|careers|docs)/?$",
       "status": 410
     }
   ],
@@ -81,6 +81,9 @@
     { "source": "/(login|register|signup|checkout|dashboard)", "destination": "/index.html" },
     { "source": "/_hcms/:path*", "destination": "https://149614201.hs-sites-eu1.com/_hcms/:path*" },
     { "source": "/hs/:path*", "destination": "https://149614201.hs-sites-eu1.com/hs/:path*" },
+    { "source": "/blog", "destination": "https://149614201.hs-sites-eu1.com/blog-index" },
+    { "source": "/blog/", "destination": "https://149614201.hs-sites-eu1.com/blog-index" },
+    { "source": "/blog/:slug", "destination": "https://149614201.hs-sites-eu1.com/blog/:slug" },
     { "source": "/calling-consultation", "destination": "https://149614201.hs-sites-eu1.com/en/calling-consultation" },
     { "source": "/digital-marketing-consultation", "destination": "https://149614201.hs-sites-eu1.com/en/digital-marketing-consultation" },
     { "source": "/:slug", "destination": "/:slug/index.html" }
